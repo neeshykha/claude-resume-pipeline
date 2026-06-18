@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(source:*)",
+      "Bash(.venv/bin/python pipeline/render_pdf.py *)",
+      "Bash(.venv/bin/python3 tailored/*)",
+      "Bash(python pipeline/render_pdf.py *)",
+      "Bash(python pipeline/poll_ats.py*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(cp:*)",
+      "Bash(stat:*)",
+      "Bash(grep:*)",
+      "WebSearch",
+      "WebFetch",
+      "ToolSearch",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "mcp__8d597ae8-3c99-43f5-8eb1-7dba02b3dec7__create_draft"
+    ]
+  }
+}
