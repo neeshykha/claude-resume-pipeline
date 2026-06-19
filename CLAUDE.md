@@ -1,5 +1,14 @@
 # Resume Tailoring Project
 
+## Current Session State
+
+**Live run state lives in `pipeline/SESSION_STATE.md` (gitignored, private).** This repo is
+public — surfaced companies, scores, Gmail draft IDs, and the application queue must not be
+committed. Read and update `pipeline/SESSION_STATE.md` for the latest run summary, company caps,
+and action queue. Do **not** restore that state into this file.
+
+---
+
 ## What This Is
 This is Aneesh Khan's resume optimization project. The master resume is in `master_resume.md`. The PDF generator is `generate_pdf.py`. Tailored versions go in `tailored/`.
 
@@ -61,19 +70,20 @@ Before tailoring, apply these principles based on how modern ATS (Greenhouse, Le
 ### 5. Generate PDF
 **Preferred (pipeline mode):** Write a JSON data file and use the renderer:
 - Save resume data to `tailored/Aneesh_Khan_[Company]_[Role]_data.json` (schema: see `pipeline/pdf_helpers.py` docstring)
-- Run: `source .venv/bin/activate && python pipeline/render_pdf.py resume tailored/Aneesh_Khan_[Company]_[Role]_data.json tailored/Aneesh_Khan_[Company]_[Role].pdf`
+- Run: `.venv/bin/python pipeline/render_pdf.py resume tailored/Aneesh_Khan_[Company]_[Role]_data.json tailored/Aneesh_Khan_[Company]_[Role].pdf`
 - This is dramatically cheaper on tokens than writing a full Python script per resume
 
 **Fallback (manual mode):** If `render_pdf.py` is unavailable:
 - Copy `generate_pdf.py` to `tailored/Aneesh_Khan_[Company]_[Role]_pdf.py`
 - Update the content in the copy to match the tailored resume
-- Run it using the venv: `source .venv/bin/activate && python3 tailored/Aneesh_Khan_[Company]_[Role]_pdf.py`
+- Run it using the venv: `.venv/bin/python3 tailored/Aneesh_Khan_[Company]_[Role]_pdf.py`
 
 Output PDF to `tailored/Aneesh_Khan_[Company]_[Role].pdf`
 
 ### 6. Verify JD Keyword Coverage
 - Count how many of the JD's top 15 exact phrases (from Step 1) appear as literal substrings (case-insensitive) in the tailored resume
 - **Target: ≥80% (12 of 15).** If below 80%, revise: reorder bullets, swap terminology, or re-surface skills — **without fabricating experience**
+- **Second-pass rule (apply before accepting any missing phrase as a gap):** For each phrase still missing after the first tailoring pass, check whether a real experience in `master_resume.md` justifies that language. Ask: "Is there something Aneesh actually did that this phrase describes?" If yes, work the phrase in — don't leave achievable coverage on the table. Only flag a phrase as a genuine gap if no honest mapping exists.
 - If a JD phrase genuinely cannot be covered because Aneesh doesn't have that experience, flag it in the Step 7 summary as a true gap, don't fake it
 - Log the coverage % and the list of missing phrases in the Step 7 summary
 
@@ -91,7 +101,7 @@ After generating, display:
 Always generate a tailored cover letter alongside the resume:
 - Save markdown to `tailored/Aneesh_Khan_[Company]_[Role]_cover.md`
 - **Preferred:** Save cover data to `tailored/Aneesh_Khan_[Company]_[Role]_cover_data.json` and run:
-  `python pipeline/render_pdf.py cover tailored/Aneesh_Khan_[Company]_[Role]_cover_data.json tailored/Aneesh_Khan_[Company]_[Role]_cover.pdf`
+  `.venv/bin/python pipeline/render_pdf.py cover tailored/Aneesh_Khan_[Company]_[Role]_cover_data.json tailored/Aneesh_Khan_[Company]_[Role]_cover.pdf`
 - **Fallback:** Write a `*_cover_pdf.py` script only if `render_pdf.py` is unavailable
 - Mirror the JD's language just like the resume
 - Keep it under one page (4–5 short paragraphs)
@@ -113,6 +123,11 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 
 **Honesty moments — keep them.** When there's a real technical gap, acknowledge it directly and without apology ("Python is a growing area for me," "I am not a software developer"). This is a distinctive voice feature that makes letters feel real. Don't suppress it.
 
+**Three positive framings to use when relevant (from direct voice interview):**
+- *Maven story:* The real achievement isn't the 85% deflection number — it's the feedback loop: customer data flowing back in to auto-audit the knowledge base and feed T1 training. Lead with the loop, land on the number. Most companies skip the spec work and get swept up in vendor promises; Aneesh did the spec work. That's the differentiator.
+- *People management:* Don't just say "I lead a team of 8." The stronger claim is: he hires well enough that people management becomes the simplest part of his job — which means his attention goes to the harder operational work. Frame it as an outcome, not a credential.
+- *Closing angle:* Aneesh has had two jobs in a decade. He stays where he's constantly building and learning. The honest close isn't "I'm excited about your mission" — it's something that gestures toward the building/learning dynamic and signals he's not a short-tenure risk.
+
 **Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific.
 
 ## Important Rules
@@ -133,35 +148,6 @@ At the very start of each pipeline session, before anything else:
 
 This file is used to pass one-time instructions between sessions (e.g. "new sources added", "config changed", "backlog was reset"). It self-destructs after one read so it doesn't repeat on future runs.
 
-## Pipeline Pre-Run: Application Status Check
-
-At the **start of every pipeline session** (before discovering new jobs), do the following:
-
-1. Read `pipeline/jobs/seen_jobs.json` and pull all entries where `applied: false` AND `outcome: null`
-2. Present them as a numbered checklist, sorted by `first_seen_date` ascending, with this format:
-
-   ```
-   Applications to log — which of these did you submit since last time?
-
-   1. Observe.AI — Senior CSM Evergreen (score 116, seen 2026-05-07)
-   2. Assembled — Enterprise Deployment Strategist (score 112, seen 2026-05-06)
-   ...
-   Reply with numbers (e.g. "1, 3"), "none", or "skip" to proceed without updating.
-   ```
-
-3. Wait for the reply before proceeding with the new run
-4. For each confirmed application, update `seen_jobs.json`:
-   - Set `applied: true`
-   - Set `applied_date` to today's date
-   - Leave `outcome: null` (outcome tracking is separate)
-5. Proceed with the new run
-
-**Rules:**
-- If the user replies "skip" or doesn't respond within the same turn, proceed without updating — don't block the run
-- If the unapplied list is empty, skip this step silently
-- After updating, confirm: "Logged N applications. Proceeding with today's run."
-- Do not ask about entries already marked `applied: true`
-
 ## Pipeline Scoring Tiers
 
 When the daily pipeline surfaces jobs, apply tailoring based on score (thresholds in
@@ -175,25 +161,38 @@ directly, always do full tailoring regardless of score.
 | 78–87 | Light | Summary rewrite + skills reorder only — no bullet reorder, no cover letter |
 | <78  | Skip | Do not surface |
 
-Light tailoring is for IC-level roles (Senior CSM, Renewal Manager, Onboarding Manager)
-that meet the salary floor but scored lower due to seniority or keyword penalties.
-Volume over perfection at that tier.
+Light tailoring is for stretch roles (Tier 3–4 title match) that meet the salary floor but
+scored lower due to title distance. Volume over perfection at that tier.
 
 ## Target Roles for Reference
 
-**Full tailoring track (score 88+):**
-- Technical Account Manager (TAM) / Support Account Manager (SAM)
-- Customer Success Manager (CSM) / Senior CSM / Manager, Customer Success / Technical CSM / Product CSM
-- Technical Support Manager / Support Operations Manager / Technical Operations Manager
-- Solutions Engineer (SE) / Customer Engineer / Sales Engineer (when JD allows non-engineering background)
-- Implementation Manager / Implementation Consultant / Professional Services Manager / Deployment Strategist
-- AI Engagement Manager / Engagement Manager / AI Deployment Manager / Forward Deployed Engineer (AI-native roles)
-- Product Manager (Associate/Technical PM)
+Aneesh's background is Technical Support Operations Manager — runs a support function end-to-end
+(hiring, training, AI deployment, knowledge base, Salesforce admin, QA auditing, BPO management).
+Score title match using `_title_scoring_tiers` in `watchlist_companies.json`.
 
-**Light tailoring track (score 78–87, salary ≥ $110K):**
+**Tier 1 — True match (full tailoring, title match +30):**
+- Support Operations Manager / Technical Support Operations Manager
+- Customer Operations Manager / Technical Operations Manager
+- Technical Support Manager / Support Engineering Manager
+- Head of Support / Director of Support Operations
+
+**Tier 2 — Strong overlap (full tailoring, title match +22):**
+- Technical Account Manager (TAM) / Support Account Manager (SAM)
+- Implementation Manager / Deployment Manager / Deployment Strategist
+- AI Engagement Manager / AI Deployment Manager / Forward Deployed Engineer
+- Professional Services Manager / Implementation Consultant
+- Workforce Manager / Contact Center Manager
+
+**Tier 3 — Reasonable stretch (full tailoring if score ≥88, title match +15):**
+- Customer Success Manager (only when JD emphasizes technical depth, deployment, or team mgmt)
+- Technical CSM / Customer Success Engineer
+- Customer Enablement Manager / Technical Enablement Manager
+- Solutions Engineer (when JD allows non-engineering background)
+
+**Tier 4 — Weak stretch (light tailoring only, title match +8):**
 - Renewal Manager / Partner Success Manager
-- Onboarding Manager / Customer Onboarding Specialist
-- Customer Enablement Manager / Customer Education Manager
+- Onboarding Manager / Customer Onboarding
+- Product Customer Success
 
 ## Supplemental WebSearch Sources (Atlanta + Startup Discovery)
 
@@ -207,10 +206,47 @@ The `_websearch_sources` block in `pipeline/watchlist_companies.json` defines ad
 **Scoring adjustments for WebSearch-sourced roles:**
 - Source quality score: 8 (vs. 10 for direct ATS) — WebSearch results are less structured
 - Atlanta small company bonus (+20) applies if company HQ is Atlanta and headcount ≤200
-- Salary floor still applies ($110K) — Wellfound roles especially may list equity-only or below-floor comp; skip these
+- Salary floor still applies ($100K) — Wellfound roles especially may list equity-only or below-floor comp; skip these
 - If a WebSearch-sourced company has a Greenhouse/Ashby/Lever board, switch to direct ATS polling and add them to the watchlist for future runs
+
+## Interview Prep & Post-Mortem Workflow
+
+Interview prep docs and post-mortems live under `interview_prep/` in a per-company directory structure:
+
+```
+interview_prep/
+├── _lessons_learned.md           ← rolling cross-company patterns + active focus areas
+├── _template_prep.md             ← reusable prep template
+├── _template_postmortem.md       ← reusable post-mortem template
+├── [Company]/
+│   ├── prep_round[N]_[type].md
+│   └── postmortem_round[N]_[type].md
+```
+
+### Skill: `postmortem`
+
+The post-mortem workflow is encoded as a project-level skill at `.claude/skills/postmortem/SKILL.md`. It auto-invokes when Aneesh mentions completing an interview ("just had my call," "let's debrief," "post-mortem [Company]") or can be triggered explicitly. It walks through the call chronologically, captures Q&A with self-grades, synthesizes lessons, and promotes generalizable items to `_lessons_learned.md` in the same session. Refer to the SKILL.md for the full behavior spec.
+
+### Prep workflow (no skill yet — manual)
+
+When Aneesh asks to prep for a new interview round:
+
+- Create `interview_prep/[Company]/prep_round[N]_[type].md` from `_template_prep.md`
+- Pre-populate role/company/files-submitted from the tailored resume + cover letter
+- Read `_lessons_learned.md` first and surface any "Active Focus Areas" or patterns relevant to this stage/company-type before drafting prep content
+- For roles at AI-infra or seed-stage startups specifically: confirm the technical bar with the recruiter before deep prep (this lesson is logged from Kamiwaza R1)
+
+### Rules (apply to both prep and post-mortem)
+
+- Post-mortems should be written within ~24 hours while memory is fresh
+- Honest, not flattering — the value is in surfacing blind spots, not making Aneesh feel good
+- Generalizable lessons (≥2 future interviews benefit) get promoted to `_lessons_learned.md`. Company-specific notes stay in that company's folder.
+- Do NOT fabricate specifics — if Aneesh hasn't told you what was asked or how it landed, leave the section as a placeholder marked with `_[Aneesh — ...]_`
+- Voice rules from this CLAUDE.md (no "genuinely," no "directly maps to," no AI tells) apply to any drafted user-facing text — thank-you emails, suggested answer phrasings, etc.
 
 ## Quick Commands
 - "Tailor for [JD]" — Full tailoring workflow above
 - "Compare [company]" — Show diff between tailored version and master
 - "List versions" — Show all tailored versions created so far
+- "Prep for [Company] round [N]" — Create round-specific interview prep doc
+- "Post-mortem [Company] round [N]" — Walk through post-mortem and update lessons learned
