@@ -1,28 +1,43 @@
 {
-  "_description": "Target companies for direct ATS board polling. Primary discovery source — preferred over WebSearch because ATS JSON endpoints return structured, fresh, deduplicated data with no 403/JS issues.",
+  "_description": "Target companies for direct ATS board polling. Primary discovery source \u2014 preferred over WebSearch because ATS JSON endpoints return structured, fresh, deduplicated data with no 403/JS issues.",
   "_websearch_sources": {
     "description": "Supplemental discovery sources run via WebSearch each daily pipeline run. Use these to find companies NOT on the ATS watchlist, especially Atlanta startups.",
     "sources": [
       {
         "name": "Hypepotamus Job Board",
         "url": "https://hypepotamus.com/job-board/",
-        "query": "site:hypepotamus.com/job-board customer success OR technical account OR implementation OR success engineer",
-        "notes": "Atlanta startup-focused job board and newsletter. Best source for small/unknown Atlanta companies not on ATS watchlist. Free board — may have lower salary floor, screen carefully.",
+        "status": "disabled",
+        "disabled_reason": "Job listings are JavaScript-rendered via nonce-protected AJAX. Direct WebFetch returns empty shell; WP REST API endpoints for listings are not public. Cannot be polled headlessly without a browser dependency. Tested 2026-05-08.",
         "frequency": "daily"
       },
       {
         "name": "BuiltIn Atlanta",
         "url": "https://builtin.com/atlanta",
-        "query": "site:builtin.com/job \"customer success\" OR \"technical account\" OR \"implementation manager\" Atlanta",
-        "notes": "Aggregates Atlanta tech companies including startups. Good mid-size company coverage that complements Hypepotamus.",
+        "query": "site:builtin.com/job \"support operations\" OR \"technical account\" OR \"implementation manager\" OR \"customer operations\" OR \"deployment manager\" Atlanta",
+        "notes": "Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount \u2264200.",
         "frequency": "daily"
       },
       {
-        "name": "Wellfound Atlanta",
-        "url": "https://wellfound.com/jobs",
-        "query": "site:wellfound.com customer success OR technical account manager Atlanta Georgia startup",
-        "notes": "Formerly AngelList. Best source for early-stage startups, Series A/B. Skews toward equity-heavy comp — verify salary floor before tailoring.",
+        "name": "BuiltIn Remote",
+        "url": "https://builtin.com/jobs/remote",
+        "query": "site:builtin.com/job \"support operations\" OR \"technical account\" OR \"implementation manager\" OR \"customer operations\" OR \"deployment manager\" remote",
+        "notes": "Remote roles from tech companies nationally. No Atlanta bonus \u2014 needs stronger title/keyword fit to clear threshold. Salary floor ($100K) still applies.",
         "frequency": "daily"
+      },
+      {
+        "name": "Wellfound Startups",
+        "url": "https://wellfound.com/jobs",
+        "query": "site:wellfound.com support operations OR technical account manager OR implementation manager OR deployment OR customer operations startup remote OR Atlanta",
+        "notes": "Formerly AngelList. Early-stage startups nationally (Series A/B focus). Atlanta HQ companies still get +20 bonus. Remote roles score on fit alone. Skews equity-heavy \u2014 verify salary floor before tailoring. Skip pre-seed if comp not listed.",
+        "frequency": "daily"
+      },
+      {
+        "name": "AI-Titled Roles (Broad Discovery)",
+        "query": "(\"AI Success Manager\" OR \"AI Outcomes Manager\" OR \"AI Adoption\" OR \"AI Transformation Lead\" OR \"AI Value Partner\" OR \"AI Engagement Lead\" OR \"AI Delivery Manager\" OR \"AI GTM\") jobs remote 2026",
+        "notes": "Catch-all WebSearch for novel AI-prefixed role titles that don't match named tiers. Companies are still coining these. Run every pipeline pass. Apply AI/LLM bonus (+20) to any hits. Check for salary floor before surfacing. Score against tier2b_ai_wildcard (+18) if no higher tier matches.",
+        "status": "active",
+        "frequency": "daily",
+        "scoring_notes": "Apply +20 AI bonus + tier2b_ai_wildcard title match (+18) = strong signal. Verify salary floor."
       }
     ]
   },
@@ -35,96 +50,651 @@
   "_scoring_config": {
     "full_tailoring_threshold": 88,
     "light_tailoring_threshold": 78,
+    "near_miss_salary_floor_usd": 90000,
+    "notes_near_miss": "Near-misses are listed (with links) in the email digest but NOT tailored, so Aneesh can eyeball them. Two kinds, unioned: (A) score near-miss \u2014 passes all hard filters incl. salary, but scores below light_tailoring_threshold (no lower score bound, capture all). (B) salary near-miss \u2014 passes all other filters but salary midpoint is below salary_floor_usd yet at or above near_miss_salary_floor_usd. See SKILL Step 2 + Step 5.",
     "company_cap_threshold": 110,
-    "company_cap_max_unapplied": 3,
-    "salary_floor_usd": 110000,
-    "light_tailoring_steps": ["summary_rewrite", "skills_reorder"],
-    "full_tailoring_steps": ["summary_rewrite", "bullet_reorder", "skills_reorder", "cover_letter"],
-    "notes": "Light tailoring for IC-level roles 78-87. Full tailoring for 88+. Skip below 78. Capped companies require 110+ regardless of tier."
+    "company_cap_max_applied_pending": 3,
+    "salary_floor_usd": 100000,
+    "salary_comparison_basis": "midpoint",
+    "notes_salary": "Compare the MIDPOINT of a listed base-salary range against salary_floor_usd \u2014 never the bottom or top. Single figure: use as-is. OTE-only: estimate base (80% for variable/sales roles, 100% otherwise). No salary listed: do not filter, treat as neutral in scoring. See SKILL Step 2b for the authoritative rule.",
+    "light_tailoring_steps": [
+      "summary_rewrite",
+      "skills_reorder"
+    ],
+    "full_tailoring_steps": [
+      "summary_rewrite",
+      "bullet_reorder",
+      "skills_reorder",
+      "cover_letter"
+    ],
+    "freshness_bonus_2d": 10,
+    "freshness_bonus_7d": 2,
+    "notes_freshness": "Add +10 for postings \u22642 days old, +2 for \u22647 days. Validated by empirical data: response rates fall sharply after 48 hours.",
+    "notes": "Light tailoring for IC-level roles 78-87. Full tailoring for 88+. Skip below 78. Capped companies require 110+ regardless of tier. Cap rule: count entries where applied=true AND outcome=null (pending applications). If that count \u2265 company_cap_max_applied_pending, new roles need company_cap_threshold to surface. Queued/unapplied roles do NOT count toward the cap \u2014 only submitted applications do."
+  },
+  "_title_scoring_tiers": {
+    "description": "Aneesh's background is Technical Support Operations Manager \u2014 he runs a support function end-to-end: hiring/training agents, AI deployment, knowledge base, Salesforce administration, QA auditing, BPO management. Score title match accordingly. Operations-first and implementation-first roles are true matches; pure relationship CSM is a stretch.",
+    "tier1_true_match": {
+      "title_match_score": 30,
+      "titles": [
+        "Support Operations Manager",
+        "Technical Support Operations Manager",
+        "Customer Operations Manager",
+        "Technical Support Manager",
+        "Technical Operations Manager",
+        "Support Engineering Manager",
+        "Head of Support",
+        "Director of Support Operations",
+        "Customer Support Manager"
+      ]
+    },
+    "tier2_strong_overlap": {
+      "title_match_score": 22,
+      "titles": [
+        "Technical Account Manager",
+        "Implementation Manager",
+        "Deployment Manager",
+        "Deployment Strategist",
+        "AI Engagement Manager",
+        "Forward Deployed Engineer",
+        "Professional Services Manager",
+        "Implementation Consultant",
+        "AI Implementation Manager",
+        "AI Deployment Manager",
+        "Customer Operations Lead",
+        "Support Account Manager",
+        "Engagement Manager",
+        "Workforce Manager",
+        "Contact Center Manager",
+        "AI Success Manager",
+        "AI Outcomes Manager",
+        "AI Adoption Manager",
+        "AI Transformation Manager",
+        "AI Delivery Manager",
+        "AI Value Manager",
+        "AI Engagement Lead",
+        "AI Deployment Lead",
+        "AI GTM Lead"
+      ]
+    },
+    "tier3_reasonable_stretch": {
+      "title_match_score": 15,
+      "notes": "CSM roles are structurally different (account/relationship ownership vs. operations leadership) but viable when the JD emphasizes technical depth, deployment, or team management.",
+      "titles": [
+        "Customer Success Manager",
+        "Senior Customer Success Manager",
+        "Technical Customer Success Manager",
+        "Customer Success Engineer",
+        "Customer Enablement Manager",
+        "Technical Enablement Manager",
+        "Solutions Engineer",
+        "Customer Engineer",
+        "AI Transformation Strategist",
+        "AI Solutions Consultant",
+        "AI Customer Success Manager",
+        "AI Customer Experience Manager",
+        "AI Solutions Architect",
+        "AI Strategy Lead",
+        "AI GTM Manager"
+      ]
+    },
+    "tier4_weak_stretch": {
+      "title_match_score": 8,
+      "notes": "Only worth surfacing if AI bonus, Atlanta bonus, or salary pushes score above 78 threshold.",
+      "titles": [
+        "Renewal Manager",
+        "Onboarding Manager",
+        "Customer Onboarding",
+        "Partner Success Manager",
+        "Product Customer Success"
+      ]
+    },
+    "tier2b_ai_wildcard": {
+      "title_match_score": 18,
+      "description": "Catch-all for novel AI-prefixed roles companies are coining in 2025-2026. Apply when a title is NOT matched by tier1 or tier2 BUT satisfies: (1) 'AI' appears as a word-boundary token, AND (2) title contains ANY of: customer, deployment, implementation, engagement, outcomes, adoption, success, transformation, strategy, value, delivery, operations, solutions. Score as +18 (between T2 +22 and T3 +15). Flag for manual review in email digest. Do NOT apply to 'AI Engineer' or 'AI Architect' titles (those are IC/coding roles).",
+      "signal_words": [
+        "customer",
+        "deployment",
+        "implementation",
+        "engagement",
+        "outcomes",
+        "adoption",
+        "success",
+        "transformation",
+        "strategy",
+        "value",
+        "delivery",
+        "operations",
+        "solutions",
+        "consultant",
+        "advisor",
+        "partner"
+      ],
+      "exclude_if_contains": [
+        "engineer",
+        "architect",
+        "developer",
+        "scientist",
+        "researcher"
+      ],
+      "explicit_titles": [
+        "AI Success Manager",
+        "AI Outcomes Manager",
+        "AI Adoption Manager",
+        "AI Transformation Manager",
+        "AI Transformation Lead",
+        "AI Transformation Strategist",
+        "AI Value Partner",
+        "AI Value Manager",
+        "AI Delivery Manager",
+        "AI Engagement Lead",
+        "AI Strategy Lead",
+        "AI Solutions Manager",
+        "AI Customer Success",
+        "AI Solutions Consultant",
+        "AI GTM Manager",
+        "AI GTM Lead"
+      ]
+    }
   },
   "_target_titles_filter": [
-    "Customer Success Manager",
-    "Technical Account Manager",
-    "Support Account Manager",
+    "Support Operations Manager",
+    "Technical Support Operations Manager",
+    "Customer Operations Manager",
     "Technical Support Manager",
     "Technical Operations Manager",
-    "Support Operations Manager",
-    "Solutions Engineer",
-    "Implementation Consultant",
+    "Support Engineering Manager",
+    "Head of Support",
+    "Director of Support Operations",
+    "Customer Support Manager",
+    "Technical Account Manager",
     "Implementation Manager",
-    "Professional Services Manager",
+    "Deployment Manager",
     "Deployment Strategist",
     "AI Engagement Manager",
+    "Forward Deployed Engineer",
+    "Professional Services Manager",
+    "Implementation Consultant",
+    "AI Implementation Manager",
+    "AI Deployment Manager",
     "Engagement Manager",
-    "Customer Engineer",
-    "Product Manager",
-    "Product Customer Success",
+    "Workforce Manager",
+    "Contact Center Manager",
+    "Support Account Manager",
+    "Customer Success Manager",
+    "Senior Customer Success Manager",
+    "Technical Customer Success Manager",
+    "Customer Success Engineer",
     "Customer Enablement Manager",
     "Technical Enablement Manager",
+    "Solutions Engineer",
     "Renewal Manager",
     "Onboarding Manager",
-    "Customer Onboarding",
-    "Partner Success Manager"
+    "Partner Success Manager",
+    "AI Success Manager",
+    "AI Outcomes Manager",
+    "AI Adoption Manager",
+    "AI Transformation Manager",
+    "AI Transformation Lead",
+    "AI Transformation Strategist",
+    "AI Value Partner",
+    "AI Value Manager",
+    "AI Delivery Manager",
+    "AI Deployment Lead",
+    "AI Engagement Lead",
+    "AI Strategy Lead",
+    "AI Strategy Manager",
+    "AI Solutions Manager",
+    "AI Customer Success",
+    "AI Solutions Consultant",
+    "AI Customer Experience",
+    "AI Solutions Architect",
+    "AI Innovation Manager",
+    "AI GTM Manager",
+    "AI GTM Lead",
+    "Customer AI",
+    "Revenue AI",
+    "Agentic Solutions",
+    "Agentic Delivery"
   ],
   "companies": [
-    {"name": "Samsara", "ats": "greenhouse", "slug": "samsara", "priority": "high", "reason": "IoT/fleet — direct fit for Aneesh's IoT hardware background"},
-    {"name": "FullStory", "ats": "ashby", "slug": "fullstory", "priority": "high", "reason": "Atlanta HQ, digital experience analytics, AI-powered — Aneesh specifically interested"},
-    {"name": "Cloudflare", "ats": "greenhouse", "slug": "cloudflare", "priority": "high", "reason": "Technical infra, strong CSM/TAM pipeline"},
-    {"name": "Datadog", "ats": "greenhouse", "slug": "datadog", "priority": "high", "reason": "Observability, strong TAM track"},
-    {"name": "LaunchDarkly", "ats": "greenhouse", "slug": "launchdarkly", "priority": "high", "reason": "Feature mgmt platform, technical CSM roles"},
-    {"name": "Amplitude", "ats": "greenhouse", "slug": "amplitude", "priority": "high", "reason": "Product analytics, technical CSM"},
-    {"name": "Hightouch", "ats": "greenhouse", "slug": "hightouch", "priority": "high", "reason": "Reverse ETL, technical CS focus"},
-    {"name": "Smartsheet", "ats": "greenhouse", "slug": "smartsheet", "priority": "medium"},
-    {"name": "Iterable", "ats": "greenhouse", "slug": "iterable", "priority": "medium"},
-    {"name": "Ping Identity", "ats": "greenhouse", "slug": "pingidentity", "priority": "medium"},
-    {"name": "Commvault", "ats": "greenhouse", "slug": "commvault", "priority": "medium"},
-    {"name": "Huntress", "ats": "greenhouse", "slug": "huntress", "priority": "medium", "reason": "Security MSP, TAM-heavy"},
-    {"name": "LogicGate", "ats": "greenhouse", "slug": "logicgate", "priority": "medium"},
-    {"name": "SpecterOps", "ats": "greenhouse", "slug": "specterops", "priority": "medium"},
-    {"name": "RapidSOS", "ats": "greenhouse", "slug": "rapidsos", "priority": "medium"},
-    {"name": "PerfectServe", "ats": "greenhouse", "slug": "perfectserve", "priority": "low"},
-    {"name": "NICE", "ats": "greenhouse", "slug": "nice", "priority": "medium", "reason": "Contact center AI — direct fit"},
-    {"name": "Upbound", "ats": "greenhouse", "slug": "upbound", "priority": "low"},
-    {"name": "Zeta Global", "ats": "greenhouse", "slug": "zetaglobal", "priority": "low"},
-    {"name": "OpenAI", "ats": "ashby", "slug": "openai", "priority": "high", "reason": "AI — Aneesh's strongest differentiator"},
-    {"name": "Anthropic", "ats": "greenhouse", "slug": "anthropic", "priority": "high", "reason": "AI — Aneesh's strongest differentiator"},
-    {"name": "Vanta", "ats": "ashby", "slug": "vanta", "priority": "high", "reason": "Compliance SaaS, technical CSM roles"},
-    {"name": "1Password", "ats": "ashby", "slug": "1password", "priority": "medium"},
-    {"name": "Redis", "ats": "ashby", "slug": "Redis", "priority": "medium"},
-    {"name": "Deepgram", "ats": "ashby", "slug": "Deepgram", "priority": "medium", "reason": "Voice AI"},
-    {"name": "ElevenLabs", "ats": "ashby", "slug": "elevenlabs", "priority": "medium", "reason": "Voice AI"},
-    {"name": "Maven AGI", "ats": "ashby", "slug": "maven-agi", "priority": "high", "reason": "Aneesh has implemented Maven AGI at iApts — direct product familiarity"},
-    {"name": "Percona", "ats": "ashby", "slug": "percona", "priority": "low"},
-    {"name": "Roboflow", "ats": "ashby", "slug": "roboflow", "priority": "low"},
-    {"name": "n8n", "ats": "ashby", "slug": "n8n", "priority": "low"},
-    {"name": "OpenRouter", "ats": "ashby", "slug": "openrouter", "priority": "low"},
-    {"name": "Quantum Metric", "ats": "lever", "slug": "quantummetric", "priority": "medium"},
-    {"name": "PointClickCare", "ats": "lever", "slug": "pointclickcare", "priority": "medium"},
-    {"name": "Mattermost", "ats": "greenhouse", "slug": "mattermost", "priority": "low"},
-    {"name": "Conversica", "ats": "lever", "slug": "conversica", "priority": "medium", "reason": "AI-powered revenue"},
-    {"name": "Netomi", "ats": "lever", "slug": "netomi", "priority": "medium", "reason": "AI customer service"},
-    {"name": "Regal Voice", "ats": "lever", "slug": "regalvoice", "priority": "low"},
-    {"name": "Level AI", "ats": "lever", "slug": "levelai", "priority": "medium", "reason": "AI contact center"},
-    {"name": "StackHawk", "ats": "lever", "slug": "stackhawk", "priority": "low"},
-
-    {"name": "Pindrop", "ats": "greenhouse", "slug": "pindropsecurity", "priority": "high", "reason": "Atlanta HQ, voice AI/security — IoT + AI + Atlanta triple fit", "score_penalty": -20, "penalty_reason": "family conflict of interest — co-founder/investor relationship"},
-    {"name": "OneTrust", "ats": "greenhouse", "slug": "onetrust", "priority": "high", "reason": "Atlanta HQ, privacy/compliance SaaS — large Atlanta employer"},
-    {"name": "Florence Healthcare", "ats": "greenhouse", "slug": "florencehealthcare", "priority": "high", "reason": "Atlanta HQ, clinical trial SaaS — small Atlanta company, strong CSM/TAM profile"},
-    {"name": "SalesLoft", "ats": "greenhouse", "slug": "salesloft", "priority": "high", "reason": "Atlanta HQ, sales engagement platform — large Atlanta employer"},
-    {"name": "Calendly", "ats": "greenhouse", "slug": "calendly", "priority": "high", "reason": "Atlanta HQ, scheduling SaaS — mid/large Atlanta employer"},
-    {"name": "Storable", "ats": "greenhouse", "slug": "storable", "priority": "medium", "reason": "Storage SaaS, remote-friendly"},
-    {"name": "Cloverly", "ats": "greenhouse", "slug": "cloverly", "priority": "medium", "reason": "Atlanta HQ, climate/carbon API — small Atlanta startup"},
-
-    {"name": "Flock Safety", "ats": "ashby", "slug": "Flock%20Safety", "priority": "high", "reason": "Atlanta HQ, IoT safety cameras for public sector — IoT + Atlanta + public safety triple fit. NOTE: slug has URL-encoded space — use as-is in API URL."},
-    {"name": "Terminus (DemandScience)", "ats": "greenhouse", "slug": "demandscience", "priority": "medium", "reason": "Atlanta HQ, B2B marketing SaaS — Atlanta employer, CSM-heavy. Terminus merged into DemandScience Nov 2024. Current jobs are Philippines-only — monitor for US roles."},
-    {"name": "Glean", "ats": "greenhouse", "slug": "gleanwork", "priority": "high", "reason": "Enterprise search AI — strong technical CSM/TAM pipeline, AI bonus"},
-    {"name": "Intercom", "ats": "greenhouse", "slug": "intercom", "priority": "medium", "reason": "Customer messaging/support platform — historically strong CSM track"},
-    {"name": "Observe.ai", "ats": "greenhouse", "slug": "observeai", "priority": "medium", "reason": "Contact center AI — similar profile to NICE/Level AI"},
-    {"name": "Cohere", "ats": "ashby", "slug": "cohere", "priority": "medium", "reason": "LLM API platform — enterprise AI with TAM/CSM pipeline"},
-    {"name": "Weights & Biases (CoreWeave)", "ats": "greenhouse", "slug": "coreweave", "priority": "medium", "reason": "MLOps/experiment tracking — technical CSM roles, developer-facing. W&B acquired by CoreWeave 2025; filter jobs for 'W&B' or 'Weights & Biases' in title"},
-    {"name": "Writer", "ats": "ashby", "slug": "writer", "priority": "high", "reason": "Enterprise AI writing platform — strong CSM/implementation pipeline, AI bonus"},
-    {"name": "Moveworks", "ats": "greenhouse", "slug": "moveworks", "priority": "high", "reason": "AI for IT service management — CSM/TAM and implementation heavy"},
-    {"name": "Assembled", "ats": "ashby", "slug": "assembledhq", "priority": "medium", "reason": "Workforce management for CS/support teams — niche startup, direct ops relevance"},
-    {"name": "Arize AI", "ats": "greenhouse", "slug": "arizeai", "priority": "medium", "reason": "ML observability startup — technical CSM track"}
+    {
+      "name": "Samsara",
+      "ats": "greenhouse",
+      "slug": "samsara",
+      "priority": "high",
+      "reason": "IoT/fleet \u2014 direct fit for Aneesh's IoT hardware background"
+    },
+    {
+      "name": "FullStory",
+      "ats": "ashby",
+      "slug": "fullstory",
+      "priority": "high",
+      "reason": "Atlanta HQ, digital experience analytics, AI-powered \u2014 Aneesh specifically interested"
+    },
+    {
+      "name": "Cloudflare",
+      "ats": "greenhouse",
+      "slug": "cloudflare",
+      "priority": "high",
+      "reason": "Technical infra, strong CSM/TAM pipeline"
+    },
+    {
+      "name": "Datadog",
+      "ats": "greenhouse",
+      "slug": "datadog",
+      "priority": "high",
+      "reason": "Observability, strong TAM track"
+    },
+    {
+      "name": "LaunchDarkly",
+      "ats": "greenhouse",
+      "slug": "launchdarkly",
+      "priority": "high",
+      "reason": "Feature mgmt platform, technical CSM roles"
+    },
+    {
+      "name": "Amplitude",
+      "ats": "greenhouse",
+      "slug": "amplitude",
+      "priority": "high",
+      "reason": "Product analytics, technical CSM"
+    },
+    {
+      "name": "Hightouch",
+      "ats": "greenhouse",
+      "slug": "hightouch",
+      "priority": "high",
+      "reason": "Reverse ETL, technical CS focus"
+    },
+    {
+      "name": "Smartsheet",
+      "ats": "greenhouse",
+      "slug": "smartsheet",
+      "priority": "medium"
+    },
+    {
+      "name": "Iterable",
+      "ats": "greenhouse",
+      "slug": "iterable",
+      "priority": "medium"
+    },
+    {
+      "name": "Ping Identity",
+      "ats": "greenhouse",
+      "slug": "pingidentity",
+      "priority": "medium"
+    },
+    {
+      "name": "Commvault",
+      "ats": "greenhouse",
+      "slug": "commvault",
+      "priority": "medium"
+    },
+    {
+      "name": "Huntress",
+      "ats": "greenhouse",
+      "slug": "huntress",
+      "priority": "medium",
+      "reason": "Security MSP, TAM-heavy"
+    },
+    {
+      "name": "LogicGate",
+      "ats": "greenhouse",
+      "slug": "logicgate",
+      "priority": "medium"
+    },
+    {
+      "name": "SpecterOps",
+      "ats": "greenhouse",
+      "slug": "specterops",
+      "priority": "medium"
+    },
+    {
+      "name": "RapidSOS",
+      "ats": "greenhouse",
+      "slug": "rapidsos",
+      "priority": "medium"
+    },
+    {
+      "name": "PerfectServe",
+      "ats": "greenhouse",
+      "slug": "perfectserve",
+      "priority": "low"
+    },
+    {
+      "name": "NICE",
+      "ats": "greenhouse",
+      "slug": "nice",
+      "priority": "medium",
+      "reason": "Contact center AI \u2014 direct fit"
+    },
+    {
+      "name": "Upbound",
+      "ats": "greenhouse",
+      "slug": "upbound",
+      "priority": "low"
+    },
+    {
+      "name": "Zeta Global",
+      "ats": "greenhouse",
+      "slug": "zetaglobal",
+      "priority": "low"
+    },
+    {
+      "name": "OpenAI",
+      "ats": "ashby",
+      "slug": "openai",
+      "priority": "high",
+      "reason": "AI \u2014 Aneesh's strongest differentiator"
+    },
+    {
+      "name": "Anthropic",
+      "ats": "greenhouse",
+      "slug": "anthropic",
+      "priority": "high",
+      "reason": "AI \u2014 Aneesh's strongest differentiator"
+    },
+    {
+      "name": "Vanta",
+      "ats": "ashby",
+      "slug": "vanta",
+      "priority": "high",
+      "reason": "Compliance SaaS, technical CSM roles"
+    },
+    {
+      "name": "1Password",
+      "ats": "ashby",
+      "slug": "1password",
+      "priority": "medium"
+    },
+    {
+      "name": "Redis",
+      "ats": "ashby",
+      "slug": "Redis",
+      "priority": "medium"
+    },
+    {
+      "name": "Deepgram",
+      "ats": "ashby",
+      "slug": "Deepgram",
+      "priority": "medium",
+      "reason": "Voice AI"
+    },
+    {
+      "name": "ElevenLabs",
+      "ats": "ashby",
+      "slug": "elevenlabs",
+      "priority": "medium",
+      "reason": "Voice AI"
+    },
+    {
+      "name": "Maven AGI",
+      "ats": "ashby",
+      "slug": "maven-agi",
+      "priority": "high",
+      "reason": "Aneesh has implemented Maven AGI at iApts \u2014 direct product familiarity"
+    },
+    {
+      "name": "Percona",
+      "ats": "ashby",
+      "slug": "percona",
+      "priority": "low"
+    },
+    {
+      "name": "Roboflow",
+      "ats": "ashby",
+      "slug": "roboflow",
+      "priority": "low"
+    },
+    {
+      "name": "n8n",
+      "ats": "ashby",
+      "slug": "n8n",
+      "priority": "low"
+    },
+    {
+      "name": "OpenRouter",
+      "ats": "ashby",
+      "slug": "openrouter",
+      "priority": "low"
+    },
+    {
+      "name": "Quantum Metric",
+      "ats": "lever",
+      "slug": "quantummetric",
+      "priority": "medium"
+    },
+    {
+      "name": "PointClickCare",
+      "ats": "lever",
+      "slug": "pointclickcare",
+      "priority": "medium"
+    },
+    {
+      "name": "Mattermost",
+      "ats": "greenhouse",
+      "slug": "mattermost",
+      "priority": "low"
+    },
+    {
+      "name": "Conversica",
+      "ats": "lever",
+      "slug": "conversica",
+      "priority": "medium",
+      "reason": "AI-powered revenue"
+    },
+    {
+      "name": "Netomi",
+      "ats": "lever",
+      "slug": "netomi",
+      "priority": "medium",
+      "reason": "AI customer service"
+    },
+    {
+      "name": "Regal Voice",
+      "ats": "lever",
+      "slug": "regalvoice",
+      "priority": "low"
+    },
+    {
+      "name": "Level AI",
+      "ats": "lever",
+      "slug": "levelai",
+      "priority": "medium",
+      "reason": "AI contact center"
+    },
+    {
+      "name": "StackHawk",
+      "ats": "lever",
+      "slug": "stackhawk",
+      "priority": "low"
+    },
+    {
+      "name": "Pindrop",
+      "ats": "greenhouse",
+      "slug": "pindropsecurity",
+      "priority": "high",
+      "reason": "Atlanta HQ, voice AI/security \u2014 IoT + AI + Atlanta triple fit",
+      "score_penalty": -20,
+      "penalty_reason": "family conflict of interest \u2014 co-founder/investor relationship"
+    },
+    {
+      "name": "OneTrust",
+      "ats": "greenhouse",
+      "slug": "onetrust",
+      "priority": "high",
+      "reason": "Atlanta HQ, privacy/compliance SaaS \u2014 large Atlanta employer"
+    },
+    {
+      "name": "Florence Healthcare",
+      "ats": "greenhouse",
+      "slug": "florencehealthcare",
+      "priority": "high",
+      "reason": "Atlanta HQ, clinical trial SaaS \u2014 small Atlanta company, strong CSM/TAM profile"
+    },
+    {
+      "name": "SalesLoft",
+      "ats": "greenhouse",
+      "slug": "salesloft",
+      "priority": "high",
+      "reason": "Atlanta HQ, sales engagement platform \u2014 large Atlanta employer"
+    },
+    {
+      "name": "Calendly",
+      "ats": "greenhouse",
+      "slug": "calendly",
+      "priority": "high",
+      "reason": "Atlanta HQ, scheduling SaaS \u2014 mid/large Atlanta employer"
+    },
+    {
+      "name": "Storable",
+      "ats": "greenhouse",
+      "slug": "storable",
+      "priority": "medium",
+      "reason": "Storage SaaS, remote-friendly"
+    },
+    {
+      "name": "Cloverly",
+      "ats": "greenhouse",
+      "slug": "cloverly",
+      "priority": "medium",
+      "reason": "Atlanta HQ, climate/carbon API \u2014 small Atlanta startup"
+    },
+    {
+      "name": "Flock Safety",
+      "ats": "ashby",
+      "slug": "Flock%20Safety",
+      "priority": "high",
+      "reason": "Atlanta HQ, IoT safety cameras for public sector \u2014 IoT + Atlanta + public safety triple fit. NOTE: slug has URL-encoded space \u2014 use as-is in API URL."
+    },
+    {
+      "name": "Terminus (DemandScience)",
+      "ats": "greenhouse",
+      "slug": "demandscience",
+      "priority": "medium",
+      "reason": "Atlanta HQ, B2B marketing SaaS \u2014 Atlanta employer, CSM-heavy. Terminus merged into DemandScience Nov 2024. Current jobs are Philippines-only \u2014 monitor for US roles."
+    },
+    {
+      "name": "Glean",
+      "ats": "greenhouse",
+      "slug": "gleanwork",
+      "priority": "high",
+      "reason": "Enterprise search AI \u2014 strong technical CSM/TAM pipeline, AI bonus"
+    },
+    {
+      "name": "Intercom",
+      "ats": "greenhouse",
+      "slug": "intercom",
+      "priority": "medium",
+      "reason": "Customer messaging/support platform \u2014 historically strong CSM track"
+    },
+    {
+      "name": "Observe.ai",
+      "ats": "greenhouse",
+      "slug": "observeai",
+      "priority": "medium",
+      "reason": "Contact center AI \u2014 similar profile to NICE/Level AI"
+    },
+    {
+      "name": "Cohere",
+      "ats": "ashby",
+      "slug": "cohere",
+      "priority": "medium",
+      "reason": "LLM API platform \u2014 enterprise AI with TAM/CSM pipeline"
+    },
+    {
+      "name": "Weights & Biases (CoreWeave)",
+      "ats": "greenhouse",
+      "slug": "coreweave",
+      "priority": "medium",
+      "reason": "MLOps/experiment tracking \u2014 technical CSM roles, developer-facing. W&B acquired by CoreWeave 2025; filter jobs for 'W&B' or 'Weights & Biases' in title"
+    },
+    {
+      "name": "Writer",
+      "ats": "ashby",
+      "slug": "writer",
+      "priority": "high",
+      "reason": "Enterprise AI writing platform \u2014 strong CSM/implementation pipeline, AI bonus"
+    },
+    {
+      "name": "Moveworks",
+      "ats": "greenhouse",
+      "slug": "moveworks",
+      "priority": "high",
+      "reason": "AI for IT service management \u2014 CSM/TAM and implementation heavy",
+      "board_status": "404_confirmed",
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). May have migrated ATS or paused hiring. Recovery search required each run."
+    },
+    {
+      "name": "Assembled",
+      "ats": "ashby",
+      "slug": "assembledhq",
+      "priority": "medium",
+      "reason": "Workforce management for CS/support teams \u2014 niche startup, direct ops relevance"
+    },
+    {
+      "name": "Arize AI",
+      "ats": "greenhouse",
+      "slug": "arizeai",
+      "priority": "medium",
+      "reason": "ML observability startup \u2014 technical CSM track"
+    },
+    {
+      "name": "Cresta",
+      "ats": "greenhouse",
+      "slug": "cresta",
+      "priority": "high",
+      "reason": "Contact center AI \u2014 real-time agent coaching + AI assist for support teams. Maven-type company (AI to simplify support). Remote US confirmed active: AI Value Partner, Enterprise SE, Senior FDE AI Agent, FDE Manager. Strong title fit for Aneesh's background.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) \u2014 contact center AI squarely in Maven-type category"
+    },
+    {
+      "name": "Decagon",
+      "ats": "ashby",
+      "slug": "decagon",
+      "priority": "medium",
+      "reason": "AI customer support agents (Series B, top-tier). Maven-type company. NOTE: historically SF on-site dominant \u2014 monitor for remote roles opening up.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) \u2014 AI support agents. Offset: apply -10 location penalty if role is SF on-site only"
+    },
+    {
+      "name": "Ada",
+      "ats": "greenhouse",
+      "slug": "ada18",
+      "priority": "medium",
+      "reason": "AI customer service automation platform. Maven-type company. Toronto HQ, distributed team model. Mostly engineering roles historically \u2014 monitor for CS/implementation openings.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) \u2014 AI customer service automation"
+    },
+    {
+      "name": "Forethought",
+      "ats": "greenhouse",
+      "slug": "forethought",
+      "priority": "medium",
+      "reason": "AI support triage and deflection. Maven-type company. Board was empty 2026-05-19 (may have paused hiring) but CSM and Engagement Manager roles existed previously. Monitor.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) \u2014 AI support deflection/triage",
+      "board_status": "404_confirmed",
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Recovery search required each run."
+    },
+    {
+      "name": "Talkdesk",
+      "ats": "greenhouse",
+      "slug": "talkdesk2",
+      "priority": "medium",
+      "reason": "CCaaS platform with embedded AI \u2014 contact center automation. Maven-adjacent (larger company, ~$10B). Solutions Engineer (Remote US) confirmed active. Larger/later-stage than ideal but strong title pipeline.",
+      "score_bonus": 15,
+      "bonus_reason": "Partial AI/ML bonus (+15, not full +20) \u2014 CCaaS platform with AI features, not a pure AI-native company"
+    },
+    {
+      "name": "Aisera",
+      "ats": "greenhouse",
+      "slug": "aiserajobs",
+      "priority": "low",
+      "reason": "AI service management + customer service automation. Maven-type company. Board shows only India/Greece engineering roles as of 2026-05-19 \u2014 monitor for US openings. Had Atlanta AE role historically.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) \u2014 AI service management. NOTE: apply -15 location penalty if no US remote option on role"
+    }
   ]
 }

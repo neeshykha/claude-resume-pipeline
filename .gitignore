@@ -6,6 +6,7 @@ audits/
 *.pdf
 
 # Pipeline runtime data — personal job tracking
+pipeline/SESSION_STATE.md
 pipeline/jobs/
 pipeline/logs/
 pipeline/outcomes.csv
@@ -32,3 +33,8 @@ env/
 # Editor
 .vscode/
 .idea/
+
+# Claude Code local config — only settings.json is tracked; everything else
+# (settings.local.json, skills/, worktrees/) stays local so auto-commit can't sweep it in
+.claude/*
+!.claude/settings.json

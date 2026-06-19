@@ -6,8 +6,13 @@ This module provides keyword-based pre-scoring. The orchestrator may also
 invoke Claude for semantic scoring of the top candidates.
 """
 import re
+from datetime import datetime, timezone
 from pipeline.models import Job
 from pipeline import config
+
+# Freshness bonus values (mirrored from watchlist_companies.json _scoring_config)
+FRESHNESS_BONUS_2D = 0.08   # +10 on interactive 0–130 scale ≈ +0.08 here
+FRESHNESS_BONUS_7D = 0.015  # +2 on interactive scale
 
 
 # Keywords extracted from master resume — grouped by category
@@ -186,6 +191,23 @@ def score_atlanta_boost(job: Job) -> float:
     return 0.15
 
 
+def score_freshness(job: Job) -> float:
+    """Bonus for recently posted jobs. +0.08 if ≤2 days old, +0.015 if ≤7 days."""
+    if not job.date_posted:
+        return 0.0
+    try:
+        posted = datetime.fromisoformat(job.date_posted.replace("Z", "+00:00"))
+        now = datetime.now(timezone.utc)
+        age_days = (now - posted).days
+        if age_days <= 2:
+            return FRESHNESS_BONUS_2D
+        elif age_days <= 7:
+            return FRESHNESS_BONUS_7D
+    except (ValueError, TypeError):
+        pass
+    return 0.0
+
+
 def score_job(job: Job) -> Job:
     """Calculate composite fit score for a job."""
     title_score = score_title_match(job)
@@ -194,6 +216,7 @@ def score_job(job: Job) -> Job:
     salary_score = score_salary(job)
     industry_bonus = score_industry_boost(job)
     atlanta_bonus = score_atlanta_boost(job)
+    freshness_bonus = score_freshness(job)
 
     # Weighted composite
     composite = (
@@ -204,6 +227,7 @@ def score_job(job: Job) -> Job:
         + 0.10  # base score for being a new posting
         + industry_bonus
         + atlanta_bonus
+        + freshness_bonus
     )
 
     reasons = []
@@ -225,6 +249,10 @@ def score_job(job: Job) -> Job:
         reasons.append("Atlanta enterprise boost (+10%)")
     elif atlanta_bonus == 0.15:
         reasons.append("Atlanta company boost (+15%)")
+    if freshness_bonus == FRESHNESS_BONUS_2D:
+        reasons.append("Freshness bonus: posted ≤2 days ago (+10)")
+    elif freshness_bonus == FRESHNESS_BONUS_7D:
+        reasons.append("Freshness bonus: posted ≤7 days ago (+2)")
 
     job.fit_score = round(composite, 3)
     job.score_reasons = reasons
