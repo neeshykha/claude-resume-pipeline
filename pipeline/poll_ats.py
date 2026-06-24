@@ -41,8 +41,9 @@ ATS_ENDPOINTS = {
 
 REQUEST_TIMEOUT = 30  # seconds
 DEDUP_WINDOW_DAYS = 30
-COMPANY_CAP = 3  # max unapplied jobs per company before suppression
+COMPANY_CAP = 3  # max pending applications (applied=true, outcome=null) per company before suppression
 COMPANY_CAP_OVERRIDE_SCORE = 110  # bypass cap if estimated score exceeds this
+MAX_PER_COMPANY_PER_RUN = 2  # diversity cap: max roles per company in the surfaced shortlist (prevents one company sweeping the run)
 MIN_SALARY = 100_000
 
 # ── Extended title filter ────────────────────────────────────────────────────
@@ -304,10 +305,17 @@ def load_seen_jobs() -> dict:
 
 
 def count_unapplied_by_company(seen_jobs: dict) -> dict[str, int]:
-    """Count unapplied jobs per company for cap enforcement."""
+    """Count pending APPLICATIONS per company for cap enforcement.
+
+    Cap rule (canonical, per watchlist_companies.json _scoring_config): only
+    entries that have been APPLIED to and have no outcome yet count toward the
+    cap. Queued/unapplied roles do NOT count — surfacing a role we haven't
+    applied to should never be blocked by other roles we also haven't applied
+    to. (Function name kept for caller compatibility.)
+    """
     counts = {}
     for entry in seen_jobs.values():
-        if not entry.get("applied", False) and entry.get("outcome") is None:
+        if entry.get("applied", False) and entry.get("outcome") is None:
             company = slugify(entry.get("company", ""))
             counts[company] = counts.get(company, 0) + 1
     return counts
@@ -525,11 +533,16 @@ def poll_all(run_date: date) -> dict:
         elif job.get("salary_min") and job["salary_min"] >= MIN_SALARY:
             score += 5
 
-        # AI/voice/IoT boost
+        # AI/voice boost — TITLE ONLY. Previously also matched the company name,
+        # which auto-granted +10 to every role at an AI-named company (Cresta,
+        # OpenAI, Arize…) regardless of the role's actual relevance. That rewarded
+        # company identity over role fit and let one AI company sweep the shortlist.
         for kw in ["ai", "agentic", "voice", "llm", "machine learning"]:
-            if kw in t or kw in job.get("company", "").lower():
+            if kw in t:
                 score += 10
                 break
+        # IoT boost — company-name match retained: Aneesh's IoT background is a
+        # genuine domain differentiator and few watchlist companies are IoT-named.
         for kw in ["iot", "hardware", "smart home", "connected"]:
             if kw in t or kw in job.get("company", "").lower():
                 score += 8
@@ -537,10 +550,27 @@ def poll_all(run_date: date) -> dict:
 
         job["pre_score"] = score
 
-    # Sort by pre-score, keep top 25
+    # Sort by pre-score, then apply a per-company DIVERSITY CAP before keeping
+    # the top 25. Without this, a single company that posts many CS-adjacent
+    # roles (and stacks company-level bonuses) fills the entire shortlist. We
+    # surface at most MAX_PER_COMPANY_PER_RUN roles per company so Claude's
+    # review set stays diverse; additional same-company roles are dropped from
+    # the shortlist (still recorded in stats) and can be revisited next run.
     matched.sort(key=lambda j: -j["pre_score"])
-    top_matched = matched[:25]
     stats["total_matched_before_cap"] = len(matched)
+
+    top_matched = []
+    kept_per_company = {}
+    diversity_dropped = 0
+    for job in matched:
+        co = slugify(job.get("company", ""))
+        if kept_per_company.get(co, 0) < MAX_PER_COMPANY_PER_RUN:
+            if len(top_matched) < 25:
+                kept_per_company[co] = kept_per_company.get(co, 0) + 1
+                top_matched.append(job)
+        else:
+            diversity_dropped += 1
+    stats["diversity_dropped"] = diversity_dropped
 
     borderline.sort(key=lambda j: -j.get("borderline_score", 0))
 
@@ -587,6 +617,7 @@ def main():
     print(f"Top 25 by pre-score → output (from {s.get('total_matched_before_cap', s['title_matched'])})")
     print(f"Borderline (for Claude review): {s['title_borderline']}")
     print(f"Dedup skipped: {s['dedup_skipped']}")
+    print(f"Diversity-capped (>{MAX_PER_COMPANY_PER_RUN}/company, dropped from shortlist): {s.get('diversity_dropped', 0)}")
     print(f"Cap suppressed: {s['cap_suppressed']}")
     print(f"Excluded (salary/industry/seniority): {s['excluded']}")
     print(f"ATS errors: {s['errors']}")
@@ -597,7 +628,7 @@ def main():
     if results["capped_companies"]:
         print(f"\nCapped companies:")
         for co, count in results["capped_companies"].items():
-            print(f"  {co}: {count} unapplied")
+            print(f"  {co}: {count} pending applications")
     print(f"\nOutput: {output_path}")
 
 
