@@ -165,6 +165,31 @@ directly, always do full tailoring regardless of score.
 Light tailoring is for stretch roles (Tier 3–4 title match) that meet the salary floor but
 scored lower due to title distance. Volume over perfection at that tier.
 
+### Scoring Guardrails (apply when computing the full score)
+
+These prevent company-level attributes from drowning out role fit. Added 2026-06-23 after a
+run surfaced four roles from a single company because structural bonuses were stacking.
+
+1. **Count the AI/industry bonus ONCE.** A watchlist company's `score_bonus` in
+   `watchlist_companies.json` (e.g. Cresta `score_bonus: 20`, `bonus_reason: "AI/ML platform"`)
+   IS the AI/ML bonus for that company — do **not** also add a separate generic "+20 AI/ML"
+   on top. For a company with a config `score_bonus`, use that value and add nothing more for
+   AI/ML. For a non-watchlist AI-native company with no config bonus, apply +20 once. Never both.
+
+2. **Cap total company-level bonuses at +30.** The sum of all structural bonuses that describe
+   the *company* rather than the *role* — AI/ML, watchlist (+10), Atlanta-enterprise (+10) /
+   Atlanta-startup (+20), IoT (+15) — is capped at **+30 combined**. Role-fit signal
+   (title match + keyword overlap, max 60) must remain the larger share of any score. If the
+   raw structural bonuses exceed 30, clamp to 30.
+
+3. **Diversity cap — max 2 roles per company per run.** Surface at most 2 roles from any one
+   company in a single run, and **fully tailor only the single best-scoring role** at that
+   company. List any additional same-company roles as "also live (FYI)" in the digest, not as
+   separate tailored applications. `poll_ats.py` already enforces this on the shortlist
+   (`MAX_PER_COMPANY_PER_RUN`); apply the same rule to anything added via WebSearch. Rationale:
+   applying to 3–4 roles at one company in one day reads as scattershot to that company's
+   recruiting team and dilutes the strongest application.
+
 ## Target Roles for Reference
 
 Aneesh's background is Technical Support Operations Manager — runs a support function end-to-end

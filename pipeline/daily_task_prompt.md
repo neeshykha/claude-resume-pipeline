@@ -40,14 +40,22 @@ Read the output file. It's ~20KB instead of ~5MB of raw API JSON.
 
 ## Step 2: Filter and Score
 
-From the combined ATS hits + WebSearch results, apply the full scoring from CLAUDE.md:
-- Title match (30%) + keyword overlap with master_resume.md (30%) + location (20%) + salary (10%) + source quality (10%)
-- Bonuses: IoT +15%, AI/ML +20%, Atlanta startup +20%, Atlanta enterprise +10%, watchlist +10%
-- Penalties: title gap -5%, seniority mismatch -5%
-- Eliminate: crypto/web3, salary <$100K, VP/Head/Staff/Principal, clearances, >21 days old
-- Company cap: suppress companies with ≥3 unapplied (applied=false, outcome=null) unless score >110
+From the combined ATS hits + WebSearch results, apply the full scoring rubric. **The canonical
+rubric is the absolute-point model in `CLAUDE.md` (`## Pipeline Scoring Tiers` + title tiers in
+`watchlist_companies.json → _title_scoring_tiers`) — not percentages.** Each component adds points:
+- Title match (T1 +30 / T2 +22 / T3 +15 / T4 +8) + keyword overlap (up to +30) + location
+  (Atlanta in-office +20 / hybrid +18 / remote +16 / NYC-NJ +12) + salary (≥$140K +10 / ≥$120K
+  +8 / ≥$100K or unlisted +5 / below 0) + source quality (Greenhouse·Lever +10 / Ashby·BuiltIn +8)
+- Bonuses (points, not %): AI/ML +20, watchlist +10, Atlanta-startup +20, Atlanta-enterprise +10, IoT +15
+- Penalties: title gap -5, seniority mismatch -5
+- **Apply the Scoring Guardrails in CLAUDE.md:** count the AI/industry bonus ONCE (a company's
+  config `score_bonus` IS its AI bonus — don't also add generic +20); cap total company-level
+  bonuses at +30 so role fit dominates; surface ≤2 roles per company per run and tailor only the
+  best one (the rest are "also live (FYI)").
+- Eliminate: crypto/web3, salary <$100K (midpoint), VP/Head/Staff/Principal, clearances, >21 days old
+- Company cap: suppress companies with ≥3 PENDING APPLICATIONS (applied=true AND outcome=null) unless score >110. Queued/unapplied roles do NOT count toward the cap — this is the canonical rule in `watchlist_companies.json → _scoring_config`. `poll_ats.py` enforces this same rule; trust its `capped_companies` output.
 
-Pick the top 3-4 jobs.
+Pick the top 3-4 jobs (subject to the ≤2-per-company diversity cap above).
 
 **Read `master_resume.md` NOW** — read it once here and reuse for all 4 tailorings below.
 
@@ -106,7 +114,7 @@ Use Gmail MCP to create a draft email to your email address with:
 - Append new URLs to `pipeline/jobs/seen_urls.json`
 - Create `pipeline/jobs/jobs_YYYY-MM-DD.json` with full structured records
 - Create `pipeline/jobs/run_YYYY-MM-DD.json` with run metadata and email draft ID
-- Append to `pipeline/jobs/outcomes.csv`
+- Append to `pipeline/outcomes.csv` (the canonical tracker, gitignored; schema: `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes`). NOTE: `pipeline/jobs/outcomes.csv` is a stale orphan — do not write to it.
 
 ## Important Rules
 - NEVER fabricate experience, certifications, or skills
