@@ -494,8 +494,10 @@
     {
       "name": "Regal Voice",
       "ats": "lever",
-      "slug": "regalvoice",
-      "priority": "low"
+      "slug": "regal.ai",
+      "priority": "low",
+      "board_status": "404_confirmed",
+      "board_status_note": "Lever regalvoice slug dead as of 2026-06-25 (two consecutive 404s). Recovered slug: regal.ai. No CS/TAM roles at regal.ai as of 2026-06-25 — only AI FDE (coding-heavy) and AI Product Specialist (entry-level). Continue monitoring for CS/TAM openings."
     },
     {
       "name": "Level AI",
