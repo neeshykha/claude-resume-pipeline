@@ -45,8 +45,10 @@
     "greenhouse": "https://boards-api.greenhouse.io/v1/boards/{slug}/jobs",
     "greenhouse_eu": "https://boards-api.eu.greenhouse.io/v1/boards/{slug}/jobs",
     "lever": "https://api.lever.co/v0/postings/{slug}?mode=json",
-    "ashby": "https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true"
+    "ashby": "https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true",
+    "workday": "POST https://{wd_host}/wday/cxs/{wd_tenant}/{wd_site}/jobs"
   },
+  "_workday_notes": "Workday entries use ats='workday' and carry wd_host (incl. wdN datacenter), wd_tenant, and wd_site instead of relying on slug for the endpoint (slug is still set = tenant, for dedup-key prefixing). The public careers page is JS-rendered; poll_ats.py POSTs to the internal CXS JSON API instead. Salary is NOT in the list response (it's on each job's detail page), so the poller treats it as neutral and Claude pulls exact salary + posting date from the JD at tailoring time, where the salary-floor and 21-day freshness gates are applied. wd_host/wd_tenant/wd_site are NOT guessable per company - verify new tenants with pipeline/verify_workday.py before adding (find the exact careers URL first, e.g. via 'site:myworkdayjobs.com [company]').",
   "_scoring_config": {
     "full_tailoring_threshold": 88,
     "light_tailoring_threshold": 78,
@@ -848,6 +850,42 @@
       "slug": "vitally",
       "priority": "low",
       "reason": "Customer success platform (CS tooling vendor). Added 2026-06-25 (verified live: 1 job today). Small but directly relevant space - monitor for CS/implementation roles."
+    },
+    {
+      "name": "Sprinklr",
+      "ats": "workday",
+      "slug": "sprinklr",
+      "wd_host": "sprinklr.wd1.myworkdayjobs.com",
+      "wd_tenant": "sprinklr",
+      "wd_site": "careers",
+      "priority": "high",
+      "reason": "Unified CX management + CCaaS platform. First Workday-ATS company added (2026-06-25, verified live: 88 jobs). Deep CCaaS pipeline: Implementation Consultant CCaaS, Sr/Lead CSM CCaaS, Professional Services Engagement Manager. Strong contact-center fit.",
+      "score_bonus": 15,
+      "bonus_reason": "Partial AI/ML bonus (+15) - CCaaS/CX platform with AI features, not pure AI-native"
+    },
+    {
+      "name": "Genesys",
+      "ats": "workday",
+      "slug": "genesys",
+      "wd_host": "genesys.wd1.myworkdayjobs.com",
+      "wd_tenant": "genesys",
+      "wd_site": "Genesys",
+      "priority": "high",
+      "reason": "CCaaS leader, agentic AI experience orchestration. Added 2026-06-25 (verified live: 235 jobs). Roles: Senior Manager Customer Success, AI Implementation Principal Consultant, Professional Services. Maven-adjacent contact center AI.",
+      "score_bonus": 15,
+      "bonus_reason": "Partial AI/ML bonus (+15) - CCaaS platform with agentic AI, not pure AI-native"
+    },
+    {
+      "name": "RingCentral",
+      "ats": "workday",
+      "slug": "ringcentral",
+      "wd_host": "ringcentral.wd1.myworkdayjobs.com",
+      "wd_tenant": "ringcentral",
+      "wd_site": "ringcentral_Careers",
+      "priority": "medium",
+      "reason": "UCaaS/CCaaS communications platform with AI (RingCX, AI agents). Added 2026-06-25 (verified live: 52 jobs). Has Customer Success Manager pipeline. Smaller CS footprint than Sprinklr/Genesys.",
+      "score_bonus": 15,
+      "bonus_reason": "Partial AI/ML bonus (+15) - UCaaS/CCaaS with AI features, not pure AI-native"
     }
   ]
 }
