@@ -236,6 +236,8 @@ def parse_location(job_data: dict, ats: str) -> str:
     elif ats == "lever":
         cats = job_data.get("categories", {})
         return cats.get("location", "Unknown") if isinstance(cats, dict) else "Unknown"
+    elif ats == "workday":
+        return job_data.get("_workday_location") or "Unknown"
     return "Unknown"
 
 
@@ -249,6 +251,8 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
         return f"https://jobs.ashbyhq.com/{slug}/{jid}"
     elif ats == "lever":
         return job_data.get("hostedUrl", job_data.get("applyUrl", ""))
+    elif ats == "workday":
+        return job_data.get("_apply_url", "")
     return ""
 
 
@@ -293,6 +297,77 @@ def fetch_lever(slug: str) -> list[dict]:
         return []
     except Exception as e:
         return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
+def fetch_workday(company: dict) -> list[dict]:
+    """Fetch jobs from a Workday CXS board.
+
+    Workday differs from the GET-based ATSs: the public careers page is
+    JS-rendered, but its frontend calls an internal JSON API at
+        POST https://{host}/wday/cxs/{tenant}/{site}/jobs
+    which returns structured postings. The host (including the wdN datacenter),
+    tenant, and site are NOT guessable, so they live on the watchlist entry as
+    wd_host / wd_tenant / wd_site (verified once via /tmp/verify_workday.py).
+    Paginates 20/page up to MAX_JOBS.
+
+    Salary is NOT in the list response (it lives on each job's detail page), so
+    it stays unset here and is treated as neutral in scoring. Claude fetches the
+    exact salary and posting date from the JD at tailoring time, which is where
+    the salary-floor and freshness gates are actually applied.
+
+    Returns dicts carrying the fields poll_all expects, with the apply URL and
+    location pre-stashed under _apply_url / _workday_location so the existing
+    build_apply_url / parse_location helpers can read them.
+    """
+    host = company.get("wd_host")
+    tenant = company.get("wd_tenant")
+    site = company.get("wd_site")
+    if not (host and tenant and site):
+        return [{"_error": "Workday entry missing wd_host/wd_tenant/wd_site"}]
+
+    url = f"https://{host}/wday/cxs/{tenant}/{site}/jobs"
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (resume-pipeline)",
+    }
+    PAGE = 20
+    MAX_JOBS = 200  # cap pagination; watchlist boards run well under this
+    out = []
+    offset = 0
+    try:
+        while offset < MAX_JOBS:
+            body = {"appliedFacets": {}, "limit": PAGE, "offset": offset, "searchText": ""}
+            resp = requests.post(url, json=body, headers=headers, timeout=REQUEST_TIMEOUT)
+            resp.raise_for_status()
+            data = resp.json()
+            postings = data.get("jobPostings", [])
+            if not postings:
+                break
+            for p in postings:
+                ext = p.get("externalPath", "")
+                loc = p.get("locationsText", "") or ""
+                # Workday shows "N Locations" for multi-site roles instead of a
+                # city — we can't tell US vs intl from the list view, so pass
+                # these through as Unknown (kept for Claude review) rather than
+                # dropping potentially-US roles.
+                if re.match(r'^\s*\d+\s+locations?\s*$', loc, re.I):
+                    loc = "Unknown"
+                out.append({
+                    "title": p.get("title", ""),
+                    "_apply_url": f"https://{host}/en-US/{site}{ext}",
+                    "_workday_location": loc,
+                    "_posted": p.get("postedOn", ""),
+                    "id": ext,
+                })
+            total = data.get("total", 0)
+            offset += PAGE
+            if offset >= total:
+                break
+            time.sleep(0.2)
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+    return out
 
 
 def load_seen_jobs() -> dict:
@@ -379,6 +454,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_ashby(slug)
         elif ats == "lever":
             jobs = fetch_lever(slug)
+        elif ats == "workday":
+            jobs = fetch_workday(company)
         else:
             errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
             continue
