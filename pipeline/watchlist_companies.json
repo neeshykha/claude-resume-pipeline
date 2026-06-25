@@ -13,22 +13,22 @@
       {
         "name": "BuiltIn Atlanta",
         "url": "https://builtin.com/atlanta",
-        "query": "site:builtin.com/job \"support operations\" OR \"technical account\" OR \"implementation manager\" OR \"customer operations\" OR \"deployment manager\" Atlanta",
-        "notes": "Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount \u2264200.",
+        "query": "site:builtin.com/job (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions engineer\" OR \"support operations\" OR \"customer operations\" OR \"deployment\") Atlanta",
+        "notes": "Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount \u2264200. Query broadened 2026-06-25 to include customer success + solutions engineer terms.",
         "frequency": "daily"
       },
       {
         "name": "BuiltIn Remote",
         "url": "https://builtin.com/jobs/remote",
-        "query": "site:builtin.com/job \"support operations\" OR \"technical account\" OR \"implementation manager\" OR \"customer operations\" OR \"deployment manager\" remote",
-        "notes": "Remote roles from tech companies nationally. No Atlanta bonus \u2014 needs stronger title/keyword fit to clear threshold. Salary floor ($100K) still applies.",
+        "query": "site:builtin.com/job (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions engineer\" OR \"support operations\" OR \"customer operations\" OR \"deployment\") remote",
+        "notes": "Remote roles from tech companies nationally. No Atlanta bonus \u2014 needs stronger title/keyword fit to clear threshold. Salary floor ($100K) still applies. Query broadened 2026-06-25.",
         "frequency": "daily"
       },
       {
         "name": "Wellfound Startups",
         "url": "https://wellfound.com/jobs",
-        "query": "site:wellfound.com support operations OR technical account manager OR implementation manager OR deployment OR customer operations startup remote OR Atlanta",
-        "notes": "Formerly AngelList. Early-stage startups nationally (Series A/B focus). Atlanta HQ companies still get +20 bonus. Remote roles score on fit alone. Skews equity-heavy \u2014 verify salary floor before tailoring. Skip pre-seed if comp not listed.",
+        "query": "site:wellfound.com (\"customer success\" OR \"technical account\" OR implementation OR \"solutions engineer\" OR deployment OR \"support operations\" OR \"customer operations\") startup remote OR Atlanta",
+        "notes": "Formerly AngelList. Early-stage startups nationally (Series A/B focus). Atlanta HQ companies still get +20 bonus. Remote roles score on fit alone. Skews equity-heavy \u2014 verify salary floor before tailoring. Skip pre-seed if comp not listed. Query broadened 2026-06-25.",
         "frequency": "daily"
       },
       {
@@ -38,6 +38,34 @@
         "status": "active",
         "frequency": "daily",
         "scoring_notes": "Apply +20 AI bonus + tier2b_ai_wildcard title match (+18) = strong signal. Verify salary floor."
+      },
+      {
+        "name": "Ashby Boards - Target Roles",
+        "query": "site:jobs.ashbyhq.com (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions consultant\" OR \"deployment\" OR \"professional services\" OR \"customer engineer\") 2026",
+        "notes": "Discovers Ashby-hosted companies NOT on the watchlist. Returns ~10 results; scan for UNFAMILIAR company names (skip ones already on the watchlist). When a new company appears, verify its board (pipeline/verify_workday.py pattern or a direct Ashby API check) and add it to the watchlist so the poller scans its full roster going forward. Added 2026-06-25.",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
+        "name": "Greenhouse Boards - Target Roles",
+        "query": "site:job-boards.greenhouse.io (\"technical account manager\" OR \"customer success manager\" OR \"implementation\" OR \"solutions engineer\" OR \"deployment\" OR \"professional services\") 2026",
+        "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25.",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
+        "name": "Lever Boards - Target Roles",
+        "query": "site:jobs.lever.co (\"technical account manager\" OR \"customer success manager\" OR \"implementation\" OR \"solutions consultant\" OR \"deployment\") 2026",
+        "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25.",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
+        "name": "AI-Native & AI-Safety Orgs (vertical discovery)",
+        "query": "(\"AI safety\" OR \"frontier model\" OR \"applied AI\" OR \"AI research\" OR \"contact center AI\" OR \"customer support AI\") (\"customer success\" OR operations OR implementation OR deployment OR solutions) jobs 2026",
+        "notes": "Catches AI-native and AI-safety research orgs (e.g. FAR.AI-type) that are off the watchlist and whose fitting roles may be titled differently (e.g. 'Operations Generalist'). Vertical/company discovery, not title-keyed — surface the COMPANY, then verify board + add to watchlist so the poller scans its full roster. Apply AI bonus (+20) to in-vertical hits. Added 2026-06-25 after a manually-found FAR.AI role exposed that the discovery layer was too title-narrow.",
+        "status": "active",
+        "frequency": "daily"
       }
     ]
   },
