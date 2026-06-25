@@ -222,12 +222,17 @@ Score title match using `_title_scoring_tiers` in `watchlist_companies.json`.
 
 ## Supplemental WebSearch Sources (Atlanta + Startup Discovery)
 
-The `_websearch_sources` block in `pipeline/watchlist_companies.json` defines additional sources to run each daily pipeline pass. These catch companies NOT on the ATS watchlist — primarily small and mid-size Atlanta startups.
+The `_websearch_sources` block in `pipeline/watchlist_companies.json` defines additional sources to run each daily pipeline pass. These catch companies NOT on the ATS watchlist — Atlanta startups plus, as of 2026-06-25, broader ATS-host and AI-vertical discovery.
 
-**Run all three queries every daily pipeline run**, after ATS board polling:
-1. **Hypepotamus** (`hypepotamus.com/job-board`) — Atlanta startup-focused, best for unknown small companies
-2. **BuiltIn Atlanta** (`builtin.com/atlanta`) — mid-size Atlanta tech companies
-3. **Wellfound** (`wellfound.com/jobs`) — early-stage startups nationally, filter to Atlanta
+**Run every `status: "active"` source in the `_websearch_sources` block each daily pipeline run**, after ATS board polling. The block is the source of truth — don't hardcode a query count here (it drifts). As of 2026-06-25 the active set is:
+1. **BuiltIn Atlanta** / **BuiltIn Remote** — Atlanta + remote mid-size tech (title terms broadened)
+2. **Wellfound** — early-stage startups nationally, filter to Atlanta
+3. **AI-Titled Roles** — novel AI-prefixed titles (tier2b wildcard)
+4. **Ashby / Greenhouse / Lever Boards - Target Roles** — discover companies off the watchlist on each ATS host
+5. **AI-Native & AI-Safety Orgs** — vertical/company discovery (catches FAR.AI-type orgs whose fitting roles may be titled differently)
+(Hypepotamus remains `disabled` — JS-rendered, not pollable.)
+
+**Discovery sources surface COMPANIES, not just today's jobs.** When an ATS-host or vertical query turns up an unfamiliar company with a Greenhouse/Ashby/Lever board, the goal is to **enroll it**: verify the board is live (direct API check, or `pipeline/verify_workday.py` for Workday), then add it to the watchlist so the poller scans its full roster daily. This is how off-watchlist companies become permanently monitored — a one-time add, not a per-run re-discovery.
 
 **Scoring adjustments for WebSearch-sourced roles:**
 - Source quality score: 8 (vs. 10 for direct ATS) — WebSearch results are less structured
