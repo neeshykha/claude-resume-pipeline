@@ -697,6 +697,157 @@
       "reason": "AI service management + customer service automation. Maven-type company. Board shows only India/Greece engineering roles as of 2026-05-19 \u2014 monitor for US openings. Had Atlanta AE role historically.",
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) \u2014 AI service management. NOTE: apply -15 location penalty if no US remote option on role"
+    },
+    {
+      "name": "Sierra",
+      "ats": "ashby",
+      "slug": "sierra",
+      "priority": "high",
+      "reason": "AI agents for customer experience - direct Maven AGI competitor (conversational AI for support/CX). Exactly Aneesh's deployment background. Added 2026-06-25 (verified live: 136 jobs). Roles currently skew Forward Deployed infra, but hires Deployment/Solutions/CSM roles - high-value when one opens.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - conversational AI for customer experience, Maven-type"
+    },
+    {
+      "name": "Lorikeet",
+      "ats": "ashby",
+      "slug": "lorikeet",
+      "priority": "medium",
+      "reason": "AI customer support agents - Maven-type company. Small (4 jobs as of 2026-06-25) but exact-fit space. Added 2026-06-25 (verified live). Monitor for CS/deployment openings.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI customer support agents, Maven-type"
+    },
+    {
+      "name": "Cartesia",
+      "ats": "ashby",
+      "slug": "cartesia",
+      "priority": "medium",
+      "reason": "Voice AI platform. Has Technical Account Manager + Solutions Engineer pipeline (some roles stale/India as of 2026-06-25). Added 2026-06-25 (verified live: 30 jobs). Voice AI parallels Aneesh's deployment work.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - voice AI"
+    },
+    {
+      "name": "Harvey",
+      "ats": "ashby",
+      "slug": "harvey",
+      "priority": "high",
+      "reason": "AI-native legal platform. Strong pipeline: Engagement Manager, Scaled CSM, Support Operations Engineer, TAM. Added 2026-06-25 (verified live: 296 jobs, 22 target hits). Enterprise AI deployment fit.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - enterprise legal AI"
+    },
+    {
+      "name": "Perplexity",
+      "ats": "ashby",
+      "slug": "perplexity",
+      "priority": "high",
+      "reason": "AI-native search/answer engine. Enterprise CSM + Customer Success Engineer roles live. Added 2026-06-25 (verified live: 74 jobs). AI bonus.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - enterprise AI search"
+    },
+    {
+      "name": "Together AI",
+      "ats": "greenhouse",
+      "slug": "togetherai",
+      "priority": "medium",
+      "reason": "AI infra / GPU cloud. Has TAM (GPU Cluster) role. Added 2026-06-25 (verified live: 58 jobs). AI infra - technical TAM fit.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI infrastructure"
+    },
+    {
+      "name": "Dialpad",
+      "ats": "greenhouse",
+      "slug": "dialpad",
+      "priority": "high",
+      "reason": "AI-powered cloud communications / contact center (CCaaS). Strong CSM pipeline (Enterprise, Key, Premier Accounts) + Manager Technical Accounts. Added 2026-06-25 (verified live: 73 jobs, 9 hits). Maven-adjacent contact center.",
+      "score_bonus": 15,
+      "bonus_reason": "Partial AI/ML bonus (+15) - CCaaS platform with AI features, not pure AI-native"
+    },
+    {
+      "name": "LivePerson",
+      "ats": "greenhouse",
+      "slug": "liveperson",
+      "priority": "medium",
+      "reason": "Conversational AI / digital customer engagement (contact center). Added 2026-06-25 (verified live: 17 jobs, no CS hits today but core space is a fit). Monitor for CSM/deployment roles.",
+      "score_bonus": 15,
+      "bonus_reason": "Partial AI/ML bonus (+15) - conversational AI / contact center"
+    },
+    {
+      "name": "Gorgias",
+      "ats": "ashby",
+      "slug": "gorgias",
+      "priority": "high",
+      "reason": "AI helpdesk for e-commerce (CX automation). Customer Implementation Manager + Enterprise CSM roles live. Added 2026-06-25 (verified live: 17 jobs, 4 hits). Strong CX/implementation fit.",
+      "score_bonus": 15,
+      "bonus_reason": "Partial AI/ML bonus (+15) - AI helpdesk/CX platform"
+    },
+    {
+      "name": "Braze",
+      "ats": "greenhouse",
+      "slug": "braze",
+      "priority": "high",
+      "reason": "Customer engagement / marketing automation. Very deep CSM + implementation pipeline (43 target hits as of 2026-06-25). Added 2026-06-25 (verified live: 221 jobs). Implementation-heavy SaaS - strong fit."
+    },
+    {
+      "name": "Zip",
+      "ats": "ashby",
+      "slug": "zip",
+      "priority": "high",
+      "reason": "Procurement orchestration SaaS. Strategic CSM - Technical Account Management hybrid roles + Professional Services. Added 2026-06-25 (verified live: 121 jobs, 24 hits). CSM/TAM blended title = strong fit."
+    },
+    {
+      "name": "ClickUp",
+      "ats": "ashby",
+      "slug": "clickup",
+      "priority": "high",
+      "reason": "Productivity SaaS. Solutions Consultant, Manager TAM, Professional Services Consultant (AI Solutions). Added 2026-06-25 (verified live: 71 jobs, 12 hits)."
+    },
+    {
+      "name": "Klaviyo",
+      "ats": "greenhouse",
+      "slug": "klaviyo",
+      "priority": "high",
+      "reason": "Marketing automation / CRM. CSM, Professional Services, Solution Architect pipeline. Added 2026-06-25 (verified live: 178 jobs, 11 hits). Implementation-heavy SaaS."
+    },
+    {
+      "name": "Sentry",
+      "ats": "ashby",
+      "slug": "sentry",
+      "priority": "medium",
+      "reason": "Developer error-monitoring platform. Senior Technical CSM + Solutions Engineer roles live. Added 2026-06-25 (verified live: 45 jobs, 8 hits). Technical CSM fit."
+    },
+    {
+      "name": "Attentive",
+      "ats": "greenhouse",
+      "slug": "attentive",
+      "priority": "medium",
+      "reason": "SMS/email marketing platform. Senior CSM + Senior Implementation Consultant roles. Added 2026-06-25 (verified live: 46 jobs)."
+    },
+    {
+      "name": "Ramp",
+      "ats": "ashby",
+      "slug": "ramp",
+      "priority": "medium",
+      "reason": "Fintech / spend management. Engagement Manager + AI Solutions Strategist roles. Added 2026-06-25 (verified live: 116 jobs). No AI platform bonus (fintech, not AI-native)."
+    },
+    {
+      "name": "Nash",
+      "ats": "ashby",
+      "slug": "Nash",
+      "priority": "medium",
+      "reason": "Last-mile delivery orchestration API. Technical Customer Success Manager (remote NA) roles live. Added 2026-06-25 (verified live: 22 jobs). NOTE: Ashby slug is capitalized 'Nash' - use as-is."
+    },
+    {
+      "name": "RevenueCat",
+      "ats": "ashby",
+      "slug": "revenuecat",
+      "priority": "low",
+      "reason": "Mobile subscription infra. Senior CSM role live. Added 2026-06-25 (verified live: 21 jobs). Smaller pipeline."
+    },
+    {
+      "name": "Vitally",
+      "ats": "ashby",
+      "slug": "vitally",
+      "priority": "low",
+      "reason": "Customer success platform (CS tooling vendor). Added 2026-06-25 (verified live: 1 job today). Small but directly relevant space - monitor for CS/implementation roles."
     }
   ]
 }
