@@ -138,6 +138,7 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 - The PDF venv is at `.venv/` — always activate it before running Python scripts
 - If the user asks to adjust a tailored version, edit that version's files, not the master
 - **Never use `python3 -c "..."`** for JSON analysis or file updates — multi-line inline scripts with `#` comments trigger a hardcoded security prompt that no permission entry can bypass. Instead: (a) use `grep` for existence checks on seen_jobs.json, (b) write a named `.py` script to `pipeline/_taskname.py`, run it with `.venv/bin/python pipeline/_taskname.py`, then delete it. The `_*.py` pattern is in the allow-list.
+- **Never use bash arrays or shell control-flow (`arr=(...)`, `${arr[@]}`, inline `for`/`while`/`if` loops) in Bash commands.** The permission engine cannot statically analyze them, so they prompt *every time* regardless of allow-list entries — and hang autonomous runs. This is the same failure class as `python3 -c`. For the JD keyword coverage check (Step 6 / Step 4), use the permanent helper: write the JD's top phrases to a JSON file, then run `.venv/bin/python pipeline/check_coverage.py <resume.md> <phrases.json>` (allow-listed, prints ✓/✗ per phrase + `Coverage: N/M (P%)`). Do not hand-roll coverage checks with `grep` inside a bash `for` loop.
 
 ## Pipeline Pre-Run: One-Time Notes
 

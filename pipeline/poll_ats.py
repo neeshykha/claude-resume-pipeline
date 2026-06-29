@@ -70,6 +70,10 @@ TITLE_KEYWORDS_EXACT = [
     "ai enablement manager",
     "ai implementation manager",
     "ai operations manager",
+    "ai optimization",
+    "ai specialist",
+    "ai solutions",
+    "automation specialist",
     "customer enablement manager",
     "technical enablement manager",
     "product manager",
@@ -91,7 +95,7 @@ TITLE_FRAGMENTS = [
     "customer engineer", "support manager", "operations manager",
     "product manager", "forward deployed", "ai ", "csm",
     "customer experience", "professional services", "onboarding",
-    "tam ", "se ", "adoption",
+    "tam ", "se ", "adoption", "optimization", "automation", "specialist",
 ]
 
 # Location filter — only keep US-relevant roles
