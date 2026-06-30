@@ -38,6 +38,25 @@ Read the output file. It's ~20KB instead of ~5MB of raw API JSON.
 
 **Do NOT re-run** the 17 broad queries from the old prompt. The ATS poller already covers all watchlist companies.
 
+**Wellfound dork is disabled** (status="disabled" in `_websearch_sources`) — it returns SEO category pages, not live jobs. Don't run it. The freed slot goes to the Ashby/Greenhouse/Lever board dorks, which are the channel that actually reaches sub-500 companies.
+
+### Step 1b: Run discovery feeders + process the enrollment queue (turns sightings into permanent monitoring)
+
+`pipeline/enrollment_candidates.json` is the standing queue that stops off-watchlist sightings from dead-ending. Feeders append to `pending`; you verify + enroll/reject each entry.
+
+**First, run the feeders** (they only append to the queue — cheap, structured, no in-context board dumps):
+- `.venv/bin/python pipeline/poll_remotive.py` — daily. Appends NAME-ONLY leads (`needs_ats_resolution: true`).
+- `.venv/bin/python pipeline/harvest_hn_hiring.py` — **only on/after the 1st of the month** (new HN "Who is hiring" thread). Appends directly-enrollable `(ats, slug)` candidates. Skip on other days (it's idempotent, but it's a monthly source).
+- Board dorks (Ashby/Greenhouse/Lever, from `_websearch_sources`) — append any UNFAMILIAR company to `pending`.
+
+**Then process every `pending` entry:**
+1. If `needs_ats_resolution: true` (name-only lead), resolve the ATS first: `site:greenhouse.io OR site:jobs.ashbyhq.com OR site:jobs.lever.co <company>`. If no board is found, reject with that reason.
+2. Verify the board is live (direct ATS API check; `pipeline/verify_workday.py` for Workday) and has **US-reachable** fit-space roles. Reject Europe/APAC-only boards — their fit roles aren't reachable.
+3. If it passes → add a full entry to `watchlist_companies.json → companies` (with `headcount_band`, `enrolled_date`, `enrolled_via`, any `score_bonus`), then move it from `pending` to `enrolled`. If not → move it to `rejected` with a one-line reason (so it's never re-evaluated). The poller picks up new watchlist companies automatically next run.
+4. **Bias toward sub-500.** This layer exists to catch the long tail the big-company watchlist misses. A 150-person company where a support-ops/CSM/implementation role has real scope beats yet another CSM seat at a 3,000-person name.
+
+ATS providers the poller now speaks: Greenhouse, Ashby, Lever, Workday, **SmartRecruiters** (slug = case-sensitive company identifier, e.g. `BoschGroup`). Workable is not yet supported — if a great company is Workable-only, note it in the digest.
+
 ## Step 2: Filter and Score
 
 From the combined ATS hits + WebSearch results, apply the full scoring rubric. **The canonical
@@ -46,12 +65,13 @@ rubric is the absolute-point model in `CLAUDE.md` (`## Pipeline Scoring Tiers` +
 - Title match (T1 +30 / T2 +22 / T3 +15 / T4 +8) + keyword overlap (up to +30) + location
   (Atlanta in-office +20 / hybrid +18 / remote +16 / NYC-NJ +12) + salary (≥$140K +10 / ≥$120K
   +8 / ≥$100K or unlisted +5 / below 0) + source quality (Greenhouse·Lever +10 / Ashby·BuiltIn +8)
-- Bonuses (points, not %): AI/ML +20, watchlist +10, Atlanta-startup +20, Atlanta-enterprise +10, IoT +15
+- Bonuses (points, not %): AI/ML +20, watchlist +10, Atlanta-startup +20, Atlanta-enterprise +10, IoT +15, small-company +15 (≤200) / +8 (201-500)
+- **Small-company bonus:** if the company entry carries a `headcount_band`, add +15 for ≤200 or +8 for 201-500 (see `_scoring_config → small_company_bonus`). Absent band = neutral (0); do NOT guess headcount. It's a company-level bonus, so it falls under the +30 cap below — which means it mostly lifts small NON-AI companies (PermitFlow, Antithesis, Mintlify) that have role fit but no AI/Atlanta bonus to clear threshold.
 - Penalties: title gap -5, seniority mismatch -5
 - **Apply the Scoring Guardrails in CLAUDE.md:** count the AI/industry bonus ONCE (a company's
   config `score_bonus` IS its AI bonus — don't also add generic +20); cap total company-level
-  bonuses at +30 so role fit dominates; surface ≤2 roles per company per run and tailor only the
-  best one (the rest are "also live (FYI)").
+  bonuses (AI/ML + watchlist + Atlanta + IoT + small-company) at +30 so role fit dominates;
+  surface ≤2 roles per company per run and tailor only the best one (the rest are "also live (FYI)").
 - Eliminate: crypto/web3, salary <$100K (midpoint), VP/Head/Staff/Principal, clearances, >21 days old
 - Company cap: suppress companies with ≥3 PENDING APPLICATIONS (applied=true AND outcome=null) unless score >110. Queued/unapplied roles do NOT count toward the cap — this is the canonical rule in `watchlist_companies.json → _scoring_config`. `poll_ats.py` enforces this same rule; trust its `capped_companies` output.
 

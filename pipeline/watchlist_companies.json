@@ -28,7 +28,8 @@
         "name": "Wellfound Startups",
         "url": "https://wellfound.com/jobs",
         "query": "site:wellfound.com (\"customer success\" OR \"technical account\" OR implementation OR \"solutions engineer\" OR deployment OR \"support operations\" OR \"customer operations\") startup remote OR Atlanta",
-        "notes": "Formerly AngelList. Early-stage startups nationally (Series A/B focus). Atlanta HQ companies still get +20 bonus. Remote roles score on fit alone. Skews equity-heavy \u2014 verify salary floor before tailoring. Skip pre-seed if comp not listed. Query broadened 2026-06-25.",
+        "status": "disabled",
+        "disabled_reason": "Tested 2026-06-30: the site:wellfound.com dork returns SEO role-category pages (wellfound.com/role/r/...) and the homepage, not live individual jobs \u2014 only ~2 of 10 results were real postings, and stale. Wellfound gates job detail behind auth + client-side rendering (same failure mode as Hypepotamus). Dead weight; it burned a daily WebSearch slot for near-zero yield. Reinvest the slot into the Ashby/Greenhouse/Lever board dorks below, which DO surface live sub-500 boards directly. Revisit only if a non-auth Wellfound listing endpoint appears.",
         "frequency": "daily"
       },
       {
@@ -74,8 +75,10 @@
     "greenhouse_eu": "https://boards-api.eu.greenhouse.io/v1/boards/{slug}/jobs",
     "lever": "https://api.lever.co/v0/postings/{slug}?mode=json",
     "ashby": "https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true",
-    "workday": "POST https://{wd_host}/wday/cxs/{wd_tenant}/{wd_site}/jobs"
+    "workday": "POST https://{wd_host}/wday/cxs/{wd_tenant}/{wd_site}/jobs",
+    "smartrecruiters": "https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100"
   },
+  "_smartrecruiters_notes": "ats='smartrecruiters'. slug is the case-sensitive company identifier (e.g. 'BoschGroup', not 'bosch') — find it from a careers.smartrecruiters.com/{slug} or jobs.smartrecruiters.com/{slug} URL. Public postings API, no auth. Poller fetches one page (limit=100); fine for small companies. Added 2026-06-30 to widen enrollable boards beyond GH/Ashby/Lever/Workday.",
   "_workday_notes": "Workday entries use ats='workday' and carry wd_host (incl. wdN datacenter), wd_tenant, and wd_site instead of relying on slug for the endpoint (slug is still set = tenant, for dedup-key prefixing). The public careers page is JS-rendered; poll_ats.py POSTs to the internal CXS JSON API instead. Salary is NOT in the list response (it's on each job's detail page), so the poller treats it as neutral and Claude pulls exact salary + posting date from the JD at tailoring time, where the salary-floor and 21-day freshness gates are applied. wd_host/wd_tenant/wd_site are NOT guessable per company - verify new tenants with pipeline/verify_workday.py before adding (find the exact careers URL first, e.g. via 'site:myworkdayjobs.com [company]').",
   "_scoring_config": {
     "full_tailoring_threshold": 88,
@@ -100,6 +103,14 @@
     "freshness_bonus_2d": 10,
     "freshness_bonus_7d": 2,
     "notes_freshness": "Add +10 for postings \u22642 days old, +2 for \u22647 days. Validated by empirical data: response rates fall sharply after 48 hours.",
+    "small_company_bonus": {
+      "1-50": 15,
+      "51-200": 15,
+      "201-500": 8,
+      "501-2000": 0,
+      "2000+": 0
+    },
+    "notes_small_company": "Counterweight for the sub-500 segment, which the watchlist + AI/Atlanta bonuses structurally bury (those bonuses correlate with big, well-known companies). Add +15 if the company's headcount_band is \u226450-200, +8 if 201-500, 0 above. Applies ONLY when the company entry carries a headcount_band field; if absent, treat as neutral (0) \u2014 do NOT guess. This is a COMPANY-LEVEL bonus and counts toward the +30 company-bonus cap in CLAUDE.md alongside AI/ML, watchlist, Atlanta, IoT. Consequence by design: a small AI-native company (AI +20 + small +15 = 35 \u2192 clamped to 30) gains little since it already surfaces; the lift lands where it's needed \u2014 small NON-AI companies (vertical SaaS, dev infra) like PermitFlow/Antithesis/Mintlify that have real role fit but no AI/Atlanta bonus to clear threshold. Rationale: at a 150-person company a support-ops/CSM/implementation hire has real scope; at a 3,000-person company it's one of dozens.",
     "notes": "Light tailoring for IC-level roles 78-87. Full tailoring for 88+. Skip below 78. Capped companies require 110+ regardless of tier. Cap rule: count entries where applied=true AND outcome=null (pending applications). If that count \u2265 company_cap_max_applied_pending, new roles need company_cap_threshold to surface. Queued/unapplied roles do NOT count toward the cap \u2014 only submitted applications do."
   },
   "_title_scoring_tiers": {
@@ -914,6 +925,174 @@
       "reason": "UCaaS/CCaaS communications platform with AI (RingCX, AI agents). Added 2026-06-25 (verified live: 52 jobs). Has Customer Success Manager pipeline. Smaller CS footprint than Sprinklr/Genesys.",
       "score_bonus": 15,
       "bonus_reason": "Partial AI/ML bonus (+15) - UCaaS/CCaaS with AI features, not pure AI-native"
+    },
+    {
+      "name": "CodeRabbit",
+      "ats": "ashby",
+      "slug": "coderabbit",
+      "priority": "high",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "AI code review platform (AI-native dev tool). Deep customer-facing pipeline: Enterprise CSM, Field Engineering (pre/post-sales) incl. a SouthEast/Atlanta remote role, Manager Field Engineering. Verified live 2026-06-30: 64 jobs, 19 target hits. Small + AI + remote roles = strong sub-500 fit.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI-native code review/dev tool"
+    },
+    {
+      "name": "Siena AI",
+      "ats": "ashby",
+      "slug": "siena",
+      "priority": "high",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "Autonomous customer service AI for commerce - Maven-type, exact-fit space. Verified live 2026-06-30: 14 jobs (Forward Deployed PM Agents, Solutions Engineer remote). Small AI-native CX company.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - autonomous customer service AI, Maven-type"
+    },
+    {
+      "name": "Replicant",
+      "ats": "ashby",
+      "slug": "replicant",
+      "priority": "high",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "Voice AI for contact centers (conversational/voice automation) - Maven-adjacent. Verified live 2026-06-30: 8 jobs (Senior Engagement Manager, US). Small voice-AI CX company.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - contact center voice AI, Maven-type"
+    },
+    {
+      "name": "PolyAI",
+      "ats": "greenhouse",
+      "slug": "polyai",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "Voice AI for enterprise contact centers - Maven-adjacent. Verified live 2026-06-30: 10 jobs (Forward Deployed AI Engineer US-West, GTM Enablement PM). FDE roles skew coding-heavy; monitor for CS/deployment. Contact-center voice AI is core space.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - enterprise voice AI contact center"
+    },
+    {
+      "name": "Parloa",
+      "ats": "greenhouse",
+      "slug": "parloa",
+      "priority": "high",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "AI agent platform for contact centers (voice/conversational) - Maven-type. Verified live 2026-06-30: 51 jobs, 8 target hits incl. Deployment Strategist US, Senior Enterprise Engagement Manager, Senior/Lead Forward Deployed Engineer US (remote in USA). Strong US-remote deployment pipeline.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - contact center AI agent platform, Maven-type"
+    },
+    {
+      "name": "Ema",
+      "ats": "ashby",
+      "slug": "ema",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "Agentic AI ('universal AI employee') - enterprise agent deployment. Verified live 2026-06-30: 31 jobs (AI Implementation Engineer, Customer Engagement Manager SF Bay, Sr Technical Support). Small agentic-AI company; monitor for US CS/implementation roles.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - agentic AI / enterprise AI agents"
+    },
+    {
+      "name": "Baseten",
+      "ats": "ashby",
+      "slug": "baseten",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "AI model deployment/inference infra. Verified live 2026-06-30: 66 jobs (AI Solutions Engineer, Forward Deployed Engineer, Field Enablement). Roles skew SF-onsite + technical; monitor for remote SE/TAM. AI-infra technical fit.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI inference infrastructure"
+    },
+    {
+      "name": "Modal",
+      "ats": "ashby",
+      "slug": "modal",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "Serverless compute for AI/ML. Verified live 2026-06-30: 31 jobs (Customer Engineer NY, Forward Deployed Engineer NY). Small AI-infra company with US (NY) customer-facing roles.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI/ML compute infrastructure"
+    },
+    {
+      "name": "Replit",
+      "ats": "ashby",
+      "slug": "replit",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "AI-powered coding/agent platform. Verified live 2026-06-30: 95 jobs (Field Engineer, Support Engineer I/II NYC, Head of Forward Deployed Engineering). Has support + field-engineering pipeline with US (NYC) roles.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI coding/agent platform"
+    },
+    {
+      "name": "Mintlify",
+      "ats": "ashby",
+      "slug": "mintlify",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "AI-assisted documentation platform. Verified live 2026-06-30: 13 jobs, 5 target hits (Enterprise CSM, Solutions Engineer pre/post-sales, Support Engineer) in SF + NYC. Small Series A - strong CSM/SE pipeline relative to size.",
+      "score_bonus": 0,
+      "bonus_reason": "No AI/ML platform bonus - AI-assisted docs tool, not an AI-native customer-facing platform. Relies on small-company bonus + role fit."
+    },
+    {
+      "name": "Antithesis",
+      "ats": "ashby",
+      "slug": "antithesis",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "Autonomous software testing platform (deterministic simulation). Verified live 2026-06-30: 36 jobs, 9 target hits (CSM, Solutions Engineer, Forward Deployed Engineer) in Vienna VA (DC), SF, remote. Small infra company; surfaced via Ashby discovery 2026-06-30 but previously never enrolled.",
+      "score_bonus": 0,
+      "bonus_reason": "No AI/ML platform bonus - autonomous testing infra, not a customer-support/CX AI platform. Relies on small-company bonus + role fit."
+    },
+    {
+      "name": "PermitFlow",
+      "ats": "ashby",
+      "slug": "permitflow",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "discovery dork + board verification (sub-500 push)",
+      "reason": "Construction permitting SaaS (vertical). Verified live 2026-06-30: 37 jobs, 6 target hits - exceptionally deep implementation pipeline for its size (Implementation Specialist, Senior Manager Implementations, Solutions Consultant, Manager Customer Success, Forward Deployed Engineer), all NYC. Strong implementation-ops fit; NYC location penalty applies.",
+      "score_bonus": 0,
+      "bonus_reason": "No AI/ML platform bonus - vertical construction SaaS. Relies on small-company bonus + strong implementation-pipeline role fit."
+    },
+    {
+      "name": "Weave Bio",
+      "ats": "greenhouse",
+      "slug": "weave",
+      "priority": "medium",
+      "headcount_band": "1-50",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "HN 'Who is hiring' (June 2026) harvester -> enrollment queue -> verified",
+      "reason": "AI-native platform for research/discovery scientists (Series A). Verified live 2026-06-30: 5 jobs incl. Senior Customer Success Manager (SF Bay Area). Small AI-native company. NOTE: greenhouse slug 'weave' resolved to a 5-job board with an SF CSM, consistent with Weave Bio (Series A), NOT Weave Communications (public, ~1000 ppl) - confirm identity if it starts posting high job volume.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI-native research/discovery platform"
+    },
+    {
+      "name": "Prompt",
+      "ats": "ashby",
+      "slug": "prompt",
+      "priority": "low",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-06-30",
+      "enrolled_via": "HN 'Who is hiring' (June 2026) harvester -> enrollment queue -> verified",
+      "reason": "B2B SaaS (Prompt - physical-therapy practice management / EMR). Verified live 2026-06-30: 29 jobs, fit role = Support Engineer (Remote). Small/mid; monitor for more CS/support-ops roles. Headcount band conservative (201-500) pending confirmation.",
+      "score_bonus": 0,
+      "bonus_reason": "No AI/ML platform bonus - vertical healthcare SaaS. Relies on small-company bonus + role fit."
     }
   ]
 }
