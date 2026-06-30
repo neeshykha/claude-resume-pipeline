@@ -37,6 +37,10 @@ ATS_ENDPOINTS = {
     "greenhouse_eu": "https://boards-api.eu.greenhouse.io/v1/boards/{slug}/jobs",
     "lever": "https://api.lever.co/v0/postings/{slug}?mode=json",
     "ashby": "https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true",
+    # SmartRecruiters public postings API. slug = case-sensitive company identifier
+    # (e.g. "BoschGroup", not "bosch"). Added 2026-06-30 to widen which small
+    # companies are enrollable beyond Greenhouse/Ashby/Lever/Workday.
+    "smartrecruiters": "https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100",
 }
 
 REQUEST_TIMEOUT = 30  # seconds
@@ -85,6 +89,12 @@ TITLE_KEYWORDS_EXACT = [
     "digital customer experience",
     "customer experience lead",
     "technical program manager",
+    # added 2026-06-30 — core role types at the sub-500 companies enrolled this run
+    # (CodeRabbit/Replit/Baseten field eng; Parloa/Replicant/Ema engagement mgr; Replit/Mintlify support eng).
+    # "field engineer" also substring-matches "field engineering" (incl. "Manager, Field Engineering").
+    "field engineer",
+    "engagement manager",
+    "support engineer",
 ]
 
 # Broader keyword fragments for borderline matching.
@@ -242,6 +252,13 @@ def parse_location(job_data: dict, ats: str) -> str:
         return cats.get("location", "Unknown") if isinstance(cats, dict) else "Unknown"
     elif ats == "workday":
         return job_data.get("_workday_location") or "Unknown"
+    elif ats == "smartrecruiters":
+        loc = job_data.get("location", {}) or {}
+        full = loc.get("fullLocation") or ", ".join(
+            p for p in [loc.get("city"), (loc.get("country") or "").upper()] if p)
+        if loc.get("remote"):
+            full = f"Remote {full}".strip()
+        return full or "Unknown"
     return "Unknown"
 
 
@@ -257,6 +274,9 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
         return job_data.get("hostedUrl", job_data.get("applyUrl", ""))
     elif ats == "workday":
         return job_data.get("_apply_url", "")
+    elif ats == "smartrecruiters":
+        jid = job_data.get("id", "")
+        return f"https://jobs.smartrecruiters.com/{slug}/{jid}"
     return ""
 
 
@@ -299,6 +319,27 @@ def fetch_lever(slug: str) -> list[dict]:
         if isinstance(data, list):
             return data
         return []
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
+def fetch_smartrecruiters(slug: str) -> list[dict]:
+    """Fetch jobs from the SmartRecruiters public postings API.
+
+    Returns the `content` array, normalizing each posting's title into a "title"
+    key (SmartRecruiters uses "name") so the shared title-extraction path in
+    poll_all works unchanged. Single page (limit=100) — enrolled SR companies are
+    small; companies with >100 postings would need pagination (not needed yet).
+    """
+    url = ATS_ENDPOINTS["smartrecruiters"].format(slug=slug)
+    try:
+        resp = requests.get(url, timeout=REQUEST_TIMEOUT, headers={"Accept": "application/json"})
+        resp.raise_for_status()
+        data = resp.json()
+        postings = data.get("content", []) or []
+        for p in postings:
+            p["title"] = p.get("name", "")
+        return postings
     except Exception as e:
         return [{"_error": f"{type(e).__name__}: {e}"}]
 
@@ -458,6 +499,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_ashby(slug)
         elif ats == "lever":
             jobs = fetch_lever(slug)
+        elif ats == "smartrecruiters":
+            jobs = fetch_smartrecruiters(slug)
         elif ats == "workday":
             jobs = fetch_workday(company)
         else:

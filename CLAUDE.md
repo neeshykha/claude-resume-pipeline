@@ -179,9 +179,19 @@ run surfaced four roles from a single company because structural bonuses were st
 
 2. **Cap total company-level bonuses at +30.** The sum of all structural bonuses that describe
    the *company* rather than the *role* — AI/ML, watchlist (+10), Atlanta-enterprise (+10) /
-   Atlanta-startup (+20), IoT (+15) — is capped at **+30 combined**. Role-fit signal
-   (title match + keyword overlap, max 60) must remain the larger share of any score. If the
-   raw structural bonuses exceed 30, clamp to 30.
+   Atlanta-startup (+20), IoT (+15), small-company (+15 ≤200 / +8 201-500) — is capped at
+   **+30 combined**. Role-fit signal (title match + keyword overlap, max 60) must remain the
+   larger share of any score. If the raw structural bonuses exceed 30, clamp to 30.
+
+   **Small-company bonus (added 2026-06-30 to fix the ignored sub-500 segment).** When a company
+   entry in `watchlist_companies.json` carries a `headcount_band`, add +15 (≤200) or +8 (201-500);
+   absent band = 0, never guess. Because it lives under this +30 cap, a small AI-native company
+   (AI +20 + small +15 → clamped to 30) gains little — by design. The lift lands on small NON-AI
+   companies (vertical SaaS, dev infra: PermitFlow, Antithesis, Mintlify) that have real role fit
+   but no AI/Atlanta bonus to clear threshold. Rationale: at a 150-person company an ops/CSM/
+   implementation hire has real scope; at a 3,000-person company it's one of dozens. Full spec:
+   `_scoring_config → small_company_bonus`. Companies are enrolled via the standing queue in
+   `pipeline/enrollment_candidates.json` (see `daily_task_prompt.md` Step 1b).
 
 3. **Diversity cap — max 2 roles per company per run.** Surface at most 2 roles from any one
    company in a single run, and **fully tailor only the single best-scoring role** at that
