@@ -1093,6 +1093,30 @@
       "reason": "B2B SaaS (Prompt - physical-therapy practice management / EMR). Verified live 2026-06-30: 29 jobs, fit role = Support Engineer (Remote). Small/mid; monitor for more CS/support-ops roles. Headcount band conservative (201-500) pending confirmation.",
       "score_bonus": 0,
       "bonus_reason": "No AI/ML platform bonus - vertical healthcare SaaS. Relies on small-company bonus + role fit."
+    },
+    {
+      "name": "UpGuard",
+      "ats": "lever",
+      "slug": "upguard",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-01",
+      "enrolled_via": "WebSearch Lever board dork (Step 1c) -> verified",
+      "reason": "Cybersecurity/attack-surface-management platform (AI-driven risk scoring, Series C $75M raised 2026). Verified live 2026-07-01: multiple fit roles incl. 2x Customer Success Manager and Customer Sales Engineer. ~327-372 employees. Hiring restricted to specific US states (CA, MD, MA, IL, OR, WA, CO, TX, FL, PA, LA, MO, DC) - filter candidates accordingly.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI-driven security risk scoring platform"
+    },
+    {
+      "name": "Smile Digital Health",
+      "ats": "lever",
+      "slug": "smiledigitalhealth",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-01",
+      "enrolled_via": "WebSearch Lever board dork (Step 1c) -> verified",
+      "reason": "Healthcare interoperability / FHIR data platform (Toronto HQ, team across Canada + US). Verified live 2026-07-01: fit roles incl. Technical Account Manager and Technical Manager (Implementations & Delivery), both Remote US. ~257-291 employees.",
+      "score_bonus": 0,
+      "bonus_reason": "No AI/ML platform bonus - healthcare data interoperability, not an AI/CX platform. Relies on small-company bonus + role fit."
     }
   ]
 }

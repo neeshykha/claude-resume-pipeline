@@ -7,41 +7,246 @@
     "websearch board dorks": "Daily, run by Claude. site:jobs.ashbyhq.com / job-boards.greenhouse.io / jobs.lever.co target-role dorks. Surface unfamiliar companies -> append to pending."
   },
   "_schema": {
-    "pending": "[{name, ats, slug, source, first_seen, why, [needs_ats_resolution]}] — verify board live + has US-reachable fit-space roles, then enroll or reject. If needs_ats_resolution=true, name-only: resolve the ATS first (site:greenhouse.io OR ashby OR lever <company>).",
-    "enrolled": "[{name, ats, slug, enrolled_date, headcount_band}] — audit log; the live entry lives in watchlist_companies.json.",
-    "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced}] — don't re-evaluate unless it resurfaces with new roles."
+    "pending": "[{name, ats, slug, source, first_seen, why, [needs_ats_resolution]}] \u2014 verify board live + has US-reachable fit-space roles, then enroll or reject. If needs_ats_resolution=true, name-only: resolve the ATS first (site:greenhouse.io OR ashby OR lever <company>).",
+    "enrolled": "[{name, ats, slug, enrolled_date, headcount_band}] \u2014 audit log; the live entry lives in watchlist_companies.json.",
+    "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced}] \u2014 don't re-evaluate unless it resurfaces with new roles."
   },
-  "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry — for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards — their fit roles aren't US-reachable.",
+  "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
   "pending": [],
   "enrolled": [
-    {"name": "CodeRabbit", "ats": "ashby", "slug": "coderabbit", "enrolled_date": "2026-06-30", "headcount_band": "51-200"},
-    {"name": "Siena AI", "ats": "ashby", "slug": "siena", "enrolled_date": "2026-06-30", "headcount_band": "51-200"},
-    {"name": "Replicant", "ats": "ashby", "slug": "replicant", "enrolled_date": "2026-06-30", "headcount_band": "51-200"},
-    {"name": "PolyAI", "ats": "greenhouse", "slug": "polyai", "enrolled_date": "2026-06-30", "headcount_band": "201-500"},
-    {"name": "Parloa", "ats": "greenhouse", "slug": "parloa", "enrolled_date": "2026-06-30", "headcount_band": "201-500"},
-    {"name": "Ema", "ats": "ashby", "slug": "ema", "enrolled_date": "2026-06-30", "headcount_band": "51-200"},
-    {"name": "Baseten", "ats": "ashby", "slug": "baseten", "enrolled_date": "2026-06-30", "headcount_band": "51-200"},
-    {"name": "Modal", "ats": "ashby", "slug": "modal", "enrolled_date": "2026-06-30", "headcount_band": "51-200"},
-    {"name": "Replit", "ats": "ashby", "slug": "replit", "enrolled_date": "2026-06-30", "headcount_band": "201-500"},
-    {"name": "Mintlify", "ats": "ashby", "slug": "mintlify", "enrolled_date": "2026-06-30", "headcount_band": "51-200"},
-    {"name": "Antithesis", "ats": "ashby", "slug": "antithesis", "enrolled_date": "2026-06-30", "headcount_band": "51-200"},
-    {"name": "PermitFlow", "ats": "ashby", "slug": "permitflow", "enrolled_date": "2026-06-30", "headcount_band": "51-200"},
-    {"name": "Weave Bio", "ats": "greenhouse", "slug": "weave", "enrolled_date": "2026-06-30", "headcount_band": "1-50"},
-    {"name": "Prompt", "ats": "ashby", "slug": "prompt", "enrolled_date": "2026-06-30", "headcount_band": "201-500"}
+    {
+      "name": "CodeRabbit",
+      "ats": "ashby",
+      "slug": "coderabbit",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "Siena AI",
+      "ats": "ashby",
+      "slug": "siena",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "Replicant",
+      "ats": "ashby",
+      "slug": "replicant",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "PolyAI",
+      "ats": "greenhouse",
+      "slug": "polyai",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "201-500"
+    },
+    {
+      "name": "Parloa",
+      "ats": "greenhouse",
+      "slug": "parloa",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "201-500"
+    },
+    {
+      "name": "Ema",
+      "ats": "ashby",
+      "slug": "ema",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "Baseten",
+      "ats": "ashby",
+      "slug": "baseten",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "Modal",
+      "ats": "ashby",
+      "slug": "modal",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "Replit",
+      "ats": "ashby",
+      "slug": "replit",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "201-500"
+    },
+    {
+      "name": "Mintlify",
+      "ats": "ashby",
+      "slug": "mintlify",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "Antithesis",
+      "ats": "ashby",
+      "slug": "antithesis",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "PermitFlow",
+      "ats": "ashby",
+      "slug": "permitflow",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "Weave Bio",
+      "ats": "greenhouse",
+      "slug": "weave",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "1-50"
+    },
+    {
+      "name": "Prompt",
+      "ats": "ashby",
+      "slug": "prompt",
+      "enrolled_date": "2026-06-30",
+      "headcount_band": "201-500"
+    },
+    {
+      "name": "UpGuard",
+      "ats": "lever",
+      "slug": "upguard",
+      "enrolled_date": "2026-07-01",
+      "headcount_band": "201-500"
+    },
+    {
+      "name": "Smile Digital Health",
+      "ats": "lever",
+      "slug": "smiledigitalhealth",
+      "enrolled_date": "2026-07-01",
+      "headcount_band": "201-500"
+    }
   ],
   "rejected": [
-    {"name": "TeamBridge", "ats": "ashby", "slug": "teambridge", "rejected_date": "2026-06-30", "reason": "Board live but 0 open jobs on 2026-06-30 — nothing to monitor.", "recheck_if_resurfaced": true},
-    {"name": "UniCourt", "ats": "ashby", "slug": "unicourt", "rejected_date": "2026-06-30", "reason": "Live but 4 jobs, 0 in target fit-space (legal data co).", "recheck_if_resurfaced": true},
-    {"name": "Capacity", "ats": "greenhouse", "slug": "capacity", "rejected_date": "2026-06-30", "reason": "Live but 2 jobs, 0 fit-space.", "recheck_if_resurfaced": true},
-    {"name": "Weaviate", "ats": "ashby", "slug": "weaviate", "rejected_date": "2026-06-30", "reason": "Live (vector DB) but 0 fit-space roles; dev-infra co that rarely hires Aneesh-type roles.", "recheck_if_resurfaced": true},
-    {"name": "Unstructured", "ats": "ashby", "slug": "unstructured", "rejected_date": "2026-06-30", "reason": "Live but 0 fit-space roles (data-infra).", "recheck_if_resurfaced": true},
-    {"name": "LlamaIndex", "ats": "ashby", "slug": "llamaindex", "rejected_date": "2026-06-30", "reason": "Live but 0 fit-space roles (dev framework).", "recheck_if_resurfaced": true},
-    {"name": "Continue", "ats": "ashby", "slug": "continue", "rejected_date": "2026-06-30", "reason": "Live but 3 jobs, 0 fit-space (dev tool).", "recheck_if_resurfaced": true},
-    {"name": "Gladly", "ats": "greenhouse", "slug": "gladly", "rejected_date": "2026-06-30", "reason": "Greenhouse slug 'gladly' 404 — find real ATS/slug if resurfaced (customer service platform, would be a fit).", "recheck_if_resurfaced": true},
-    {"name": "Kustomer", "ats": "greenhouse", "slug": "kustomer", "rejected_date": "2026-06-30", "reason": "Greenhouse slug 'kustomer' 404 — find real ATS/slug if resurfaced (CRM/support, would be a fit).", "recheck_if_resurfaced": true},
-    {"name": "Espressive", "ats": "greenhouse", "slug": "espressive", "rejected_date": "2026-06-30", "reason": "Greenhouse slug 'espressive' 404 — find real ATS/slug if resurfaced (AI service desk, would be a fit).", "recheck_if_resurfaced": true},
-    {"name": "Lago", "ats": "ashby", "slug": "lago", "rejected_date": "2026-06-30", "reason": "Live (open-source billing, Paris HQ); fit roles (FDE, Customer Support Engineer, Technical Account Executive, Solutions Engineer) are ALL Europe-remote / France — not US-reachable. Re-check if a US-remote role opens.", "recheck_if_resurfaced": true},
-    {"name": "Eagle", "ats": "ashby", "slug": "eagle", "rejected_date": "2026-06-30", "reason": "Live (9 jobs) but only fit role is a single coding-heavy Forward Deployed Engineer (NYC) at an unclear-domain engineering co; not a clear support-ops/CS fit. Re-check if CS/implementation roles appear.", "recheck_if_resurfaced": true},
-    {"name": "Clerky", "ats": "ashby", "slug": "clerky", "rejected_date": "2026-06-30", "reason": "Surfaced name-only via Remotive; resolved to ashby/clerky but board has only 1 job (a worldwide 'Customer Operations & Writing Specialist' blend) — too thin/marginal to monitor. Re-check if more CS/ops roles appear.", "recheck_if_resurfaced": true}
+    {
+      "name": "TeamBridge",
+      "ats": "ashby",
+      "slug": "teambridge",
+      "rejected_date": "2026-06-30",
+      "reason": "Board live but 0 open jobs on 2026-06-30 \u2014 nothing to monitor.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "UniCourt",
+      "ats": "ashby",
+      "slug": "unicourt",
+      "rejected_date": "2026-06-30",
+      "reason": "Live but 4 jobs, 0 in target fit-space (legal data co).",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Capacity",
+      "ats": "greenhouse",
+      "slug": "capacity",
+      "rejected_date": "2026-06-30",
+      "reason": "Live but 2 jobs, 0 fit-space.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Weaviate",
+      "ats": "ashby",
+      "slug": "weaviate",
+      "rejected_date": "2026-06-30",
+      "reason": "Live (vector DB) but 0 fit-space roles; dev-infra co that rarely hires Aneesh-type roles.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Unstructured",
+      "ats": "ashby",
+      "slug": "unstructured",
+      "rejected_date": "2026-06-30",
+      "reason": "Live but 0 fit-space roles (data-infra).",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "LlamaIndex",
+      "ats": "ashby",
+      "slug": "llamaindex",
+      "rejected_date": "2026-06-30",
+      "reason": "Live but 0 fit-space roles (dev framework).",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Continue",
+      "ats": "ashby",
+      "slug": "continue",
+      "rejected_date": "2026-06-30",
+      "reason": "Live but 3 jobs, 0 fit-space (dev tool).",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Gladly",
+      "ats": "greenhouse",
+      "slug": "gladly",
+      "rejected_date": "2026-06-30",
+      "reason": "Greenhouse slug 'gladly' 404 \u2014 find real ATS/slug if resurfaced (customer service platform, would be a fit).",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Kustomer",
+      "ats": "greenhouse",
+      "slug": "kustomer",
+      "rejected_date": "2026-06-30",
+      "reason": "Greenhouse slug 'kustomer' 404 \u2014 find real ATS/slug if resurfaced (CRM/support, would be a fit).",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Espressive",
+      "ats": "greenhouse",
+      "slug": "espressive",
+      "rejected_date": "2026-06-30",
+      "reason": "Greenhouse slug 'espressive' 404 \u2014 find real ATS/slug if resurfaced (AI service desk, would be a fit).",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Lago",
+      "ats": "ashby",
+      "slug": "lago",
+      "rejected_date": "2026-06-30",
+      "reason": "Live (open-source billing, Paris HQ); fit roles (FDE, Customer Support Engineer, Technical Account Executive, Solutions Engineer) are ALL Europe-remote / France \u2014 not US-reachable. Re-check if a US-remote role opens.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Eagle",
+      "ats": "ashby",
+      "slug": "eagle",
+      "rejected_date": "2026-06-30",
+      "reason": "Live (9 jobs) but only fit role is a single coding-heavy Forward Deployed Engineer (NYC) at an unclear-domain engineering co; not a clear support-ops/CS fit. Re-check if CS/implementation roles appear.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Clerky",
+      "ats": "ashby",
+      "slug": "clerky",
+      "rejected_date": "2026-07-01",
+      "reason": "Resurfaced via Remotive again (same listing as 2026-06-30 rejection): resolved to ashby/clerky, still only 1 job (worldwide 'Customer Operations & Writing Specialist' blend) \u2014 too thin/marginal to monitor. Re-check if more CS/ops roles appear.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Aureliussystems",
+      "ats": "ashby",
+      "slug": "aureliussystems",
+      "rejected_date": "2026-07-01",
+      "reason": "Live (20 jobs) but defense-tech/directed-energy cUAS company \u2014 all roles are engineering/robotics/hardware. The one keyword match, 'Lead, Forward Deployed Engineer', is onsite SF at a defense contractor: not a CS/support-ops fit, and the domain implies clearance requirements Aneesh doesn't have. Re-check only if a clearly non-defense support/CS role appears.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Close",
+      "ats": "ashby",
+      "slug": "close",
+      "rejected_date": "2026-07-01",
+      "reason": "Surfaced via WebSearch Ashby board dork (listing showed a Customer Success Associate role). Verified live board 2026-07-01: only 5 jobs, all eng/marketing (Backend SWE, SRE, Support SWE, Frontend SWE, Agentic Growth Marketing Lead) \u2014 the CS Associate listing had already closed. Re-check if a CS/support role reopens.",
+      "recheck_if_resurfaced": true
+    }
   ]
 }
