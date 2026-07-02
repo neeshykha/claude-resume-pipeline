@@ -48,6 +48,15 @@ DEDUP_WINDOW_DAYS = 30
 COMPANY_CAP = 3  # max pending applications (applied=true, outcome=null) per company before suppression
 COMPANY_CAP_OVERRIDE_SCORE = 110  # bypass cap if estimated score exceeds this
 MAX_PER_COMPANY_PER_RUN = 2  # diversity cap: max roles per company in the surfaced shortlist (prevents one company sweeping the run)
+SHORTLIST_SIZE = 25
+# Balanced shortlist quotas (added 2026-07-01). The small-company/novelty bonuses
+# flipped the shortlist from all-incumbent to all-sub-500 in one run; per Aneesh,
+# neither extreme is right. Reserve slots for both pools; the remainder is open
+# competition by pre_score. "Small" = headcount_band ≤500; unknown band counts
+# as large until the backfill housekeeping fills it in.
+MIN_SMALL_SLOTS = 10
+MIN_LARGE_SLOTS = 10
+SMALL_BANDS = {"1-50", "51-200", "201-500"}
 MIN_SALARY = 100_000
 
 # ── Extended title filter ────────────────────────────────────────────────────
@@ -131,6 +140,7 @@ LOCATION_EXCLUDE = [
 TITLE_EXCLUDE = [
     "vice president", "vp ", "vp,", "head of", "director",
     "staff engineer", "principal engineer", "senior staff",
+    "staff product", "staff software", "principal product",
     "chief ", "c-suite",
     # Language-specific roles (Aneesh speaks English/German/Hindi only)
     "mandarin", "cantonese", "spanish speaking", "french speaking",
@@ -424,6 +434,28 @@ def load_seen_jobs() -> dict:
     return data.get("jobs", {})
 
 
+def company_surface_stats(seen_jobs: dict, today: date) -> tuple[set, dict]:
+    """Return (companies_ever_surfaced, recent_surface_counts).
+
+    Used for shortlist diversity: companies the pipeline has never surfaced get
+    a novelty bonus, and companies surfaced repeatedly in the last 14 days get a
+    repetition penalty. This directly counters the observed failure mode where
+    the top 5 employers accounted for ~40% of all surfaced roles.
+    """
+    ever = set()
+    recent = {}
+    for entry in seen_jobs.values():
+        co = slugify(entry.get("company", ""))
+        ever.add(co)
+        first_seen = entry.get("first_seen_date")
+        try:
+            if first_seen and (today - date.fromisoformat(first_seen)).days <= 14:
+                recent[co] = recent.get(co, 0) + 1
+        except (ValueError, TypeError):
+            pass
+    return ever, recent
+
+
 def count_unapplied_by_company(seen_jobs: dict) -> dict[str, int]:
     """Count pending APPLICATIONS per company for cap enforcement.
 
@@ -469,6 +501,7 @@ def poll_all(run_date: date) -> dict:
     companies = watchlist["companies"]
     seen_jobs = load_seen_jobs()
     unapplied_counts = count_unapplied_by_company(seen_jobs)
+    ever_surfaced, recent_surfaced = company_surface_stats(seen_jobs, run_date)
 
     matched = []
     borderline = []
@@ -578,10 +611,23 @@ def poll_all(run_date: date) -> dict:
                 matched_key = dedup_key
             elif alt_dedup_key and alt_dedup_key in seen_jobs:
                 matched_key = alt_dedup_key
+            new_req_of_applied = False
             if matched_key and is_within_dedup_window(seen_jobs[matched_key], run_date):
-                stats["dedup_skipped"] += 1
-                reseen.append(matched_key)
-                continue
+                seen_entry = seen_jobs[matched_key]
+                seen_url = (seen_entry.get("url") or "").rstrip("/").lower()
+                new_url = (apply_url or "").rstrip("/").lower()
+                # Title-based keys collide when a company reposts the same title
+                # under a NEW requisition (observed: Ping Identity Senior TAM).
+                # If the stored entry was APPLIED to but this posting has a
+                # different URL, it's a new req — surface it flagged instead of
+                # silently skipping. Unapplied same-title reposts stay skipped
+                # (they're noise within the 30-day window).
+                if seen_entry.get("applied") and seen_url and new_url and seen_url != new_url:
+                    new_req_of_applied = True
+                else:
+                    stats["dedup_skipped"] += 1
+                    reseen.append(matched_key)
+                    continue
 
             # Company cap check
             if is_capped:
@@ -601,7 +647,10 @@ def poll_all(run_date: date) -> dict:
                 "salary_min": salary_min,
                 "match_type": "exact" if is_exact else "borderline",
                 "borderline_score": borderline_count if not is_exact else None,
+                "headcount_band": company.get("headcount_band"),
             }
+            if new_req_of_applied:
+                entry["new_req_of_applied_title"] = True
 
             if is_exact:
                 matched.append(entry)
@@ -648,8 +697,28 @@ def poll_all(run_date: date) -> dict:
         else:
             score += 3
 
-        # Priority
-        score += {"high": 15, "medium": 8, "low": 3}.get(job["priority"], 5)
+        # Priority — softened 2026-07-01 (was high 15 / medium 8). The priority
+        # field describes the COMPANY, not the role, and at +15 it entrenched
+        # watchlist incumbents at the top of every shortlist.
+        score += {"high": 10, "medium": 6, "low": 3}.get(job["priority"], 5)
+
+        # Small-company bonus (mirrors _scoring_config → small_company_bonus).
+        # Previously only applied in Claude's full scoring — which meant sub-500
+        # companies often never REACHED full scoring because pre_score decides
+        # the top-25 shortlist. Absent band = 0, never guess.
+        band = job.get("headcount_band") or ""
+        if band in ("1-50", "51-200"):
+            score += 15
+        elif band == "201-500":
+            score += 8
+
+        # Novelty / repetition (see company_surface_stats). Companies never
+        # surfaced before get a lift; companies surfaced repeatedly in the last
+        # 14 days get pushed down so the shortlist rotates.
+        co_slug = slugify(job.get("company", ""))
+        if co_slug not in ever_surfaced:
+            score += 6
+        score -= min(recent_surfaced.get(co_slug, 0) * 3, 9)
 
         # Salary
         if job.get("salary_min") and job["salary_min"] >= 130_000:
@@ -683,18 +752,48 @@ def poll_all(run_date: date) -> dict:
     matched.sort(key=lambda j: -j["pre_score"])
     stats["total_matched_before_cap"] = len(matched)
 
-    top_matched = []
+    # Build the shortlist with per-company diversity cap AND small/large balance.
     kept_per_company = {}
     diversity_dropped = 0
-    for job in matched:
+
+    def try_take(job, shortlist, taken_keys):
+        nonlocal diversity_dropped
         co = slugify(job.get("company", ""))
-        if kept_per_company.get(co, 0) < MAX_PER_COMPANY_PER_RUN:
-            if len(top_matched) < 25:
-                kept_per_company[co] = kept_per_company.get(co, 0) + 1
-                top_matched.append(job)
-        else:
+        if kept_per_company.get(co, 0) >= MAX_PER_COMPANY_PER_RUN:
             diversity_dropped += 1
+            taken_keys.add(id(job))  # cap won't free up; don't retry or re-count
+            return False
+        kept_per_company[co] = kept_per_company.get(co, 0) + 1
+        shortlist.append(job)
+        taken_keys.add(id(job))
+        return True
+
+    small_pool = [j for j in matched if (j.get("headcount_band") or "") in SMALL_BANDS]
+    large_pool = [j for j in matched if (j.get("headcount_band") or "") not in SMALL_BANDS]
+
+    top_matched = []
+    taken = set()
+    # Phase 1: fill each pool's reserved slots (score order within pool)
+    for pool, quota in ((small_pool, MIN_SMALL_SLOTS), (large_pool, MIN_LARGE_SLOTS)):
+        count = 0
+        for job in pool:
+            if count >= quota or len(top_matched) >= SHORTLIST_SIZE:
+                break
+            if try_take(job, top_matched, taken):
+                count += 1
+    # Phase 2: open competition for the remaining slots
+    for job in matched:
+        if len(top_matched) >= SHORTLIST_SIZE:
+            break
+        if id(job) in taken:
+            continue
+        try_take(job, top_matched, taken)
+
+    top_matched.sort(key=lambda j: -j["pre_score"])
     stats["diversity_dropped"] = diversity_dropped
+    stats["shortlist_small"] = sum(
+        1 for j in top_matched if (j.get("headcount_band") or "") in SMALL_BANDS)
+    stats["shortlist_large_or_unknown"] = len(top_matched) - stats["shortlist_small"]
 
     borderline.sort(key=lambda j: -j.get("borderline_score", 0))
 

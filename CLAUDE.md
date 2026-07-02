@@ -15,6 +15,18 @@ This is Aneesh Khan's resume optimization project. The master resume is in `mast
 ## Default Behavior
 When the user pastes a job description (or a link to one), do the following:
 
+### 0. Read the writing style guide (mandatory, every task)
+Before drafting ANY resume, cover letter, email, or other prose, read
+`/Users/aneesh/.claude/projects/-Users-aneesh/memory/user_writing_style.md` in full and apply
+it. This is not optional and not satisfied by memory of a previous session — the file changes
+(e.g., 2026-07-01 it flagged that past resumes and cover letters were saturated with em-dashes).
+Non-negotiables that have already been violated in shipped documents:
+- **Em-dash rule:** prefer colons and semicolons for asides and clarifications. Hard cap:
+  2 em-dashes per document. Before rendering any PDF, count them (`grep -c '—' <file>` is
+  allow-listed) and rewrite until under the cap.
+- No AI tells (phrase or structural), no corporate speak, varied sentence rhythm, confident
+  voice. Run the guide's Gut Check on every finished document.
+
 ### 1. Analyze the JD
 - Extract the job title, company name, and key requirements
 - Identify keywords that appear in the JD (tools, methodologies, soft skills, industry terms)
@@ -128,7 +140,9 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 - *People management:* Don't just say "I lead a team of 8." The stronger claim is: he hires well enough that people management becomes the simplest part of his job — which means his attention goes to the harder operational work. Frame it as an outcome, not a credential.
 - *Closing angle:* Aneesh has had two jobs in a decade. He stays where he's constantly building and learning. The honest close isn't "I'm excited about your mission" — it's something that gestures toward the building/learning dynamic and signals he's not a short-tenure risk.
 
-**Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific.
+**Opener anti-template log:** `tailored/_cover_openers.md` holds one line per letter (`- [date] [Company]: "first sentence"`). Before writing a new letter, read it — the new opener must not reuse the structure of the last 5 logged openers. After saving the letter, append its first sentence to the log. This catches template convergence that the per-letter self-check misses.
+
+**Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific. (3) Check the opener log for structural repetition.
 
 ## Important Rules
 - NEVER invent experience, certifications, or skills that aren't in `master_resume.md`
@@ -139,6 +153,10 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 - If the user asks to adjust a tailored version, edit that version's files, not the master
 - **Never use `python3 -c "..."`** for JSON analysis or file updates — multi-line inline scripts with `#` comments trigger a hardcoded security prompt that no permission entry can bypass. Instead: (a) use `grep` for existence checks on seen_jobs.json, (b) write a named `.py` script to `pipeline/_taskname.py`, run it with `.venv/bin/python pipeline/_taskname.py`, then delete it. The `_*.py` pattern is in the allow-list.
 - **Never use bash arrays or shell control-flow (`arr=(...)`, `${arr[@]}`, inline `for`/`while`/`if` loops) in Bash commands.** The permission engine cannot statically analyze them, so they prompt *every time* regardless of allow-list entries — and hang autonomous runs. This is the same failure class as `python3 -c`. For the JD keyword coverage check (Step 6 / Step 4), use the permanent helper: write the JD's top phrases to a JSON file, then run `.venv/bin/python pipeline/check_coverage.py <resume.md> <phrases.json>` (allow-listed, prints ✓/✗ per phrase + `Coverage: N/M (P%)`). Do not hand-roll coverage checks with `grep` inside a bash `for` loop.
+
+## Pipeline Routine — Source of Truth
+
+The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt.md`** (consolidated 2026-07-01). The scheduled task's SKILL.md (`~/.claude/scheduled-tasks/daily-job-pipeline/SKILL.md`) is a thin loader that reads and executes that file — never add steps, thresholds, or query lists to the SKILL.md, and never maintain a second copy of the routine anywhere. Scoring numbers live in `watchlist_companies.json → _scoring_config`. Tracking-file updates go through `pipeline/update_tracking.py` (never hand-edit `seen_jobs.json`).
 
 ## Pipeline Pre-Run: One-Time Notes
 

@@ -15,6 +15,42 @@
   "pending": [],
   "enrolled": [
     {
+      "name": "Wispr Flow",
+      "ats": "ashby",
+      "slug": "wispr-flow",
+      "enrolled_date": "2026-07-02",
+      "headcount_band": "51-200",
+      "enrolled_via": "Ashby board dork 2026-07-02",
+      "notes": "Voice AI dictation startup. Customer Engagement Manager (Remote US) is a direct fit."
+    },
+    {
+      "name": "Swiftly",
+      "ats": "lever",
+      "slug": "goswift",
+      "enrolled_date": "2026-07-02",
+      "headcount_band": "51-200",
+      "enrolled_via": "Lever board dork 2026-07-02",
+      "notes": "Transit data SaaS platform. Implementation Manager (SaaS, US) and Customer Training & Adoption Specialist are direct fits."
+    },
+    {
+      "name": "FAR.AI",
+      "ats": "ashby",
+      "slug": "far.ai",
+      "enrolled_date": "2026-07-02",
+      "headcount_band": "1-50",
+      "enrolled_via": "AI-Native & AI-Safety Orgs discovery source 2026-07-02",
+      "notes": "AI safety research nonprofit, Berkeley. Current roles are ops-adjacent (Business Operations Associate, Senior Programs & Strategy Manager, both Remote US) but not strong title matches \u2014 mostly research/eng heavy. Enrolled per the explicit 'FAR.AI-type org' callout in _websearch_sources; watch for better title fits as new reqs post."
+    },
+    {
+      "name": "Nimble Gravity",
+      "ats": "greenhouse",
+      "slug": "nimblegravity",
+      "enrolled_date": "2026-07-02",
+      "headcount_band": "201-500",
+      "enrolled_via": "AI-Titled Roles discovery source 2026-07-02",
+      "notes": "AI growth consultancy (Denver HQ, LATAM+US remote team). AI Enablement & Adoption Manager and Client Engagement Manager (both US Remote) are strong fits."
+    },
+    {
       "name": "CodeRabbit",
       "ats": "ashby",
       "slug": "coderabbit",
@@ -246,6 +282,30 @@
       "slug": "close",
       "rejected_date": "2026-07-01",
       "reason": "Surfaced via WebSearch Ashby board dork (listing showed a Customer Success Associate role). Verified live board 2026-07-01: only 5 jobs, all eng/marketing (Backend SWE, SRE, Support SWE, Frontend SWE, Agentic Growth Marketing Lead) \u2014 the CS Associate listing had already closed. Re-check if a CS/support role reopens.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Emergent Labs",
+      "ats": "greenhouse",
+      "slug": "emergentlabsinc",
+      "rejected_date": "2026-07-02",
+      "reason": "Live (37 jobs) but the only fit-space role, Manager - Technical Account Management, is based in Bangalore \u2014 not US-reachable. Rest of board is Enterprise AE and eng roles.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "TrustArc",
+      "ats": "lever",
+      "slug": "trustarc",
+      "rejected_date": "2026-07-02",
+      "reason": "Live (3 jobs) but both Technical Account Manager roles are based in the Philippines (Cebu City); the only US role is Account Executive, which isn't a fit-space title.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Cognite",
+      "ats": "greenhouse",
+      "slug": "cognite",
+      "rejected_date": "2026-07-02",
+      "reason": "Guessed Lever slug was wrong (404) - actual ATS is Greenhouse (job-boards.greenhouse.io/cognite, 50 jobs). Industrial AI/IoT platform, but all fit-space titles (Account Executive/Manager, Solutions Consultant) are Europe/Japan-based; no US-reachable role.",
       "recheck_if_resurfaced": true
     }
   ]

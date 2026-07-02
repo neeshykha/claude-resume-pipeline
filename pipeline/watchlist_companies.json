@@ -15,6 +15,7 @@
         "url": "https://builtin.com/atlanta",
         "query": "site:builtin.com/job (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions engineer\" OR \"support operations\" OR \"customer operations\" OR \"deployment\") Atlanta",
         "notes": "Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount \u2264200. Query broadened 2026-06-25 to include customer success + solutions engineer terms.",
+        "status": "active",
         "frequency": "daily"
       },
       {
@@ -22,6 +23,7 @@
         "url": "https://builtin.com/jobs/remote",
         "query": "site:builtin.com/job (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions engineer\" OR \"support operations\" OR \"customer operations\" OR \"deployment\") remote",
         "notes": "Remote roles from tech companies nationally. No Atlanta bonus \u2014 needs stronger title/keyword fit to clear threshold. Salary floor ($100K) still applies. Query broadened 2026-06-25.",
+        "status": "active",
         "frequency": "daily"
       },
       {
@@ -65,6 +67,13 @@
         "name": "AI-Native & AI-Safety Orgs (vertical discovery)",
         "query": "(\"AI safety\" OR \"frontier model\" OR \"applied AI\" OR \"AI research\" OR \"contact center AI\" OR \"customer support AI\") (\"customer success\" OR operations OR implementation OR deployment OR solutions) jobs 2026",
         "notes": "Catches AI-native and AI-safety research orgs (e.g. FAR.AI-type) that are off the watchlist and whose fitting roles may be titled differently (e.g. 'Operations Generalist'). Vertical/company discovery, not title-keyed — surface the COMPANY, then verify board + add to watchlist so the poller scans its full roster. Apply AI bonus (+20) to in-vertical hits. Added 2026-06-25 after a manually-found FAR.AI role exposed that the discovery layer was too title-narrow.",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
+        "name": "80,000 Hours Job Board (EA/AI-safety/public-good orgs)",
+        "query": "site:jobs.80000hours.org (\"Operations\" OR \"Program Manager\" OR \"Customer Success\" OR \"Technical Program Manager\" OR \"Implementation\" OR \"Business Operations\")",
+        "notes": "80000hours.org's own on-site alert emails/filters default to research/engineering titles (Research Engineer, Research Scientist, Security Engineer) which are NOT a fit for Aneesh's target roles — do not just enroll every company an alert surfaces. Use the ops/program-manager-keyed query above instead to find the subset of EA-aligned / AI-safety / public-good orgs that actually have Support Ops, CSM, TAM, Implementation, or Program/Business Operations roles (e.g. FAR AI's Business Operations Associate, Centre for the Governance of AI's People/Director of Operations roles). Two-part access pattern confirmed 2026-07-01: (1) the root jobs.80000hours.org/ search page is JS-rendered and returns no listings via direct WebFetch — use WebSearch site: queries for discovery instead; (2) individual org pages at jobs.80000hours.org/organisations/{slug} DO render server-side and ARE directly WebFetch-able with full job details (title, location, salary, experience level) — fetch the org page directly once a slug is found rather than relying on WebSearch snippets alone. Many roles here are volunteer/unpaid (e.g. PauseAI) or Director/Chair-level — still apply the standard salary-floor and seniority filters.",
         "status": "active",
         "frequency": "daily"
       }
@@ -332,7 +341,8 @@
       "ats": "greenhouse",
       "slug": "launchdarkly",
       "priority": "high",
-      "reason": "Feature mgmt platform, technical CSM roles"
+      "headcount_band": "501-2000",
+      "reason": "Feature mgmt platform, technical CSM roles. ~600-640 employees (verified 2026-07-02)."
     },
     {
       "name": "Amplitude",
@@ -510,7 +520,9 @@
       "name": "PointClickCare",
       "ats": "lever",
       "slug": "pointclickcare",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "reason": "~2,300 employees (verified 2026-07-02)."
     },
     {
       "name": "Mattermost",
@@ -667,7 +679,8 @@
       "priority": "high",
       "reason": "AI for IT service management \u2014 CSM/TAM and implementation heavy",
       "board_status": "404_confirmed",
-      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). May have migrated ATS or paused hiring. Recovery search required each run."
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02 (both boards-api and job-boards.greenhouse.io/moveworks 404). May have migrated ATS or paused hiring.",
+      "recheck_after": "2026-07-09"
     },
     {
       "name": "Assembled",
@@ -719,7 +732,8 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) \u2014 AI support deflection/triage",
       "board_status": "404_confirmed",
-      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Recovery search required each run."
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02 (both boards-api and job-boards.greenhouse.io/forethought 404, despite stale search-engine cache showing old listings).",
+      "recheck_after": "2026-07-09"
     },
     {
       "name": "Talkdesk",
@@ -832,7 +846,8 @@
       "ats": "ashby",
       "slug": "zip",
       "priority": "high",
-      "reason": "Procurement orchestration SaaS. Strategic CSM - Technical Account Management hybrid roles + Professional Services. Added 2026-06-25 (verified live: 121 jobs, 24 hits). CSM/TAM blended title = strong fit."
+      "headcount_band": "501-2000",
+      "reason": "Procurement orchestration SaaS. Strategic CSM - Technical Account Management hybrid roles + Professional Services. Added 2026-06-25 (verified live: 121 jobs, 24 hits). CSM/TAM blended title = strong fit. ~1,000-1,259 employees (verified 2026-07-02)."
     },
     {
       "name": "ClickUp",
@@ -1117,6 +1132,54 @@
       "reason": "Healthcare interoperability / FHIR data platform (Toronto HQ, team across Canada + US). Verified live 2026-07-01: fit roles incl. Technical Account Manager and Technical Manager (Implementations & Delivery), both Remote US. ~257-291 employees.",
       "score_bonus": 0,
       "bonus_reason": "No AI/ML platform bonus - healthcare data interoperability, not an AI/CX platform. Relies on small-company bonus + role fit."
+    },
+    {
+      "name": "Wispr Flow",
+      "ats": "ashby",
+      "slug": "wispr-flow",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-02",
+      "enrolled_via": "WebSearch Ashby board dork (Step 1c) -> verified",
+      "reason": "Voice AI dictation startup (San Francisco). Verified live 2026-07-02: Customer Engagement Manager (Remote US) is a direct fit. ~50-94 employees.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - voice AI product"
+    },
+    {
+      "name": "Swiftly",
+      "ats": "lever",
+      "slug": "goswift",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-02",
+      "enrolled_via": "WebSearch Lever board dork (Step 1c) -> verified",
+      "reason": "Transit data SaaS platform (San Francisco, ~129 employees). Verified live 2026-07-02: Implementation Manager (SaaS, US) and Customer Training & Adoption Specialist, both US-remote-reachable.",
+      "score_bonus": 0,
+      "bonus_reason": "No AI/ML bonus - transit ops data platform, not an AI/CX product."
+    },
+    {
+      "name": "FAR.AI",
+      "ats": "ashby",
+      "slug": "far.ai",
+      "priority": "low",
+      "headcount_band": "1-50",
+      "enrolled_date": "2026-07-02",
+      "enrolled_via": "AI-Native & AI-Safety Orgs discovery source (Step 1c) -> verified",
+      "reason": "AI safety research nonprofit (Berkeley, ~41 employees). Verified live 2026-07-02: mostly research/engineering roles; current ops-adjacent roles (Business Operations Associate, Senior Programs & Strategy Manager, both Remote US) are not strong title matches. Enrolled per the explicit 'FAR.AI-type org' callout in _websearch_sources notes - watch for a stronger title fit as new reqs post.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - frontier AI safety research"
+    },
+    {
+      "name": "Nimble Gravity",
+      "ats": "greenhouse",
+      "slug": "nimblegravity",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-02",
+      "enrolled_via": "AI-Titled Roles discovery source (Step 1c) -> verified",
+      "reason": "AI growth/data consultancy (Denver HQ, LATAM+US remote team, ~200-250 employees). Verified live 2026-07-02: AI Enablement & Adoption Manager and Client Engagement Manager, both US Remote, are strong fits.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI adoption/enablement consultancy"
     }
   ]
 }
