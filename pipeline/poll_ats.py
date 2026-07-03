@@ -499,6 +499,14 @@ def poll_all(run_date: date) -> dict:
         watchlist = json.load(f)
 
     companies = watchlist["companies"]
+    # Passion-domain keywords (config-driven; see _scoring_config → passion_domains).
+    # Poller applies a small pre_score lift and tags the entry; Claude applies the
+    # real +10 bonus semantically at full scoring.
+    passion_cfg = watchlist.get("_scoring_config", {}).get("passion_domains", {})
+    passion_keywords = {
+        domain: [kw.lower() for kw in spec.get("poller_keywords", [])]
+        for domain, spec in passion_cfg.get("domains", {}).items()
+    }
     seen_jobs = load_seen_jobs()
     unapplied_counts = count_unapplied_by_company(seen_jobs)
     ever_surfaced, recent_surfaced = company_surface_stats(seen_jobs, run_date)
@@ -711,6 +719,16 @@ def poll_all(run_date: date) -> dict:
             score += 15
         elif band == "201-500":
             score += 8
+
+        # Passion-domain lift (+5, tag for Claude's semantic +10 at full scoring).
+        # Matched against title + company name only; description isn't kept on
+        # the entry, and false positives are cheap here (Claude re-judges).
+        passion_text = t + " " + job.get("company", "").lower()
+        for domain, kws in passion_keywords.items():
+            if any(kw in passion_text for kw in kws):
+                score += 5
+                job["passion_domain"] = domain
+                break
 
         # Novelty / repetition (see company_surface_stats). Companies never
         # surfaced before get a lift; companies surfaced repeatedly in the last
