@@ -21,10 +21,17 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 - Temp scripts go to `pipeline/_taskname.py` (the `_*.py` pattern is allow-listed), NOT `/tmp/`
 - Use `Read`/`Write` tools for small file edits; use the helper scripts for big/structured ones
 
-## Step 0: Pre-run notes + style guide
+## Step 0: Duplicate-trigger guard, pre-run notes, style guide
 
-1. If `pipeline/NEXT_RUN_NOTES.md` exists: read it, incorporate it, delete it, then proceed.
-2. **Read `/Users/aneesh/.claude/projects/-Users-aneesh/memory/user_writing_style.md` in
+1. **Duplicate-trigger guard.** The scheduler has double-fired on the same day before
+   (2026-04-14, 2026-04-17, 2026-06-10, 2026-07-02). If `pipeline/jobs/run_{today}.json`
+   already exists and records a completed run (has stats and an email draft ID): verify the
+   Gmail draft still exists, log one line to `pipeline/SESSION_STATE.md`
+   ("duplicate trigger [time], no action"), and **STOP — do not re-poll, re-tailor,
+   re-draft, or touch tracking files.** A second run on the same day double-counts
+   tracking and creates duplicate digest drafts.
+2. If `pipeline/NEXT_RUN_NOTES.md` exists: read it, incorporate it, delete it, then proceed.
+3. **Read `/Users/aneesh/.claude/projects/-Users-aneesh/memory/user_writing_style.md` in
    full, every run, before any drafting.** It governs all resume, cover letter, and digest
    prose, and it changes over time. Standing hard rule from it: prefer colons/semicolons
    over em-dashes; max 2 em-dashes per document. Verify before rendering any PDF with
@@ -139,6 +146,10 @@ score >110 to surface. Queued/unapplied roles do NOT count. Trust the poller's
   generic +20 on top. Non-watchlist AI-native company: +20 once.
 - Watchlist +10 · Atlanta-startup +20 · Atlanta-enterprise +10 · IoT +15
 - Small-company (requires `headcount_band`): ≤200 +15 / 201-500 +8 / absent 0 (never guess)
+- **Passion-domain +10** (`_scoring_config → passion_domains`: electrification/EV, health
+  tech, agriculture/gardening/food). Apply SEMANTICALLY to the company's mission/product,
+  once per job even if multiple domains hit; ignore keyword accidents ("patient rollout").
+  Poller entries may carry a `passion_domain` tag as a hint — confirm it, don't trust it.
 
 **Penalties (small — reach is fine):** title gap −5 (named IC function Aneesh never held
 by exact title, once per job); seniority mismatch −5 (JD explicitly requires 6+ years in

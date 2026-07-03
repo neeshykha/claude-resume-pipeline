@@ -12,7 +12,118 @@
     "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced}] \u2014 don't re-evaluate unless it resurfaces with new roles."
   },
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
-  "pending": [],
+  "pending": [
+    {
+      "name": "Bland",
+      "ats": "ashby",
+      "slug": "bland",
+      "source": "Ashby board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "AI voice/phone agent startup - Customer Success Manager (TAM) role surfaced, described as living at the intersection of customer success and solutions. Likely small/early-stage, strong title fit."
+    },
+    {
+      "name": "Temporal Technologies",
+      "ats": "ashby",
+      "slug": "temporal",
+      "source": "Ashby board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Staff Developer Success Engineer (Seattle) - dev-infra workflow orchestration co, technical support role fit."
+    },
+    {
+      "name": "6sense",
+      "ats": "greenhouse",
+      "slug": "6sense",
+      "source": "Greenhouse board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Senior Customer Success Manager - ABM/intent data platform."
+    },
+    {
+      "name": "Leapwork",
+      "ats": "greenhouse",
+      "slug": "leapwork",
+      "source": "Greenhouse board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Senior Customer Success Manager (5+ yrs CS/Strategic Account/TAM required) - test automation SaaS, likely sub-500."
+    },
+    {
+      "name": "Contentful",
+      "ats": "greenhouse",
+      "slug": "contentful",
+      "source": "Greenhouse board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Associate Solution Architect, Professional Services - headless CMS, partners with CSMs/Solution Engineers."
+    },
+    {
+      "name": "360Learning",
+      "ats": "lever",
+      "slug": "360learning",
+      "source": "Lever board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Technical Consultant, Professional Services - LMS SaaS."
+    },
+    {
+      "name": "Contentsquare",
+      "ats": "lever",
+      "slug": "contentsquare",
+      "source": "Lever board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Technical Account Manager (Japan-focused req seen) - established analytics platform, larger co, check for US-reachable reqs."
+    },
+    {
+      "name": "Revenue Analytics",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "BuiltIn Atlanta 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Customer Strategy & Success Analyst - Atlanta HQ, small-company bonus candidate, cross-functional CS role."
+    },
+    {
+      "name": "Health Gorilla",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "BuiltIn Remote 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Customer Success Engineer - health data interoperability platform (health-tech passion domain)."
+    },
+    {
+      "name": "Electrify America",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Passion Verticals discovery 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "EV charging network (electrification passion domain). Large VW-backed company so likely no small-co bonus, but passion-domain bonus applies if fit-space roles exist - verify careers page for CS/ops/TAM titles."
+    },
+    {
+      "name": "Gainsight",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). wd_host hint: gainsight.wd5.myworkdayjobs.com - verify via verify_workday.py."
+    },
+    {
+      "name": "NCR Voyix",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "AI Enablement Coach - Atlanta HQ (NCR Voyix spun off from NCR, headquartered Atlanta). Strong Atlanta-bonus candidate. wd_host hint: ncr.wd1.myworkdayjobs.com - verify via verify_workday.py."
+    },
+    {
+      "name": "Change Healthcare",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "BuiltIn Atlanta 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Customer Success Manager (Atlanta, GA) - health-tech passion domain + Atlanta location. Part of UnitedHealth/Optum so may be on an internal/non-public ATS - verify reachability."
+    },
+  ],
   "enrolled": [
     {
       "name": "Wispr Flow",
