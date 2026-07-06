@@ -38,9 +38,8 @@ SITE_GUESSES = [
 
 # (display, host-with-wdN, tenant). Edit this list, then run.
 CANDIDATES = [
-    ("Sprinklr", "sprinklr.wd1.myworkdayjobs.com", "sprinklr"),
-    ("Genesys", "genesys.wd1.myworkdayjobs.com", "genesys"),
-    ("RingCentral", "ringcentral.wd1.myworkdayjobs.com", "ringcentral"),
+    ("Gainsight", "gainsight.wd5.myworkdayjobs.com", "gainsight"),
+    ("NCR Voyix", "ncr.wd1.myworkdayjobs.com", "ncr"),
 ]
 
 

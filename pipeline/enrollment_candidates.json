@@ -14,96 +14,13 @@
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
   "pending": [
     {
-      "name": "Bland",
-      "ats": "ashby",
-      "slug": "bland",
-      "source": "Ashby board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "AI voice/phone agent startup - Customer Success Manager (TAM) role surfaced, described as living at the intersection of customer success and solutions. Likely small/early-stage, strong title fit."
-    },
-    {
-      "name": "Temporal Technologies",
-      "ats": "ashby",
-      "slug": "temporal",
-      "source": "Ashby board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Staff Developer Success Engineer (Seattle) - dev-infra workflow orchestration co, technical support role fit."
-    },
-    {
-      "name": "6sense",
-      "ats": "greenhouse",
-      "slug": "6sense",
-      "source": "Greenhouse board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Senior Customer Success Manager - ABM/intent data platform."
-    },
-    {
-      "name": "Leapwork",
-      "ats": "greenhouse",
-      "slug": "leapwork",
-      "source": "Greenhouse board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Senior Customer Success Manager (5+ yrs CS/Strategic Account/TAM required) - test automation SaaS, likely sub-500."
-    },
-    {
-      "name": "Contentful",
-      "ats": "greenhouse",
-      "slug": "contentful",
-      "source": "Greenhouse board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Associate Solution Architect, Professional Services - headless CMS, partners with CSMs/Solution Engineers."
-    },
-    {
-      "name": "360Learning",
-      "ats": "lever",
-      "slug": "360learning",
-      "source": "Lever board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Technical Consultant, Professional Services - LMS SaaS."
-    },
-    {
-      "name": "Contentsquare",
-      "ats": "lever",
-      "slug": "contentsquare",
-      "source": "Lever board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Technical Account Manager (Japan-focused req seen) - established analytics platform, larger co, check for US-reachable reqs."
-    },
-    {
-      "name": "Revenue Analytics",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Atlanta 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Customer Strategy & Success Analyst - Atlanta HQ, small-company bonus candidate, cross-functional CS role."
-    },
-    {
-      "name": "Health Gorilla",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Remote 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Customer Success Engineer - health data interoperability platform (health-tech passion domain)."
-    },
-    {
-      "name": "Electrify America",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "Passion Verticals discovery 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "EV charging network (electrification passion domain). Large VW-backed company so likely no small-co bonus, but passion-domain bonus applies if fit-space roles exist - verify careers page for CS/ops/TAM titles."
-    },
-    {
       "name": "Gainsight",
       "ats": "workday",
       "slug": null,
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). wd_host hint: gainsight.wd5.myworkdayjobs.com - verify via verify_workday.py."
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Confirmed real site is gainsight.wd5.myworkdayjobs.com/Gainsight_External_Careers (verified via WebSearch 2026-07-06: live roles include Principal CSM (Remote US), Technical Project Manager (Remote US)) but the CXS jobs API returns Cloudflare 403 on direct curl probes - needs a browser-based check (e.g. Chrome MCP) next run, not another curl attempt."
     },
     {
       "name": "NCR Voyix",
@@ -112,17 +29,110 @@
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "why": "AI Enablement Coach - Atlanta HQ (NCR Voyix spun off from NCR, headquartered Atlanta). Strong Atlanta-bonus candidate. wd_host hint: ncr.wd1.myworkdayjobs.com - verify via verify_workday.py."
+      "why": "AI Enablement Coach - Atlanta HQ (NCR Voyix spun off from NCR, headquartered Atlanta). Strong Atlanta-bonus candidate. Confirmed real site is ncr.wd1.myworkdayjobs.com/ext_us via WebSearch 2026-07-06, but CXS jobs API probes 400/403'd - needs a browser-based check next run."
     },
     {
-      "name": "Change Healthcare",
+      "name": "Conversica",
+      "ats": "lever",
+      "slug": "conversica",
+      "source": "Lever board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Technical Account Manager - conversational AI/data intelligence platform (AI-native candidate, TAM provides white-glove onboarding + technical troubleshooting)."
+    },
+    {
+      "name": "Emergent Labs",
+      "ats": "greenhouse",
+      "slug": "emergentlabsinc",
+      "source": "Greenhouse board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Manager, Technical Account Management - name suggests AI-native startup; role leads a team of TAMs/Key Account Managers, 8+ yrs TAM/CS Eng/Solutions Eng/Professional Services background wanted."
+    },
+    {
+      "name": "Deepgram",
+      "ats": "ashby",
+      "slug": "Deepgram",
+      "source": "Ashby board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Customer Success Engineer (Americas) - AI speech/voice recognition platform, Maven-type category."
+    },
+    {
+      "name": "Macroscope",
+      "ats": "ashby",
+      "slug": "macroscope",
+      "source": "Ashby board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Technical Customer Success Engineer - likely small/early-stage, post-sale engineering-leader relationship focus."
+    },
+    {
+      "name": "Sprig",
+      "ats": "ashby",
+      "slug": "sprig",
+      "source": "Ashby board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Customer Success Engineer - 2-5+ yrs Technical CS/Solutions Architecture/Implementation Engineering/Technical Support background wanted."
+    },
+    {
+      "name": "FourKites",
+      "ats": "greenhouse",
+      "slug": "fourkites",
+      "source": "Greenhouse board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Senior Customer Engineer - supply chain visibility platform, owns technical customer relationship end-to-end including agentic workflow architecture."
+    },
+    {
+      "name": "Talon.One",
       "ats": null,
       "slug": null,
       "needs_ats_resolution": true,
-      "source": "BuiltIn Atlanta 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Customer Success Manager (Atlanta, GA) - health-tech passion domain + Atlanta location. Part of UnitedHealth/Optum so may be on an internal/non-public ATS - verify reachability."
+      "source": "BuiltIn Atlanta 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Customer Success Manager - surfaced twice (general + DACH-specific reqs), worth checking for a US-reachable role."
     },
+    {
+      "name": "Cato Networks",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "BuiltIn Atlanta/Remote 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Customer Success Engineer - SASE/network security platform, guides strategic customers through implementation lifecycle."
+    },
+    {
+      "name": "ThoughtSpot",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "BuiltIn Remote 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Customer Success Operations Manager - direct title fit (Support/CS Operations Manager tier)."
+    },
+    {
+      "name": "Highspot",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "BuiltIn Remote 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Sr. Customer Success Manager, Enterprise - collaborates with deployment consultants and TAMs."
+    },
+    {
+      "name": "Centre for the Governance of AI (GovAI)",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "80,000 Hours job board 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "Director of Operations (Mid-Senior, Remote USA, $155-190k) - AI governance nonprofit. 'Director' title needs a careful read against the VP/Head-of hard filter before tailoring; salary is strong. AI-safety/governance vertical bonus applies."
+    },
+    {
+      "name": "Cengage",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "AI Enablement Operations Manager (Remote US) - direct Tier-2 AI-title fit. wd_host hint: cengage.wd5.myworkdayjobs.com, tenant likely 'CengageNorthAmericaCareers' per URL seen - verify via browser-based check given the Cloudflare-blocking pattern hit on other Workday tenants this run."
+    }
   ],
   "enrolled": [
     {
@@ -272,6 +282,62 @@
       "slug": "smiledigitalhealth",
       "enrolled_date": "2026-07-01",
       "headcount_band": "201-500"
+    },
+    {
+      "name": "Bland",
+      "ats": "ashby",
+      "slug": "bland",
+      "enrolled_date": "2026-07-06",
+      "headcount_band": "1-50",
+      "enrolled_via": "Ashby board dork 2026-07-03 -> verified 2026-07-06"
+    },
+    {
+      "name": "Temporal Technologies",
+      "ats": "ashby",
+      "slug": "temporal",
+      "enrolled_date": "2026-07-06",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Ashby board dork 2026-07-03 -> verified 2026-07-06"
+    },
+    {
+      "name": "6sense",
+      "ats": "greenhouse",
+      "slug": "6sense",
+      "enrolled_date": "2026-07-06",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified 2026-07-06"
+    },
+    {
+      "name": "Leapwork",
+      "ats": "greenhouse",
+      "slug": "leapwork",
+      "enrolled_date": "2026-07-06",
+      "headcount_band": "201-500",
+      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified 2026-07-06"
+    },
+    {
+      "name": "Contentful",
+      "ats": "greenhouse",
+      "slug": "contentful",
+      "enrolled_date": "2026-07-06",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified 2026-07-06"
+    },
+    {
+      "name": "Contentsquare",
+      "ats": "lever",
+      "slug": "contentsquare",
+      "enrolled_date": "2026-07-06",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Lever board dork 2026-07-03 -> verified 2026-07-06"
+    },
+    {
+      "name": "Clerky",
+      "ats": "ashby",
+      "slug": "clerky",
+      "enrolled_date": "2026-07-06",
+      "headcount_band": "1-50",
+      "enrolled_via": "Remotive API 2026-07-06 -> verified"
     }
   ],
   "rejected": [
@@ -417,6 +483,46 @@
       "slug": "cognite",
       "rejected_date": "2026-07-02",
       "reason": "Guessed Lever slug was wrong (404) - actual ATS is Greenhouse (job-boards.greenhouse.io/cognite, 50 jobs). Industrial AI/IoT platform, but all fit-space titles (Account Executive/Manager, Solutions Consultant) are Europe/Japan-based; no US-reachable role.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "360Learning",
+      "ats": "lever",
+      "slug": "360learning",
+      "rejected_date": "2026-07-06",
+      "reason": "Board live (LMS SaaS) but all fit-space roles (Customer Success Partner, Solution Deployment Manager, Technical Consultant) are Canada/France-based; no US-reachable role.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Revenue Analytics",
+      "ats": "lever",
+      "slug": "revenueanalytics",
+      "rejected_date": "2026-07-06",
+      "reason": "Board live (Atlanta HQ pricing analytics SaaS) but current roles are Data Scientist/Senior Software Engineer only - the Customer Strategy & Success Analyst role that surfaced it via BuiltIn appears filled/closed as of 2026-07-06.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Health Gorilla",
+      "ats": "greenhouse",
+      "slug": "healthgorilla",
+      "rejected_date": "2026-07-06",
+      "reason": "Both Greenhouse and Ashby boards return zero open jobs as of 2026-07-06 - nothing to monitor.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Electrify America",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-06",
+      "reason": "No Greenhouse/Ashby/Lever/Workday board found via WebSearch - likely uses an internal or non-standard ATS, not pollable.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Change Healthcare",
+      "ats": "workday",
+      "slug": null,
+      "rejected_date": "2026-07-06",
+      "reason": "Workday tenant found (changehealthcare.wd5.myworkdayjobs.com) but CXS jobs API returned 422 on direct probing; Optum/UnitedHealth-scale shared instance, uncertain single-role fit not worth further automated probing effort.",
       "recheck_if_resurfaced": true
     }
   ]

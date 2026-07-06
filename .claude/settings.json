@@ -21,6 +21,7 @@
       "Bash(cp:*)",
       "Bash(stat:*)",
       "Bash(grep:*)",
+      "Bash(jq:*)",
       "WebSearch",
       "WebFetch",
       "ToolSearch",
@@ -30,6 +31,19 @@
       "Glob",
       "Grep",
       "mcp__8d597ae8-3c99-43f5-8eb1-7dba02b3dec7__create_draft"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/aneesh/Documents/resume_project/pipeline/check_bash_safety.py"
+          }
+        ]
+      }
     ]
   }
 }

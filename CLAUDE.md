@@ -305,6 +305,23 @@ When Aneesh asks to prep for a new interview round:
 - Do NOT fabricate specifics — if Aneesh hasn't told you what was asked or how it landed, leave the section as a placeholder marked with `_[Aneesh — ...]_`
 - Voice rules from this CLAUDE.md (no "genuinely," no "directly maps to," no AI tells) apply to any drafted user-facing text — thank-you emails, suggested answer phrasings, etc.
 
+## User-Surfaced Finds Protocol (LinkedIn/Indeed alerts, word of mouth)
+
+When Aneesh mentions a job or company he found outside the pipeline, do all four steps:
+1. **Assess** — find the posting at its source ATS (not the aggregator), score it, give an
+   honest fit verdict. Tailor only if he asks.
+2. **Diagnose the miss** — determine specifically why the pipeline didn't surface it
+   (off-watchlist? ATS host uncovered? query term gap? title filter gap?).
+3. **Patch the gap** — fix the config/query/filter so that *class* of miss can't recur,
+   and enroll the company on the watchlist if it has a pollable board.
+4. **Log the tally** — record the miss + root cause in memory (`project_job_pipeline.md`,
+   "discovery miss tally"). **Standing decision (2026-07-02): a third WitnessAI-class miss
+   (good company, pollable board, invisible to discovery) triggers building the ATS
+   directory-harvest layer** — bulk-collect Ashby/Greenhouse slugs, auto-vet
+   programmatically (board live + ≥1 US fit-title), auto-enroll at low priority, with
+   automatic dead-board pruning. Daily poll cost stays flat (poller pre-filters to a fixed
+   top-25); the build is an engineering session, not a heavier daily process.
+
 ## Quick Commands
 - "Tailor for [JD]" — Full tailoring workflow above
 - "Compare [company]" — Show diff between tailored version and master

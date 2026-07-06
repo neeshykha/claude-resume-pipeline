@@ -65,8 +65,8 @@
       },
       {
         "name": "AI-Native & AI-Safety Orgs (vertical discovery)",
-        "query": "(\"AI safety\" OR \"frontier model\" OR \"applied AI\" OR \"AI research\" OR \"contact center AI\" OR \"customer support AI\") (\"customer success\" OR operations OR implementation OR deployment OR solutions) jobs 2026",
-        "notes": "Catches AI-native and AI-safety research orgs (e.g. FAR.AI-type) that are off the watchlist and whose fitting roles may be titled differently (e.g. 'Operations Generalist'). Vertical/company discovery, not title-keyed — surface the COMPANY, then verify board + add to watchlist so the poller scans its full roster. Apply AI bonus (+20) to in-vertical hits. Added 2026-06-25 after a manually-found FAR.AI role exposed that the discovery layer was too title-narrow.",
+        "query": "(\"AI safety\" OR \"AI security\" OR \"AI governance\" OR \"frontier model\" OR \"applied AI\" OR \"AI research\" OR \"contact center AI\" OR \"customer support AI\") (\"customer success\" OR \"technical account\" OR operations OR implementation OR deployment OR solutions) jobs 2026",
+        "notes": "Catches AI-native, AI-safety, AI-security, and AI-governance orgs that are off the watchlist and whose fitting roles may be titled differently (e.g. 'Operations Generalist'). Vertical/company discovery, not title-keyed — surface the COMPANY, then verify board + add to watchlist so the poller scans its full roster. Apply AI bonus (+20) to in-vertical hits. Added 2026-06-25 after a manually-found FAR.AI role exposed that the discovery layer was too title-narrow; 'AI security'/'AI governance'/'technical account' added 2026-07-02 after WitnessAI (AI security, 102 people, Atlanta-hybrid TAM) was invisible to this query for the same reason.",
         "status": "active",
         "frequency": "daily"
       },
@@ -424,7 +424,8 @@
       "name": "Smartsheet",
       "ats": "greenhouse",
       "slug": "smartsheet",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "2000+"
     },
     {
       "name": "Iterable",
@@ -436,7 +437,8 @@
       "name": "Ping Identity",
       "ats": "greenhouse",
       "slug": "pingidentity",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "2000+"
     },
     {
       "name": "Commvault",
@@ -467,7 +469,8 @@
       "name": "RapidSOS",
       "ats": "greenhouse",
       "slug": "rapidsos",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "201-500"
     },
     {
       "name": "PerfectServe",
@@ -814,7 +817,9 @@
       "priority": "low",
       "reason": "AI service management + customer service automation. Maven-type company. Board shows only India/Greece engineering roles as of 2026-05-19 — monitor for US openings. Had Atlanta AE role historically.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) — AI service management. NOTE: apply -15 location penalty if no US remote option on role"
+      "bonus_reason": "AI/ML platform (+20) — AI service management. NOTE: apply -15 location penalty if no US remote option on role",
+      "board_status": "404_seen_2026-07-06",
+      "recheck_after": "2026-07-13"
     },
     {
       "name": "Sierra",
@@ -1257,6 +1262,87 @@
       "score_bonus": 20,
       "bonus_reason": "AI security/governance platform - this IS the AI/ML bonus, do not stack",
       "notes": "AI security/governance (intent-based AI security: shadow-AI visibility, jailbreak/exfiltration guardrails). 102 employees (May 2026), $85.5M raised (Sound Ventures strategic Jan 2026; GV/Ballistic Series A), 500% ARR growth. Has Atlanta GTM presence: TAM and VP Presales both Atlanta-hybrid. Watch for CS/TAM/support/implementation roles; their JDs may say Remote in the Ashby location field but Atlanta-hybrid in the body - read the body."
+    },
+    {
+      "name": "Arcadia (energy)",
+      "ats": "greenhouse",
+      "slug": "arcadiacareers",
+      "priority": "medium",
+      "enrolled_date": "2026-07-02",
+      "enrolled_via": "user mention (passion domain: electrification/clean energy); board verified live, 12 roles",
+      "notes": "AI-powered energy intelligence platform; routes residential/commercial power data toward clean energy (passion_domains: electrification_ev applies, +10). NOT the same company as arcadia.io (healthcare data, Lever slug 'arcadia') - do not confuse. No US customer-facing fit roles as of 2026-07-02 (a Director of CS req recently closed); watch for CSM/TAM/support-ops/implementation openings. headcount_band: verify via backfill housekeeping, do not guess."
+    },
+    {
+      "name": "Bland",
+      "ats": "ashby",
+      "slug": "bland",
+      "priority": "medium",
+      "headcount_band": "1-50",
+      "enrolled_date": "2026-07-06",
+      "enrolled_via": "Ashby board dork 2026-07-03 -> verified",
+      "reason": "AI voice/phone agent startup (~25-65 employees per conflicting sources, using lower recent estimate). Verified live 2026-07-06: Customer Success Manager, Technical Account Manager, Forward Deployed Engineer all San Francisco-based - direct title fits.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI voice agents, Maven-type category"
+    },
+    {
+      "name": "Temporal Technologies",
+      "ats": "ashby",
+      "slug": "temporal",
+      "priority": "low",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-06",
+      "enrolled_via": "Ashby board dork 2026-07-03 -> verified",
+      "reason": "Workflow orchestration dev-infra company (~500 employees). Verified live 2026-07-06: mostly eng/sales roles, but Staff Developer Success Engineer (Seattle) and Senior Manager, Technical Services Operations are support-ops fits. Not AI-native - no AI bonus."
+    },
+    {
+      "name": "6sense",
+      "ats": "greenhouse",
+      "slug": "6sense",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-06",
+      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified",
+      "reason": "ABM/intent-data platform (~1,489 employees per LinkedIn). Verified live 2026-07-06: Principal Customer Success Manager, Strategic (United States) and Senior Customer Success Manager are direct fits."
+    },
+    {
+      "name": "Leapwork",
+      "ats": "greenhouse",
+      "slug": "leapwork",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-06",
+      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified",
+      "reason": "Test automation SaaS, Copenhagen HQ (~265-330 employees). Verified live 2026-07-06: Senior Customer Success Manager and Enterprise Solutions Consultant both US-reachable (Boston/NY/NJ/DC)."
+    },
+    {
+      "name": "Contentful",
+      "ats": "greenhouse",
+      "slug": "contentful",
+      "priority": "low",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-06",
+      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified",
+      "reason": "Headless CMS platform, Berlin HQ (~1,000 employees). Verified live 2026-07-06: Associate Solution Architect, Professional Services is NY-based and US-reachable; most other roles EMEA-skewed."
+    },
+    {
+      "name": "Contentsquare",
+      "ats": "lever",
+      "slug": "contentsquare",
+      "priority": "low",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-06",
+      "enrolled_via": "Lever board dork 2026-07-03 -> verified",
+      "reason": "Digital experience analytics platform, Paris HQ (~1,700 employees). Verified live 2026-07-06: Customer Support Engineer and Solution Consultant are US-based; TAM/Solutions Consultant reqs skew EMEA/APAC."
+    },
+    {
+      "name": "Clerky",
+      "ats": "ashby",
+      "slug": "clerky",
+      "priority": "low",
+      "headcount_band": "1-50",
+      "enrolled_date": "2026-07-06",
+      "enrolled_via": "Remotive API 2026-07-06 -> verified",
+      "reason": "Legal paperwork automation for startups, bootstrapped, Palo Alto HQ (~15-35 employees). Verified live 2026-07-06: Customer Operations & Writing Specialist (Entry Level) is a direct fit and the small-company bonus applies."
     }
   ]
 }
