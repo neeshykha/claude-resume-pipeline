@@ -72,6 +72,7 @@ Before tailoring, apply these principles based on how modern ATS (Greenhouse, Le
 - **Terminology**: Swap synonyms to match JD language exactly (e.g., if JD says "stakeholder engagement", use that instead of "stakeholder management")
 - **Skills section**: Reorder skill categories so the most relevant ones appear first. Mirror the JD's skill language precisely.
 - **First bullet rule**: Apply the 6-second rule (see Step 2). The first iApts bullet must be the single most compelling, metrics-dense achievement relative to this JD. Choose from: Maven AGI 85% deflection, CES system implementation, Salesforce 25+ automations, 100% case volume scale, 8-person global team build. Which one leads depends entirely on what the JD weights most.
+- **Portfolio projects**: `portfolio_projects.md` lists public GitHub projects citable in resumes and cover letters, each with a "cite when" trigger and a resume-ready line. Check it during tailoring; when the JD matches a trigger (AI evaluation, deployment rigor, workflow automation), work the project in — a verifiable public repo is stronger evidence than a claim. Never embellish beyond what that file states. The Friday portfolio routine appends new entries after each build.
 - **Keep it honest**: Every claim must be backed by actual experience from the master resume
 
 ### 4. Save the Tailored Version
