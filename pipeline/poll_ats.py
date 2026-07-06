@@ -104,6 +104,13 @@ TITLE_KEYWORDS_EXACT = [
     "field engineer",
     "engagement manager",
     "support engineer",
+    # added 2026-07-06 — Harvey's "User Operations Manager" JD is functionally
+    # identical to Support/Customer Operations Manager (leads the support team,
+    # SLAs, escalations, process optimization, hiring) but used a company-specific
+    # team name ("User Operations") that didn't match any existing keyword or
+    # clear the 2-fragment borderline threshold. User-surfaced miss, score ~107.
+    "user operations manager",
+    "customer operations manager",
 ]
 
 # Broader keyword fragments for borderline matching.
