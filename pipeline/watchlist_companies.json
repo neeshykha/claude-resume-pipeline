@@ -1344,6 +1344,16 @@
       "enrolled_date": "2026-07-06",
       "enrolled_via": "Remotive API 2026-07-06 -> verified",
       "reason": "Legal paperwork automation for startups, bootstrapped, Palo Alto HQ (~15-35 employees). Verified live 2026-07-06: Customer Operations & Writing Specialist (Entry Level) is a direct fit and the small-company bonus applies."
+    },
+    {
+      "name": "Komodo Health",
+      "ats": "greenhouse",
+      "slug": "komodohealth",
+      "priority": "high",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-06",
+      "enrolled_via": "user-surfaced (LinkedIn alert) -> verified",
+      "reason": "Healthcare real-world-data analytics company (~750 employees). Verified live 2026-07-06: AI Enablement Lead (Mavens), Remote US, $125K-$185K - exceptional fit, JD wants hands-on Claude/prompt-engineering/workflow-automation experience which is close to a direct description of Aneesh's actual iApartments role. Also has multiple Senior Salesforce Solutions Consultant reqs (mostly EMEA/India-based; one US-based). Health-tech passion domain applies. The \"Manager, Analytics Services\" role that originally surfaced this company is NOT a fit (needs SQL/Python/R + quantitative degree) - don't tailor for that one."
     }
   ]
 }
