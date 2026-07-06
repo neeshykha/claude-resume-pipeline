@@ -6,6 +6,12 @@ Format per entry: repo URL, one-line description, when to cite it, and a resume-
 
 ---
 
+## agent-ops-bench
+**URL:** https://github.com/neeshykha/agent-ops-bench
+**What:** Single vs multi-agent benchmark on a labeled ticket triage workload. Three configurations (generalist, parallel specialists, generalist + independent QA reviewer) measured on accuracy, cost per ticket, and latency. Key results: specialists took routing 83%→97% but left severity judgment flat; the QA reviewer took severity 70%→80% and caught an under-triaged critical ticket, at $0.60 per net correction.
+**Cite when:** JD or interview asks about agent orchestration, multi-agent systems, "managing agents," AI cost/quality tradeoffs, or agentic workflow design. This is the direct answer to "how do you think about agents" — with measurements. Pairs with the workforce-management framing: agent patterns are staffing decisions (generalist headcount, specialist roles, QA sampling layer).
+**Resume line:** Benchmarked single-agent vs. multi-agent architectures on a labeled support triage workload, quantifying when specialist agents and QA-reviewer agents justify their added cost and latency.
+
 ## claude-triage-simulator
 **URL:** https://github.com/neeshykha/claude-triage-simulator
 **What:** AI ticket triage classifier (severity + routing) for IoT support, with an eval harness — 60-ticket labeled dataset, confusion matrix, under/over-triage analysis, edge-case audit. Caught 12/12 P1s; 75% severity / 87% routing accuracy.
