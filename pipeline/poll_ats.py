@@ -620,22 +620,34 @@ def poll_all(run_date: date) -> dict:
             elif alt_dedup_key and alt_dedup_key in seen_jobs:
                 matched_key = alt_dedup_key
             new_req_of_applied = False
-            if matched_key and is_within_dedup_window(seen_jobs[matched_key], run_date):
+            if matched_key:
                 seen_entry = seen_jobs[matched_key]
                 seen_url = (seen_entry.get("url") or "").rstrip("/").lower()
                 new_url = (apply_url or "").rstrip("/").lower()
-                # Title-based keys collide when a company reposts the same title
-                # under a NEW requisition (observed: Ping Identity Senior TAM).
-                # If the stored entry was APPLIED to but this posting has a
-                # different URL, it's a new req — surface it flagged instead of
-                # silently skipping. Unapplied same-title reposts stay skipped
-                # (they're noise within the 30-day window).
-                if seen_entry.get("applied") and seen_url and new_url and seen_url != new_url:
-                    new_req_of_applied = True
-                else:
+                same_url = bool(seen_url and new_url and seen_url == new_url)
+                # An already-applied posting must never resurface as "new" just
+                # because it's been open long enough to outlive the 30-day
+                # dedup window (observed 2026-07-06: Assembled's Enterprise
+                # Deployment Strategist, applied 2026-05-07, resurfaced as a
+                # fresh match on 2026-07-06 because first_seen_date was 61 days
+                # old). Same URL + applied = permanent skip regardless of age.
+                if seen_entry.get("applied") and same_url:
                     stats["dedup_skipped"] += 1
                     reseen.append(matched_key)
                     continue
+                if is_within_dedup_window(seen_entry, run_date):
+                    # Title-based keys collide when a company reposts the same
+                    # title under a NEW requisition (observed: Ping Identity
+                    # Senior TAM). If the stored entry was applied but this
+                    # posting has a different URL, it's a new req — surface it
+                    # flagged instead of silently skipping. Unapplied
+                    # same-title reposts stay skipped (noise within the window).
+                    if seen_entry.get("applied") and not same_url:
+                        new_req_of_applied = True
+                    else:
+                        stats["dedup_skipped"] += 1
+                        reseen.append(matched_key)
+                        continue
 
             # Company cap check
             if is_capped:
