@@ -32,106 +32,103 @@
       "why": "AI Enablement Coach - Atlanta HQ (NCR Voyix spun off from NCR, headquartered Atlanta). Strong Atlanta-bonus candidate. Confirmed real site is ncr.wd1.myworkdayjobs.com/ext_us via WebSearch 2026-07-06, but CXS jobs API probes 400/403'd - needs a browser-based check next run."
     },
     {
-      "name": "Conversica",
-      "ats": "lever",
-      "slug": "conversica",
-      "source": "Lever board dork 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Technical Account Manager - conversational AI/data intelligence platform (AI-native candidate, TAM provides white-glove onboarding + technical troubleshooting)."
-    },
-    {
-      "name": "Emergent Labs",
-      "ats": "greenhouse",
-      "slug": "emergentlabsinc",
-      "source": "Greenhouse board dork 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Manager, Technical Account Management - name suggests AI-native startup; role leads a team of TAMs/Key Account Managers, 8+ yrs TAM/CS Eng/Solutions Eng/Professional Services background wanted."
-    },
-    {
-      "name": "Deepgram",
-      "ats": "ashby",
-      "slug": "Deepgram",
-      "source": "Ashby board dork 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Customer Success Engineer (Americas) - AI speech/voice recognition platform, Maven-type category."
-    },
-    {
-      "name": "Macroscope",
-      "ats": "ashby",
-      "slug": "macroscope",
-      "source": "Ashby board dork 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Technical Customer Success Engineer - likely small/early-stage, post-sale engineering-leader relationship focus."
-    },
-    {
-      "name": "Sprig",
-      "ats": "ashby",
-      "slug": "sprig",
-      "source": "Ashby board dork 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Customer Success Engineer - 2-5+ yrs Technical CS/Solutions Architecture/Implementation Engineering/Technical Support background wanted."
-    },
-    {
-      "name": "FourKites",
-      "ats": "greenhouse",
-      "slug": "fourkites",
-      "source": "Greenhouse board dork 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Senior Customer Engineer - supply chain visibility platform, owns technical customer relationship end-to-end including agentic workflow architecture."
-    },
-    {
-      "name": "Talon.One",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Atlanta 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Customer Success Manager - surfaced twice (general + DACH-specific reqs), worth checking for a US-reachable role."
-    },
-    {
-      "name": "Cato Networks",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Atlanta/Remote 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Customer Success Engineer - SASE/network security platform, guides strategic customers through implementation lifecycle."
-    },
-    {
       "name": "ThoughtSpot",
-      "ats": null,
-      "slug": null,
+      "ats": "workday",
+      "slug": "thoughtspot.wd5.myworkdayjobs.com/careers",
       "needs_ats_resolution": true,
       "source": "BuiltIn Remote 2026-07-06",
       "first_seen": "2026-07-06",
-      "why": "Customer Success Operations Manager - direct title fit (Support/CS Operations Manager tier)."
-    },
-    {
-      "name": "Highspot",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Remote 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Sr. Customer Success Manager, Enterprise - collaborates with deployment consultants and TAMs."
-    },
-    {
-      "name": "Centre for the Governance of AI (GovAI)",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "80,000 Hours job board 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Director of Operations (Mid-Senior, Remote USA, $155-190k) - AI governance nonprofit. 'Director' title needs a careful read against the VP/Head-of hard filter before tailoring; salary is strong. AI-safety/governance vertical bonus applies."
+      "why": "Customer Success Operations Manager - direct title fit. Confirmed real site is thoughtspot.wd5.myworkdayjobs.com/careers via WebSearch 2026-07-07; CXS jobs API not yet probed (expect the same Cloudflare-blocking pattern as Gainsight/NCR Voyix) - needs a browser-based check, not a curl attempt."
     },
     {
       "name": "Cengage",
       "ats": "workday",
-      "slug": null,
+      "slug": "cengage.wd5.myworkdayjobs.com/CengageNorthAmericaCareers",
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-06",
       "first_seen": "2026-07-06",
-      "why": "AI Enablement Operations Manager (Remote US) - direct Tier-2 AI-title fit. wd_host hint: cengage.wd5.myworkdayjobs.com, tenant likely 'CengageNorthAmericaCareers' per URL seen - verify via browser-based check given the Cloudflare-blocking pattern hit on other Workday tenants this run."
+      "why": "AI Enablement Operations Manager (Remote US) - direct Tier-2 AI-title fit. Confirmed tenant cengage.wd5.myworkdayjobs.com/CengageNorthAmericaCareers via WebSearch 2026-07-07 - needs a browser-based check given the Cloudflare-blocking pattern hit on other Workday tenants."
+    },
+    {
+      "name": "Harness",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn Atlanta 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "Senior Customer Success Engineer -- remote with Atlanta as one of several listed offices (Dallas/Chicago/Boston/Atlanta/NYC)."
+    },
+    {
+      "name": "Propelus",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn Atlanta 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "Customer Success Manager (Associate-level) -- SMB/Mid-Market book, digital + scaled outreach."
+    },
+    {
+      "name": "First Advantage",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn Atlanta 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "Customer Success Analyst -- Atlanta-based background-screening company."
+    },
+    {
+      "name": "Rescale",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "Customer Success Engineer, Remote US -- works with Solutions Architect on deployments."
+    },
+    {
+      "name": "Uptycs",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "Customer Success Manager, Remote -- post-sale services leadership, security/observability platform."
+    },
+    {
+      "name": "DFIN",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "Customer Success Operations Manager, Remote -- scalable CS process/metrics ownership."
+    },
+    {
+      "name": "HumanSignal",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "Solutions Architect (Post-Sales) -- independently leads technical onboarding/deployment, AI/ML data-labeling platform (AI bonus candidate)."
+    },
+    {
+      "name": "DTEX Systems",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "Customer Success Manager, Remote US -- insider-risk/security platform."
+    },
+    {
+      "name": "Coursedog",
+      "ats": null,
+      "slug": null,
+      "source": "AI-Titled Roles discovery 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "AI Enablement Lead -- company's first hire in this function, define/operationalize AI adoption."
+    },
+    {
+      "name": "Availity",
+      "ats": "workday",
+      "slug": null,
+      "source": "Workday board dork 2026-07-07",
+      "first_seen": "2026-07-07",
+      "why": "Senior Customer Success Manager + Customer Success Manager, both Remote -- healthcare data exchange platform (health-tech passion domain candidate). Workday tenant availity.wd1.myworkdayjobs.com -- expect the same Cloudflare CXS-API blocking pattern as Gainsight/NCR Voyix; needs a browser-based check.",
+      "needs_ats_resolution": true
     }
   ],
   "enrolled": [
@@ -338,6 +335,81 @@
       "enrolled_date": "2026-07-06",
       "headcount_band": "1-50",
       "enrolled_via": "Remotive API 2026-07-06 -> verified"
+    },
+    {
+      "name": "Deepgram",
+      "ats": "ashby",
+      "slug": "Deepgram",
+      "enrolled_date": "2026-07-07",
+      "headcount_band": "201-500",
+      "enrolled_via": "pending queue verified 2026-07-07"
+    },
+    {
+      "name": "Macroscope",
+      "ats": "ashby",
+      "slug": "macroscope",
+      "enrolled_date": "2026-07-07",
+      "headcount_band": "1-50",
+      "enrolled_via": "pending queue verified 2026-07-07"
+    },
+    {
+      "name": "Sprig",
+      "ats": "ashby",
+      "slug": "sprig",
+      "enrolled_date": "2026-07-07",
+      "headcount_band": "51-200",
+      "enrolled_via": "pending queue verified 2026-07-07"
+    },
+    {
+      "name": "FourKites",
+      "ats": "greenhouse",
+      "slug": "fourkites",
+      "enrolled_date": "2026-07-07",
+      "headcount_band": "501-2000",
+      "enrolled_via": "pending queue verified 2026-07-07"
+    },
+    {
+      "name": "Cato Networks",
+      "ats": "greenhouse",
+      "slug": "catonetworks",
+      "enrolled_date": "2026-07-07",
+      "headcount_band": "501-2000",
+      "enrolled_via": "pending queue verified 2026-07-07"
+    },
+    {
+      "name": "Highspot",
+      "ats": "lever",
+      "slug": "highspot",
+      "enrolled_date": "2026-07-07",
+      "headcount_band": "501-2000",
+      "enrolled_via": "pending queue verified 2026-07-07"
+    },
+    {
+      "name": "Confido",
+      "ats": "ashby",
+      "slug": "confido",
+      "enrolled_date": "2026-07-07",
+      "headcount_band": "1-50",
+      "enrolled_via": "harvest_hn_hiring.py July 2026 thread",
+      "notes": "AI infra for CPG brands (YC S21), NYC onsite. Strong title fits: Customer Success Manager, Customer Success Director, Director of Implementation, Implementation Manager, Product Deployment Specialist -- all NYC office, not remote."
+    },
+    {
+      "name": "Azul",
+      "ats": "lever",
+      "slug": "azul",
+      "enrolled_date": "2026-07-07",
+      "headcount_band": null,
+      "enrolled_via": "Lever board dork 2026-07-07",
+      "notes": "Java/JVM platform vendor. Customer Success Manager AND Technical Account Manager both US-Remote -- strong double fit. Headcount unconfirmed via WebSearch (conflicting/stale sources) -- left null rather than guessed."
+    },
+    {
+      "name": "Epsilon3",
+      "ats": "lever",
+      "slug": "epsilon3",
+      "enrolled_date": "2026-07-07",
+      "headcount_band": "1-50",
+      "enrolled_via": "Lever board dork 2026-07-07",
+      "notes": "AI-powered ERP/MES/test software for aerospace manufacturing (YC, ~31-33 employees). Senior Customer Success Account Manager, Los Angeles (not confirmed remote)."
     }
   ],
   "rejected": [
@@ -523,6 +595,46 @@
       "slug": null,
       "rejected_date": "2026-07-06",
       "reason": "Workday tenant found (changehealthcare.wd5.myworkdayjobs.com) but CXS jobs API returned 422 on direct probing; Optum/UnitedHealth-scale shared instance, uncertain single-role fit not worth further automated probing effort.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Conversica",
+      "ats": "lever",
+      "slug": "conversica",
+      "rejected_date": "2026-07-07",
+      "reason": "The Technical Account Manager role that surfaced it has closed; remaining live roles (Content Marketing Manager, Senior/Staff Backend Platform Engineer, Senior Revenue Operations Analyst) are not fit-space.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Talon.One",
+      "ats": "greenhouse",
+      "slug": "talonone",
+      "rejected_date": "2026-07-07",
+      "reason": "Board live (resolved via greenhouse.io/talonone) but every posting is Australia/Berlin/London/Singapore-based, including the Customer Success Manager and Technical Account Manager Lead roles \u2014 no US-reachable role.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Centre for the Governance of AI (GovAI)",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-07",
+      "reason": "No standard ATS (Greenhouse/Ashby/Lever/Workday) \u2014 GovAI runs an 'expression of interest' form at governance.ai/opportunities, not pollable by poll_ats.py.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Middesk",
+      "ats": "ashby",
+      "slug": "middesk",
+      "rejected_date": "2026-07-07",
+      "reason": "Board live (business verification platform) but the only support-adjacent role is 'Support Associate' (NYC onsite) -- a junior IC title below any of Aneesh's target tiers. Rest of board is sales/eng/data/legal.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Affirm",
+      "ats": "greenhouse",
+      "slug": "affirm",
+      "rejected_date": "2026-07-07",
+      "reason": "Senior Technical Account Manager is Remote Canada -- not US-reachable. No other fit-space role found.",
       "recheck_if_resurfaced": true
     }
   ]
