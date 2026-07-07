@@ -18,19 +18,34 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 **Permission-safety rules (violating these hangs the autonomous run):**
 - NEVER use `python3 -c "..."` inline scripts
 - NEVER use bash arrays or shell control flow (`for`/`while`/`if`, `$(...)` loops)
+- NEVER chain multiple commands in one Bash call with `;`, `&&`, `||`, `|`, or subshells
+  `(...)` — even "safe" building blocks like `ls | grep` or `ls; echo; ls | tail`. The
+  permission matcher approves single commands against durable wildcard entries
+  (`Bash(ls:*)`, `Bash(grep:*)`) but treats a chained/piped command as one unmatched shape
+  needing its own literal-string approval — and that literal string usually embeds
+  something that changes daily (a date, a filename), so it can never be pre-approved for
+  future runs even after being approved once. For existence/content checks on a single
+  file (e.g. "does `run_{today}.json` exist and what does it contain"), use the **Read
+  tool**, not Bash — Read isn't gated by this at all, and reading a nonexistent file just
+  returns a clean error instead of hanging. If you need real multi-step shell logic, put it
+  in a `pipeline/_taskname.py` script and run that one plain command instead of chaining.
 - Temp scripts go to `pipeline/_taskname.py` (the `_*.py` pattern is allow-listed), NOT `/tmp/`
 - Use `Read`/`Write` tools for small file edits; use the helper scripts for big/structured ones
 
 ## Step 0: Duplicate-trigger guard, pre-run notes, style guide
 
 1. **Duplicate-trigger guard.** The scheduler has double-fired on the same day before
-   (2026-04-14, 2026-04-17, 2026-06-10, 2026-07-02). If `pipeline/jobs/run_{today}.json`
-   already exists and records a completed run (has stats and an email draft ID): verify the
-   Gmail draft still exists, log one line to `pipeline/SESSION_STATE.md`
-   ("duplicate trigger [time], no action"), and **STOP — do not re-poll, re-tailor,
-   re-draft, or touch tracking files.** A second run on the same day double-counts
-   tracking and creates duplicate digest drafts.
-2. If `pipeline/NEXT_RUN_NOTES.md` exists: read it, incorporate it, delete it, then proceed.
+   (2026-04-14, 2026-04-17, 2026-06-10, 2026-07-02). Use the **Read tool** directly on
+   `pipeline/jobs/run_{today}.json` (do not check existence via a chained/piped Bash
+   command — see the permission-safety rule above). If the Read errors because the file
+   doesn't exist, there's no duplicate; proceed. If it returns content and that content
+   records a completed run (has stats and an email draft ID): verify the Gmail draft still
+   exists, log one line to `pipeline/SESSION_STATE.md` ("duplicate trigger [time], no
+   action"), and **STOP — do not re-poll, re-tailor, re-draft, or touch tracking files.**
+   A second run on the same day double-counts tracking and creates duplicate digest drafts.
+2. Use the **Read tool** directly on `pipeline/NEXT_RUN_NOTES.md` (same reasoning: no
+   chained Bash check). If it errors because the file doesn't exist, proceed normally. If
+   it returns content: incorporate it, delete the file, then proceed.
 3. **Read `/Users/aneesh/.claude/projects/-Users-aneesh/memory/user_writing_style.md` in
    full, every run, before any drafting.** It governs all resume, cover letter, and digest
    prose, and it changes over time. Standing hard rule from it: prefer colons/semicolons
