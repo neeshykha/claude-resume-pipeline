@@ -209,7 +209,6 @@
         "Deployment Manager",
         "Deployment Strategist",
         "AI Engagement Manager",
-        "Forward Deployed Engineer",
         "Professional Services Manager",
         "Implementation Consultant",
         "AI Implementation Manager",
@@ -259,8 +258,10 @@
         "Onboarding Manager",
         "Customer Onboarding",
         "Partner Success Manager",
-        "Product Customer Success"
-      ]
+        "Product Customer Success",
+        "Forward Deployed Engineer"
+      ],
+      "forward_deployed_engineer_note": "Demoted from Tier 2 (+22) to Tier 4 (+8) on 2026-07-09 after a near-100% miss rate across 7+ runs (2026-06-25 through 2026-07-09) covering dozens of postings at Parloa, Modal, Baseten, Antithesis, PermitFlow, Roboflow, Komodo Health, and Confido. In the 2026 AI-infra hiring market this title has drifted to mean 'customer-facing software engineer who ships production code' (Kubernetes, Terraform, sometimes a CS-degree requirement), not deployment strategy or ops — a real skill mismatch with the master resume, not a scoring artifact. ALWAYS read the actual JD before tailoring an FDE role, regardless of score — do not trust title-tier alone for this specific title. Titles that tested well and stayed at Tier 2: Deployment Strategist, AI Deployment Manager, AI Deployment Lead."
     },
     "tier2b_ai_wildcard": {
       "title_match_score": 18,

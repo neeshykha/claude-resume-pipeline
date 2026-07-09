@@ -57,6 +57,8 @@ SHORTLIST_SIZE = 25
 MIN_SMALL_SLOTS = 10
 MIN_LARGE_SLOTS = 10
 SMALL_BANDS = {"1-50", "51-200", "201-500"}
+BORDERLINE_SIZE = 20
+MIN_AI_WILDCARD_SLOTS = 10  # reserved quota; see borderline-list build below
 MIN_SALARY = 100_000
 
 # ── Extended title filter ────────────────────────────────────────────────────
@@ -188,6 +190,27 @@ def title_matches_borderline(title: str) -> int:
     """Count how many title fragments match. ≥2 = borderline candidate."""
     t = title.lower()
     return sum(1 for frag in TITLE_FRAGMENTS if frag in t)
+
+
+def title_matches_ai_wildcard(title: str, signal_words: list, exclude_words: list) -> bool:
+    """Mirror watchlist_companies.json → _title_scoring_tiers.tier2b_ai_wildcard.
+
+    Companies keep coining novel "AI <function>" titles (AI Success Manager, AI
+    Outcomes Manager, ...) faster than anyone can enumerate them by hand. A
+    single word-bounded "AI" hit plus one signal word (customer, deployment,
+    adoption, etc.) is enough to flag a title for Claude's review — it does NOT
+    need to also clear the generic 2-fragment borderline threshold. Titles that
+    are really coding/IC roles (AI Engineer, AI Architect) are excluded via
+    exclude_words so this doesn't just re-surface the FDE problem under a new
+    name. Single source of truth for signal_words/exclude_words is the JSON
+    config — this function has no hardcoded title list of its own.
+    """
+    t = title.lower()
+    if not re.search(r'\bai\b', t):
+        return False
+    if any(ex in t for ex in exclude_words):
+        return False
+    return any(sig in t for sig in signal_words)
 
 
 def title_excluded(title: str) -> bool:
@@ -514,6 +537,11 @@ def poll_all(run_date: date) -> dict:
         domain: [kw.lower() for kw in spec.get("poller_keywords", [])]
         for domain, spec in passion_cfg.get("domains", {}).items()
     }
+    # AI-wildcard title config (tier2b_ai_wildcard) — read from the JSON so the
+    # poller and Claude's scoring rubric never drift apart again.
+    ai_wildcard_cfg = watchlist.get("_title_scoring_tiers", {}).get("tier2b_ai_wildcard", {})
+    ai_wildcard_signal_words = [w.lower() for w in ai_wildcard_cfg.get("signal_words", [])]
+    ai_wildcard_exclude_words = [w.lower() for w in ai_wildcard_cfg.get("exclude_if_contains", [])]
     seen_jobs = load_seen_jobs()
     unapplied_counts = count_unapplied_by_company(seen_jobs)
     ever_surfaced, recent_surfaced = company_surface_stats(seen_jobs, run_date)
@@ -527,6 +555,7 @@ def poll_all(run_date: date) -> dict:
         "total_jobs_scanned": 0,
         "title_matched": 0,
         "title_borderline": 0,
+        "title_ai_wildcard": 0,
         "dedup_skipped": 0,
         "cap_suppressed": 0,
         "location_filtered": 0,
@@ -588,8 +617,12 @@ def poll_all(run_date: date) -> dict:
             # Check title match
             is_exact = title_matches_exact(title)
             borderline_count = title_matches_borderline(title)
+            is_ai_wildcard = (
+                not is_exact
+                and title_matches_ai_wildcard(title, ai_wildcard_signal_words, ai_wildcard_exclude_words)
+            )
 
-            if not is_exact and borderline_count < 2:
+            if not is_exact and borderline_count < 2 and not is_ai_wildcard:
                 continue  # Not relevant at all
 
             location = parse_location(job_data, ats)
@@ -678,6 +711,11 @@ def poll_all(run_date: date) -> dict:
             }
             if new_req_of_applied:
                 entry["new_req_of_applied_title"] = True
+            if is_ai_wildcard:
+                # Flags entries that only qualified via tier2b_ai_wildcard so
+                # Claude scores them at +18 (not by guessing a tier) and the
+                # digest can call out "novel AI title, needs a look."
+                entry["ai_wildcard"] = True
 
             if is_exact:
                 matched.append(entry)
@@ -685,6 +723,8 @@ def poll_all(run_date: date) -> dict:
             else:
                 borderline.append(entry)
                 stats["title_borderline"] += 1
+                if is_ai_wildcard:
+                    stats["title_ai_wildcard"] += 1
 
         # Rate limit: small delay between companies to be polite
         time.sleep(0.3)
@@ -695,11 +735,20 @@ def poll_all(run_date: date) -> dict:
         t = job["title"].lower()
 
         # Title quality (exact target title vs substring)
+        # "forward deployed engineer" removed 2026-07-09: across 7+ runs, real
+        # FDE JDs at AI-infra companies (Parloa, Modal, Baseten, Confido, ...)
+        # near-100% require hands-on production software engineering — a skill
+        # mismatch, not a scoring artifact. Giving it the +30 premium let it
+        # crowd out better-fitting titles under the per-company diversity cap
+        # before anyone read the actual JD. Still exact-matched (stays visible
+        # for review) but no longer treated as a top-tier title at pre-score
+        # time; see _title_scoring_tiers.tier4_weak_stretch in
+        # watchlist_companies.json for the full-scoring-side demotion.
         top_titles = ["technical account manager", "customer success manager",
                        "solutions engineer", "implementation consultant",
                        "implementation manager", "technical enablement manager",
                        "ai enablement manager", "ai implementation manager",
-                       "forward deployed engineer", "deployment strategist"]
+                       "deployment strategist"]
         if any(tt in t for tt in top_titles):
             score += 30
         else:
@@ -767,10 +816,11 @@ def poll_all(run_date: date) -> dict:
         # which auto-granted +10 to every role at an AI-named company (Cresta,
         # OpenAI, Arize…) regardless of the role's actual relevance. That rewarded
         # company identity over role fit and let one AI company sweep the shortlist.
-        for kw in ["ai", "agentic", "voice", "llm", "machine learning"]:
-            if kw in t:
-                score += 10
-                break
+        # "ai" is word-boundary matched (2026-07-09 fix) — a bare substring check
+        # would false-positive on any title containing "domain," "maintain,"
+        # "captain," etc.
+        if re.search(r'\bai\b', t) or any(kw in t for kw in ["agentic", "voice", "llm", "machine learning"]):
+            score += 10
         # IoT boost — company-name match retained: Aneesh's IoT background is a
         # genuine domain differentiator and few watchlist companies are IoT-named.
         for kw in ["iot", "hardware", "smart home", "connected"]:
@@ -832,12 +882,31 @@ def poll_all(run_date: date) -> dict:
         1 for j in top_matched if (j.get("headcount_band") or "") in SMALL_BANDS)
     stats["shortlist_large_or_unknown"] = len(top_matched) - stats["shortlist_small"]
 
-    borderline.sort(key=lambda j: -j.get("borderline_score", 0))
+    # Cap borderline at BORDERLINE_SIZE, but reserve slots for ai_wildcard hits
+    # first. A plain score-sort-then-slice buries them: ai_wildcard entries
+    # often carry a low borderline_score (that's exactly why they didn't clear
+    # the generic 2-fragment threshold on their own), so on a busy AI-title day
+    # they'd lose every tiebreak against ordinary fragment matches and never
+    # reach the output Claude reads — silently defeating the wildcard match in
+    # title_matches_ai_wildcard(). Mirrors the small/large reserved-quota
+    # pattern used for the matched shortlist above.
+    ai_wildcard_pool = sorted(
+        (j for j in borderline if j.get("ai_wildcard")),
+        key=lambda j: -j.get("borderline_score", 0),
+    )
+    other_pool = sorted(
+        (j for j in borderline if not j.get("ai_wildcard")),
+        key=lambda j: -j.get("borderline_score", 0),
+    )
+    reserved = ai_wildcard_pool[:MIN_AI_WILDCARD_SLOTS]
+    leftover = ai_wildcard_pool[MIN_AI_WILDCARD_SLOTS:] + other_pool
+    leftover.sort(key=lambda j: -j.get("borderline_score", 0))
+    borderline_capped = reserved + leftover[:BORDERLINE_SIZE - len(reserved)]
 
     return {
         "run_date": run_date.isoformat(),
         "matched": top_matched,
-        "borderline": borderline[:20],  # Cap borderline at 20 titles for Claude review
+        "borderline": borderline_capped,
         "reseen_keys": reseen,
         "errors": errors,
         "stats": stats,
@@ -875,7 +944,7 @@ def main():
     print(f"Total jobs scanned: {s['total_jobs_scanned']}")
     print(f"Title matches (pre-filter): {s['title_matched']}")
     print(f"Top 25 by pre-score → output (from {s.get('total_matched_before_cap', s['title_matched'])})")
-    print(f"Borderline (for Claude review): {s['title_borderline']}")
+    print(f"Borderline (for Claude review): {s['title_borderline']} (of which {s['title_ai_wildcard']} via AI-wildcard)")
     print(f"Dedup skipped: {s['dedup_skipped']}")
     print(f"Diversity-capped (>{MAX_PER_COMPANY_PER_RUN}/company, dropped from shortlist): {s.get('diversity_dropped', 0)}")
     print(f"Cap suppressed: {s['cap_suppressed']}")

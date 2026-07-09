@@ -191,6 +191,16 @@ WebFetch each top job's apply URL. On failure (403/JS), WebSearch for a cached o
 copy (BuiltIn, ZipRecruiter, Greenhouse cache). If the JD is unreachable two runs in a
 row, drop it to the near-miss list with a note rather than stalling.
 
+**If the top-scored role at a company fails the JD read** (real skill mismatch — e.g. a
+Forward Deployed Engineer listing that turns out to require production coding), don't just
+drop the company. Pull that company's other live postings (direct ATS API call, same
+pattern as `pipeline/verify_workday.py`'s target-title scan) and check whether a
+lower-pre-scored role there is actually the better fit. This is how Confido's Implementation
+Manager got found on 2026-07-09 — it wasn't in the poller's top-25 at all because the
+diversity cap only kept the top 2 pre-scored roles (CSM + FDE) per company, and Implementation
+Manager's raw pre-score ranked below both. Only worth the extra API call when the top pick's
+JD genuinely disqualifies it — not a step to run for every company by default.
+
 ## Step 4: Tailor resumes and cover letters
 
 Follow the CLAUDE.md tailoring workflow for each top job (JD analysis → top-15 phrases →
