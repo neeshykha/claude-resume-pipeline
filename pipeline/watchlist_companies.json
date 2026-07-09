@@ -1140,6 +1140,26 @@
       "bonus_reason": "No AI/ML platform bonus - AI-assisted docs tool, not an AI-native customer-facing platform. Relies on small-company bonus + role fit."
     },
     {
+      "name": "Chainguard",
+      "ats": "greenhouse",
+      "slug": "chainguard",
+      "priority": "high",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-10",
+      "enrolled_via": "User-surfaced (LinkedIn job alert) 2026-07-10 -- pollable board was invisible to every discovery source",
+      "reason": "Container/software supply-chain security (Sigstore, distroless images). Verified live 2026-07-10: Customer Support Manager (Tier-1 exact title, Remote US, posted 2026-06-16) plus 3 Senior Customer Success Manager roles and a Senior Manager, CS Management role. Rich, previously invisible company."
+    },
+    {
+      "name": "Expel",
+      "ats": "greenhouse",
+      "slug": "expel",
+      "priority": "high",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-10",
+      "enrolled_via": "User-surfaced (LinkedIn job alert) 2026-07-10 -- pollable board was invisible to every discovery source",
+      "reason": "Managed detection & response (MDR) security operations. Verified live 2026-07-10: Manager, Technical Support Engineering (Remote, posted 2026-07-07), plus Customer Success Manager, Senior Customer Success Manager, and Technical Account Manager. Headcount 481-507 per web search, right at the 500 boundary -- used LinkedIn's official 201-500 bucket rather than the point estimate."
+    },
+    {
       "name": "Inorsa",
       "ats": "greenhouse",
       "slug": "inorsa",

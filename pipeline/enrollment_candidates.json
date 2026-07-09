@@ -75,7 +75,7 @@
       "first_seen": "2026-07-07",
       "why": "Senior Customer Success Manager + Customer Success Manager, both Remote -- healthcare data exchange platform (health-tech passion domain candidate). Workday tenant availity.wd1.myworkdayjobs.com -- expect the same Cloudflare CXS-API blocking pattern as Gainsight/NCR Voyix; needs a browser-based check.",
       "needs_ats_resolution": true
-    },
+    }
   ],
   "enrolled": [
     {
@@ -86,6 +86,24 @@
       "headcount_band": "1-50",
       "enrolled_via": "Greenhouse board dork 2026-07-09",
       "notes": "AI-enabled telecom/solar/EV-charging infra automation (~25 employees, Austin TX). Customer Success Engineer, Project Engineer (Customer Success), and Technical Account Manager all onsite Austin, TX -- not remote, but strong title fit and EV-charging touches the passion-domain bonus."
+    },
+    {
+      "name": "Chainguard",
+      "ats": "greenhouse",
+      "slug": "chainguard",
+      "enrolled_date": "2026-07-10",
+      "headcount_band": "501-2000",
+      "enrolled_via": "User-surfaced (LinkedIn job alert) -- WitnessAI-class miss, pollable board invisible to every discovery source",
+      "notes": "Container/supply-chain security. Customer Support Manager (Tier-1 exact title) + 3 Senior CSM roles + Senior Manager CS Management, all Remote US."
+    },
+    {
+      "name": "Expel",
+      "ats": "greenhouse",
+      "slug": "expel",
+      "enrolled_date": "2026-07-10",
+      "headcount_band": "201-500",
+      "enrolled_via": "User-surfaced (LinkedIn job alert) -- WitnessAI-class miss, pollable board invisible to every discovery source",
+      "notes": "MDR security operations. Manager, Technical Support Engineering + Customer Success Manager + Senior CSM + Technical Account Manager, all Remote."
     },
     {
       "name": "Wispr Flow",

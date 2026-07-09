@@ -67,6 +67,7 @@ MIN_SALARY = 100_000
 # than to miss good roles.
 TITLE_KEYWORDS_EXACT = [
     "customer success manager",
+    "customer support manager",
     "technical account manager",
     "support account manager",
     "technical support manager",
@@ -177,9 +178,24 @@ def make_dedup_key(ats_slug: str, title: str) -> str:
     return f"{ats_slug.lower()}::{slugify(title)}"
 
 
+def normalize_title(title: str) -> str:
+    """Lowercase and fold "management" -> "manager" so department-style titles
+    ("Manager, Technical Account Management") match the same fragments/exact
+    keywords as role-style titles ("Technical Account Manager"). Found via a
+    user-surfaced ClickUp posting (2026-07-10) that silently missed every gate
+    despite ClickUp being watchlisted and polled daily: "management" doesn't
+    contain "manager" as a substring, so titles using the department-name
+    phrasing fell one fragment short of the borderline threshold. Plain
+    substring replace is safe here — the surrounding fragment words still have
+    to be present too, so this doesn't meaningfully loosen the filter, it just
+    catches the same title written the other way.
+    """
+    return title.lower().replace("management", "manager")
+
+
 def title_matches_exact(title: str) -> bool:
     """Check if title matches any of the exact target titles."""
-    t = title.lower()
+    t = normalize_title(title)
     for target in TITLE_KEYWORDS_EXACT:
         if target in t:
             return True
@@ -188,7 +204,7 @@ def title_matches_exact(title: str) -> bool:
 
 def title_matches_borderline(title: str) -> int:
     """Count how many title fragments match. ≥2 = borderline candidate."""
-    t = title.lower()
+    t = normalize_title(title)
     return sum(1 for frag in TITLE_FRAGMENTS if frag in t)
 
 
@@ -732,7 +748,7 @@ def poll_all(run_date: date) -> dict:
     # Pre-score and rank matched jobs
     for job in matched:
         score = 0
-        t = job["title"].lower()
+        t = normalize_title(job["title"])  # "management" folded to "manager" — see normalize_title()
 
         # Title quality (exact target title vs substring)
         # "forward deployed engineer" removed 2026-07-09: across 7+ runs, real
@@ -745,10 +761,10 @@ def poll_all(run_date: date) -> dict:
         # time; see _title_scoring_tiers.tier4_weak_stretch in
         # watchlist_companies.json for the full-scoring-side demotion.
         top_titles = ["technical account manager", "customer success manager",
-                       "solutions engineer", "implementation consultant",
-                       "implementation manager", "technical enablement manager",
-                       "ai enablement manager", "ai implementation manager",
-                       "deployment strategist"]
+                       "customer support manager", "solutions engineer",
+                       "implementation consultant", "implementation manager",
+                       "technical enablement manager", "ai enablement manager",
+                       "ai implementation manager", "deployment strategist"]
         if any(tt in t for tt in top_titles):
             score += 30
         else:
