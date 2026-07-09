@@ -376,6 +376,7 @@
       "ats": "greenhouse",
       "slug": "samsara",
       "priority": "high",
+      "headcount_band": "2000+",
       "reason": "IoT/fleet \u2014 direct fit for Aneesh's IoT hardware background"
     },
     {
@@ -383,6 +384,7 @@
       "ats": "ashby",
       "slug": "fullstory",
       "priority": "high",
+      "headcount_band": "501-2000",
       "reason": "Atlanta HQ, digital experience analytics, AI-powered \u2014 Aneesh specifically interested"
     },
     {
@@ -390,6 +392,7 @@
       "ats": "greenhouse",
       "slug": "cloudflare",
       "priority": "high",
+      "headcount_band": "2000+",
       "reason": "Technical infra, strong CSM/TAM pipeline"
     },
     {
@@ -1435,6 +1438,44 @@
       "bonus_reason": "AI-powered aerospace ops software (YC)",
       "enrolled_date": "2026-07-07",
       "enrolled_via": "Lever board dork 2026-07-07"
+    },
+    {
+      "name": "Oden Technologies",
+      "ats": "ashby",
+      "slug": "oden-technologies",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-08",
+      "enrolled_via": "Ashby board dork 2026-07-08",
+      "reason": "Industrial manufacturing analytics platform (~50 employees). Verified live: Solutions Engineer AND Customer Success Engineer, both listing Atlanta among hybrid-eligible cities alongside NYC/Boston/Minneapolis/Austin/Chicago."
+    },
+    {
+      "name": "Crusoe",
+      "ats": "ashby",
+      "slug": "crusoe",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-08",
+      "enrolled_via": "AI-Native & AI-Safety Orgs discovery source 2026-07-08",
+      "score_bonus": 20,
+      "bonus_reason": "AI-optimized cloud infrastructure powered by clean/stranded energy — AI/climate crossover",
+      "reason": "Verified live: Senior Customer Success Manager, San Francisco (hybrid). Vertically integrated AI infra + clean energy provider."
+    },
+    {
+      "name": "Mixpanel",
+      "ats": "greenhouse",
+      "slug": "mixpanel",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-08",
+      "enrolled_via": "Greenhouse board dork 2026-07-08",
+      "reason": "Product analytics platform. Verified live: Customer Success Architect (SF/NYC hybrid), Senior Customer Strategy & Operations Manager (SF/NYC hybrid)."
+    },
+    {
+      "name": "Propelus",
+      "ats": "ashby",
+      "slug": "propelus",
+      "headcount_band": null,
+      "enrolled_date": "2026-07-08",
+      "enrolled_via": "BuiltIn Atlanta 2026-07-07 -> verified via enrollment queue 2026-07-08",
+      "reason": "Healthcare workforce compliance platform (CE Broker, EverCheck, Immuware), Boulder CO / Jacksonville Beach FL, remote-first. Verified live: Sr. Customer Success Manager - Government (Remote US), Manager Customer Success (Remote US). Health-tech passion domain applies. Headcount unconfirmed via WebSearch — left null rather than guessed."
     }
   ]
 }

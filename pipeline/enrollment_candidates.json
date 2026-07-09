@@ -51,75 +51,21 @@
     },
     {
       "name": "Harness",
-      "ats": null,
+      "ats": "greenhouse",
       "slug": null,
+      "needs_ats_resolution": true,
       "source": "BuiltIn Atlanta 2026-07-07",
       "first_seen": "2026-07-07",
-      "why": "Senior Customer Success Engineer -- remote with Atlanta as one of several listed offices (Dallas/Chicago/Boston/Atlanta/NYC)."
-    },
-    {
-      "name": "Propelus",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn Atlanta 2026-07-07",
-      "first_seen": "2026-07-07",
-      "why": "Customer Success Manager (Associate-level) -- SMB/Mid-Market book, digital + scaled outreach."
+      "why": "Senior Customer Success Engineer / Technical Program Manager (Customer Success Manager) -- remote with Atlanta as one of several listed offices. Confirmed on Greenhouse 2026-07-08 (job-app embed token seen) but slug guesses 'harness' and 'harnessio' both 404'd -- needs the real board slug next run."
     },
     {
       "name": "First Advantage",
-      "ats": null,
-      "slug": null,
+      "ats": "workday",
+      "slug": "firstadvantage.wd5.myworkdayjobs.com/FirstAdvantage",
+      "needs_ats_resolution": true,
       "source": "BuiltIn Atlanta 2026-07-07",
       "first_seen": "2026-07-07",
-      "why": "Customer Success Analyst -- Atlanta-based background-screening company."
-    },
-    {
-      "name": "Rescale",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn Remote 2026-07-07",
-      "first_seen": "2026-07-07",
-      "why": "Customer Success Engineer, Remote US -- works with Solutions Architect on deployments."
-    },
-    {
-      "name": "Uptycs",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn Remote 2026-07-07",
-      "first_seen": "2026-07-07",
-      "why": "Customer Success Manager, Remote -- post-sale services leadership, security/observability platform."
-    },
-    {
-      "name": "DFIN",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn Remote 2026-07-07",
-      "first_seen": "2026-07-07",
-      "why": "Customer Success Operations Manager, Remote -- scalable CS process/metrics ownership."
-    },
-    {
-      "name": "HumanSignal",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn Remote 2026-07-07",
-      "first_seen": "2026-07-07",
-      "why": "Solutions Architect (Post-Sales) -- independently leads technical onboarding/deployment, AI/ML data-labeling platform (AI bonus candidate)."
-    },
-    {
-      "name": "DTEX Systems",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn Remote 2026-07-07",
-      "first_seen": "2026-07-07",
-      "why": "Customer Success Manager, Remote US -- insider-risk/security platform."
-    },
-    {
-      "name": "Coursedog",
-      "ats": null,
-      "slug": null,
-      "source": "AI-Titled Roles discovery 2026-07-07",
-      "first_seen": "2026-07-07",
-      "why": "AI Enablement Lead -- company's first hire in this function, define/operationalize AI adoption."
+      "why": "Customer Success Analyst -- Atlanta HQ background-screening company. Confirmed tenant via WebSearch 2026-07-08; expect the same Cloudflare CXS-API blocking pattern as Gainsight/NCR Voyix -- needs a browser-based check."
     },
     {
       "name": "Availity",
@@ -410,6 +356,42 @@
       "headcount_band": "1-50",
       "enrolled_via": "Lever board dork 2026-07-07",
       "notes": "AI-powered ERP/MES/test software for aerospace manufacturing (YC, ~31-33 employees). Senior Customer Success Account Manager, Los Angeles (not confirmed remote)."
+    },
+    {
+      "name": "Oden Technologies",
+      "ats": "ashby",
+      "slug": "oden-technologies",
+      "enrolled_date": "2026-07-08",
+      "headcount_band": "51-200",
+      "enrolled_via": "Ashby board dork 2026-07-08",
+      "notes": "Industrial manufacturing analytics (~50 employees). Solutions Engineer AND Customer Success Engineer both list Atlanta among hybrid-eligible cities."
+    },
+    {
+      "name": "Crusoe",
+      "ats": "ashby",
+      "slug": "crusoe",
+      "enrolled_date": "2026-07-08",
+      "headcount_band": "501-2000",
+      "enrolled_via": "AI-Native & AI-Safety Orgs discovery source 2026-07-08",
+      "notes": "AI infra + clean/stranded energy provider (~500-1500 employees). Senior Customer Success Manager, San Francisco (hybrid)."
+    },
+    {
+      "name": "Mixpanel",
+      "ats": "greenhouse",
+      "slug": "mixpanel",
+      "enrolled_date": "2026-07-08",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Greenhouse board dork 2026-07-08",
+      "notes": "Product analytics platform. Customer Success Architect + Senior Customer Strategy & Operations Manager, both SF/NYC hybrid."
+    },
+    {
+      "name": "Propelus",
+      "ats": "ashby",
+      "slug": "propelus",
+      "enrolled_date": "2026-07-08",
+      "headcount_band": null,
+      "enrolled_via": "BuiltIn Atlanta 2026-07-07 -> verified 2026-07-08",
+      "notes": "Healthcare workforce compliance platform, Boulder CO/Jacksonville Beach FL, remote-first. Sr. Customer Success Manager - Government AND Manager, Customer Success both Remote US. Health-tech passion domain applies."
     }
   ],
   "rejected": [
@@ -635,6 +617,54 @@
       "slug": "affirm",
       "rejected_date": "2026-07-07",
       "reason": "Senior Technical Account Manager is Remote Canada -- not US-reachable. No other fit-space role found.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Rescale",
+      "ats": "ashby",
+      "slug": "rescale",
+      "rejected_date": "2026-07-08",
+      "reason": "The Customer Success Engineer role that surfaced it appears closed. Remaining customer-facing role, 'Engagement Manager, Defense & National Security' (Remote US), is defense/national-security scoped and likely implies clearance -- not a fit.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Uptycs",
+      "ats": "lever",
+      "slug": "uptycs",
+      "rejected_date": "2026-07-08",
+      "reason": "Direct Lever API probe (api.lever.co/v0/postings/uptycs) 404'd despite a live jobs.lever.co/uptycs/... listing appearing in search (Go Language Developer only). The Customer Success Manager role that surfaced it via BuiltIn was not found; board may use a different slug.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "HumanSignal",
+      "ats": "greenhouse",
+      "slug": "humansignal",
+      "rejected_date": "2026-07-08",
+      "reason": "Board live (49 jobs) but the Solutions Architect (Post-Sales) role that surfaced it is gone. Remaining board is data-labeling ops/eng/SDR roles -- zero fit-space titles.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "DFIN",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-08",
+      "reason": "No Greenhouse/Ashby/Lever/Workday board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "DTEX Systems",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-08",
+      "reason": "No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Coursedog",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-08",
+      "reason": "No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
       "recheck_if_resurfaced": true
     }
   ]
