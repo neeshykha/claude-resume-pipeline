@@ -75,9 +75,18 @@
       "first_seen": "2026-07-07",
       "why": "Senior Customer Success Manager + Customer Success Manager, both Remote -- healthcare data exchange platform (health-tech passion domain candidate). Workday tenant availity.wd1.myworkdayjobs.com -- expect the same Cloudflare CXS-API blocking pattern as Gainsight/NCR Voyix; needs a browser-based check.",
       "needs_ats_resolution": true
-    }
+    },
   ],
   "enrolled": [
+    {
+      "name": "Inorsa",
+      "ats": "greenhouse",
+      "slug": "inorsa",
+      "enrolled_date": "2026-07-09",
+      "headcount_band": "1-50",
+      "enrolled_via": "Greenhouse board dork 2026-07-09",
+      "notes": "AI-enabled telecom/solar/EV-charging infra automation (~25 employees, Austin TX). Customer Success Engineer, Project Engineer (Customer Success), and Technical Account Manager all onsite Austin, TX -- not remote, but strong title fit and EV-charging touches the passion-domain bonus."
+    },
     {
       "name": "Wispr Flow",
       "ats": "ashby",
@@ -395,6 +404,30 @@
     }
   ],
   "rejected": [
+    {
+      "name": "Hopper",
+      "ats": "ashby",
+      "slug": "hopper",
+      "rejected_date": "2026-07-09",
+      "reason": "Board live (121 jobs, travel booking app) but zero fit-space titles (CS/TAM/implementation/solutions/support-ops).",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "InVue",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-09",
+      "reason": "Uses Jobvite (jobs.jobvite.com/invue), not a poll_ats.py-supported ATS. Customer Support Manager-Americas role (Charlotte NC) not pollable.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Blossom",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-09",
+      "reason": "No Greenhouse/Ashby/Lever board found via WebSearch for the 'Implementation Technical Lead' listing seen on BuiltIn -- company identity/ATS unresolved.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "TeamBridge",
       "ats": "ashby",
