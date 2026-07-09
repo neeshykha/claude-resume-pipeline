@@ -455,19 +455,22 @@
       "ats": "greenhouse",
       "slug": "huntress",
       "priority": "medium",
-      "reason": "Security MSP, TAM-heavy"
+      "reason": "Security MSP, TAM-heavy",
+      "headcount_band": "501-2000"
     },
     {
       "name": "LogicGate",
       "ats": "greenhouse",
       "slug": "logicgate",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "201-500"
     },
     {
       "name": "SpecterOps",
       "ats": "greenhouse",
       "slug": "specterops",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "51-200"
     },
     {
       "name": "RapidSOS",
@@ -748,8 +751,8 @@
       "priority": "high",
       "reason": "AI for IT service management \u2014 CSM/TAM and implementation heavy",
       "board_status": "404_confirmed",
-      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02 (both boards-api and job-boards.greenhouse.io/moveworks 404). May have migrated ATS or paused hiring.",
-      "recheck_after": "2026-07-09"
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02 and 2026-07-09 (boards-api still 404; search snippets show only stale cached listing pages). May have migrated ATS or paused hiring.",
+      "recheck_after": "2026-07-16"
     },
     {
       "name": "Assembled",
@@ -802,8 +805,8 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) \u2014 AI support deflection/triage",
       "board_status": "404_confirmed",
-      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02 (both boards-api and job-boards.greenhouse.io/forethought 404, despite stale search-engine cache showing old listings).",
-      "recheck_after": "2026-07-09"
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02 and 2026-07-09 (boards-api still 404, despite stale search-engine cache showing old listings).",
+      "recheck_after": "2026-07-16"
     },
     {
       "name": "Talkdesk",
@@ -1134,6 +1137,15 @@
       "reason": "AI-assisted documentation platform. Verified live 2026-06-30: 13 jobs, 5 target hits (Enterprise CSM, Solutions Engineer pre/post-sales, Support Engineer) in SF + NYC. Small Series A - strong CSM/SE pipeline relative to size.",
       "score_bonus": 0,
       "bonus_reason": "No AI/ML platform bonus - AI-assisted docs tool, not an AI-native customer-facing platform. Relies on small-company bonus + role fit."
+    },
+    {
+      "name": "Inorsa",
+      "ats": "greenhouse",
+      "slug": "inorsa",
+      "priority": "medium",
+      "headcount_band": "1-50",
+      "enrolled_date": "2026-07-09",
+      "reason": "AI-enabled telecom/solar/EV-charging infra automation, Austin TX (~25 employees). Customer Success Engineer, Project Engineer (Customer Success), Technical Account Manager -- onsite Austin, not remote. EV-charging touches passion domain."
     },
     {
       "name": "Antithesis",
