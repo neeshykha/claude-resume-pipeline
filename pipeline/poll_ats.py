@@ -31,24 +31,41 @@ WATCHLIST_PATH = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 SEEN_JOBS_PATH = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
 JOBS_DIR = os.path.join(SCRIPT_DIR, "jobs")
 
-# ── ATS Endpoints ────────────────────────────────────────────────────────────
-ATS_ENDPOINTS = {
-    "greenhouse": "https://boards-api.greenhouse.io/v1/boards/{slug}/jobs",
-    "greenhouse_eu": "https://boards-api.eu.greenhouse.io/v1/boards/{slug}/jobs",
-    "lever": "https://api.lever.co/v0/postings/{slug}?mode=json",
-    "ashby": "https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true",
-    # SmartRecruiters public postings API. slug = case-sensitive company identifier
-    # (e.g. "BoschGroup", not "bosch"). Added 2026-06-30 to widen which small
-    # companies are enrollable beyond Greenhouse/Ashby/Lever/Workday.
-    "smartrecruiters": "https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100",
-}
+# ── Config plumbing ──────────────────────────────────────────────────────────
+# Single source of truth is watchlist_companies.json. Endpoints, the salary
+# floor, the company cap, the small-company bonus, and EVERY title list are
+# read from it at startup by _init_config() — this module defines no copy of
+# anything the JSON defines (that divergence caused the 2026-06/07 miss class;
+# see pipeline/audit_recurring_fixes_2026-07.md §3). Constants below are
+# poller-only mechanics with no JSON counterpart.
 
 REQUEST_TIMEOUT = 30  # seconds
 DEDUP_WINDOW_DAYS = 30
-COMPANY_CAP = 3  # max pending applications (applied=true, outcome=null) per company before suppression
-COMPANY_CAP_OVERRIDE_SCORE = 110  # bypass cap if estimated score exceeds this
 MAX_PER_COMPANY_PER_RUN = 2  # diversity cap: max roles per company in the surfaced shortlist (prevents one company sweeping the run)
 SHORTLIST_SIZE = 25
+
+# Populated from watchlist_companies.json by _init_config():
+ATS_ENDPOINTS = {}       # ← _endpoints (workday excluded; fetch_workday builds its URL from wd_* fields)
+MIN_SALARY = None        # ← _scoring_config.salary_floor_usd
+COMPANY_CAP = None       # ← _scoring_config.company_cap_max_applied_pending
+SMALL_COMPANY_BONUS = {}  # ← _scoring_config.small_company_bonus
+MATCHER = None           # ← TitleMatcher built from _title_scoring_tiers + _poller_config
+
+
+def _init_config(watchlist: dict):
+    """Load all shared knobs from the parsed watchlist JSON into module globals."""
+    global MIN_SALARY, COMPANY_CAP, MATCHER
+    ATS_ENDPOINTS.clear()
+    ATS_ENDPOINTS.update({k: v for k, v in watchlist["_endpoints"].items()
+                          if not v.startswith("POST")})
+    sc = watchlist["_scoring_config"]
+    MIN_SALARY = sc["salary_floor_usd"]
+    COMPANY_CAP = sc["company_cap_max_applied_pending"]
+    SMALL_COMPANY_BONUS.clear()
+    SMALL_COMPANY_BONUS.update(sc["small_company_bonus"])
+    MATCHER = TitleMatcher(watchlist)
+
+
 # Balanced shortlist quotas (added 2026-07-01). The small-company/novelty bonuses
 # flipped the shortlist from all-incumbent to all-sub-500 in one run; per Aneesh,
 # neither extreme is right. Reserve slots for both pools; the remainder is open
@@ -59,73 +76,182 @@ MIN_LARGE_SLOTS = 10
 SMALL_BANDS = {"1-50", "51-200", "201-500"}
 BORDERLINE_SIZE = 20
 MIN_AI_WILDCARD_SLOTS = 10  # reserved quota; see borderline-list build below
-MIN_SALARY = 100_000
 
-# ── Extended title filter ────────────────────────────────────────────────────
-# Core titles from watchlist + additional titles Claude has historically matched.
-# Kept broad on purpose — better to include borderline matches for Claude review
-# than to miss good roles.
-TITLE_KEYWORDS_EXACT = [
-    "customer success manager",
-    "customer support manager",
-    "technical account manager",
-    "support account manager",
-    "technical support manager",
-    "technical operations manager",
-    "support operations manager",
-    "solutions engineer",
-    "sales engineer",
-    "customer engineer",
-    "implementation consultant",
-    "implementation manager",
-    "professional services manager",
-    "deployment strategist",
-    "deployment manager",
-    "ai engagement manager",
-    "ai adoption",
-    "ai enablement manager",
-    "ai implementation manager",
-    "ai operations manager",
-    "ai optimization",
-    "ai specialist",
-    "ai solutions",
-    "automation specialist",
-    "customer enablement manager",
-    "technical enablement manager",
-    "product manager",
-    "product csm",
-    "technical csm",
-    "forward deployed engineer",
-    "solutions consultant",
-    "customer solutions engineer",
-    "digital customer experience",
-    "customer experience lead",
-    "technical program manager",
-    # added 2026-06-30 — core role types at the sub-500 companies enrolled this run
-    # (CodeRabbit/Replit/Baseten field eng; Parloa/Replicant/Ema engagement mgr; Replit/Mintlify support eng).
-    # "field engineer" also substring-matches "field engineering" (incl. "Manager, Field Engineering").
-    "field engineer",
-    "engagement manager",
-    "support engineer",
-    # added 2026-07-06 — Harvey's "User Operations Manager" JD is functionally
-    # identical to Support/Customer Operations Manager (leads the support team,
-    # SLAs, escalations, process optimization, hiring) but used a company-specific
-    # team name ("User Operations") that didn't match any existing keyword or
-    # clear the 2-fragment borderline threshold. User-surfaced miss, score ~107.
-    "user operations manager",
-    "customer operations manager",
-]
+# ── Title matching (config-driven, stemmed-token-subset) ────────────────────
+# History: this used to be two hand-maintained substring lists that only grew
+# when a human noticed a miss — at least 6 silent misses in June–July 2026
+# alone, including pure word-form gaps ("Manager, Technical Account Management"
+# vs "Technical Account Manager"). Now the exact gate is derived at runtime
+# from _title_scoring_tiers + _poller_config in watchlist_companies.json, and
+# matching is stem-normalized so word order and word form don't matter. Adding
+# a title to a tier in the JSON automatically teaches the poller.
 
-# Broader keyword fragments for borderline matching.
-# If a title matches 2+ of these, it's flagged as borderline for Claude review.
-TITLE_FRAGMENTS = [
-    "customer success", "account manager", "technical account",
-    "solutions", "implementation", "enablement", "deployment",
-    "customer engineer", "support manager", "operations manager",
-    "product manager", "forward deployed", "ai ", "csm",
-    "customer experience", "professional services", "onboarding",
-    "tam ", "se ", "adoption", "optimization", "automation", "specialist",
-]
+_STOPWORDS = {"of", "and", "the", "for", "in", "a", "an", "to"}
+
+# Abbreviations folded to the stem their spelled-out form produces.
+_TOKEN_ALIASES = {
+    "ops": "operat",     # "Support Ops Manager" == "Support Operations Manager"
+    "mgr": "manag",
+    "mgmt": "manag",
+    "tech": "technical",
+    "eng": "engin",
+}
+
+# Suffixes stripped longest-first, repeatedly, with a minimum stem of 4 chars.
+# Deliberately tiny (not a full Porter stemmer): just enough that the word
+# forms that actually appear in job titles collapse together —
+# manager/management/managing → manag, engineer/engineering → engin,
+# operations/operation → operat, strategist/strategy → strateg,
+# deployed/deployment → deploy, consultant/consulting → consult.
+_SUFFIXES = ("ments", "ment", "ings", "ing", "ions", "ion", "ists", "ist",
+             "ants", "ant", "ers", "er", "ors", "or", "ies", "ed", "es", "s", "y")
+
+
+def _stem(tok: str) -> str:
+    while len(tok) > 4:
+        for suf in _SUFFIXES:
+            if tok.endswith(suf) and len(tok) - len(suf) >= 4:
+                if suf in ("s", "es") and tok.endswith("ss"):
+                    continue  # "success" must not become "succes"
+                tok = tok[:-len(suf)]
+                break
+        else:
+            break
+    if len(tok) > 4 and tok.endswith("e"):
+        tok = tok[:-1]  # manage/manag, engine/engin collapse
+    return tok
+
+
+def tokenize(text: str) -> list[str]:
+    """Title → list of normalized word stems (lowercased, punctuation-split,
+    stopwords dropped, aliases folded, suffix-stemmed)."""
+    out = []
+    for raw in re.split(r"[^a-z0-9]+", text.lower()):
+        if not raw or raw in _STOPWORDS:
+            continue
+        out.append(_TOKEN_ALIASES.get(raw) or _stem(raw))
+    return out
+
+
+def _tokens_near(cfg_tokens: frozenset, job_tokens: list, slack: int = 2) -> bool:
+    """True if all cfg_tokens appear in job_tokens within a window of
+    len(cfg_tokens) + slack positions (any order).
+
+    Pure set-subset matching scatter-matched across long titles: "Senior
+    Technical Product Manager, Content Platforms (AI Content Operations)"
+    collected {technical, operations, manager} from opposite ends of the title
+    and hit tier-1 "Technical Operations Manager". The window keeps legitimate
+    reorderings ("Manager, Technical Account Management") while rejecting
+    matches whose words are only coincidentally co-present.
+    """
+    if not cfg_tokens <= set(job_tokens):
+        return False
+    limit = len(cfg_tokens) + slack
+    need = len(cfg_tokens)
+    counts = {}
+    have = 0
+    left = 0
+    for right, tok in enumerate(job_tokens):
+        if tok in cfg_tokens:
+            counts[tok] = counts.get(tok, 0) + 1
+            if counts[tok] == 1:
+                have += 1
+        while have == need:
+            if right - left + 1 <= limit:
+                return True
+            lt = job_tokens[left]
+            if lt in cfg_tokens:
+                counts[lt] -= 1
+                if counts[lt] == 0:
+                    have -= 1
+            left += 1
+    return False
+
+
+class TitleMatcher:
+    """Config-driven title matcher.
+
+    A job title matches a config title when the job title contains ALL of the
+    config title's stemmed tokens, in any order and any word form, within a
+    small positional window (see _tokens_near). So "Manager, Technical Account
+    Management", "Technical Account Manager II", and "Senior Technical Account
+    Manager, East" all match the tier-2 title "Technical Account Manager" with
+    no per-variant list entries.
+
+    Sources (all in watchlist_companies.json — never hardcode a title here):
+    - _title_scoring_tiers tier1..tier4 titles + tier2b explicit_titles
+    - _poller_config.supplemental_exact_titles (poller-only, no scoring tier)
+    - _poller_config.borderline_fragments (partial-match review list)
+    - _poller_config.jd_verification_required_titles (risky-title tagging)
+    """
+
+    def __init__(self, watchlist: dict):
+        tiers = watchlist["_title_scoring_tiers"]
+        pc = watchlist["_poller_config"]
+
+        self.exact = []  # (frozenset tokens, tier_name, prescore)
+        for tier_name in ("tier1_true_match", "tier2_strong_overlap",
+                          "tier3_reasonable_stretch", "tier4_weak_stretch"):
+            spec = tiers[tier_name]
+            for t in spec["titles"]:
+                self._add_exact(t, tier_name, spec["title_match_score"])
+        wc = tiers["tier2b_ai_wildcard"]
+        for t in wc.get("explicit_titles", []):
+            self._add_exact(t, "tier2b_ai_wildcard", wc["title_match_score"])
+        supp = pc["supplemental_exact_titles"]
+        for t in supp["titles"]:
+            self._add_exact(t, "supplemental", supp["title_match_prescore"])
+        # Highest-scoring tier wins when several config titles match.
+        self.exact.sort(key=lambda e: -e[2])
+
+        self.tier1_tokens = [frozenset(tokenize(t))
+                             for t in tiers["tier1_true_match"]["titles"]]
+        frag = pc["borderline_fragments"]
+        self.fragments = [frozenset(tokenize(f)) for f in frag["fragments"]]
+        self.min_fragments = frag["min_fragments"]
+        self.risky_tokens = [frozenset(tokenize(t))
+                             for t in pc["jd_verification_required_titles"]["titles"]]
+        self.wc_signal = [w.lower() for w in wc["signal_words"]]
+        self.wc_exclude = [w.lower() for w in wc["exclude_if_contains"]]
+
+    def _add_exact(self, title: str, tier_name: str, score):
+        toks = frozenset(tokenize(title))
+        if toks:
+            self.exact.append((toks, tier_name, score))
+
+    def match_exact(self, title: str):
+        """Return (tier_name, prescore) for the best-scoring matching config
+        title, or None."""
+        toks = tokenize(title)
+        for cfg_toks, tier_name, score in self.exact:
+            if _tokens_near(cfg_toks, toks):
+                return tier_name, score
+        return None
+
+    def is_tier1(self, title: str) -> bool:
+        toks = tokenize(title)
+        return any(_tokens_near(t1, toks) for t1 in self.tier1_tokens)
+
+    def fragment_count(self, title: str) -> int:
+        toks = tokenize(title)
+        return sum(1 for f in self.fragments if _tokens_near(f, toks))
+
+    def needs_jd_verification(self, title: str) -> bool:
+        toks = tokenize(title)
+        return any(_tokens_near(r, toks) for r in self.risky_tokens)
+
+    def matches_ai_wildcard(self, title: str) -> bool:
+        """Mirror _title_scoring_tiers.tier2b_ai_wildcard: a word-bounded 'AI'
+        plus one signal word flags a novel AI-prefixed title for Claude review,
+        without needing to clear the generic borderline threshold. Coding/IC
+        titles (AI Engineer, AI Architect) are excluded so this doesn't
+        re-create the FDE problem under a new name."""
+        t = title.lower()
+        if not re.search(r'\bai\b', t):
+            return False
+        if any(ex in t for ex in self.wc_exclude):
+            return False
+        return any(sig in t for sig in self.wc_signal)
 
 # Location filter — only keep US-relevant roles
 LOCATION_INCLUDE = [
@@ -137,7 +263,7 @@ LOCATION_INCLUDE = [
     "north america", "americas", "anywhere",
 ]
 LOCATION_EXCLUDE = [
-    "emea", "apac", "latam", "anz", "india", "japan",
+    "emea", "apac", "latam", "anz", "india", "bangalore", "japan",
     "singapore", "australia", "europe", "germany", "france",
     "united kingdom", "uk", "london", "berlin", "paris",
     "canada", "toronto", "vancouver", "brazil", "mexico",
@@ -146,12 +272,19 @@ LOCATION_EXCLUDE = [
     "mandarin", "cantonese",  # language-specific roles
 ]
 
-# Titles to always exclude (too senior, wrong function)
+# Titles to always exclude (too senior, wrong function).
+# NOTE: an exact TIER-1 title match overrides this list (see poll_all) — tier1
+# deliberately contains "Head of Support" and "Director of Support Operations",
+# which the bare "head of"/"director" entries here would otherwise silently
+# kill. Generic Head-of/Director titles that aren't tier-1 stay excluded.
 TITLE_EXCLUDE = [
     "vice president", "vp ", "vp,", "head of", "director",
     "staff engineer", "principal engineer", "senior staff",
     "staff product", "staff software", "principal product",
     "chief ", "c-suite",
+    # token-subset matching would otherwise let "Product Marketing Manager"
+    # match the supplemental "Product Manager" title
+    "product marketing",
     # Language-specific roles (Aneesh speaks English/German/Hindi only)
     "mandarin", "cantonese", "spanish speaking", "french speaking",
     "portuguese speaking", "japanese speaking", "korean speaking",
@@ -176,57 +309,6 @@ def make_dedup_key(ats_slug: str, title: str) -> str:
     Uses the ATS slug directly (not the company name) to match existing seen_jobs.json format.
     """
     return f"{ats_slug.lower()}::{slugify(title)}"
-
-
-def normalize_title(title: str) -> str:
-    """Lowercase and fold "management" -> "manager" so department-style titles
-    ("Manager, Technical Account Management") match the same fragments/exact
-    keywords as role-style titles ("Technical Account Manager"). Found via a
-    user-surfaced ClickUp posting (2026-07-10) that silently missed every gate
-    despite ClickUp being watchlisted and polled daily: "management" doesn't
-    contain "manager" as a substring, so titles using the department-name
-    phrasing fell one fragment short of the borderline threshold. Plain
-    substring replace is safe here — the surrounding fragment words still have
-    to be present too, so this doesn't meaningfully loosen the filter, it just
-    catches the same title written the other way.
-    """
-    return title.lower().replace("management", "manager")
-
-
-def title_matches_exact(title: str) -> bool:
-    """Check if title matches any of the exact target titles."""
-    t = normalize_title(title)
-    for target in TITLE_KEYWORDS_EXACT:
-        if target in t:
-            return True
-    return False
-
-
-def title_matches_borderline(title: str) -> int:
-    """Count how many title fragments match. ≥2 = borderline candidate."""
-    t = normalize_title(title)
-    return sum(1 for frag in TITLE_FRAGMENTS if frag in t)
-
-
-def title_matches_ai_wildcard(title: str, signal_words: list, exclude_words: list) -> bool:
-    """Mirror watchlist_companies.json → _title_scoring_tiers.tier2b_ai_wildcard.
-
-    Companies keep coining novel "AI <function>" titles (AI Success Manager, AI
-    Outcomes Manager, ...) faster than anyone can enumerate them by hand. A
-    single word-bounded "AI" hit plus one signal word (customer, deployment,
-    adoption, etc.) is enough to flag a title for Claude's review — it does NOT
-    need to also clear the generic 2-fragment borderline threshold. Titles that
-    are really coding/IC roles (AI Engineer, AI Architect) are excluded via
-    exclude_words so this doesn't just re-surface the FDE problem under a new
-    name. Single source of truth for signal_words/exclude_words is the JSON
-    config — this function has no hardcoded title list of its own.
-    """
-    t = title.lower()
-    if not re.search(r'\bai\b', t):
-        return False
-    if any(ex in t for ex in exclude_words):
-        return False
-    return any(sig in t for sig in signal_words)
 
 
 def title_excluded(title: str) -> bool:
@@ -544,6 +626,20 @@ def poll_all(run_date: date) -> dict:
     with open(WATCHLIST_PATH) as f:
         watchlist = json.load(f)
 
+    # Refuse to poll against a malformed watchlist (hand-edit protection —
+    # trailing commas already parse-fail above; this catches schema breakage).
+    from validate_config import validate_watchlist
+    config_errors, config_warnings = validate_watchlist(watchlist)
+    for w in config_warnings:
+        print(f"CONFIG WARN: {w}")
+    if config_errors:
+        for e in config_errors:
+            print(f"CONFIG ERROR: {e}", file=sys.stderr)
+        sys.exit(2)
+
+    # All endpoints, thresholds, and title lists come from the JSON.
+    _init_config(watchlist)
+
     companies = watchlist["companies"]
     # Passion-domain keywords (config-driven; see _scoring_config → passion_domains).
     # Poller applies a small pre_score lift and tags the entry; Claude applies the
@@ -553,11 +649,6 @@ def poll_all(run_date: date) -> dict:
         domain: [kw.lower() for kw in spec.get("poller_keywords", [])]
         for domain, spec in passion_cfg.get("domains", {}).items()
     }
-    # AI-wildcard title config (tier2b_ai_wildcard) — read from the JSON so the
-    # poller and Claude's scoring rubric never drift apart again.
-    ai_wildcard_cfg = watchlist.get("_title_scoring_tiers", {}).get("tier2b_ai_wildcard", {})
-    ai_wildcard_signal_words = [w.lower() for w in ai_wildcard_cfg.get("signal_words", [])]
-    ai_wildcard_exclude_words = [w.lower() for w in ai_wildcard_cfg.get("exclude_if_contains", [])]
     seen_jobs = load_seen_jobs()
     unapplied_counts = count_unapplied_by_company(seen_jobs)
     ever_surfaced, recent_surfaced = company_surface_stats(seen_jobs, run_date)
@@ -572,6 +663,7 @@ def poll_all(run_date: date) -> dict:
         "title_matched": 0,
         "title_borderline": 0,
         "title_ai_wildcard": 0,
+        "jd_verification_flagged": 0,
         "dedup_skipped": 0,
         "cap_suppressed": 0,
         "location_filtered": 0,
@@ -625,20 +717,22 @@ def poll_all(run_date: date) -> dict:
             if not title:
                 continue
 
-            # Title exclusion
-            if title_excluded(title):
+            # Check title match
+            exact_match = MATCHER.match_exact(title)
+
+            # Title exclusion — but an exact TIER-1 match overrides it: tier1
+            # includes "Head of Support" / "Director of Support Operations",
+            # which the generic "head of"/"director" exclusions would kill.
+            # Non-tier1 senior titles (VP of CS, Director of CSM...) stay out.
+            if title_excluded(title) and not (exact_match and MATCHER.is_tier1(title)):
                 stats["excluded"] += 1
                 continue
 
-            # Check title match
-            is_exact = title_matches_exact(title)
-            borderline_count = title_matches_borderline(title)
-            is_ai_wildcard = (
-                not is_exact
-                and title_matches_ai_wildcard(title, ai_wildcard_signal_words, ai_wildcard_exclude_words)
-            )
+            is_exact = exact_match is not None
+            borderline_count = MATCHER.fragment_count(title)
+            is_ai_wildcard = not is_exact and MATCHER.matches_ai_wildcard(title)
 
-            if not is_exact and borderline_count < 2 and not is_ai_wildcard:
+            if not is_exact and borderline_count < MATCHER.min_fragments and not is_ai_wildcard:
                 continue  # Not relevant at all
 
             location = parse_location(job_data, ats)
@@ -724,6 +818,11 @@ def poll_all(run_date: date) -> dict:
                 "match_type": "exact" if is_exact else "borderline",
                 "borderline_score": borderline_count if not is_exact else None,
                 "headcount_band": company.get("headcount_band"),
+                # Which config tier the title matched (tier1_true_match ...
+                # supplemental) and its pre-score — Claude uses this at full
+                # scoring instead of re-deriving the tier by hand.
+                "title_tier": exact_match[0] if is_exact else None,
+                "title_prescore": exact_match[1] if is_exact else None,
             }
             if new_req_of_applied:
                 entry["new_req_of_applied_title"] = True
@@ -732,6 +831,12 @@ def poll_all(run_date: date) -> dict:
                 # Claude scores them at +18 (not by guessing a tier) and the
                 # digest can call out "novel AI title, needs a look."
                 entry["ai_wildcard"] = True
+            if MATCHER.needs_jd_verification(title):
+                # Known-risky title (per _poller_config): read the full JD
+                # before tailoring, and don't let it consume a diversity-cap
+                # slot ahead of a clean same-company title (see shortlist build).
+                entry["jd_verification_required"] = True
+                stats["jd_verification_flagged"] += 1
 
             if is_exact:
                 matched.append(entry)
@@ -748,27 +853,16 @@ def poll_all(run_date: date) -> dict:
     # Pre-score and rank matched jobs
     for job in matched:
         score = 0
-        t = normalize_title(job["title"])  # "management" folded to "manager" — see normalize_title()
+        t = job["title"].lower()
 
-        # Title quality (exact target title vs substring)
-        # "forward deployed engineer" removed 2026-07-09: across 7+ runs, real
-        # FDE JDs at AI-infra companies (Parloa, Modal, Baseten, Confido, ...)
-        # near-100% require hands-on production software engineering — a skill
-        # mismatch, not a scoring artifact. Giving it the +30 premium let it
-        # crowd out better-fitting titles under the per-company diversity cap
-        # before anyone read the actual JD. Still exact-matched (stays visible
-        # for review) but no longer treated as a top-tier title at pre-score
-        # time; see _title_scoring_tiers.tier4_weak_stretch in
-        # watchlist_companies.json for the full-scoring-side demotion.
-        top_titles = ["technical account manager", "customer success manager",
-                       "customer support manager", "solutions engineer",
-                       "implementation consultant", "implementation manager",
-                       "technical enablement manager", "ai enablement manager",
-                       "ai implementation manager", "deployment strategist"]
-        if any(tt in t for tt in top_titles):
-            score += 30
-        else:
-            score += 15
+        # Title quality — the matched tier's score straight from
+        # _title_scoring_tiers / _poller_config (tier1 30, tier2 22, tier2b 18,
+        # tier3 15, supplemental 15, tier4 8). This replaces a hardcoded
+        # "top titles" list that had drifted from the tier config (it treated
+        # tier-3 CSM titles as top-tier and, until 2026-07-09, gave Forward
+        # Deployed Engineer a +30 premium despite a near-100% JD miss rate —
+        # FDE now inherits tier4's +8 automatically).
+        score += job.get("title_prescore") or 15
 
         # Seniority match (senior = ok, principal/staff = excluded already, manager II = ok)
         if "senior" in t or "sr " in t or "sr." in t:
@@ -794,15 +888,12 @@ def poll_all(run_date: date) -> dict:
         # watchlist incumbents at the top of every shortlist.
         score += {"high": 10, "medium": 6, "low": 3}.get(job["priority"], 5)
 
-        # Small-company bonus (mirrors _scoring_config → small_company_bonus).
-        # Previously only applied in Claude's full scoring — which meant sub-500
-        # companies often never REACHED full scoring because pre_score decides
-        # the top-25 shortlist. Absent band = 0, never guess.
-        band = job.get("headcount_band") or ""
-        if band in ("1-50", "51-200"):
-            score += 15
-        elif band == "201-500":
-            score += 8
+        # Small-company bonus (read from _scoring_config → small_company_bonus,
+        # not mirrored). Previously only applied in Claude's full scoring —
+        # which meant sub-500 companies often never REACHED full scoring
+        # because pre_score decides the top-25 shortlist. Absent band = 0,
+        # never guess.
+        score += SMALL_COMPANY_BONUS.get(job.get("headcount_band") or "", 0)
 
         # Passion-domain lift (+5, tag for Claude's semantic +10 at full scoring).
         # Matched against title + company name only; description isn't kept on
@@ -855,6 +946,27 @@ def poll_all(run_date: date) -> dict:
     matched.sort(key=lambda j: -j["pre_score"])
     stats["total_matched_before_cap"] = len(matched)
 
+    # Within each company, demote jd_verification_required titles below that
+    # company's clean titles before the diversity cap picks its ≤2 keepers.
+    # Without this, a risky high-pre-score title (FDE is the prototype) crowds
+    # a safer, genuinely better-fitting title at the same company out of the
+    # shortlist entirely — Confido's Implementation Manager was invisible on
+    # 2026-07-09 because CSM + FDE took both slots and FDE failed the JD read.
+    # Implementation: jobs keep their global slots; only same-company jobs
+    # swap among the positions they already occupy, so overall ranking is
+    # otherwise untouched. Risky roles still surface when slots remain.
+    slots_by_company = {}
+    for idx, j in enumerate(matched):
+        slots_by_company.setdefault(slugify(j.get("company", "")), []).append(idx)
+    for slots in slots_by_company.values():
+        if len(slots) < 2:
+            continue
+        reordered = sorted((matched[i] for i in slots),
+                           key=lambda j: (bool(j.get("jd_verification_required")),
+                                          -j["pre_score"]))
+        for i, job in zip(slots, reordered):
+            matched[i] = job
+
     # Build the shortlist with per-company diversity cap AND small/large balance.
     kept_per_company = {}
     diversity_dropped = 0
@@ -904,7 +1016,7 @@ def poll_all(run_date: date) -> dict:
     # the generic 2-fragment threshold on their own), so on a busy AI-title day
     # they'd lose every tiebreak against ordinary fragment matches and never
     # reach the output Claude reads — silently defeating the wildcard match in
-    # title_matches_ai_wildcard(). Mirrors the small/large reserved-quota
+    # MATCHER.matches_ai_wildcard(). Mirrors the small/large reserved-quota
     # pattern used for the matched shortlist above.
     ai_wildcard_pool = sorted(
         (j for j in borderline if j.get("ai_wildcard")),
@@ -963,6 +1075,7 @@ def main():
     print(f"Borderline (for Claude review): {s['title_borderline']} (of which {s['title_ai_wildcard']} via AI-wildcard)")
     print(f"Dedup skipped: {s['dedup_skipped']}")
     print(f"Diversity-capped (>{MAX_PER_COMPANY_PER_RUN}/company, dropped from shortlist): {s.get('diversity_dropped', 0)}")
+    print(f"Flagged jd_verification_required (risky title, read JD first): {s.get('jd_verification_flagged', 0)}")
     print(f"Cap suppressed: {s['cap_suppressed']}")
     print(f"Excluded (salary/industry/seniority): {s['excluded']}")
     print(f"ATS errors: {s['errors']}")

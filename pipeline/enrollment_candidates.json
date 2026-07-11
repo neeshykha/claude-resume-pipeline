@@ -14,42 +14,6 @@
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
   "pending": [
     {
-      "name": "Gainsight",
-      "ats": "workday",
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "Workday board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Confirmed real site is gainsight.wd5.myworkdayjobs.com/Gainsight_External_Careers (verified via WebSearch 2026-07-06: live roles include Principal CSM (Remote US), Technical Project Manager (Remote US)) but the CXS jobs API returns Cloudflare 403 on direct curl probes - needs a browser-based check (e.g. Chrome MCP) next run, not another curl attempt."
-    },
-    {
-      "name": "NCR Voyix",
-      "ats": "workday",
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "Workday board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "AI Enablement Coach - Atlanta HQ (NCR Voyix spun off from NCR, headquartered Atlanta). Strong Atlanta-bonus candidate. Confirmed real site is ncr.wd1.myworkdayjobs.com/ext_us via WebSearch 2026-07-06, but CXS jobs API probes 400/403'd - needs a browser-based check next run."
-    },
-    {
-      "name": "ThoughtSpot",
-      "ats": "workday",
-      "slug": "thoughtspot.wd5.myworkdayjobs.com/careers",
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Remote 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "Customer Success Operations Manager - direct title fit. Confirmed real site is thoughtspot.wd5.myworkdayjobs.com/careers via WebSearch 2026-07-07; CXS jobs API not yet probed (expect the same Cloudflare-blocking pattern as Gainsight/NCR Voyix) - needs a browser-based check, not a curl attempt."
-    },
-    {
-      "name": "Cengage",
-      "ats": "workday",
-      "slug": "cengage.wd5.myworkdayjobs.com/CengageNorthAmericaCareers",
-      "needs_ats_resolution": true,
-      "source": "Workday board dork 2026-07-06",
-      "first_seen": "2026-07-06",
-      "why": "AI Enablement Operations Manager (Remote US) - direct Tier-2 AI-title fit. Confirmed tenant cengage.wd5.myworkdayjobs.com/CengageNorthAmericaCareers via WebSearch 2026-07-07 - needs a browser-based check given the Cloudflare-blocking pattern hit on other Workday tenants."
-    },
-    {
       "name": "Harness",
       "ats": "greenhouse",
       "slug": null,
@@ -59,25 +23,78 @@
       "why": "Senior Customer Success Engineer / Technical Program Manager (Customer Success Manager) -- remote with Atlanta as one of several listed offices. Confirmed on Greenhouse 2026-07-08 (job-app embed token seen) but slug guesses 'harness' and 'harnessio' both 404'd -- needs the real board slug next run."
     },
     {
-      "name": "First Advantage",
-      "ats": "workday",
-      "slug": "firstadvantage.wd5.myworkdayjobs.com/FirstAdvantage",
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Atlanta 2026-07-07",
-      "first_seen": "2026-07-07",
-      "why": "Customer Success Analyst -- Atlanta HQ background-screening company. Confirmed tenant via WebSearch 2026-07-08; expect the same Cloudflare CXS-API blocking pattern as Gainsight/NCR Voyix -- needs a browser-based check."
-    },
-    {
       "name": "Availity",
       "ats": "workday",
       "slug": null,
       "source": "Workday board dork 2026-07-07",
       "first_seen": "2026-07-07",
-      "why": "Senior Customer Success Manager + Customer Success Manager, both Remote -- healthcare data exchange platform (health-tech passion domain candidate). Workday tenant availity.wd1.myworkdayjobs.com -- expect the same Cloudflare CXS-API blocking pattern as Gainsight/NCR Voyix; needs a browser-based check.",
+      "why": "Senior Customer Success Manager + Customer Success Manager, both Remote -- healthcare data exchange platform (health-tech passion domain candidate). verify_workday.py probed availity.wd1.myworkdayjobs.com/availity 2026-07-10 with the full site-name guess list -- no working site found. Needs a browser-based check (Chrome MCP) to find the real host/tenant/site, not another curl/requests attempt.",
       "needs_ats_resolution": true
+    },
+    {
+      "name": "Gainsight",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). verify_workday.py re-probed gainsight.wd5.myworkdayjobs.com/gainsight 2026-07-10 with the full site-name guess list -- still no working site found (4th consecutive miss). Needs a browser-based check (Chrome MCP) next run instead of another curl/requests attempt."
+    },
+    {
+      "name": "NCR Voyix",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "why": "AI Enablement Coach - Atlanta HQ (NCR Voyix spun off from NCR, headquartered Atlanta). Strong Atlanta-bonus candidate. verify_workday.py re-probed ncr.wd1.myworkdayjobs.com/ncr 2026-07-10 -- still no working site found (4th consecutive miss). Needs a browser-based check (Chrome MCP) next run instead of another curl/requests attempt."
+    },
+    {
+      "name": "Cengage",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "why": "AI Enablement Operations Manager (Remote US) - direct Tier-2 AI-title fit. verify_workday.py re-probed cengage.wd5.myworkdayjobs.com/cengage 2026-07-10 -- still no working site found (2nd consecutive miss). Needs a browser-based check (Chrome MCP) next run instead of another curl/requests attempt."
+    },
+    {
+      "name": "Scandit",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "BuiltIn Remote 2026-07-10",
+      "first_seen": "2026-07-10",
+      "why": "Customer Success Engineer, remote US, base $160-180K -- computer vision/barcode-scanning SDK platform. ATS unresolved, needs a site: greenhouse/ashby/lever dork."
+    },
+    {
+      "name": "Acceldata",
+      "ats": "lever",
+      "slug": "acceldata",
+      "source": "Lever board dork 2026-07-10",
+      "first_seen": "2026-07-10",
+      "why": "Technical Account Manager - Acceldata Data Observability Cloud (ADOC). Data observability/AI-adjacent platform. Lever URL seen directly (jobs.lever.co/acceldata) -- verify live + headcount next run."
+    },
+    {
+      "name": "Secure AI Project",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "80,000 Hours job board 2026-07-10",
+      "first_seen": "2026-07-10",
+      "why": "AI safety org. Operations Director, Talent (Remote USA, $125-235K) + Policy Director, Implementation and Government Talent (Remote USA, $140-260K) -- both close 2026-07-26. Real title fit (Operations Director). No standard ATS found yet on the 80000hours org page -- needs a direct site check (jobs.80000hours.org/organisations/secure-ai-project) or greenhouse/ashby/lever dork next run."
     }
   ],
   "enrolled": [
+    {
+      "name": "First Advantage",
+      "ats": "workday",
+      "slug": "firstadvantage",
+      "enrolled_date": "2026-07-10",
+      "headcount_band": "2000+",
+      "enrolled_via": "pending queue verified 2026-07-10 via verify_workday.py (112 jobs, 5 title hits)",
+      "notes": "Atlanta HQ background screening company. Customer Success Partner (HealthCare Vertical), Sr./Lead Customer Success Partner roles."
+    },
     {
       "name": "Inorsa",
       "ats": "greenhouse",
@@ -422,6 +439,14 @@
     }
   ],
   "rejected": [
+    {
+      "name": "ThoughtSpot",
+      "ats": "workday",
+      "slug": "thoughtspot",
+      "rejected_date": "2026-07-10",
+      "reason": "verify_workday.py resolved the working site (thoughtspot.wd5.myworkdayjobs.com/thoughtspot/careers) but the CXS jobs API returned total=0 -- no open roles at all as of 2026-07-10, including the Customer Success Operations Manager that originally surfaced it.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "Hopper",
       "ats": "ashby",
