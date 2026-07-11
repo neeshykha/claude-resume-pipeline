@@ -6,6 +6,12 @@ Format per entry: repo URL, one-line description, when to cite it, and a resume-
 
 ---
 
+## claude-eval-kit
+**URL:** https://github.com/neeshykha/claude-eval-kit
+**What:** A small, reusable framework for scoring AI classifiers against ground truth — blind classification via the Claude Code CLI, confusion matrices, ordinal miss-direction splits, and confusable-pattern trap audits. Extracted from the pattern built inline for claude-triage-simulator (and needed again for agent-ops-bench), with the triage taxonomy re-run through it as example #1: 80% severity accuracy, 70% routing accuracy, and a specific legible finding (thermostat tickets misrouted to "Environmental Monitoring" 3 of 4 times).
+**Cite when:** JD asks about AI evaluation frameworks, LLM output quality measurement, or "how do you know if your AI is working" — especially when the role wants evidence of building reusable infrastructure, not just one-off scripts. Pairs with claude-triage-simulator as proof the eval discipline generalizes.
+**Resume line:** Built a reusable eval framework for scoring AI classifiers (confusion matrices, edge-case trap audits, blind classification), generalizing a pattern built independently across two prior projects.
+
 ## agent-ops-bench
 **URL:** https://github.com/neeshykha/agent-ops-bench
 **What:** Single vs multi-agent benchmark on a labeled ticket triage workload. Three configurations (generalist, parallel specialists, generalist + independent QA reviewer) measured on accuracy, cost per ticket, and latency. Key results: specialists took routing 83%→97% but left severity judgment flat; the QA reviewer took severity 70%→80% and caught an under-triaged critical ticket, at $0.60 per net correction.
