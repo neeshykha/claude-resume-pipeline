@@ -159,6 +159,8 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 
 The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt.md`** (consolidated 2026-07-01). The scheduled task's SKILL.md (`~/.claude/scheduled-tasks/daily-job-pipeline/SKILL.md`) is a thin loader that reads and executes that file — never add steps, thresholds, or query lists to the SKILL.md, and never maintain a second copy of the routine anywhere. Scoring numbers live in `watchlist_companies.json → _scoring_config`. Tracking-file updates go through `pipeline/update_tracking.py` (never hand-edit `seen_jobs.json`).
 
+Title matching is config-driven as of 2026-07-09: `poll_ats.py` builds its matcher at runtime from `watchlist_companies.json → _title_scoring_tiers` + `_poller_config` (stemmed-token matching, so word-form and word-order variants match automatically). To teach the poller a new title, edit the JSON; `poll_ats.py` carries no title lists, endpoints, or scoring numbers of its own. After ANY hand edit to `watchlist_companies.json` or `enrollment_candidates.json`, run `.venv/bin/python pipeline/validate_config.py` (syntax + schema check). The daily run also runs it at Step 1-pre, and `poll_ats.py` refuses to poll against a malformed watchlist.
+
 ## Pipeline Pre-Run: One-Time Notes
 
 At the very start of each pipeline session, before anything else:

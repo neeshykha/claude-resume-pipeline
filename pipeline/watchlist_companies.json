@@ -226,7 +226,8 @@
         "AI Value Manager",
         "AI Engagement Lead",
         "AI Deployment Lead",
-        "AI GTM Lead"
+        "AI GTM Lead",
+        "AI Enablement Manager"
       ]
     },
     "tier3_reasonable_stretch": {
@@ -261,7 +262,7 @@
         "Product Customer Success",
         "Forward Deployed Engineer"
       ],
-      "forward_deployed_engineer_note": "Demoted from Tier 2 (+22) to Tier 4 (+8) on 2026-07-09 after a near-100% miss rate across 7+ runs (2026-06-25 through 2026-07-09) covering dozens of postings at Parloa, Modal, Baseten, Antithesis, PermitFlow, Roboflow, Komodo Health, and Confido. In the 2026 AI-infra hiring market this title has drifted to mean 'customer-facing software engineer who ships production code' (Kubernetes, Terraform, sometimes a CS-degree requirement), not deployment strategy or ops — a real skill mismatch with the master resume, not a scoring artifact. ALWAYS read the actual JD before tailoring an FDE role, regardless of score — do not trust title-tier alone for this specific title. Titles that tested well and stayed at Tier 2: Deployment Strategist, AI Deployment Manager, AI Deployment Lead."
+      "forward_deployed_engineer_note": "Demoted from Tier 2 (+22) to Tier 4 (+8) on 2026-07-09 after a near-100% miss rate across 7+ runs (2026-06-25 through 2026-07-09) covering dozens of postings at Parloa, Modal, Baseten, Antithesis, PermitFlow, Roboflow, Komodo Health, and Confido. In the 2026 AI-infra hiring market this title has drifted to mean 'customer-facing software engineer who ships production code' (Kubernetes, Terraform, sometimes a CS-degree requirement), not deployment strategy or ops \u2014 a real skill mismatch with the master resume, not a scoring artifact. ALWAYS read the actual JD before tailoring an FDE role, regardless of score \u2014 do not trust title-tier alone for this specific title. Titles that tested well and stayed at Tier 2: Deployment Strategist, AI Deployment Manager, AI Deployment Lead."
     },
     "tier2b_ai_wildcard": {
       "title_match_score": 18,
@@ -282,7 +283,8 @@
         "solutions",
         "consultant",
         "advisor",
-        "partner"
+        "partner",
+        "enablement"
       ],
       "exclude_if_contains": [
         "engineer",
@@ -307,70 +309,71 @@
         "AI Customer Success",
         "AI Solutions Consultant",
         "AI GTM Manager",
-        "AI GTM Lead"
+        "AI GTM Lead",
+        "AI Enablement Manager"
       ]
     }
   },
-  "_target_titles_filter": [
-    "Support Operations Manager",
-    "Technical Support Operations Manager",
-    "Customer Operations Manager",
-    "Technical Support Manager",
-    "Technical Operations Manager",
-    "Support Engineering Manager",
-    "Head of Support",
-    "Director of Support Operations",
-    "Customer Support Manager",
-    "Technical Account Manager",
-    "Implementation Manager",
-    "Deployment Manager",
-    "Deployment Strategist",
-    "AI Engagement Manager",
-    "Forward Deployed Engineer",
-    "Professional Services Manager",
-    "Implementation Consultant",
-    "AI Implementation Manager",
-    "AI Deployment Manager",
-    "Engagement Manager",
-    "Workforce Manager",
-    "Contact Center Manager",
-    "Support Account Manager",
-    "Customer Success Manager",
-    "Senior Customer Success Manager",
-    "Technical Customer Success Manager",
-    "Customer Success Engineer",
-    "Customer Enablement Manager",
-    "Technical Enablement Manager",
-    "Solutions Engineer",
-    "Renewal Manager",
-    "Onboarding Manager",
-    "Partner Success Manager",
-    "AI Success Manager",
-    "AI Outcomes Manager",
-    "AI Adoption Manager",
-    "AI Transformation Manager",
-    "AI Transformation Lead",
-    "AI Transformation Strategist",
-    "AI Value Partner",
-    "AI Value Manager",
-    "AI Delivery Manager",
-    "AI Deployment Lead",
-    "AI Engagement Lead",
-    "AI Strategy Lead",
-    "AI Strategy Manager",
-    "AI Solutions Manager",
-    "AI Customer Success",
-    "AI Solutions Consultant",
-    "AI Customer Experience",
-    "AI Solutions Architect",
-    "AI Innovation Manager",
-    "AI GTM Manager",
-    "AI GTM Lead",
-    "Customer AI",
-    "Revenue AI",
-    "Agentic Solutions",
-    "Agentic Delivery"
-  ],
+  "_poller_config": {
+    "description": "Runtime matching knobs for pipeline/poll_ats.py; the poller reads this block plus _title_scoring_tiers at startup and carries NO hardcoded title lists of its own. Exact-title gate = every title in _title_scoring_tiers (all tiers, plus tier2b explicit_titles) + supplemental_exact_titles below. Matching is stemmed-token-subset: a job title matches a config title when it contains all of the config title's word stems, in any order and any word form ('Manager, Technical Account Management' matches 'Technical Account Manager'; 'Support Ops Manager' matches 'Support Operations Manager'). To teach the poller a new title concept, add it here or to a scoring tier; never edit poll_ats.py.",
+    "supplemental_exact_titles": {
+      "title_match_prescore": 15,
+      "notes": "Titles the poller surfaces for review that don't carry a scoring tier in _title_scoring_tiers. They pre-score at title_match_prescore. If one becomes a recurring real fit, promote it to a tier instead of leaving it here.",
+      "titles": [
+        "Product Manager",
+        "Technical Program Manager",
+        "Sales Engineer",
+        "Solutions Consultant",
+        "Digital Customer Experience",
+        "Customer Experience Lead",
+        "AI Adoption",
+        "AI Operations Manager",
+        "AI Optimization",
+        "AI Specialist",
+        "AI Solutions",
+        "Automation Specialist",
+        "Field Engineer",
+        "Support Engineer",
+        "Product CSM",
+        "Technical CSM"
+      ]
+    },
+    "borderline_fragments": {
+      "min_fragments": 2,
+      "notes": "A title matching >= min_fragments of these (stemmed-token match) lands in the poller's borderline list for Claude's semantic review. Single words match as whole-word stems, so 'ai' no longer needs a trailing-space hack and now matches titles that END in 'AI' too.",
+      "fragments": [
+        "customer success",
+        "account manager",
+        "technical account",
+        "solutions",
+        "implementation",
+        "enablement",
+        "deployment",
+        "customer engineer",
+        "support manager",
+        "operations manager",
+        "product manager",
+        "forward deployed",
+        "ai",
+        "csm",
+        "customer experience",
+        "professional services",
+        "onboarding",
+        "tam",
+        "se",
+        "adoption",
+        "optimization",
+        "automation",
+        "specialist"
+      ]
+    },
+    "jd_verification_required_titles": {
+      "titles": [
+        "Forward Deployed Engineer"
+      ],
+      "notes": "Titles with a documented history of JD-level mismatch despite matching the gate (see tier4 forward_deployed_engineer_note). The poller tags matches jd_verification_required=true, and when filling the per-company diversity cap it takes a company's NON-flagged roles first, so a risky top pick can't crowd out a safer second-best title from the same company (the Confido 2026-07-09 failure mode). Flagged roles still surface when slots remain. ALWAYS read the full JD before tailoring one of these, regardless of score."
+    }
+  },
   "companies": [
     {
       "name": "Samsara",
@@ -543,7 +546,12 @@
       "ats": "ashby",
       "slug": "Deepgram",
       "priority": "medium",
-      "reason": "Voice AI"
+      "reason": "Voice AI",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-07",
+      "enrolled_via": "enrollment_candidates.json pending queue, verified 2026-07-07",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML voice platform"
     },
     {
       "name": "ElevenLabs",
@@ -659,7 +667,8 @@
       "ats": "greenhouse",
       "slug": "florencehealthcare",
       "priority": "high",
-      "reason": "Atlanta HQ, clinical trial SaaS \u2014 small Atlanta company, strong CSM/TAM profile"
+      "reason": "Atlanta HQ, clinical trial SaaS \u2014 small Atlanta company, strong CSM/TAM profile",
+      "headcount_band": "201-500"
     },
     {
       "name": "SalesLoft",
@@ -687,7 +696,8 @@
       "ats": "greenhouse",
       "slug": "cloverly",
       "priority": "medium",
-      "reason": "Atlanta HQ, climate/carbon API \u2014 small Atlanta startup"
+      "reason": "Atlanta HQ, climate/carbon API \u2014 small Atlanta startup",
+      "headcount_band": "1-50"
     },
     {
       "name": "Flock Safety",
@@ -982,6 +992,17 @@
       "priority": "low",
       "reason": "Customer success platform (CS tooling vendor). Added 2026-06-25 (verified live: 1 job today). Small but directly relevant space - monitor for CS/implementation roles.",
       "headcount_band": "51-200"
+    },
+    {
+      "name": "First Advantage",
+      "ats": "workday",
+      "slug": "firstadvantage",
+      "wd_host": "firstadvantage.wd5.myworkdayjobs.com",
+      "wd_tenant": "firstadvantage",
+      "wd_site": "FIRSTADVANTAGE",
+      "priority": "medium",
+      "reason": "Background screening platform, Atlanta HQ. Discovered via BuiltIn Atlanta 2026-07-07, verified live via verify_workday.py 2026-07-10 (112 jobs, 5 title hits: Customer Success Partner (HealthCare Vertical), Associate Customer Experience Specialist, Sr./Lead Customer Success Partner).",
+      "headcount_band": "2000+"
     },
     {
       "name": "Sprinklr",
@@ -1307,7 +1328,8 @@
       "priority": "medium",
       "enrolled_date": "2026-07-02",
       "enrolled_via": "user mention (passion domain: electrification/clean energy); board verified live, 12 roles",
-      "notes": "AI-powered energy intelligence platform; routes residential/commercial power data toward clean energy (passion_domains: electrification_ev applies, +10). NOT the same company as arcadia.io (healthcare data, Lever slug 'arcadia') - do not confuse. No US customer-facing fit roles as of 2026-07-02 (a Director of CS req recently closed); watch for CSM/TAM/support-ops/implementation openings. headcount_band: verify via backfill housekeeping, do not guess."
+      "notes": "AI-powered energy intelligence platform; routes residential/commercial power data toward clean energy (passion_domains: electrification_ev applies, +10). NOT the same company as arcadia.io (healthcare data, Lever slug 'arcadia') - do not confuse. No US customer-facing fit roles as of 2026-07-02 (a Director of CS req recently closed); watch for CSM/TAM/support-ops/implementation openings.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Bland",
@@ -1390,16 +1412,6 @@
       "enrolled_date": "2026-07-06",
       "enrolled_via": "user-surfaced (LinkedIn alert) -> verified",
       "reason": "Healthcare real-world-data analytics company (~750 employees). Verified live 2026-07-06: AI Enablement Lead (Mavens), Remote US, $125K-$185K - exceptional fit, JD wants hands-on Claude/prompt-engineering/workflow-automation experience which is close to a direct description of Aneesh's actual iApartments role. Also has multiple Senior Salesforce Solutions Consultant reqs (mostly EMEA/India-based; one US-based). Health-tech passion domain applies. The \"Manager, Analytics Services\" role that originally surfaced this company is NOT a fit (needs SQL/Python/R + quantitative degree) - don't tailor for that one."
-    },
-    {
-      "name": "Deepgram",
-      "ats": "ashby",
-      "slug": "Deepgram",
-      "headcount_band": "201-500",
-      "enrolled_date": "2026-07-07",
-      "enrolled_via": "enrollment_candidates.json pending queue, verified 2026-07-07",
-      "score_bonus": 20,
-      "bonus_reason": "AI/ML voice platform"
     },
     {
       "name": "Macroscope",
@@ -1489,7 +1501,7 @@
       "enrolled_date": "2026-07-08",
       "enrolled_via": "AI-Native & AI-Safety Orgs discovery source 2026-07-08",
       "score_bonus": 20,
-      "bonus_reason": "AI-optimized cloud infrastructure powered by clean/stranded energy — AI/climate crossover",
+      "bonus_reason": "AI-optimized cloud infrastructure powered by clean/stranded energy \u2014 AI/climate crossover",
       "reason": "Verified live: Senior Customer Success Manager, San Francisco (hybrid). Vertically integrated AI infra + clean energy provider."
     },
     {
@@ -1508,7 +1520,7 @@
       "headcount_band": null,
       "enrolled_date": "2026-07-08",
       "enrolled_via": "BuiltIn Atlanta 2026-07-07 -> verified via enrollment queue 2026-07-08",
-      "reason": "Healthcare workforce compliance platform (CE Broker, EverCheck, Immuware), Boulder CO / Jacksonville Beach FL, remote-first. Verified live: Sr. Customer Success Manager - Government (Remote US), Manager Customer Success (Remote US). Health-tech passion domain applies. Headcount unconfirmed via WebSearch — left null rather than guessed."
+      "reason": "Healthcare workforce compliance platform (CE Broker, EverCheck, Immuware), Boulder CO / Jacksonville Beach FL, remote-first. Verified live: Sr. Customer Success Manager - Government (Remote US), Manager Customer Success (Remote US). Health-tech passion domain applies. Headcount unconfirmed via WebSearch \u2014 left null rather than guessed."
     }
   ]
 }

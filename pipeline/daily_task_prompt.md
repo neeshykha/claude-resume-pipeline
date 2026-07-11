@@ -54,6 +54,22 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 
 ## Step 1: ATS polling
 
+### 1-pre. Config validation (every run, before anything reads the config files)
+
+```bash
+.venv/bin/python pipeline/validate_config.py
+```
+
+Checks JSON syntax + schema of `watchlist_companies.json`, `enrollment_candidates.json`,
+and `seen_jobs.json` (the trailing-comma / mis-nesting hand-edit bug class broke feeders
+silently at least 3 times). On ERROR output: fix exactly what it reports (it prints file,
+line, and column for syntax errors), re-run until clean, then proceed. Also re-run it
+after ANY edit you make to those files during the run (enrollments, board_status updates,
+headcount backfill). `poll_ats.py` independently refuses to run against a malformed
+watchlist.
+
+### 1a. Poll
+
 Check whether `pipeline/jobs/ats_hits_{today}.json` already exists. If yes, read it and
 continue. If not:
 
@@ -67,6 +83,16 @@ larger/unknown-size companies, remainder by score), up to 20 `borderline` titles
 semantic review, `reseen_keys`, `errors`, `stats`, and `capped_companies`. Entries flagged `new_req_of_applied_title: true` are
 reposts of a title Aneesh already applied to under a new requisition — treat as new but
 mention the prior application in the digest.
+
+Title matching is config-driven (stemmed-token matching against `_title_scoring_tiers` +
+`_poller_config` in `watchlist_companies.json`): word-form and word-order variants match
+automatically, and each `matched` entry carries `title_tier` + `title_prescore` (which
+config tier the title hit) — use that tier at Step 2c instead of re-deriving it. Entries
+flagged `jd_verification_required: true` matched a known-risky title
+(`_poller_config → jd_verification_required_titles`; FDE is the prototype): NEVER tailor
+one without reading the full JD first, whatever its score. To teach the poller a new
+title, add it to a tier (or `_poller_config → supplemental_exact_titles`) in the JSON —
+never edit `poll_ats.py`.
 
 ### 1b. Board 404 alerts
 
@@ -135,8 +161,10 @@ key is in `seen_jobs.json` with `first_seen_date` within 30 days, or whose exact
 
 ### 2b. Hard filters
 
-Eliminate: crypto/web3/blockchain; VP/Head-of/Staff/Principal; clearance-required;
-postings >21 days old; salary below the $100K floor.
+Eliminate: crypto/web3/blockchain; VP/Head-of/Staff/Principal (EXCEPT exact Tier-1 titles
+like Head of Support / Director of Support Operations — those are true matches);
+clearance-required; postings >21 days old; salary below `_scoring_config →
+salary_floor_usd`.
 
 **Salary comparison basis (deterministic, never eyeball):** range → compare the
 **midpoint**; single figure → that figure; OTE-only → estimate base (80% for
@@ -147,20 +175,25 @@ treat as neutral.
 score >110 to surface. Queued/unapplied roles do NOT count. Trust the poller's
 `capped_companies` output for ATS hits.
 
-### 2c. Score (absolute points — canonical rubric)
+### 2c. Score (absolute points — canonical rubric; every number that exists in
+`watchlist_companies.json` is REFERENCED here, not copied — the JSON always wins)
 
-- Title match: T1 +30 / T2 +22 / T3 +15 / T4 +8 (tiers in `_title_scoring_tiers`)
+- Title match: the matched tier's `title_match_score` from `_title_scoring_tiers` (ATS
+  hits arrive pre-stamped with `title_tier`; for WebSearch finds, match the title against
+  the tiers yourself). `supplemental`-tier hits have no scoring tier — score them as the
+  nearest real tier by function, or T4 if none fits.
 - Keyword overlap with master resume: up to +30
 - Location: Atlanta in-office +20 / hybrid +18 / remote US +16 / NYC-NJ +12 / other 0
-- Salary (midpoint basis): ≥$140K +10 / ≥$120K +8 / ≥$100K or unlisted +5 / below 0
+- Salary (midpoint basis): ≥$140K +10 / ≥$120K +8 / ≥floor or unlisted +5 / below 0
 - Source quality: Greenhouse·Lever +10 / Ashby·BuiltIn +8 / aggregator +5; −3 if >14 days old
-- Freshness: ≤2 days +10 / ≤7 days +2
+- Freshness: `_scoring_config → freshness_bonus_2d` (≤2 days) / `freshness_bonus_7d` (≤7 days)
 
 **Company-level bonuses — capped at +30 combined (Scoring Guardrails in CLAUDE.md):**
 - AI/ML: a company's config `score_bonus` IS its AI bonus — count once, never stack a
   generic +20 on top. Non-watchlist AI-native company: +20 once.
 - Watchlist +10 · Atlanta-startup +20 · Atlanta-enterprise +10 · IoT +15
-- Small-company (requires `headcount_band`): ≤200 +15 / 201-500 +8 / absent 0 (never guess)
+- Small-company: per `_scoring_config → small_company_bonus` by `headcount_band`
+  (absent band = 0, never guess)
 - **Passion-domain +10** (`_scoring_config → passion_domains`: electrification/EV, health
   tech, agriculture/gardening/food). Apply SEMANTICALLY to the company's mission/product,
   once per job even if multiple domains hit; ignore keyword accidents ("patient rollout").
@@ -174,14 +207,17 @@ beyond these two.
 **Diversity cap:** surface ≤2 roles per company per run; fully tailor only the single
 best-scoring one — additional same-company roles are "also live (FYI)" digest lines.
 
-**Pick the top 3-4 jobs.** Tiers (thresholds in `_scoring_config`): 110+ priority/full ·
-88–109 full · 78–87 light (summary rewrite + skills reorder only, no cover letter) ·
-<78 skip. If fewer than 3 clear 78, send what you have — never pad.
+**Pick the top 3-4 jobs.** Tailoring tiers come from `_scoring_config`:
+≥`company_cap_threshold` priority/full · ≥`full_tailoring_threshold` full ·
+≥`light_tailoring_threshold` light (summary rewrite + skills reorder only, no cover
+letter) · below that, skip. If fewer than 3 clear the light threshold, send what you
+have — never pad.
 
 **Capture near-misses (do NOT tailor):** (A) score near-miss — passed every hard filter
-but scored <78 (no lower bound); (B) salary near-miss — passed everything except the
-salary floor, midpoint $90K–$100K. Collect title, company, location, salary, score, URL
-for the digest. Stale/capped/crypto/VP roles are NOT near-misses.
+but scored below `light_tailoring_threshold` (no lower bound); (B) salary near-miss —
+passed everything except the salary floor, midpoint between `near_miss_salary_floor_usd`
+and `salary_floor_usd`. Collect title, company, location, salary, score, URL for the
+digest. Stale/capped/crypto/VP roles are NOT near-misses.
 
 **Read `master_resume.md` NOW** — once, reused for all tailorings below.
 
@@ -196,10 +232,14 @@ Forward Deployed Engineer listing that turns out to require production coding), 
 drop the company. Pull that company's other live postings (direct ATS API call, same
 pattern as `pipeline/verify_workday.py`'s target-title scan) and check whether a
 lower-pre-scored role there is actually the better fit. This is how Confido's Implementation
-Manager got found on 2026-07-09 — it wasn't in the poller's top-25 at all because the
-diversity cap only kept the top 2 pre-scored roles (CSM + FDE) per company, and Implementation
-Manager's raw pre-score ranked below both. Only worth the extra API call when the top pick's
-JD genuinely disqualifies it — not a step to run for every company by default.
+Manager got found on 2026-07-09. Since then the poller structurally reduces this failure:
+titles in `_poller_config → jd_verification_required_titles` are demoted below a company's
+clean titles before the 2-per-company cap picks keepers, so a risky title can no longer
+crowd out a safer same-company role. This fallback step still applies when a NON-flagged
+top pick fails its JD read — and when that happens because of a title pattern, add the
+title to `jd_verification_required_titles` so the class is covered. Only worth the extra
+API call when the top pick's JD genuinely disqualifies it — not a step to run for every
+company by default.
 
 ## Step 4: Tailor resumes and cover letters
 
