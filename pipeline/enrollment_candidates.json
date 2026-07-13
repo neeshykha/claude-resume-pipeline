@@ -14,15 +14,6 @@
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
   "pending": [
     {
-      "name": "Harness",
-      "ats": "greenhouse",
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Atlanta 2026-07-07",
-      "first_seen": "2026-07-07",
-      "why": "Senior Customer Success Engineer / Technical Program Manager (Customer Success Manager) -- remote with Atlanta as one of several listed offices. Confirmed on Greenhouse 2026-07-08 (job-app embed token seen) but slug guesses 'harness' and 'harnessio' both 404'd -- needs the real board slug next run."
-    },
-    {
       "name": "Availity",
       "ats": "workday",
       "slug": null,
@@ -57,23 +48,6 @@
       "source": "Workday board dork 2026-07-06",
       "first_seen": "2026-07-06",
       "why": "AI Enablement Operations Manager (Remote US) - direct Tier-2 AI-title fit. verify_workday.py re-probed cengage.wd5.myworkdayjobs.com/cengage 2026-07-10 -- still no working site found (2nd consecutive miss). Needs a browser-based check (Chrome MCP) next run instead of another curl/requests attempt."
-    },
-    {
-      "name": "Scandit",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Remote 2026-07-10",
-      "first_seen": "2026-07-10",
-      "why": "Customer Success Engineer, remote US, base $160-180K -- computer vision/barcode-scanning SDK platform. ATS unresolved, needs a site: greenhouse/ashby/lever dork."
-    },
-    {
-      "name": "Acceldata",
-      "ats": "lever",
-      "slug": "acceldata",
-      "source": "Lever board dork 2026-07-10",
-      "first_seen": "2026-07-10",
-      "why": "Technical Account Manager - Acceldata Data Observability Cloud (ADOC). Data observability/AI-adjacent platform. Lever URL seen directly (jobs.lever.co/acceldata) -- verify live + headcount next run."
     },
     {
       "name": "Secure AI Project",
@@ -436,6 +410,27 @@
       "headcount_band": null,
       "enrolled_via": "BuiltIn Atlanta 2026-07-07 -> verified 2026-07-08",
       "notes": "Healthcare workforce compliance platform, Boulder CO/Jacksonville Beach FL, remote-first. Sr. Customer Success Manager - Government AND Manager, Customer Success both Remote US. Health-tech passion domain applies."
+    },
+    {
+      "name": "Harness",
+      "ats": "greenhouse",
+      "slug": "harnessinc",
+      "enrolled_date": "2026-07-13",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Scandit",
+      "ats": "greenhouse",
+      "slug": "scandit",
+      "enrolled_date": "2026-07-13",
+      "headcount_band": "201-500"
+    },
+    {
+      "name": "Acceldata",
+      "ats": "lever",
+      "slug": "acceldata",
+      "enrolled_date": "2026-07-13",
+      "headcount_band": "201-500"
     }
   ],
   "rejected": [

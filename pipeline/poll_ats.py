@@ -47,6 +47,7 @@ SHORTLIST_SIZE = 25
 # Populated from watchlist_companies.json by _init_config():
 ATS_ENDPOINTS = {}       # ← _endpoints (workday excluded; fetch_workday builds its URL from wd_* fields)
 MIN_SALARY = None        # ← _scoring_config.salary_floor_usd
+MAX_POSTING_AGE_DAYS = 21  # hard filter (CLAUDE.md Step 2b) — Greenhouse/Ashby/Lever only, see extract_posted_date
 COMPANY_CAP = None       # ← _scoring_config.company_cap_max_applied_pending
 SMALL_COMPANY_BONUS = {}  # ← _scoring_config.small_company_bonus
 MATCHER = None           # ← TitleMatcher built from _title_scoring_tiers + _poller_config
@@ -345,6 +346,31 @@ def description_excluded(text: str) -> bool:
     """Check if description contains excluded industry terms."""
     t = text.lower()
     return any(term in t for term in EXCLUDED_TERMS)
+
+
+def extract_posted_date(job_data: dict, ats: str) -> date | None:
+    """Extract the posting's first-published date, normalized to a date object.
+
+    Returns None when the ATS doesn't expose a usable field (Workday,
+    SmartRecruiters) — callers must treat None as neutral/unknown, never as
+    stale, per the same "no data → don't filter" rule used for salary.
+    """
+    try:
+        if ats in ("greenhouse", "greenhouse_eu"):
+            raw = job_data.get("first_published") or job_data.get("updated_at")
+            if raw:
+                return datetime.fromisoformat(raw).date()
+        elif ats == "ashby":
+            raw = job_data.get("publishedAt")
+            if raw:
+                return datetime.fromisoformat(raw.replace("Z", "+00:00")).date()
+        elif ats == "lever":
+            raw = job_data.get("createdAt")
+            if raw:
+                return datetime.fromtimestamp(int(raw) / 1000).date()
+    except (ValueError, TypeError, OSError):
+        return None
+    return None
 
 
 def extract_salary_min(compensation) -> int | None:
@@ -744,6 +770,21 @@ def poll_all(run_date: date) -> dict:
                 continue
 
             apply_url = build_apply_url(job_data, ats, slug)
+
+            # Freshness hard filter (CLAUDE.md Step 2b: exclude postings >21
+            # days old). Only enforced when the ATS gives us a real date —
+            # Workday/SmartRecruiters return None and are treated as neutral,
+            # same as the "no salary listed" rule. Found 2026-07-13: 6 of a
+            # day's top-25 pre-scored matches (Harvey, PermitFlow, Smile
+            # Digital Health, Vanta, Replicant, Chainguard) were 27-84 days
+            # old and had been silently wasting full tailoring effort across
+            # multiple runs because nothing checked absolute posting age.
+            posted_date = extract_posted_date(job_data, ats)
+            posting_age_days = (run_date - posted_date).days if posted_date else None
+            if posting_age_days is not None and posting_age_days > MAX_POSTING_AGE_DAYS:
+                stats["excluded"] += 1
+                continue
+
             dedup_key = make_dedup_key(slug, title)
             # Also check company-name-based key (handles slug ≠ name, e.g. pindropsecurity vs pindrop)
             name_slug = re.sub(r'[^a-z0-9-]', '', name.lower().replace(' ', ''))
@@ -816,6 +857,8 @@ def poll_all(run_date: date) -> dict:
                 "slug": slug,
                 "priority": priority,
                 "salary_min": salary_min,
+                "posted_date": posted_date.isoformat() if posted_date else None,
+                "posting_age_days": posting_age_days,
                 "match_type": "exact" if is_exact else "borderline",
                 "borderline_score": borderline_count if not is_exact else None,
                 "headcount_band": company.get("headcount_band"),
