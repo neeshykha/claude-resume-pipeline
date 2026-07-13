@@ -4,6 +4,7 @@
     "description": "Scripts/sources that append to `pending`. All are DISCOVERY FEEDERS (they find companies); the watchlist poller is the durable job source once a company is enrolled.",
     "harvest_hn_hiring.py": "Monthly. Parses the HN 'Ask HN: Who is hiring?' thread via the Algolia API and extracts (ats, slug) directly from ATS apply links in comments -> directly enrollable. Highest-yield sub-500 source. Run on/after the 1st.",
     "poll_remotive.py": "Daily. Remotive remote-jobs JSON API. Remotive does NOT expose the ATS link, so it yields NAME-ONLY leads (needs_ats_resolution=true) that the enrollment step must resolve to an ATS before enrolling. (RemoteOK evaluated 2026-06-30 and dropped for data quality.)",
+    "poll_80k.py": "Daily. 80,000 Hours job board via its public Algolia backend (added 2026-07-13 -- replaces the lossy WebSearch site: dork, which surfaced ~5 orgs vs 84+ live listings). EA / AI-safety / public-good orgs. Hits carry url_external, so leads arrive with (ats, slug) PRE-RESOLVED when the apply link is Greenhouse/Ashby/Lever; otherwise name-only. Filters to US-reachable, target-role-shaped, non-junior titles. Salary floor still applies at enrollment -- some board roles are volunteer/hourly.",
     "websearch board dorks": "Daily, run by Claude. site:jobs.ashbyhq.com / job-boards.greenhouse.io / jobs.lever.co target-role dorks. Surface unfamiliar companies -> append to pending."
   },
   "_schema": {
@@ -11,7 +12,7 @@
     "enrolled": "[{name, ats, slug, enrolled_date, headcount_band}] \u2014 audit log; the live entry lives in watchlist_companies.json.",
     "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced}] \u2014 don't re-evaluate unless it resurfaces with new roles."
   },
-  "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
+  "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
   "pending": [
     {
       "name": "Availity",
@@ -57,6 +58,126 @@
       "source": "80,000 Hours job board 2026-07-10",
       "first_seen": "2026-07-10",
       "why": "AI safety org. Operations Director, Talent (Remote USA, $125-235K) + Policy Director, Implementation and Government Talent (Remote USA, $140-260K) -- both close 2026-07-26. Real title fit (Operations Director). No standard ATS found yet on the 80000hours org page -- needs a direct site check (jobs.80000hours.org/organisations/secure-ai-project) or greenhouse/ashby/lever dork next run."
+    },
+    {
+      "name": "Resolution",
+      "ats": "ashby",
+      "slug": "resolution",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Operations Staff' | San Francisco Bay Area | $198,000 - $437,000 | https://jobs.ashbyhq.com/resolution/3e9e55e0-49b0-4888-a9ef-38034e7c880c?utm_source=80000hours&utm_medium=job-board"
+    },
+    {
+      "name": "SL5 Task Force",
+      "ats": "ashby",
+      "slug": "security-level-5",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Operations Generalist' | San Francisco Bay Area | $130,000 - $180,000 | https://jobs.ashbyhq.com/security-level-5/619e1bee-d6ac-44cc-86cd-85cf4ba7376f?utm_source=80000hours&utm_medium=job-boar"
+    },
+    {
+      "name": "Principles of Intelligence",
+      "ats": null,
+      "slug": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Compliance and Operations Manager' | Remote, Global, Belgrade, Serbia | $55,000 - $75,000 | https://princint.ai/now-hiring-compliance-operations-manager-at-principles-of-intelligence/?utm_source=80000hours&utm_me",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Impact Ops",
+      "ats": null,
+      "slug": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Operations Specialist, US' | Remote, USA | $80,000 - $95,000 | https://impact-ops.org/jobs/operations-specialist/?utm_source=80000hours&utm_medium=job-board",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Eleos AI Research",
+      "ats": "ashby",
+      "slug": "eleos",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Head of Operations' | San Francisco Bay Area | $183,696 - $277,000 | https://jobs.ashbyhq.com/eleos/d2ebbd53-6d8e-4ec9-8040-77bb4db25af7?utm_source=80000hours&utm_medium=job-board"
+    },
+    {
+      "name": "Encode",
+      "ats": null,
+      "slug": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Senior Operations Manager' | Washington, DC metro area, Remote, USA | $130,000 - $160,000 | https://encode-careers.vercel.app/senior-operations-manager?utm_source=80000hours&utm_medium=job-board",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Kairos",
+      "ats": "ashby",
+      "slug": "kairos-project",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Head of Operations' | Remote, Global | $170,000 - $260,000 | https://jobs.ashbyhq.com/kairos-project/11e789b2-5024-42d8-9312-966d301ac0db?utm_source=80000hours&utm_medium=job-board"
+    },
+    {
+      "name": "High Impact Athletes",
+      "ats": null,
+      "slug": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Head of Finance and Operations' | Remote, Global | Up to $80,000 | https://highimpactathletes.org/finance-ops-jd?utm_source=80000hours&utm_medium=job-board",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Constellation",
+      "ats": null,
+      "slug": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Expression of Interest, Operations' | San Francisco Bay Area | salary unlisted | https://jobs.gem.com/constellation-institute/12ef3003-8e6c-4ae9-b3bf-6f4378865b19?utm_source=80000hours&utm_medium=job-b",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Valthos",
+      "ats": "ashby",
+      "slug": "valthos",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Operations Generalist / Business Operations' | New York, NY | salary unlisted | https://jobs.ashbyhq.com/valthos/1b06d90d-a2ac-49dd-9f12-4408303c5e86?utm_source=80000hours&utm_medium=job-board"
+    },
+    {
+      "name": "Goodfire",
+      "ats": "greenhouse",
+      "slug": "goodfire",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Business Operations Manager' | San Francisco Bay Area | $175,000 - $300,000 | https://job-boards.greenhouse.io/goodfire/jobs/5075058008?utm_source=80000hours&utm_medium=job-board"
+    },
+    {
+      "name": "Google DeepMind",
+      "ats": null,
+      "slug": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Technical Program Manager, Frontier Safety, Alignment and Collaboration' | San Francisco Bay Area | $256,000 - $279,000 | https://www.google.com/about/careers/applications/jobs/results/124817330986197702-technical-program-manager-frontier-saf",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Pax Sapiens",
+      "ats": null,
+      "slug": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Communications Program Manager' | Denver metro area | $93,500 - $96,760 | https://paxsapiens.bamboohr.com/careers/56?utm_source=80000hours&utm_medium=job-board",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "CivAI",
+      "ats": null,
+      "slug": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "why": "80K Hours \u2014 'Program Manager' | San Francisco Bay Area | $140,000 - $175,000 | https://civai.org/jobs/program-manager?utm_source=80000hours&utm_medium=job-board",
+      "needs_ats_resolution": true
     }
   ],
   "enrolled": [
@@ -737,6 +858,14 @@
       "rejected_date": "2026-07-08",
       "reason": "No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
       "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Frame",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-13",
+      "reason": "Assessed same day it was surfaced (user-brought find, 80K Hours alert). Frame Fellowship: 10-week residential accelerator for AI content creators. The Operations Lead role is event/program logistics (venue, catering, run-of-show, vendor management) -- title-vs-substance mismatch with support/technical ops. $6-10K/mo annualizes to $72-120K, midpoint $96K under the salary floor. SF-only, inherently in-person, scoped at 1-4 yrs experience, applies via a Google Doc. No pollable ATS.",
+      "recheck_if_resurfaced": false
     }
   ]
 }

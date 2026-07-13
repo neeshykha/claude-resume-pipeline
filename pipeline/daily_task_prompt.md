@@ -128,6 +128,10 @@ endpoints. LinkedIn redirects to login — snippets only.
 `pipeline/enrollment_candidates.json` is the standing queue that stops off-watchlist
 sightings from dead-ending. Run the feeders:
 - `.venv/bin/python pipeline/poll_remotive.py` — daily; appends name-only leads
+- `.venv/bin/python pipeline/poll_80k.py` — daily; 80,000 Hours board via its public
+  Algolia backend (added 2026-07-13, replaces the old lossy WebSearch dork for this
+  source). Leads arrive with (ats, slug) pre-resolved when the apply link is a
+  supported ATS; salary floor still applies at enrollment
 - `.venv/bin/python pipeline/harvest_hn_hiring.py` — only on/after the 1st of the month
 - Board dorks (from 1c) — append any UNFAMILIAR company to `pending`
 

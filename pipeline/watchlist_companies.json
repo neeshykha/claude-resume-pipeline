@@ -74,7 +74,7 @@
         "name": "80,000 Hours Job Board (EA/AI-safety/public-good orgs)",
         "query": "site:jobs.80000hours.org (\"Operations\" OR \"Program Manager\" OR \"Customer Success\" OR \"Technical Program Manager\" OR \"Implementation\" OR \"Business Operations\")",
         "notes": "ACCESS UPGRADED 2026-07-13: the board is directly queryable via its public Algolia backend -- no browser, no JS rendering, no WebSearch snippets needed. POST to https://W6KM1UDIB3-dsn.algolia.net/1/indexes/jobs_prod/query with headers x-algolia-application-id: W6KM1UDIB3 and x-algolia-api-key: d1d7f2c8696e7b36837d5ed337c4a319 (public search key embedded in the site frontend), body {\"query\": \"<terms>\", \"hitsPerPage\": N}. Hits carry title, company_name, salary, tags_city/tags_country, description (HTML), url_external (apply link), posted_at, closes_at, experience_min/avg, company_url. Query the target-role terms (Operations, Program Manager, Customer Success, Implementation, Business Operations) rather than pulling the whole index. This retires the lossy WebSearch site: dork (confirmed undercount 2026-07-06: ~5 org pages surfaced vs ~84+ live listings) and invalidates the 2026-07-06 'needs a browser tool, not worth it' premise -- same Algolia pattern as harvest_hn_hiring.py. The old WebSearch query below remains as fallback only. Org pages at jobs.80000hours.org/organisations/{slug} still render server-side for per-org verification. Caveats unchanged: research/engineering titles dominate; some roles volunteer/unpaid or Director/Chair-level -- salary floor and seniority filters still apply. Found 2026-07-13 while assessing a user-surfaced Frame Fellowship Operations Lead role the WebSearch dork had never surfaced.",
-        "status": "active",
+        "status": "disabled",
         "frequency": "daily",
         "api_access": {
           "type": "algolia",
@@ -82,7 +82,8 @@
           "search_api_key": "d1d7f2c8696e7b36837d5ed337c4a319",
           "index": "jobs_prod",
           "endpoint": "https://W6KM1UDIB3-dsn.algolia.net/1/indexes/jobs_prod/query"
-        }
+        },
+        "disabled_reason": "Superseded 2026-07-13 by pipeline/poll_80k.py, which queries the board's public Algolia backend directly (see api_access below and the feeder's docstring). The WebSearch site: dork was a lossy proxy (~5 org pages per run vs 84+ live listings, confirmed 2026-07-06). Re-enable only if the Algolia key rotates and the feeder breaks; the org pages at jobs.80000hours.org/organisations/{slug} remain WebFetch-able for per-org verification either way."
       },
       {
         "name": "Workday Boards - Target Roles",
