@@ -196,6 +196,7 @@ class TitleMatcher:
             for t in spec["titles"]:
                 self._add_exact(t, tier_name, spec["title_match_score"])
         wc = tiers["tier2b_ai_wildcard"]
+        self.ai_wildcard_score = wc["title_match_score"]
         for t in wc.get("explicit_titles", []):
             self._add_exact(t, "tier2b_ai_wildcard", wc["title_match_score"])
         supp = pc["supplemental_exact_titles"]
@@ -850,8 +851,16 @@ def poll_all(run_date: date) -> dict:
         # Rate limit: small delay between companies to be polite
         time.sleep(0.3)
 
-    # Pre-score and rank matched jobs
-    for job in matched:
+    def pre_score_job(job: dict, default_title_prescore: int = 15) -> int:
+        """Shared pre-score formula. Used for exact `matched` titles (where
+        title_prescore comes from _title_scoring_tiers) AND for ai_wildcard
+        borderline entries (title_prescore is deliberately None for those —
+        see the entry-building comment above — so they fall back to the
+        tier2b_ai_wildcard score the caller passes in). Extracted 2026-07-10
+        after Arcadia's "AI Operations Lead" (ai_wildcard borderline, real
+        full-score ~112) sat unscored in the borderline list, ranked only by
+        a low-fidelity fragment-count borderline_score, and got skipped in a
+        busy run — see pipeline/audit_recurring_fixes_2026-07.md."""
         score = 0
         t = job["title"].lower()
 
@@ -862,7 +871,7 @@ def poll_all(run_date: date) -> dict:
         # tier-3 CSM titles as top-tier and, until 2026-07-09, gave Forward
         # Deployed Engineer a +30 premium despite a near-100% JD miss rate —
         # FDE now inherits tier4's +8 automatically).
-        score += job.get("title_prescore") or 15
+        score += job.get("title_prescore") or default_title_prescore
 
         # Seniority match (senior = ok, principal/staff = excluded already, manager II = ok)
         if "senior" in t or "sr " in t or "sr." in t:
@@ -935,7 +944,21 @@ def poll_all(run_date: date) -> dict:
                 score += 8
                 break
 
-        job["pre_score"] = score
+        return score
+
+    # Pre-score and rank matched jobs
+    for job in matched:
+        job["pre_score"] = pre_score_job(job)
+
+    # Pre-score ai_wildcard borderline entries too (title_prescore is None for
+    # these by design — they never hit an exact tier — so fall back to
+    # tier2b_ai_wildcard's title_match_score). Without this they only carry a
+    # fragment-count borderline_score and can't be triaged by real fit; see
+    # the pre_score_job docstring for the miss this fixes.
+    tier2b_score = MATCHER.ai_wildcard_score
+    for job in borderline:
+        if job.get("ai_wildcard"):
+            job["pre_score"] = pre_score_job(job, default_title_prescore=tier2b_score)
 
     # Sort by pre-score, then apply a per-company DIVERSITY CAP before keeping
     # the top 25. Without this, a single company that posts many CS-adjacent
@@ -1018,9 +1041,17 @@ def poll_all(run_date: date) -> dict:
     # reach the output Claude reads — silently defeating the wildcard match in
     # MATCHER.matches_ai_wildcard(). Mirrors the small/large reserved-quota
     # pattern used for the matched shortlist above.
+    #
+    # Sort the ai_wildcard pool by the real pre_score computed above, not
+    # borderline_score (fragment-match count, 1-3 typically — a near-random
+    # ranking of actual fit). Fixed 2026-07-10 after Arcadia's "AI Operations
+    # Lead" — full score ~112, i.e. would have led the WHOLE shortlist — sat
+    # ranked by fragment count alongside noise and was never flagged for
+    # priority review. other_pool (non-wildcard borderline) still has no real
+    # pre_score computed, so it keeps the old borderline_score sort.
     ai_wildcard_pool = sorted(
         (j for j in borderline if j.get("ai_wildcard")),
-        key=lambda j: -j.get("borderline_score", 0),
+        key=lambda j: -j.get("pre_score", j.get("borderline_score", 0)),
     )
     other_pool = sorted(
         (j for j in borderline if not j.get("ai_wildcard")),
@@ -1028,7 +1059,7 @@ def poll_all(run_date: date) -> dict:
     )
     reserved = ai_wildcard_pool[:MIN_AI_WILDCARD_SLOTS]
     leftover = ai_wildcard_pool[MIN_AI_WILDCARD_SLOTS:] + other_pool
-    leftover.sort(key=lambda j: -j.get("borderline_score", 0))
+    leftover.sort(key=lambda j: -j.get("pre_score", j.get("borderline_score", 0)))
     borderline_capped = reserved + leftover[:BORDERLINE_SIZE - len(reserved)]
 
     return {
@@ -1087,6 +1118,14 @@ def main():
         print(f"\nCapped companies:")
         for co, count in results["capped_companies"].items():
             print(f"  {co}: {count} pending applications")
+    ai_wildcard_hits = sorted(
+        (j for j in results["borderline"] if j.get("ai_wildcard")),
+        key=lambda j: -j.get("pre_score", 0),
+    )
+    if ai_wildcard_hits:
+        print(f"\nTop AI-wildcard borderline hits (now pre-scored — review before finalizing the shortlist, don't just skim):")
+        for j in ai_wildcard_hits[:5]:
+            print(f"  [{j['pre_score']}] {j['company']}: {j['title']}")
     print(f"\nOutput: {output_path}")
 
 
