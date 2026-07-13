@@ -51,15 +51,15 @@
       },
       {
         "name": "Greenhouse Boards - Target Roles",
-        "query": "site:job-boards.greenhouse.io (\"technical account manager\" OR \"customer success manager\" OR \"implementation\" OR \"solutions engineer\" OR \"deployment\" OR \"professional services\") 2026",
-        "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25.",
+        "query": "site:job-boards.greenhouse.io (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"solutions engineer\" OR \"deployment\" OR \"professional services\") 2026",
+        "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had.",
         "status": "active",
         "frequency": "daily"
       },
       {
         "name": "Lever Boards - Target Roles",
-        "query": "site:jobs.lever.co (\"technical account manager\" OR \"customer success manager\" OR \"implementation\" OR \"solutions consultant\" OR \"deployment\") 2026",
-        "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25.",
+        "query": "site:jobs.lever.co (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"solutions consultant\" OR \"deployment\") 2026",
+        "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss).",
         "status": "active",
         "frequency": "daily"
       },
@@ -248,7 +248,9 @@
         "AI Customer Experience Manager",
         "AI Solutions Architect",
         "AI Strategy Lead",
-        "AI GTM Manager"
+        "AI GTM Manager",
+        "Conversation Designer",
+        "Knowledge Manager"
       ]
     },
     "tier4_weak_stretch": {
@@ -284,7 +286,10 @@
         "consultant",
         "advisor",
         "partner",
-        "enablement"
+        "enablement",
+        "knowledge",
+        "copilot",
+        "conversation"
       ],
       "exclude_if_contains": [
         "engineer",
@@ -1422,6 +1427,16 @@
       "enrolled_via": "enrollment_candidates.json pending queue, verified 2026-07-07",
       "score_bonus": 20,
       "bonus_reason": "AI/ML code analytics platform"
+    },
+    {
+      "name": "Tailscale",
+      "ats": "greenhouse",
+      "slug": "tailscale",
+      "priority": "high",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-10",
+      "enrolled_via": "User-surfaced (LinkedIn) -- board dork miss, patched query 2026-07-10",
+      "reason": "Zero-config mesh VPN/networking platform (WireGuard-based), fully remote, $1.5B valuation. Verified live 2026-07-10: Customer Success Engineer (Remote US, OTE $150K-$250K, posted 2 days ago) requires networking/VPN/security fundamentals, cloud infra (AWS/GCP/Azure), and technical-support-engineer background -- unusually strong overlap with Aneesh's IoT/mesh-Wi-Fi/OpenWrt networking history. Also has a Solutions Engineer - Commercial req."
     },
     {
       "name": "Sprig",
