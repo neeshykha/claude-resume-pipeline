@@ -51,6 +51,12 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
    prose, and it changes over time. Standing hard rule from it: prefer colons/semicolons
    over em-dashes; max 2 em-dashes per document. Verify before rendering any PDF with
    `grep -c '—' <file>` (allow-listed) and rewrite if over.
+4. **Read `.claude/skills/career-narrative/SKILL.md` in full, every run, before any
+   drafting.** It is the source of truth for Aneesh's POSITIONING: the four signature
+   frameworks, STAR story bank, transferable-parallel template, and material style rules.
+   Precedence: the style guide (item 3) + CLAUDE.md voice rules govern FORM; the career
+   narrative governs SUBSTANCE; `master_resume.md` remains the only source of factual
+   claims. Step 4 says how to apply it per document.
 
 ## Step 1: ATS polling
 
@@ -152,6 +158,23 @@ companies have bands.
 
 Combine ATS hits + promoted borderline titles + WebSearch finds.
 
+### 2a-pre. AI-wildcard borderline review (mandatory, not optional)
+
+`poll_ats.py` now computes a real `pre_score` for every borderline entry flagged
+`ai_wildcard: true` (fixed 2026-07-10 — previously these carried no score at all, only a
+low-fidelity fragment-count `borderline_score`, so they sorted alongside noise and were
+easy to skim past). The poller's console output prints the top 5 by `pre_score` under
+"Top AI-wildcard borderline hits" — **read every entry in `borderline` with
+`ai_wildcard: true` before finalizing the top 3-4**, not just the printed top 5, and not
+just the `matched` top-25. Do not defer to the higher-pre-score `matched` list by default:
+ai_wildcard entries exist specifically because their title doesn't fit any exact tier, so
+a high `pre_score` here can still mean the single best-fitting role in the whole run (see
+Arcadia "AI Operations Lead", 2026-07-10 — borderline, ai_wildcard, real full score ~112,
+would have led the shortlist, initially skipped because the daily run treated `matched` as
+the primary source and only skimmed `borderline`). Score every ai_wildcard entry with the
+full Step 2c rubric same as a matched entry, using `_title_scoring_tiers →
+tier2b_ai_wildcard`'s `title_match_score` (+18) for the title-match component.
+
 ### 2a. Dedup (WebSearch-sourced candidates only — ATS hits are already deduped)
 
 `dedup_key` = `{ats_or_company_slug}::{kebab-case-title-slug}` (match `poll_ats.py`
@@ -246,6 +269,21 @@ company by default.
 Follow the CLAUDE.md tailoring workflow for each top job (JD analysis → top-15 phrases →
 ATS optimization → tailor → verify). Per job:
 
+**Career narrative application (from the Step 0 read of
+`.claude/skills/career-narrative/SKILL.md`):**
+- Pick the ONE framework (max two, never all four) that matches what this JD is actually
+  probing — the skill's per-framework "deploy for" notes say which. The framework shapes
+  the resume summary's angle and the cover letter's argument; it must sound spontaneous,
+  not recited.
+- Slot the STAR story that matches the JD's top requirement; use the
+  transferable-parallel template for the company-specific connection in the cover letter.
+  Two stories carry flagged gaps (email-pipeline metric, adoption anecdote) — do not
+  invent the missing specifics; use the documented fallbacks.
+- Positioning language ("owns the AI copilot relationship", "designs support systems
+  with AI as a first-class participant") belongs early in summaries and letters — but the
+  CLAUDE.md opener rules still own the first sentence of every cover letter. Outcomes
+  before tools, always; never escape-framing.
+
 1. Tailored resume markdown → `tailored/Aneesh_Khan_[Company]_[Role].md`
 2. Resume JSON → `tailored/..._data.json` (schema: `pipeline/pdf_helpers.py` docstring)
 3. `.venv/bin/python pipeline/render_pdf.py resume <data.json> <out.pdf>`
@@ -264,7 +302,8 @@ ATS optimization → tailor → verify). Per job:
      `- [date] [Company]: "first sentence"`
 6. **Tailoring diff** (for the digest): summary changes, bullet reorders/drops, terminology
    swaps, skills reorder, coverage N/15; cover letter hook + achievements featured +
-   JD language mirrored. Bullets, no prose.
+   JD language mirrored + which career-narrative framework/story was used (so Aneesh can
+   spot-check the framework fits the role before applying). Bullets, no prose.
 
 7. **Style check (before rendering each PDF):** the document must comply with the writing
    style guide read in Step 0. Minimum mechanical check: `grep -c '—' <file>` must be ≤2;

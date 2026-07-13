@@ -27,6 +27,12 @@ Non-negotiables that have already been violated in shipped documents:
 - No AI tells (phrase or structural), no corporate speak, varied sentence rhythm, confident
   voice. Run the guide's Gut Check on every finished document.
 
+Also read `.claude/skills/career-narrative/SKILL.md` (auto-triggers as a skill in
+interactive sessions; the daily pipeline reads it at Step 0). It owns Aneesh's
+POSITIONING: four signature frameworks, STAR story bank, transferable-parallel template.
+Precedence: style guide + the voice rules below govern form; career narrative governs
+substance; `master_resume.md` is the only source of factual claims.
+
 ### 1. Analyze the JD
 - Extract the job title, company name, and key requirements
 - Identify keywords that appear in the JD (tools, methodologies, soft skills, industry terms)
@@ -118,6 +124,11 @@ Always generate a tailored cover letter alongside the resume:
 - **Fallback:** Write a `*_cover_pdf.py` script only if `render_pdf.py` is unavailable
 - Mirror the JD's language just like the resume
 - Keep it under one page (4–5 short paragraphs)
+
+**Content comes from the career narrative** (`.claude/skills/career-narrative/SKILL.md`):
+one framework max per letter, one STAR story, one transferable-parallel connection,
+positioning early but never as a templated opener. The voice rules below win any conflict
+about how the letter reads.
 
 **Voice rules** (full profile in memory: `feedback_cover_letter_voice.md`):
 
