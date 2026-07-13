@@ -842,7 +842,8 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) \u2014 AI service management. NOTE: apply -15 location penalty if no US remote option on role",
       "board_status": "404_confirmed",
-      "recheck_after": "2026-07-13"
+      "board_status_note": "Re-verified 2026-07-13: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404. WebSearch surfaced apparently-live job-boards.greenhouse.io/aiserajobs listings (incl. Enterprise CSM) but these are stale search-cache: direct curl to the board page 404s, and the individual job URL 302-redirects to /aiserajobs?error=true. Don't trust WebSearch snippets alone for this check, confirmed again.",
+      "recheck_after": "2026-07-20"
     },
     {
       "name": "Sierra",
@@ -886,7 +887,8 @@
       "ats": "ashby",
       "slug": "perplexity",
       "priority": "high",
-      "reason": "AI-native search/answer engine. Enterprise CSM + Customer Success Engineer roles live. Added 2026-06-25 (verified live: 74 jobs). AI bonus.",
+      "headcount_band": "501-2000",
+      "reason": "AI-native search/answer engine. Enterprise CSM + Customer Success Engineer roles live. Added 2026-06-25 (verified live: 74 jobs). AI bonus. Headcount backfilled 2026-07-13 (~1,400 employees per Crustdata, LinkedIn's 201-500 listing is stale).",
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) - enterprise AI search"
     },
@@ -1536,6 +1538,58 @@
       "enrolled_date": "2026-07-08",
       "enrolled_via": "BuiltIn Atlanta 2026-07-07 -> verified via enrollment queue 2026-07-08",
       "reason": "Healthcare workforce compliance platform (CE Broker, EverCheck, Immuware), Boulder CO / Jacksonville Beach FL, remote-first. Verified live: Sr. Customer Success Manager - Government (Remote US), Manager Customer Success (Remote US). Health-tech passion domain applies. Headcount unconfirmed via WebSearch \u2014 left null rather than guessed."
+    },
+    {
+      "name": "Algolia",
+      "ats": "greenhouse",
+      "slug": "algolia",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-13",
+      "enrolled_via": "Greenhouse board dork 2026-07-13",
+      "reason": "AI-powered search and discovery platform (Palo Alto HQ). Verified live board (boards-api.greenhouse.io/v1/boards/algolia/jobs, 200): Customer Success Engineer."
+    },
+    {
+      "name": "Dropzone AI",
+      "ats": "greenhouse",
+      "slug": "dropzoneai",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-13",
+      "enrolled_via": "Greenhouse board dork 2026-07-13",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) \u2014 AI SOC analyst / autonomous security agents",
+      "reason": "AI-native security startup (Seattle, ~56 employees, autonomous SOC investigation agents). Verified live board (boards-api.greenhouse.io/v1/boards/dropzoneai/jobs, 200): Forward Deployed Engineer \u2014 flagged jd_verification_required (FDE title), read full JD before tailoring."
+    },
+    {
+      "name": "Harness",
+      "ats": "greenhouse",
+      "slug": "harnessinc",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-13",
+      "enrolled_via": "enrollment_candidates.json pending queue (first seen BuiltIn Atlanta 2026-07-07, real slug resolved 2026-07-13 \u2014 prior 'harness'/'harnessio' guesses had 404'd across 4 runs)",
+      "reason": "AI-native software delivery / CI-CD platform, SF HQ, ~1,200-1,700 employees. Verified live board: Senior Customer Success Engineer, Technical Program Manager (Customer Success Manager). Atlanta listed among offices for at least one role."
+    },
+    {
+      "name": "Scandit",
+      "ats": "greenhouse",
+      "slug": "scandit",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-13",
+      "enrolled_via": "enrollment_candidates.json pending queue (first seen 2026-07-10 as ATS-unresolved, resolved 2026-07-13)",
+      "reason": "Smart data capture / barcode-scanning SDK platform, Zurich HQ, ~400-550 employees (band picked conservatively). Verified live board: Customer Success Engineer, $160K-$180K, Remote US East."
+    },
+    {
+      "name": "Acceldata",
+      "ats": "lever",
+      "slug": "acceldata",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-13",
+      "enrolled_via": "enrollment_candidates.json pending queue (first seen 2026-07-10, verified 2026-07-13)",
+      "reason": "Data observability platform (Campbell, CA HQ, ~300 employees). Verified live board: Technical Account Manager - Acceldata Data Observability Cloud (ADOC)."
     }
   ]
 }
