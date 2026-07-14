@@ -44,22 +44,22 @@
       },
       {
         "name": "Ashby Boards - Target Roles",
-        "query": "site:jobs.ashbyhq.com (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions consultant\" OR \"deployment\" OR \"professional services\" OR \"customer engineer\") 2026",
-        "notes": "Discovers Ashby-hosted companies NOT on the watchlist. Returns ~10 results; scan for UNFAMILIAR company names (skip ones already on the watchlist). When a new company appears, verify its board (pipeline/verify_workday.py pattern or a direct Ashby API check) and add it to the watchlist so the poller scans its full roster going forward. Added 2026-06-25.",
+        "query": "site:jobs.ashbyhq.com (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"enablement\" OR \"solutions consultant\" OR \"deployment\" OR \"professional services\" OR \"customer engineer\") 2026",
+        "notes": "Discovers Ashby-hosted companies NOT on the watchlist. Returns ~10 results; scan for UNFAMILIAR company names (skip ones already on the watchlist). When a new company appears, verify its board (pipeline/verify_workday.py pattern or a direct Ashby API check) and add it to the watchlist so the poller scans its full roster going forward. Added 2026-06-25. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
         "status": "active",
         "frequency": "daily"
       },
       {
         "name": "Greenhouse Boards - Target Roles",
-        "query": "site:job-boards.greenhouse.io (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"solutions engineer\" OR \"deployment\" OR \"professional services\") 2026",
-        "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had.",
+        "query": "site:job-boards.greenhouse.io (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"enablement\" OR \"solutions engineer\" OR \"deployment\" OR \"professional services\") 2026",
+        "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
         "status": "active",
         "frequency": "daily"
       },
       {
         "name": "Lever Boards - Target Roles",
-        "query": "site:jobs.lever.co (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"solutions consultant\" OR \"deployment\") 2026",
-        "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss).",
+        "query": "site:jobs.lever.co (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"enablement\" OR \"solutions consultant\" OR \"deployment\") 2026",
+        "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss). 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
         "status": "active",
         "frequency": "daily"
       },
@@ -1588,6 +1588,18 @@
       "enrolled_date": "2026-07-13",
       "enrolled_via": "enrollment_candidates.json pending queue (first seen 2026-07-10 as ATS-unresolved, resolved 2026-07-13)",
       "reason": "Smart data capture / barcode-scanning SDK platform, Zurich HQ, ~400-550 employees (band picked conservatively). Verified live board: Customer Success Engineer, $160K-$180K, Remote US East."
+    },
+    {
+      "name": "Superhuman (formerly Grammarly)",
+      "ats": "ashby",
+      "slug": "superhuman%20platform%20inc",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-13",
+      "enrolled_via": "User-surfaced (LinkedIn, Partner Technical Enablement Manager) 2026-07-13",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — AI productivity suite (Grammarly writing assistance + Coda workspaces + Mail + Go agent)",
+      "reason": "Grammarly rebranded to Superhuman Platform Inc. 2025-10 after acquiring Coda and the Superhuman email client; ~900-1,400 employees. NOTE the unusual Ashby slug: 'superhuman%20platform%20inc' (URL-encoded spaces, stored pre-encoded) — the bare 'superhuman' board exists but returns 0 jobs. Verified live 2026-07-13: 72 jobs incl. Manager Strategic Customer Success (Remote US), Partner Technical Enablement Manager (Remote US, $154K-$200K by zone), Alliances Partner Engineer, Senior CSM Education."
     },
     {
       "name": "Acceldata",
