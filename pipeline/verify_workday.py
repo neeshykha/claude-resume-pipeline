@@ -31,9 +31,17 @@ TARGET = [
 ]
 
 # Common Workday site-name patterns probed per tenant. {T} → tenant.
+# Patterns below "global" were added 2026-07-14 after Availity, NCR Voyix, and Cengage
+# sat in the pending queue for 1-2 weeks: their real site names (Availity_Careers_US,
+# Gainsight_External_Careers, CengageNorthAmericaCareers) weren't guessable from this
+# list, and the "Cloudflare-blocked" diagnosis in prior session notes was wrong -- plain
+# requests.post works fine once the site name is right. WebSearch (site:myworkdayjobs.com
+# <company>) surfaces the real URL when this guess-list still misses; NCR Voyix's site
+# ("ext_us") is a one-off not worth encoding as a pattern.
 SITE_GUESSES = [
     "careers", "Careers", "External", "External_Careers", "External_Career_Site",
     "ExternalCareerSite", "{T}", "{T}_Careers", "{T}_External", "global", "jobs",
+    "{T}_Careers_US", "{T}_External_Careers", "{T}NorthAmericaCareers",
 ]
 
 # (display, host-with-wdN, tenant). Edit this list, then run.

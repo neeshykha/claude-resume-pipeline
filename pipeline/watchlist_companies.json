@@ -1041,6 +1041,39 @@
       "headcount_band": "2000+"
     },
     {
+      "name": "Availity",
+      "ats": "workday",
+      "slug": "availity",
+      "wd_host": "availity.wd1.myworkdayjobs.com",
+      "wd_tenant": "availity",
+      "wd_site": "Availity_Careers_US",
+      "priority": "medium",
+      "reason": "Healthcare data exchange platform (health-tech passion domain). Stuck in the pending queue since 2026-07-07 -- verify_workday.py's guess-list never tried the real site name (Availity_Careers_US, found via WebSearch 2026-07-14, not guessable). Verified live 2026-07-14 via direct CXS call: 21 jobs, 0 current fit-space hits -- board confirmed pollable, monitor for openings.",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "NCR Voyix",
+      "ats": "workday",
+      "slug": "ncr",
+      "wd_host": "ncr.wd1.myworkdayjobs.com",
+      "wd_tenant": "ncr",
+      "wd_site": "ext_us",
+      "priority": "medium",
+      "reason": "Atlanta HQ (spun off from NCR), digital commerce for retail/restaurant. Stuck in the pending queue since 2026-07-03 -- real site name is 'ext_us', not guessable from the tenant name. Verified live 2026-07-14 via direct CXS call: 147 jobs, 4 fit hits incl. 'AI Enablement Coach' (the role that originally surfaced this company) and 'Senior Technical Implementation Specialist'.",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Cengage",
+      "ats": "workday",
+      "slug": "cengage",
+      "wd_host": "cengage.wd5.myworkdayjobs.com",
+      "wd_tenant": "cengage",
+      "wd_site": "CengageNorthAmericaCareers",
+      "priority": "medium",
+      "reason": "EdTech (Higher Ed / School / Work / English Language Learning). Stuck in the pending queue since 2026-07-06 -- real site name is 'CengageNorthAmericaCareers', not guessable. Verified live 2026-07-14 via direct CXS call: 105 jobs, 7 fit hits incl. 2x 'Customer Success Consultant'.",
+      "headcount_band": "2000+"
+    },
+    {
       "name": "Sprinklr",
       "ats": "workday",
       "slug": "sprinklr",
