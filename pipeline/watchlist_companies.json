@@ -98,6 +98,20 @@
         "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config → passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias.",
         "status": "active",
         "frequency": "daily"
+      },
+      {
+        "name": "Tier-1 Manager-Title Sweep (all 3 ATSes at once)",
+        "query": "(site:jobs.lever.co OR site:job-boards.greenhouse.io OR site:jobs.ashbyhq.com) (\"Technical Support Operations Manager\" OR \"Support Operations Manager\" OR \"Customer Operations Manager\" OR \"Technical Support Manager\" OR \"Customer Support Manager\" OR \"Technical Operations Manager\" OR \"Support Engineering Manager\")",
+        "notes": "Added 2026-07-14 after a test run: a rare-exact-title sweep across all three major ATSes at once surfaces companies the broader 'customer success/technical account/implementation' dorks miss (those get crowded out by large, well-known companies). Found Model N (Manager, Support Operations) and Aledade (Director, Application Support Operations — health-tech passion domain) on the first run. Deliberately scoped to Manager-level Tier-1 titles only — 'Head of Support' and 'Director of Support Operations' excluded per Aneesh: those read as above his current level/purview, not a fit worth surfacing even though they're still scored as tier1_true_match in _title_scoring_tiers for ATS-poller hits (open question whether that config should change too — see _title_scoring_tiers note).",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
+        "name": "SmartRecruiters Boards - Target Roles",
+        "query": "site:jobs.smartrecruiters.com (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\")",
+        "notes": "Added 2026-07-14 after a test run found this ATS type had zero discovery coverage despite poll_ats.py supporting it (see _smartrecruiters_notes). Surfaced Nexthink (multiple live CSM/Senior CSM reqs across US cities) on the first run. Same enroll guidance as the Ashby/Greenhouse/Lever dorks: surface unfamiliar companies, verify the board via the SmartRecruiters postings API, add to watchlist.",
+        "status": "active",
+        "frequency": "daily"
       }
     ]
   },
