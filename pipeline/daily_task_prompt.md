@@ -141,6 +141,18 @@ Process every `pending` entry:
    board found → reject with reason.
 2. Verify the board is live (direct API check; `verify_workday.py` for Workday) with
    US-reachable fit-space roles. Europe/APAC-only → reject.
+   **Workday-specific fallback (added 2026-07-14):** if `verify_workday.py`'s
+   `SITE_GUESSES` list fails to find a working site, do NOT immediately mark the entry
+   "needs a browser-based check" — first run one targeted WebSearch
+   (`site:myworkdayjobs.com <company>`) to find the real site name directly (real names
+   are often non-obvious, e.g. `Availity_Careers_US`, `ext_us`,
+   `CengageNorthAmericaCareers` — patterns no guess-list will reliably predict). Retry
+   the direct CXS call with that name. This alone resolved 3 of 4 long-stuck Workday
+   pendings in one pass (Availity, NCR Voyix, Cengage — all mis-diagnosed as
+   "Cloudflare-blocked" in session notes for weeks; they were just wrong site-name
+   guesses). Only fall back to "needs a browser-based check, flag for interactive
+   session" if the WebSearch-corrected URL still fails (e.g. a genuine outage or
+   real block) — do not spend further budget guessing site names by hand.
 3. Pass → add full watchlist entry **including `headcount_band`** (verify via web, don't
    guess), `enrolled_date`, `enrolled_via`, any `score_bonus`; move to `enrolled`.
    Fail → move to `rejected` with a one-line reason.
