@@ -507,7 +507,8 @@
       "ats": "greenhouse",
       "slug": "nice",
       "priority": "medium",
-      "reason": "Contact center AI — direct fit"
+      "reason": "Contact center AI — direct fit",
+      "headcount_band": "2000+"
     },
     {
       "name": "Upbound",
@@ -934,7 +935,8 @@
       "priority": "high",
       "reason": "AI helpdesk for e-commerce (CX automation). Customer Implementation Manager + Enterprise CSM roles live. Added 2026-06-25 (verified live: 17 jobs, 4 hits). Strong CX/implementation fit.",
       "score_bonus": 15,
-      "bonus_reason": "Partial AI/ML bonus (+15) - AI helpdesk/CX platform"
+      "bonus_reason": "Partial AI/ML bonus (+15) - AI helpdesk/CX platform",
+      "headcount_band": "201-500"
     },
     {
       "name": "Braze",
@@ -963,7 +965,8 @@
       "ats": "greenhouse",
       "slug": "klaviyo",
       "priority": "high",
-      "reason": "Marketing automation / CRM. CSM, Professional Services, Solution Architect pipeline. Added 2026-06-25 (verified live: 178 jobs, 11 hits). Implementation-heavy SaaS."
+      "reason": "Marketing automation / CRM. CSM, Professional Services, Solution Architect pipeline. Added 2026-06-25 (verified live: 178 jobs, 11 hits). Implementation-heavy SaaS.",
+      "headcount_band": "2000+"
     },
     {
       "name": "Sentry",
@@ -1007,6 +1010,24 @@
       "priority": "low",
       "reason": "Customer success platform (CS tooling vendor). Added 2026-06-25 (verified live: 1 job today). Small but directly relevant space - monitor for CS/implementation roles.",
       "headcount_band": "51-200"
+    },
+    {
+      "name": "vCluster Labs",
+      "ats": "ashby",
+      "slug": "vclusterlabs",
+      "priority": "medium",
+      "reason": "Kubernetes virtual-cluster infra startup (SF HQ, ~80 employees). Ashby board dork 2026-07-14: Customer Success Engineer (Remote) and Sr. Solutions Engineer (Remote) both US-reachable.",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-14"
+    },
+    {
+      "name": "Postman",
+      "ats": "greenhouse",
+      "slug": "postman",
+      "priority": "medium",
+      "reason": "API platform (40M+ developers). Greenhouse board dork 2026-07-14: deep CS/Solutions Engineer pipeline (25 fit-space roles), incl. Customer Success Engineer/DevOps based Boston/NYC/SF.",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-07-14"
     },
     {
       "name": "First Advantage",
