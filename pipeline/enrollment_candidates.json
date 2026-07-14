@@ -60,22 +60,6 @@
       "why": "AI safety org. Operations Director, Talent (Remote USA, $125-235K) + Policy Director, Implementation and Government Talent (Remote USA, $140-260K) -- both close 2026-07-26. Real title fit (Operations Director). No standard ATS found yet on the 80000hours org page -- needs a direct site check (jobs.80000hours.org/organisations/secure-ai-project) or greenhouse/ashby/lever dork next run."
     },
     {
-      "name": "Resolution",
-      "ats": "ashby",
-      "slug": "resolution",
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Operations Staff' | San Francisco Bay Area | $198,000 - $437,000 | https://jobs.ashbyhq.com/resolution/3e9e55e0-49b0-4888-a9ef-38034e7c880c?utm_source=80000hours&utm_medium=job-board"
-    },
-    {
-      "name": "SL5 Task Force",
-      "ats": "ashby",
-      "slug": "security-level-5",
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Operations Generalist' | San Francisco Bay Area | $130,000 - $180,000 | https://jobs.ashbyhq.com/security-level-5/619e1bee-d6ac-44cc-86cd-85cf4ba7376f?utm_source=80000hours&utm_medium=job-boar"
-    },
-    {
       "name": "Principles of Intelligence",
       "ats": null,
       "slug": null,
@@ -94,14 +78,6 @@
       "needs_ats_resolution": true
     },
     {
-      "name": "Eleos AI Research",
-      "ats": "ashby",
-      "slug": "eleos",
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Head of Operations' | San Francisco Bay Area | $183,696 - $277,000 | https://jobs.ashbyhq.com/eleos/d2ebbd53-6d8e-4ec9-8040-77bb4db25af7?utm_source=80000hours&utm_medium=job-board"
-    },
-    {
       "name": "Encode",
       "ats": null,
       "slug": null,
@@ -109,14 +85,6 @@
       "first_seen": "2026-07-13",
       "why": "80K Hours \u2014 'Senior Operations Manager' | Washington, DC metro area, Remote, USA | $130,000 - $160,000 | https://encode-careers.vercel.app/senior-operations-manager?utm_source=80000hours&utm_medium=job-board",
       "needs_ats_resolution": true
-    },
-    {
-      "name": "Kairos",
-      "ats": "ashby",
-      "slug": "kairos-project",
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Head of Operations' | Remote, Global | $170,000 - $260,000 | https://jobs.ashbyhq.com/kairos-project/11e789b2-5024-42d8-9312-966d301ac0db?utm_source=80000hours&utm_medium=job-board"
     },
     {
       "name": "High Impact Athletes",
@@ -135,22 +103,6 @@
       "first_seen": "2026-07-13",
       "why": "80K Hours \u2014 'Expression of Interest, Operations' | San Francisco Bay Area | salary unlisted | https://jobs.gem.com/constellation-institute/12ef3003-8e6c-4ae9-b3bf-6f4378865b19?utm_source=80000hours&utm_medium=job-b",
       "needs_ats_resolution": true
-    },
-    {
-      "name": "Valthos",
-      "ats": "ashby",
-      "slug": "valthos",
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Operations Generalist / Business Operations' | New York, NY | salary unlisted | https://jobs.ashbyhq.com/valthos/1b06d90d-a2ac-49dd-9f12-4408303c5e86?utm_source=80000hours&utm_medium=job-board"
-    },
-    {
-      "name": "Goodfire",
-      "ats": "greenhouse",
-      "slug": "goodfire",
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Business Operations Manager' | San Francisco Bay Area | $175,000 - $300,000 | https://job-boards.greenhouse.io/goodfire/jobs/5075058008?utm_source=80000hours&utm_medium=job-board"
     },
     {
       "name": "Google DeepMind",
@@ -181,6 +133,24 @@
     }
   ],
   "enrolled": [
+    {
+      "name": "vCluster Labs",
+      "ats": "ashby",
+      "slug": "vclusterlabs",
+      "enrolled_date": "2026-07-14",
+      "headcount_band": "51-200",
+      "enrolled_via": "Ashby board dork 2026-07-14",
+      "notes": "Kubernetes virtual-cluster infra (SF HQ, ~80 employees). Customer Success Engineer (Remote) + Sr. Solutions Engineer (Remote)."
+    },
+    {
+      "name": "Postman",
+      "ats": "greenhouse",
+      "slug": "postman",
+      "enrolled_date": "2026-07-14",
+      "headcount_band": "2000+",
+      "enrolled_via": "Greenhouse board dork 2026-07-14",
+      "notes": "API platform, ~3.3K employees. Deep CS/Solutions Engineer pipeline (25 fit-space roles); Customer Success Engineer/DevOps based Boston/NYC/SF is the clearest US-onsite fit."
+    },
     {
       "name": "First Advantage",
       "ats": "workday",
@@ -555,6 +525,86 @@
     }
   ],
   "rejected": [
+    {
+      "name": "Resolution",
+      "ats": "ashby",
+      "slug": "resolution",
+      "rejected_date": "2026-07-14",
+      "reason": "Board live (5 jobs) but zero CS/TAM/implementation/support-ops titled roles; the 'Operations Staff' listing that surfaced it is a high-comp ($198K-437K) technical-staff role, not a support-ops manager fit.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "SL5 Task Force",
+      "ats": "ashby",
+      "slug": "security-level-5",
+      "rejected_date": "2026-07-14",
+      "reason": "Board live (4 jobs) but zero CS/TAM/implementation/support-ops titled roles; generic 'Operations Generalist' at a tiny AI-safety research shop doesn't clear the title-tier bar.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Eleos AI Research",
+      "ats": "ashby",
+      "slug": "eleos",
+      "rejected_date": "2026-07-14",
+      "reason": "Board live (2 jobs) but zero CS/TAM/implementation/support-ops titled roles; 'Head of Operations' is general-ops, not support-specific.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Kairos",
+      "ats": "ashby",
+      "slug": "kairos-project",
+      "rejected_date": "2026-07-14",
+      "reason": "Board live (8 jobs) but zero CS/TAM/implementation/support-ops titled roles.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Valthos",
+      "ats": "ashby",
+      "slug": "valthos",
+      "rejected_date": "2026-07-14",
+      "reason": "Board live (7 jobs); only fit-adjacent role is 'Member of Technical Staff - Forward Deployed Engineer' (NYC) -- production coding role, not an ops/support fit.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Goodfire",
+      "ats": "greenhouse",
+      "slug": "goodfire",
+      "rejected_date": "2026-07-14",
+      "reason": "Board live (25 jobs) but the 'Business Operations Manager' listing that surfaced it is gone; remaining fit-adjacent role is Forward Deployed Research Scientist (Biology), a research title.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Metronome",
+      "ats": "greenhouse",
+      "slug": "metronome",
+      "rejected_date": "2026-07-14",
+      "reason": "Greenhouse board dork hit. Board live but thin (2 jobs), both 'Technical Support Engineer' (NYC/SF onsite, Dublin) -- IC-level title below target tiers, not remote.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Lightrun",
+      "ats": "greenhouse",
+      "slug": "lightrun",
+      "rejected_date": "2026-07-14",
+      "reason": "Greenhouse board dork hit ('Technical Account Manager - Central'). Board live but down to 1 open job, 0 fit-space -- that listing has closed.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Langdock",
+      "ats": "ashby",
+      "slug": "langdock",
+      "rejected_date": "2026-07-14",
+      "reason": "Ashby board dork hit ('Solutions Engineer - m/f/d'). Board live (15 jobs, 3 fit-space) but every fit-space role is Berlin-based -- not US-reachable.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "ModelOp",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-14",
+      "reason": "AI-governance vertical discovery hit ('Customer Success' role helping enterprises implement AI governance workflows). Greenhouse slug guess 'modelop' 404'd -- real ATS/slug unresolved.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "ThoughtSpot",
       "ats": "workday",
