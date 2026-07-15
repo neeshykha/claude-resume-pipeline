@@ -396,12 +396,23 @@
     },
     "jd_verification_required_titles": {
       "titles": [
-        "Forward Deployed Engineer"
+        "Forward Deployed Engineer",
+        "AI Enablement Program Manager"
       ],
-      "notes": "Titles with a documented history of JD-level mismatch despite matching the gate (see tier4 forward_deployed_engineer_note). The poller tags matches jd_verification_required=true, and when filling the per-company diversity cap it takes a company's NON-flagged roles first, so a risky top pick can't crowd out a safer second-best title from the same company (the Confido 2026-07-09 failure mode). Flagged roles still surface when slots remain. ALWAYS read the full JD before tailoring one of these, regardless of score."
+      "notes": "Titles with a documented history of JD-level mismatch despite matching the gate (see tier4 forward_deployed_engineer_note). The poller tags matches jd_verification_required=true, and when filling the per-company diversity cap it takes a company's NON-flagged roles first, so a risky top pick can't crowd out a safer second-best title from the same company (the Confido 2026-07-09 failure mode). Flagged roles still surface when slots remain. ALWAYS read the full JD before tailoring one of these, regardless of score. 'AI Enablement Program Manager' added 2026-07-15 after Klaviyo's posting under that exact title (tier2_strong_overlap, pre_score 53, looked like a strong fit) turned out to be an Engineering-department developer-experience/onboarding role requiring 5-8+ years of software engineering and Git/CI/CD proficiency -- zero overlap with support/CS-flavored AI enablement work. The title alone is not a reliable signal for this company category; some orgs use 'AI Enablement' for internal engineering tooling, not customer/adoption-facing AI rollout."
     }
   },
   "companies": [
+    {
+      "name": "ServiceNow",
+      "ats": "smartrecruiters",
+      "slug": "ServiceNow",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "reason": "Acquired Moveworks (AI for IT service management) — Moveworks roles now post on ServiceNow's SmartRecruiters board with a '- Moveworks' title suffix, e.g. 'Senior Customer Success Manager - Moveworks' (NY/Tokyo/London seen 2026-07-15). This is why Moveworks' own Greenhouse board has 404'd since 2026-06-18 — it didn't move ATS, it got absorbed. NOTE: board has 416 total postings and poll_ats.py's SmartRecruiters fetch is single-page (limit=100, see _smartrecruiters_notes) — deep/older Moveworks-branded postings past the first page of (mostly unrelated, large-corp) results may not surface. Title matching still filters noise from the page it does see.",
+      "enrolled_date": "2026-07-15",
+      "enrolled_via": "SmartRecruiters Boards discovery WebSearch source"
+    },
     {
       "name": "Samsara",
       "ats": "greenhouse",
@@ -431,7 +442,8 @@
       "ats": "greenhouse",
       "slug": "datadog",
       "priority": "high",
-      "reason": "Observability, strong TAM track"
+      "headcount_band": "2000+",
+      "reason": "Observability, strong TAM track. 8,100+ employees (verified 2026-07-15)."
     },
     {
       "name": "LaunchDarkly",
@@ -446,14 +458,16 @@
       "ats": "greenhouse",
       "slug": "amplitude",
       "priority": "high",
-      "reason": "Product analytics, technical CSM"
+      "headcount_band": "501-2000",
+      "reason": "Product analytics, technical CSM. ~1,000 employees (verified 2026-07-15)."
     },
     {
       "name": "Hightouch",
       "ats": "greenhouse",
       "slug": "hightouch",
       "priority": "high",
-      "reason": "Reverse ETL, technical CS focus"
+      "headcount_band": "501-2000",
+      "reason": "Reverse ETL, technical CS focus. ~570-580 employees (verified 2026-07-15)."
     },
     {
       "name": "Smartsheet",
@@ -790,8 +804,8 @@
       "priority": "high",
       "reason": "AI for IT service management — CSM/TAM and implementation heavy",
       "board_status": "404_confirmed",
-      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02 and 2026-07-09 (boards-api still 404; search snippets show only stale cached listing pages). May have migrated ATS or paused hiring.",
-      "recheck_after": "2026-07-16"
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). ROOT CAUSE FOUND 2026-07-15: Moveworks was acquired by ServiceNow — it never migrated ATS, it stopped existing as an independent hiring entity. Moveworks-branded roles (CSM, TAM, ML/Agentic Systems engineering) now post on ServiceNow's SmartRecruiters board with a '- Moveworks' title suffix. ServiceNow added to the watchlist 2026-07-15 to catch these going forward. Stop rechecking this Greenhouse slug — it's permanently dead, not a recheck candidate.",
+      "board_status_permanent": true
     },
     {
       "name": "Assembled",

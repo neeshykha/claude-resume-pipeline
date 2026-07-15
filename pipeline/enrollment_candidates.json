@@ -21,88 +21,7 @@
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed correct via the Browser pane -- but the tenant's actual Workday instance is down (both the job-listing page and individual job URLs redirect to community.workday.com's 'Workday is currently unavailable' service-interruption page, not a bot-block/403). This is a genuine outage, not a resolvable slug problem. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
-    },
-    {
-      "name": "Secure AI Project",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "80,000 Hours job board 2026-07-10",
-      "first_seen": "2026-07-10",
-      "why": "AI safety org. Operations Director, Talent (Remote USA, $125-235K) + Policy Director, Implementation and Government Talent (Remote USA, $140-260K) -- both close 2026-07-26. Real title fit (Operations Director). No standard ATS found yet on the 80000hours org page -- needs a direct site check (jobs.80000hours.org/organisations/secure-ai-project) or greenhouse/ashby/lever dork next run."
-    },
-    {
-      "name": "Principles of Intelligence",
-      "ats": null,
-      "slug": null,
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Compliance and Operations Manager' | Remote, Global, Belgrade, Serbia | $55,000 - $75,000 | https://princint.ai/now-hiring-compliance-operations-manager-at-principles-of-intelligence/?utm_source=80000hours&utm_me",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Impact Ops",
-      "ats": null,
-      "slug": null,
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Operations Specialist, US' | Remote, USA | $80,000 - $95,000 | https://impact-ops.org/jobs/operations-specialist/?utm_source=80000hours&utm_medium=job-board",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Encode",
-      "ats": null,
-      "slug": null,
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Senior Operations Manager' | Washington, DC metro area, Remote, USA | $130,000 - $160,000 | https://encode-careers.vercel.app/senior-operations-manager?utm_source=80000hours&utm_medium=job-board",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "High Impact Athletes",
-      "ats": null,
-      "slug": null,
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Head of Finance and Operations' | Remote, Global | Up to $80,000 | https://highimpactathletes.org/finance-ops-jd?utm_source=80000hours&utm_medium=job-board",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Constellation",
-      "ats": null,
-      "slug": null,
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Expression of Interest, Operations' | San Francisco Bay Area | salary unlisted | https://jobs.gem.com/constellation-institute/12ef3003-8e6c-4ae9-b3bf-6f4378865b19?utm_source=80000hours&utm_medium=job-b",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Google DeepMind",
-      "ats": null,
-      "slug": null,
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Technical Program Manager, Frontier Safety, Alignment and Collaboration' | San Francisco Bay Area | $256,000 - $279,000 | https://www.google.com/about/careers/applications/jobs/results/124817330986197702-technical-program-manager-frontier-saf",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Pax Sapiens",
-      "ats": null,
-      "slug": null,
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Communications Program Manager' | Denver metro area | $93,500 - $96,760 | https://paxsapiens.bamboohr.com/careers/56?utm_source=80000hours&utm_medium=job-board",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "CivAI",
-      "ats": null,
-      "slug": null,
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-13",
-      "why": "80K Hours \u2014 'Program Manager' | San Francisco Bay Area | $140,000 - $175,000 | https://civai.org/jobs/program-manager?utm_source=80000hours&utm_medium=job-board",
-      "needs_ats_resolution": true
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-15: tenant is STILL down -- direct CXS POST returns 403, and a fresh WebSearch of site:gainsight.wd5.myworkdayjobs.com shows Google's cached listings but the live page still shows the 'Workday is currently unavailable' service-interruption message. Genuine prolonged outage, not a slug problem. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
     }
   ],
   "enrolled": [
@@ -916,6 +835,86 @@
       "rejected_date": "2026-07-13",
       "reason": "Assessed same day it was surfaced (user-brought find, 80K Hours alert). Frame Fellowship: 10-week residential accelerator for AI content creators. The Operations Lead role is event/program logistics (venue, catering, run-of-show, vendor management) -- title-vs-substance mismatch with support/technical ops. $6-10K/mo annualizes to $72-120K, midpoint $96K under the salary floor. SF-only, inherently in-person, scoped at 1-4 yrs experience, applies via a Google Doc. No pollable ATS.",
       "recheck_if_resurfaced": false
+    },
+    {
+      "name": "Secure AI Project",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "No standard ATS board found via WebSearch (Greenhouse/Ashby/Lever/SmartRecruiters) for 'Secure AI Project' specifically -- results returned unrelated AI-security companies. The 80,000 Hours listing likely uses a custom/unlisted ATS.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Principles of Intelligence",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "Salary $55,000-$75,000 (Belgrade, Serbia remote) is well below the $100K salary floor.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Impact Ops",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "Salary $80,000-$95,000 (Remote USA) is below the $100K salary floor.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Encode",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "No standard ATS board found -- apply link is encode-careers.vercel.app (custom site), not Greenhouse/Ashby/Lever/Workday/SmartRecruiters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "High Impact Athletes",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "Salary 'up to $80,000' (Remote, Global) is below the $100K salary floor.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Constellation",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "Not a concrete open role -- listing is an 'Expression of Interest, Operations' form, not an active posting. Apply link is jobs.gem.com (Gem ATS), which poll_ats.py does not support.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Google DeepMind",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "Unsupported ATS -- apply link is Google's own internal careers tracker (google.com/about/careers), not Greenhouse/Ashby/Lever/Workday/SmartRecruiters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Pax Sapiens",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "Unsupported ATS (BambooHR, not poll_ats.py-supported) and salary $93,500-$96,760 is below the $100K salary floor anyway.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "CivAI",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "No standard ATS board found via WebSearch for 'CivAI' Program Manager role.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Clerky, Inc.",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-15",
+      "reason": "Duplicate sighting -- Clerky (ashby/clerky) has been enrolled on the watchlist since 2026-07-06. Today's Remotive API sighting of 'Customer Operations & Writing Specialist' is the same company under a slightly different name string.",
+      "recheck_if_resurfaced": true
     }
   ]
 }
