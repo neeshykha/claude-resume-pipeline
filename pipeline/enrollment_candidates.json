@@ -441,6 +441,15 @@
       "slug": "acceldata",
       "enrolled_date": "2026-07-13",
       "headcount_band": "201-500"
+    },
+    {
+      "name": "LangChain",
+      "ats": "ashby",
+      "slug": "langchain",
+      "enrolled_date": "2026-07-16",
+      "headcount_band": "201-500",
+      "enrolled_via": "Ashby board dork 2026-07-16",
+      "notes": "AI agent framework (LangSmith/LangGraph), ~280-325 employees, 98 open roles. Strong fit-space pipeline: Engagement Manager, Deployed Engineer (incl. Atlanta), Customer Engineer, Solutions Architect, Senior Technical Support Engineer, GTM Onboarding & Enablement Lead."
     }
   ],
   "rejected": [
@@ -914,6 +923,14 @@
       "slug": null,
       "rejected_date": "2026-07-15",
       "reason": "Duplicate sighting -- Clerky (ashby/clerky) has been enrolled on the watchlist since 2026-07-06. Today's Remotive API sighting of 'Customer Operations & Writing Specialist' is the same company under a slightly different name string.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Kaleris",
+      "ats": "greenhouse",
+      "slug": "kaleris",
+      "rejected_date": "2026-07-16",
+      "reason": "Greenhouse board dork hit ('Customer Support Engineer', Atlanta-HQ supply chain SaaS). WebSearch surfaced apparently-live job-boards.greenhouse.io/kaleris listings, but both boards-api.greenhouse.io/v1/boards/kaleris/jobs and job-boards.greenhouse.io/kaleris direct-hit 404 -- same stale-search-cache pattern documented for Forethought/Aisera. Board is dead, not a slug problem.",
       "recheck_if_resurfaced": true
     }
   ]
