@@ -454,6 +454,16 @@
       "reason": "Feature mgmt platform, technical CSM roles. ~600-640 employees (verified 2026-07-02)."
     },
     {
+      "name": "LangChain",
+      "ats": "ashby",
+      "slug": "langchain",
+      "priority": "high",
+      "headcount_band": "201-500",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — leading AI agent/LLM orchestration framework, deeply AI-native",
+      "reason": "AI agent framework company (LangSmith/LangGraph). ~280-325 employees (verified 2026-07-16). Deep fit-space pipeline: Engagement Manager (NYC/SF), Deployed Engineer (many cities incl. Atlanta — jd_verification_required class, verify JD before tailoring), Customer Engineer (SF), Solutions Architect (many cities), Senior Technical Support Engineer (SF), GTM Onboarding & Enablement Lead (SF). Enrolled via Ashby board dork 2026-07-16."
+    },
+    {
       "name": "Amplitude",
       "ats": "greenhouse",
       "slug": "amplitude",
@@ -555,7 +565,8 @@
       "ats": "ashby",
       "slug": "openai",
       "priority": "high",
-      "reason": "AI — Aneesh's strongest differentiator"
+      "headcount_band": "2000+",
+      "reason": "AI — Aneesh's strongest differentiator. ~7,000-8,000 employees (verified 2026-07-16)."
     },
     {
       "name": "Anthropic",
@@ -746,7 +757,8 @@
       "ats": "ashby",
       "slug": "Flock%20Safety",
       "priority": "high",
-      "reason": "Atlanta HQ, IoT safety cameras for public sector — IoT + Atlanta + public safety triple fit. NOTE: slug has URL-encoded space — use as-is in API URL."
+      "headcount_band": "501-2000",
+      "reason": "Atlanta HQ, IoT safety cameras for public sector — IoT + Atlanta + public safety triple fit. NOTE: slug has URL-encoded space — use as-is in API URL. ~1,400-1,500 employees (verified 2026-07-16)."
     },
     {
       "name": "Terminus (DemandScience)",
@@ -858,8 +870,8 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — AI support deflection/triage",
       "board_status": "404_confirmed",
-      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02 and 2026-07-09 (boards-api still 404, despite stale search-engine cache showing old listings).",
-      "recheck_after": "2026-07-16"
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02, 2026-07-09, and 2026-07-16 (boards-api still 404, despite stale search-engine cache showing old listings each time).",
+      "recheck_after": "2026-07-23"
     },
     {
       "name": "Talkdesk",
@@ -1624,10 +1636,10 @@
       "name": "Propelus",
       "ats": "ashby",
       "slug": "propelus",
-      "headcount_band": null,
+      "headcount_band": "201-500",
       "enrolled_date": "2026-07-08",
       "enrolled_via": "BuiltIn Atlanta 2026-07-07 -> verified via enrollment queue 2026-07-08",
-      "reason": "Healthcare workforce compliance platform (CE Broker, EverCheck, Immuware), Boulder CO / Jacksonville Beach FL, remote-first. Verified live: Sr. Customer Success Manager - Government (Remote US), Manager Customer Success (Remote US). Health-tech passion domain applies. Headcount unconfirmed via WebSearch — left null rather than guessed."
+      "reason": "Healthcare workforce compliance platform (CE Broker, EverCheck, Immuware), Boulder CO / Jacksonville Beach FL, remote-first. Verified live: Sr. Customer Success Manager - Government (Remote US), Manager Customer Success (Remote US). Health-tech passion domain applies. ~248 employees (verified 2026-07-16)."
     },
     {
       "name": "Algolia",
