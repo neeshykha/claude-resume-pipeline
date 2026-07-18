@@ -26,6 +26,42 @@
   ],
   "enrolled": [
     {
+      "name": "LiveKit",
+      "ats": "ashby",
+      "slug": "livekit",
+      "enrolled_date": "2026-07-17",
+      "headcount_band": "51-200",
+      "enrolled_via": "Ashby board dork, first seen 2026-07-17",
+      "notes": "Real-time voice/video/agentic AI infrastructure. Technical Account Manager (Remote US) was the surfacing role."
+    },
+    {
+      "name": "Sigma Computing",
+      "ats": "greenhouse",
+      "slug": "sigmacomputing",
+      "enrolled_date": "2026-07-17",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
+      "notes": "BI/analytics platform. Technical Support Manager was the surfacing role (San Francisco)."
+    },
+    {
+      "name": "Lumimeds",
+      "ats": "greenhouse",
+      "slug": "lumimeds",
+      "enrolled_date": "2026-07-17",
+      "headcount_band": null,
+      "enrolled_via": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
+      "notes": "Telehealth/weight-loss platform, health-tech passion domain. Operations Manager -- AI-First, Customer Support & Systems (Remote) was the surfacing role. Headcount unverified, do not guess."
+    },
+    {
+      "name": "Passes",
+      "ats": "ashby",
+      "slug": "passes",
+      "enrolled_date": "2026-07-17",
+      "headcount_band": "1-50",
+      "enrolled_via": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
+      "notes": "Creator-economy subscription platform. Support Operations Manager (Los Angeles, on-site) was the surfacing role."
+    },
+    {
       "name": "Availity",
       "ats": "workday",
       "slug": "availity",
@@ -453,6 +489,22 @@
     }
   ],
   "rejected": [
+    {
+      "name": "Stampli",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-17",
+      "reason": "No standard ATS board found -- direct slug guesses 404'd on Greenhouse, Ashby, and Lever, and WebSearch surfaced no careers-page link. Fintech AP automation company; the Customer Success Manager/Implementation Consultant listing that surfaced it on BuiltIn has no traceable apply board.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Revenue Analytics",
+      "ats": "lever",
+      "slug": "revenueanalytics",
+      "rejected_date": "2026-07-17",
+      "reason": "RE-VERIFIED (previously rejected 2026-07-06 for the same reason): board live (Atlanta HQ pricing analytics SaaS) but current open roles are Data Scientist and Senior Software Engineer only -- the Customer Success Analyst listing that resurfaced it via BuiltIn is already closed/filled.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "Resolution",
       "ats": "ashby",

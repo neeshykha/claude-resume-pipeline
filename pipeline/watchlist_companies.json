@@ -490,7 +490,8 @@
       "name": "Iterable",
       "ats": "greenhouse",
       "slug": "iterable",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Ping Identity",
@@ -503,7 +504,8 @@
       "name": "Commvault",
       "ats": "greenhouse",
       "slug": "commvault",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "2000+"
     },
     {
       "name": "Huntress",
@@ -538,7 +540,8 @@
       "name": "PerfectServe",
       "ats": "greenhouse",
       "slug": "perfectserve",
-      "priority": "low"
+      "priority": "low",
+      "headcount_band": "201-500"
     },
     {
       "name": "NICE",
@@ -1704,6 +1707,45 @@
       "enrolled_date": "2026-07-13",
       "enrolled_via": "enrollment_candidates.json pending queue (first seen 2026-07-10, verified 2026-07-13)",
       "reason": "Data observability platform (Campbell, CA HQ, ~300 employees). Verified live board: Technical Account Manager - Acceldata Data Observability Cloud (ADOC)."
+    },
+    {
+      "name": "LiveKit",
+      "ats": "ashby",
+      "slug": "livekit",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-17",
+      "enrolled_via": "Ashby board dork, first seen 2026-07-17",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — real-time voice/video/agentic AI infrastructure",
+      "reason": "Real-time voice/video/agentic AI infrastructure (founded 2021; powers voice agents for OpenAI, Salesforce, Spotify, Meta). Verified live board: Technical Account Manager (Remote US)."
+    },
+    {
+      "name": "Sigma Computing",
+      "ats": "greenhouse",
+      "slug": "sigmacomputing",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-17",
+      "enrolled_via": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
+      "reason": "BI/analytics platform (San Francisco HQ, ~1,400 employees, $100M ARR). Verified live board: Technical Support Manager, exact Tier-1 title match."
+    },
+    {
+      "name": "Lumimeds",
+      "ats": "greenhouse",
+      "slug": "lumimeds",
+      "priority": "medium",
+      "reason": "Telehealth/weight-loss platform, health-tech passion domain. Verified live board: Operations Manager — AI-First, Customer Support & Systems (Remote) — close positioning match to Aneesh's actual AI-first support-ops role. Headcount unverified (LinkedIn page returned no size data 2026-07-17) — do not guess, leave headcount_band unset until confirmed."
+    },
+    {
+      "name": "Passes",
+      "ats": "ashby",
+      "slug": "passes",
+      "priority": "low",
+      "headcount_band": "1-50",
+      "enrolled_date": "2026-07-17",
+      "enrolled_via": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
+      "reason": "Creator-economy subscription platform (Miami HQ, founded 2022, ~11-50 employees). Verified live board: Support Operations Manager, exact Tier-1 title match, but Los Angeles on-site (not remote) — location bonus will score as 'other' unless a remote option appears."
     }
   ]
 }
