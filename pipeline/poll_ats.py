@@ -274,6 +274,19 @@ LOCATION_EXCLUDE = [
     "mandarin", "cantonese",  # language-specific roles
 ]
 
+# Narrower than LOCATION_INCLUDE on purpose: used only to rescue dual-region
+# postings (e.g. "LATAM & USA", "EMEA / US") from the exclusion check below.
+# Excludes the generic "remote"/"us"/"north america"/"americas"/"anywhere"
+# catch-alls, which also appear in region-locked postings like "Remote
+# (Europe only)" and would wrongly un-exclude those if included here.
+US_SPECIFIC_INCLUDE = [
+    "united states", "usa", "u.s.",
+    "atlanta", "georgia", "new york", "nyc", "new jersey",
+    "boston", "chicago", "san francisco", "los angeles",
+    "austin", "denver", "seattle", "portland", "dallas",
+    "miami", "charlotte", "raleigh", "nashville",
+]
+
 # Titles to always exclude (too senior, wrong function).
 # NOTE: an exact TIER-1 title match overrides this list (see poll_all) — tier1
 # deliberately contains "Head of Support" and "Director of Support Operations",
@@ -325,8 +338,19 @@ def location_relevant(location: str, title: str) -> bool:
     t = title.lower()
     combined = loc + " " + t
 
-    # Explicit exclusion wins (e.g., "Customer Success Manager, EMEA")
+    # Explicit exclusion wins (e.g., "Customer Success Manager, EMEA") --
+    # UNLESS the same string also unambiguously names a US option (e.g.
+    # "LATAM & USA", "EMEA / US Remote"). A co-listed excluded region
+    # shouldn't silently kill a role the company explicitly opened to US
+    # candidates too.
     if any(excl in combined for excl in LOCATION_EXCLUDE):
+        if any(us_term in combined for us_term in US_SPECIFIC_INCLUDE):
+            return True
+        # Word-boundary check for bare "US" (e.g. "EMEA / US Remote") -- not
+        # a plain substring test, since that would false-positive inside
+        # "aUStralia", "belarUS", etc.
+        if re.search(r'\bus\b', combined):
+            return True
         return False
 
     # If location contains any included term, it's relevant
@@ -924,7 +948,14 @@ def poll_all(run_date: date) -> dict:
 
         # Location
         loc = job["location"].lower()
-        if "remote" in loc:
+        # Dual-region postings (e.g. "LATAM & USA") already cleared
+        # location_relevant()'s gate above by explicitly naming a US option
+        # alongside an excluded region -- but without this check they'd still
+        # fall to the lowest bucket below since they don't contain the literal
+        # word "remote". Treat them the same as a remote US role.
+        us_named = (any(t in loc for t in US_SPECIFIC_INCLUDE)
+                    or re.search(r'\bus\b', loc))
+        if "remote" in loc or us_named:
             score += 20
         elif "atlanta" in loc:
             score += 20
