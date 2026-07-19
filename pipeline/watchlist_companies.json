@@ -249,7 +249,8 @@
         "AI Engagement Lead",
         "AI Deployment Lead",
         "AI GTM Lead",
-        "AI Enablement Manager"
+        "AI Enablement Manager",
+        "Technical Project Manager"
       ]
     },
     "tier3_reasonable_stretch": {
@@ -622,6 +623,8 @@
       "ats": "ashby",
       "slug": "maven-agi",
       "priority": "high",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — enterprise conversational AI agent platform, was missing this bonus despite being unambiguously AI-native",
       "reason": "Aneesh has implemented Maven AGI at iApts — direct product familiarity"
     },
     {
