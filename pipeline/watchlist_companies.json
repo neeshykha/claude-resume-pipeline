@@ -100,6 +100,13 @@
         "frequency": "daily"
       },
       {
+        "name": "Industrial IoT / Physical-World Hardware (discovery only, no scoring bonus)",
+        "query": "(site:jobs.ashbyhq.com OR site:job-boards.greenhouse.io OR site:jobs.lever.co) (\"industrial IoT\" OR \"condition monitoring\" OR \"predictive maintenance\" OR \"industrial automation\" OR \"asset tracking\") (\"customer success\" OR \"technical account\" OR \"solutions engineer\" OR \"implementation\" OR deployment)",
+        "notes": "Added 2026-07-18 after Aneesh described being drawn to physical-world/industrial-equipment sensing (anchor example: a sensor device on spinning machinery) — narrower than generic 'hardware' or 'wireless communication' on purpose, to avoid pulling in consumer telecom/carrier noise or double-counting his existing consumer-IoT background (First Alert/Newell/Luma), which already scores normally via keyword overlap. A plain (non-site-scoped) version of this query was tested first and returned mostly generic aggregator category pages (ZipRecruiter/Indeed/SimplyHired), not enrollable individual companies -- switched to the ATS-host-scoped pattern (same shape as the Ashby/Greenhouse/Lever 'Boards - Target Roles' sources) since that's what actually surfaces live individual postings; first live run found AssetWatch (industrial condition-monitoring platform), Advanced Technology Services, and ANYbotics (industrial robotics/predictive maintenance). UNLIKE the Passion Verticals source above, this is discovery/enrollment-only: hits get NO passion-domain scoring bonus (Aneesh explicitly deferred that decision -- see memory user_profile.md 'Open item, deliberately deferred'). Companies surfaced here go through the normal enrollment verification and are scored on the standard rubric like any other company -- no bonus, no special treatment, just a wider discovery net. Do not add a passion_domains entry for this vertical unless Aneesh explicitly asks.",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
         "name": "Tier-1 Manager-Title Sweep (all 3 ATSes at once)",
         "query": "(site:jobs.lever.co OR site:job-boards.greenhouse.io OR site:jobs.ashbyhq.com) (\"Technical Support Operations Manager\" OR \"Support Operations Manager\" OR \"Customer Operations Manager\" OR \"Technical Support Manager\" OR \"Customer Support Manager\" OR \"Technical Operations Manager\" OR \"Support Engineering Manager\")",
         "notes": "Added 2026-07-14 after a test run: a rare-exact-title sweep across all three major ATSes at once surfaces companies the broader 'customer success/technical account/implementation' dorks miss (those get crowded out by large, well-known companies). Found Model N (Manager, Support Operations) and Aledade (Director, Application Support Operations — health-tech passion domain) on the first run. Deliberately scoped to Manager-level Tier-1 titles only — 'Head of Support' and 'Director of Support Operations' excluded per Aneesh: those read as above his current level/purview, not a fit worth surfacing even though they're still scored as tier1_true_match in _title_scoring_tiers for ATS-poller hits (open question whether that config should change too — see _title_scoring_tiers note).",
@@ -1750,6 +1757,16 @@
       "enrolled_date": "2026-07-17",
       "enrolled_via": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
       "reason": "Creator-economy subscription platform (Miami HQ, founded 2022, ~11-50 employees). Verified live board: Support Operations Manager, exact Tier-1 title match, but Los Angeles on-site (not remote) — location bonus will score as 'other' unless a remote option appears."
+    },
+    {
+      "name": "AssetWatch",
+      "ats": "greenhouse",
+      "slug": "assetwatch",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-18",
+      "enrolled_via": "Industrial IoT / Physical-World Hardware discovery source, first seen 2026-07-18",
+      "reason": "AI-driven industrial IoT condition-monitoring platform (Westerville, OH HQ; protects manufacturers' critical rotating/industrial equipment before it fails). Verified live board, 27 jobs: Senior Manager of Implementation (Remote), Team Lead, Customer Success (United States), plus multiple Condition Monitoring Engineer roles. Direct match to Aneesh's stated interest in physical-world/industrial-equipment sensing."
     }
   ]
 }

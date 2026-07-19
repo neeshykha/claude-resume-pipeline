@@ -26,6 +26,15 @@
   ],
   "enrolled": [
     {
+      "name": "AssetWatch",
+      "ats": "greenhouse",
+      "slug": "assetwatch",
+      "enrolled_date": "2026-07-18",
+      "headcount_band": "51-200",
+      "enrolled_via": "Industrial IoT / Physical-World Hardware discovery source, first seen 2026-07-18",
+      "notes": "Industrial condition-monitoring platform. Senior Manager of Implementation (Remote) and Team Lead, Customer Success were the surfacing roles."
+    },
+    {
       "name": "LiveKit",
       "ats": "ashby",
       "slug": "livekit",
@@ -489,6 +498,22 @@
     }
   ],
   "rejected": [
+    {
+      "name": "ANYbotics",
+      "ats": "lever",
+      "slug": "anybotics",
+      "rejected_date": "2026-07-18",
+      "reason": "Industrial robotics company (Zurich, ~190 employees) surfaced by the Industrial IoT discovery source -- board live but no US-reachable, support/CS/TAM-shaped role currently open. Live roles are EU-based engineering/robotics titles (Team Lead Locomotion, Mechanical Engineer, AI Research Engineer) plus one Senior Business Value Engineer, Oil & Gas -- none fit-space for Aneesh.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Advanced Technology Services",
+      "ats": "greenhouse",
+      "slug": "advancedtechnologyservices",
+      "rejected_date": "2026-07-18",
+      "reason": "Industrial maintenance services company (Peoria, IL HQ, 1,001-5,000 employees) surfaced by the Industrial IoT discovery source via Condition Monitoring Expert listings -- board live (102 jobs) but the only support/CS-adjacent roles currently open are onsite Illinois (Facilities Support Manager, Sales and Support Representative), not remote, not TAM/CSM-shaped.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "Stampli",
       "ats": null,
