@@ -6,6 +6,12 @@ Format per entry: repo URL, one-line description, when to cite it, and a resume-
 
 ---
 
+## sf-caseops-mcp
+**URL:** https://github.com/neeshykha/sf-caseops-mcp
+**What:** A read-only MCP server exposing Salesforce case operations (SOQL, case lookups, queue volumes, weekly created-vs-closed trend) as tools an AI agent can call. Auth is delegated entirely to the `sf` CLI keychain; read-only is enforced by construction (only wraps query/describe subcommands, SELECT-only guard on raw SOQL). Built from real support-ops practice and running against a live org daily.
+**Cite when:** JD asks about hands-on integration building, agent tooling, MCP, connecting LLMs to enterprise systems (CRM especially), or Salesforce technical depth beyond declarative admin. This is the direct answer to the "integration building" gap flagged in Solutions Engineer JDs — an agent-standard integration, not a one-off script. Also strong for AI Engagement/Deployment roles asking how AI reaches production systems safely (the read-only-by-construction design is the talking point).
+**Resume line:** Built an MCP server exposing live Salesforce case operations as AI-agent-callable tools, with credential handling delegated to the platform CLI and read-only access enforced by construction.
+
 ## claude-eval-kit
 **URL:** https://github.com/neeshykha/claude-eval-kit
 **What:** A small, reusable framework for scoring AI classifiers against ground truth — blind classification via the Claude Code CLI, confusion matrices, ordinal miss-direction splits, and confusable-pattern trap audits. Extracted from the pattern built inline for claude-triage-simulator (and needed again for agent-ops-bench), with the triage taxonomy re-run through it as example #1: 80% severity accuracy, 70% routing accuracy, and a specific legible finding (thermostat tickets misrouted to "Environmental Monitoring" 3 of 4 times).
