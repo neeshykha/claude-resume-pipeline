@@ -86,9 +86,19 @@ continue. If not:
 Then read the output. It contains: top-25 `matched` (pre-scored, deduped, diversity-capped
 at 2/company, and **balanced**: ≥10 slots each reserved for sub-500 companies and for
 larger/unknown-size companies, remainder by score), up to 20 `borderline` titles for
-semantic review, `reseen_keys`, `errors`, `stats`, and `capped_companies`. Entries flagged `new_req_of_applied_title: true` are
+semantic review, `function_mismatch` (see below), `reseen_keys`, `errors`, `stats`, and
+`capped_companies`. Entries flagged `new_req_of_applied_title: true` are
 reposts of a title Aneesh already applied to under a new requisition — treat as new but
 mention the prior application in the digest.
+
+**`function_mismatch` section (added 2026-07-19):** title classes with a documented
+poor-function-fit history (Product Manager, TPM, Sales Engineer, Engineering Manager,
+Marketing Manager, Corporate Development — list lives in `_poller_config →
+function_mismatch_titles`) are demoted out of the shortlist into this section. Do NOT
+score or tailor them; carry a compressed "also matched, function mismatch (FYI)" line or
+two into the digest only when something is notable (e.g. a role at Maven AGI). If one of
+these ever looks like a REAL fit, that's a config bug: move the specific title variant to
+a scoring tier rather than tailoring from this section.
 
 Title matching is config-driven (stemmed-token matching against `_title_scoring_tiers` +
 `_poller_config` in `watchlist_companies.json`): word-form and word-order variants match
@@ -134,6 +144,13 @@ sightings from dead-ending. Run the feeders:
   supported ATS; salary floor still applies at enrollment
 - `.venv/bin/python pipeline/harvest_hn_hiring.py` — only on/after the 1st of the month
 - Board dorks (from 1c) — append any UNFAMILIAR company to `pending`
+
+**Before treating ANY discovery hit as an unfamiliar company**, run
+`.venv/bin/python pipeline/check_company.py "<name>"` (accepts several names in one call).
+It searches the watchlist AND all three enrollment buckets and prints status + reason.
+Only a result of UNKNOWN goes to `pending`. (Added 2026-07-19 after a dork re-surfaced
+Nash as "unfamiliar" and it was nearly double-enrolled; Metronome, Lightrun, and Cognite
+re-surface regularly too.)
 
 Process every `pending` entry:
 1. `needs_ats_resolution: true` → resolve the ATS
@@ -257,6 +274,14 @@ but scored below `light_tailoring_threshold` (no lower bound); (B) salary near-m
 passed everything except the salary floor, midpoint between `near_miss_salary_floor_usd`
 and `salary_floor_usd`. Collect title, company, location, salary, score, URL for the
 digest. Stale/capped/crypto/VP roles are NOT near-misses.
+
+**Repeat-near-miss suppression (added 2026-07-19):** if the same posting (same dedup_key)
+has already appeared as a near-miss with the same conclusion in ~3 or more prior digests
+(check recent `run_*.json` near_misses arrays or SESSION_STATE), do NOT re-score or
+re-fetch it. Compress it to one digest line: "still live, previously assessed (see
+run_[date])". Re-assess only if something changed — new salary, retitled, or a config
+change that would plausibly move its score. (Cato Networks' AI Security PSC was re-listed
+with the identical conclusion in every digest from 07-15 through 07-19.)
 
 **Read `master_resume.md` NOW** — once, reused for all tailorings below.
 

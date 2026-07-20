@@ -97,6 +97,18 @@ def validate_watchlist(data) -> tuple[list, list]:
     risky = pc.get("jd_verification_required_titles", {})
     if not isinstance(risky.get("titles"), list):
         errors.append("watchlist: _poller_config.jd_verification_required_titles.titles must be a list")
+    fm = pc.get("function_mismatch_titles")
+    if fm is not None:
+        if not isinstance(fm.get("titles"), list) or not fm.get("titles"):
+            errors.append("watchlist: _poller_config.function_mismatch_titles.titles must be a non-empty list")
+        tier_names = set(data.get("_title_scoring_tiers", {}).keys())
+        protected = fm.get("protected_tiers", [])
+        if not isinstance(protected, list):
+            errors.append("watchlist: _poller_config.function_mismatch_titles.protected_tiers must be a list")
+        else:
+            for t in protected:
+                if t not in tier_names:
+                    errors.append(f"watchlist: function_mismatch_titles.protected_tiers names unknown tier '{t}'")
 
     for name, url in data["_endpoints"].items():
         if not isinstance(url, str) or "{" not in url:
