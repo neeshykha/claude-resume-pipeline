@@ -47,7 +47,7 @@ SHORTLIST_SIZE = 25
 # Populated from watchlist_companies.json by _init_config():
 ATS_ENDPOINTS = {}       # ← _endpoints (workday excluded; fetch_workday builds its URL from wd_* fields)
 MIN_SALARY = None        # ← _scoring_config.salary_floor_usd
-MAX_POSTING_AGE_DAYS = 21  # hard filter (CLAUDE.md Step 2b) — Greenhouse/Ashby/Lever only, see extract_posted_date
+MAX_POSTING_AGE_DAYS = 21  # hard filter (CLAUDE.md Step 2b) — all ATSes except Workday, see extract_posted_date
 COMPANY_CAP = None       # ← _scoring_config.company_cap_max_applied_pending
 SMALL_COMPANY_BONUS = {}  # ← _scoring_config.small_company_bonus
 MATCHER = None           # ← TitleMatcher built from _title_scoring_tiers + _poller_config
@@ -375,9 +375,9 @@ def description_excluded(text: str) -> bool:
 def extract_posted_date(job_data: dict, ats: str) -> date | None:
     """Extract the posting's first-published date, normalized to a date object.
 
-    Returns None when the ATS doesn't expose a usable field (Workday,
-    SmartRecruiters) — callers must treat None as neutral/unknown, never as
-    stale, per the same "no data → don't filter" rule used for salary.
+    Returns None when the ATS doesn't expose a usable field (Workday only) —
+    callers must treat None as neutral/unknown, never as stale, per the same
+    "no data → don't filter" rule used for salary.
     """
     try:
         if ats in ("greenhouse", "greenhouse_eu"):
@@ -392,6 +392,10 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             raw = job_data.get("createdAt")
             if raw:
                 return datetime.fromtimestamp(int(raw) / 1000).date()
+        elif ats == "smartrecruiters":
+            raw = job_data.get("releasedDate")
+            if raw:
+                return datetime.fromisoformat(raw.replace("Z", "+00:00")).date()
     except (ValueError, TypeError, OSError):
         return None
     return None
@@ -797,8 +801,8 @@ def poll_all(run_date: date) -> dict:
 
             # Freshness hard filter (CLAUDE.md Step 2b: exclude postings >21
             # days old). Only enforced when the ATS gives us a real date —
-            # Workday/SmartRecruiters return None and are treated as neutral,
-            # same as the "no salary listed" rule. Found 2026-07-13: 6 of a
+            # Workday returns None and is treated as neutral, same as the
+            # "no salary listed" rule. Found 2026-07-13: 6 of a
             # day's top-25 pre-scored matches (Harvey, PermitFlow, Smile
             # Digital Health, Vanta, Replicant, Chainguard) were 27-84 days
             # old and had been silently wasting full tailoring effort across
