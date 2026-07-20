@@ -21,10 +21,19 @@
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-15: tenant is STILL down -- direct CXS POST returns 403, and a fresh WebSearch of site:gainsight.wd5.myworkdayjobs.com shows Google's cached listings but the live page still shows the 'Workday is currently unavailable' service-interruption message. Genuine prolonged outage, not a slug problem. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19: direct CXS POST still returns 403 -- same multi-week outage. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
     }
   ],
   "enrolled": [
+    {
+      "name": "EvolutionIQ",
+      "ats": "greenhouse",
+      "slug": "evolutioniq",
+      "enrolled_date": "2026-07-19",
+      "headcount_band": "201-500",
+      "enrolled_via": "Greenhouse board dork 2026-07-19",
+      "notes": "AI claims-guidance platform (~242 employees, CCC-owned). Surfacing role (Technical Engagement Manager / Account Manager) had closed by verification; Agentic Solutions Consultant + Solutions Engineer live."
+    },
     {
       "name": "AssetWatch",
       "ats": "greenhouse",
@@ -498,6 +507,30 @@
     }
   ],
   "rejected": [
+    {
+      "name": "Augment CXM",
+      "ats": "smartrecruiters",
+      "slug": "AugmentCXM",
+      "rejected_date": "2026-07-19",
+      "reason": "Enrolled earlier the same run, then reversed on JD fetch: the sole fit role (Customer Success Manager, SF onsite) has releasedDate 2019-11-27 -- a 6.5-year-old evergreen/zombie posting, not a live opening. Board is otherwise eng roles; company is Sutherland-owned with 11-50 people. Enrolling would resurface the zombie posting as a 'match' every run. NOTE for poller improvement: SmartRecruiters postings DO carry releasedDate; poll_ats.py currently treats SmartRecruiters as no-date (age-neutral), which is how this got shortlisted.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Logz.io",
+      "ats": "lever",
+      "slug": "logz",
+      "rejected_date": "2026-07-19",
+      "reason": "Industrial IoT discovery source surfaced a Customer Success Engineer listing, but the live Lever board is down to 3 jobs with zero fit-space titles -- that listing has closed.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Nexthink",
+      "ats": "smartrecruiters",
+      "slug": "Nexthink",
+      "rejected_date": "2026-07-19",
+      "reason": "Flagged as a winner in the 2026-07-14 SmartRecruiters dork test (CSM Colorado Springs) but never processed; verified 2026-07-19: board live (99+ jobs) but every current CS/PS/implementation-shaped role is EMEA/India/Japan -- US postings are all sales titles (AE/Client Director). The Colorado Springs CSM is gone.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "ANYbotics",
       "ats": "lever",
