@@ -355,9 +355,6 @@
       "title_match_prescore": 15,
       "notes": "Titles the poller surfaces for review that don't carry a scoring tier in _title_scoring_tiers. They pre-score at title_match_prescore. If one becomes a recurring real fit, promote it to a tier instead of leaving it here.",
       "titles": [
-        "Product Manager",
-        "Technical Program Manager",
-        "Sales Engineer",
         "Solutions Consultant",
         "Digital Customer Experience",
         "Customer Experience Lead",
@@ -402,6 +399,22 @@
         "automation",
         "specialist"
       ]
+    },
+    "function_mismatch_titles": {
+      "titles": [
+        "Product Manager",
+        "Technical Program Manager",
+        "Sales Engineer",
+        "Engineering Manager",
+        "Marketing Manager",
+        "Corporate Development"
+      ],
+      "protected_tiers": [
+        "tier1_true_match",
+        "tier2_strong_overlap",
+        "tier4_weak_stretch"
+      ],
+      "notes": "Added 2026-07-19 after these title classes consumed ~13 of 25 shortlist slots and were manually skipped as 'poor function fit' in every run since at least 07-14 (Maven AGI PMs held the day's top two pre-scores). Titles matching these patterns are DEMOTED out of the shortlist into the output's function_mismatch section (kept as digest FYI lines, never scored or tailored). Protected tiers override the demotion: a title whose best tier match is tier1/tier2/tier4 is never demoted, so 'Product Engagement Manager, User Operations' (tier1, contains 'Product…Manager'), 'Support Engineering Manager' (tier1, contains 'Engineering Manager'), and 'Product Customer Success Manager' (tier4, contains 'Product…Manager') stay live. tier3/supplemental/tier2b/borderline matches get checked. 'Product Manager', 'Technical Program Manager', and 'Sales Engineer' were moved here FROM supplemental_exact_titles, where their 'surface for review' intent had turned into daily shortlist crowding. If one of these classes ever produces a real fit, move that specific title variant to a scoring tier."
     },
     "jd_verification_required_titles": {
       "titles": [

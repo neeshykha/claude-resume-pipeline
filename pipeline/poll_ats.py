@@ -47,7 +47,7 @@ SHORTLIST_SIZE = 25
 # Populated from watchlist_companies.json by _init_config():
 ATS_ENDPOINTS = {}       # ← _endpoints (workday excluded; fetch_workday builds its URL from wd_* fields)
 MIN_SALARY = None        # ← _scoring_config.salary_floor_usd
-MAX_POSTING_AGE_DAYS = 21  # hard filter (CLAUDE.md Step 2b) — all ATSes except Workday, see extract_posted_date
+MAX_POSTING_AGE_DAYS = 21  # hard filter (CLAUDE.md Step 2b) — all ATSes; Workday dates are approximate, see extract_posted_date
 COMPANY_CAP = None       # ← _scoring_config.company_cap_max_applied_pending
 SMALL_COMPANY_BONUS = {}  # ← _scoring_config.small_company_bonus
 MATCHER = None           # ← TitleMatcher built from _title_scoring_tiers + _poller_config
@@ -215,6 +215,9 @@ class TitleMatcher:
                              for t in pc["jd_verification_required_titles"]["titles"]]
         self.wc_signal = [w.lower() for w in wc["signal_words"]]
         self.wc_exclude = [w.lower() for w in wc["exclude_if_contains"]]
+        fm = pc.get("function_mismatch_titles", {})
+        self.mismatch = [frozenset(tokenize(t)) for t in fm.get("titles", [])]
+        self.mismatch_protected = set(fm.get("protected_tiers", []))
 
     def _add_exact(self, title: str, tier_name: str, score):
         toks = frozenset(tokenize(title))
@@ -241,6 +244,20 @@ class TitleMatcher:
     def needs_jd_verification(self, title: str) -> bool:
         toks = tokenize(title)
         return any(_tokens_near(r, toks) for r in self.risky_tokens)
+
+    def is_function_mismatch(self, title: str, tier_name) -> bool:
+        """True when the title matches a _poller_config.function_mismatch_titles
+        pattern AND its best tier match isn't protected. Protected tiers
+        (tier1/tier2/tier4 by config) exist because token-subset matching would
+        otherwise demote real targets that merely contain a mismatch pattern:
+        'Product Engagement Manager, User Operations' (tier1) contains
+        'Product…Manager', 'Support Engineering Manager' (tier1) contains
+        'Engineering Manager'. Demoted titles go to the output's
+        function_mismatch section (digest FYI), not the shortlist."""
+        if not self.mismatch or tier_name in self.mismatch_protected:
+            return False
+        toks = tokenize(title)
+        return any(_tokens_near(m, toks) for m in self.mismatch)
 
     def matches_ai_wildcard(self, title: str) -> bool:
         """Mirror _title_scoring_tiers.tier2b_ai_wildcard: a word-bounded 'AI'
@@ -375,9 +392,11 @@ def description_excluded(text: str) -> bool:
 def extract_posted_date(job_data: dict, ats: str) -> date | None:
     """Extract the posting's first-published date, normalized to a date object.
 
-    Returns None when the ATS doesn't expose a usable field (Workday only) —
-    callers must treat None as neutral/unknown, never as stale, per the same
-    "no data → don't filter" rule used for salary.
+    Every supported ATS now yields a date (Workday's is approximate, parsed
+    from its relative "Posted N Days Ago" string). Returns None only when the
+    field is missing or unparseable — callers must treat None as
+    neutral/unknown, never as stale, per the same "no data → don't filter"
+    rule used for salary.
     """
     try:
         if ats in ("greenhouse", "greenhouse_eu"):
@@ -396,6 +415,24 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             raw = job_data.get("releasedDate")
             if raw:
                 return datetime.fromisoformat(raw.replace("Z", "+00:00")).date()
+        elif ats == "workday":
+            # Workday's CXS list response has no ISO date, only a relative
+            # "postedOn" string ("Posted Today" / "Posted Yesterday" /
+            # "Posted 19 Days Ago" / "Posted 30+ Days Ago"), stashed by
+            # fetch_workday as _posted. Approximate to a date; "30+" parses
+            # as 31, which correctly trips the 21-day staleness filter.
+            # (Added 2026-07-19: Workday hosts the enterprise segment where
+            # stale postings are common — Cengage's Sr Manager Customer
+            # Support was 19 days old and only discoverable via JD fetch.)
+            raw = (job_data.get("_posted") or "").lower()
+            if "today" in raw:
+                return date.today()
+            if "yesterday" in raw:
+                return date.today() - timedelta(days=1)
+            m = re.search(r"(\d+)(\+?)\s*days?\s+ago", raw)
+            if m:
+                days = int(m.group(1)) + (1 if m.group(2) else 0)
+                return date.today() - timedelta(days=days)
     except (ValueError, TypeError, OSError):
         return None
     return None
@@ -549,9 +586,10 @@ def fetch_workday(company: dict) -> list[dict]:
     Paginates 20/page up to MAX_JOBS.
 
     Salary is NOT in the list response (it lives on each job's detail page), so
-    it stays unset here and is treated as neutral in scoring. Claude fetches the
-    exact salary and posting date from the JD at tailoring time, which is where
-    the salary-floor and freshness gates are actually applied.
+    it stays unset here and is treated as neutral in scoring; Claude fetches the
+    exact salary from the JD at tailoring time. The posting date IS available as
+    a relative string ("Posted 19 Days Ago"), stashed as _posted and parsed by
+    extract_posted_date into an approximate date for the freshness filter.
 
     Returns dicts carrying the fields poll_all expects, with the apply URL and
     location pre-stashed under _apply_url / _workday_location so the existing
@@ -710,6 +748,7 @@ def poll_all(run_date: date) -> dict:
 
     matched = []
     borderline = []
+    function_mismatch = []  # demoted title classes (PM/TPM/SalesEng...): digest FYI, never shortlisted
     errors = []
     reseen = []  # existing jobs re-encountered (for last_seen_date update)
     stats = {
@@ -719,6 +758,7 @@ def poll_all(run_date: date) -> dict:
         "title_borderline": 0,
         "title_ai_wildcard": 0,
         "jd_verification_flagged": 0,
+        "function_mismatch": 0,
         "dedup_skipped": 0,
         "cap_suppressed": 0,
         "location_filtered": 0,
@@ -800,8 +840,8 @@ def poll_all(run_date: date) -> dict:
             apply_url = build_apply_url(job_data, ats, slug)
 
             # Freshness hard filter (CLAUDE.md Step 2b: exclude postings >21
-            # days old). Only enforced when the ATS gives us a real date —
-            # Workday returns None and is treated as neutral, same as the
+            # days old). Only enforced when a date could be extracted; a
+            # missing/unparseable date stays neutral, same as the
             # "no salary listed" rule. Found 2026-07-13: 6 of a
             # day's top-25 pre-scored matches (Harvey, PermitFlow, Smile
             # Digital Health, Vanta, Replicant, Chainguard) were 27-84 days
@@ -909,6 +949,26 @@ def poll_all(run_date: date) -> dict:
                 # slot ahead of a clean same-company title (see shortlist build).
                 entry["jd_verification_required"] = True
                 stats["jd_verification_flagged"] += 1
+
+            # Function-mismatch demotion (config: _poller_config.
+            # function_mismatch_titles). These title classes (Product Manager,
+            # TPM, Sales Engineer, Engineering Manager...) matched the gate for
+            # months but were manually skipped as "poor function fit" in every
+            # run — on 2026-07-19 they held ~13 of 25 shortlist slots including
+            # the top two pre-scores. They stay visible as digest FYI lines but
+            # never consume a shortlist or borderline slot. Tier1/tier2/tier4
+            # best-matches are protected (see is_function_mismatch docstring).
+            if MATCHER.is_function_mismatch(title, entry["title_tier"]):
+                function_mismatch.append({
+                    "company": name,
+                    "title": title,
+                    "location": location,
+                    "apply_url": apply_url,
+                    "title_tier": entry["title_tier"],
+                    "posting_age_days": posting_age_days,
+                })
+                stats["function_mismatch"] += 1
+                continue
 
             if is_exact:
                 matched.append(entry)
@@ -1140,10 +1200,16 @@ def poll_all(run_date: date) -> dict:
     leftover.sort(key=lambda j: -j.get("pre_score", j.get("borderline_score", 0)))
     borderline_capped = reserved + leftover[:BORDERLINE_SIZE - len(reserved)]
 
+    # Function-mismatch FYI list: dedup-suppressed against seen_jobs' 30-day
+    # window is NOT applied here (these are never tracked), so just cap the
+    # list to keep the output file readable on PM-heavy days.
+    function_mismatch.sort(key=lambda j: (j["company"], j["title"]))
+
     return {
         "run_date": run_date.isoformat(),
         "matched": top_matched,
         "borderline": borderline_capped,
+        "function_mismatch": function_mismatch[:40],
         "reseen_keys": reseen,
         "errors": errors,
         "stats": stats,
@@ -1185,6 +1251,7 @@ def main():
     print(f"Dedup skipped: {s['dedup_skipped']}")
     print(f"Diversity-capped (>{MAX_PER_COMPANY_PER_RUN}/company, dropped from shortlist): {s.get('diversity_dropped', 0)}")
     print(f"Flagged jd_verification_required (risky title, read JD first): {s.get('jd_verification_flagged', 0)}")
+    print(f"Function-mismatch demoted (PM/TPM/SalesEng..., digest FYI only): {s.get('function_mismatch', 0)}")
     print(f"Cap suppressed: {s['cap_suppressed']}")
     print(f"Excluded (salary/industry/seniority): {s['excluded']}")
     print(f"ATS errors: {s['errors']}")
