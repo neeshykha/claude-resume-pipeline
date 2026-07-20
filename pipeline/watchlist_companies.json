@@ -589,13 +589,15 @@
       "name": "Upbound",
       "ats": "greenhouse",
       "slug": "upbound",
-      "priority": "low"
+      "priority": "low",
+      "headcount_band": "51-200"
     },
     {
       "name": "Zeta Global",
       "ats": "greenhouse",
       "slug": "zetaglobal",
-      "priority": "low"
+      "priority": "low",
+      "headcount_band": "2000+"
     },
     {
       "name": "OpenAI",
@@ -603,6 +605,8 @@
       "slug": "openai",
       "priority": "high",
       "headcount_band": "2000+",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — frontier AI lab, was missing this bonus despite being unambiguously AI-native (same gap class as Maven AGI, fixed 2026-07-20)",
       "reason": "AI — Aneesh's strongest differentiator. ~7,000-8,000 employees (verified 2026-07-16)."
     },
     {
@@ -610,7 +614,10 @@
       "ats": "greenhouse",
       "slug": "anthropic",
       "priority": "high",
-      "reason": "AI — Aneesh's strongest differentiator"
+      "reason": "AI — Aneesh's strongest differentiator",
+      "headcount_band": "2000+",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — frontier AI lab, was missing this bonus despite being unambiguously AI-native (same gap class as Maven AGI, fixed 2026-07-20)"
     },
     {
       "name": "Vanta",
@@ -932,8 +939,8 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — AI service management. NOTE: apply -15 location penalty if no US remote option on role",
       "board_status": "404_confirmed",
-      "board_status_note": "Re-verified 2026-07-13: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404. WebSearch surfaced apparently-live job-boards.greenhouse.io/aiserajobs listings (incl. Enterprise CSM) but these are stale search-cache: direct curl to the board page 404s, and the individual job URL 302-redirects to /aiserajobs?error=true. Don't trust WebSearch snippets alone for this check, confirmed again.",
-      "recheck_after": "2026-07-20"
+      "board_status_note": "Re-verified 2026-07-13 and again 2026-07-20: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404. WebSearch again surfaced apparently-live job-boards.greenhouse.io/aiserajobs listings (incl. Enterprise CSM) but these are stale search-cache — confirmed once more via direct curl to the boards-api endpoint (404). Don't trust WebSearch snippets alone for this check.",
+      "recheck_after": "2026-07-27"
     },
     {
       "name": "Sierra",
