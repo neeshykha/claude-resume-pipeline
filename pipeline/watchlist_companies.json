@@ -413,6 +413,18 @@
   },
   "companies": [
     {
+      "name": "EvolutionIQ",
+      "ats": "greenhouse",
+      "slug": "evolutioniq",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-19",
+      "enrolled_via": "Greenhouse board dork, first seen 2026-07-19",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — AI guidance platform for disability/injury claims management",
+      "reason": "AI claims-guidance platform (NYC, ~242 employees, acquired by CCC Intelligent Solutions Dec 2024 for $730M, still hires on its own Greenhouse board). Verified live board 2026-07-19: Agentic Solutions Consultant (NY/Chicago), Solutions Engineer (NY). The 'Technical Engagement Manager / Account Manager (AI/SaaS)' that surfaced it via the dork had already closed by verification time."
+    },
+    {
       "name": "ServiceNow",
       "ats": "smartrecruiters",
       "slug": "ServiceNow",
@@ -630,6 +642,7 @@
       "ats": "ashby",
       "slug": "maven-agi",
       "priority": "high",
+      "headcount_band": "51-200",
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — enterprise conversational AI agent platform, was missing this bonus despite being unambiguously AI-native",
       "reason": "Aneesh has implemented Maven AGI at iApts — direct product familiarity"
@@ -821,6 +834,7 @@
       "ats": "ashby",
       "slug": "writer",
       "priority": "high",
+      "headcount_band": "501-2000",
       "reason": "Enterprise AI writing platform — strong CSM/implementation pipeline, AI bonus"
     },
     {
@@ -1012,6 +1026,7 @@
       "ats": "ashby",
       "slug": "clickup",
       "priority": "high",
+      "headcount_band": "501-2000",
       "reason": "Productivity SaaS. Solutions Consultant, Manager TAM, Professional Services Consultant (AI Solutions). Added 2026-06-25 (verified live: 71 jobs, 12 hits)."
     },
     {
@@ -1048,7 +1063,8 @@
       "ats": "ashby",
       "slug": "Nash",
       "priority": "medium",
-      "reason": "Last-mile delivery orchestration API. Technical Customer Success Manager (remote NA) roles live. Added 2026-06-25 (verified live: 22 jobs). NOTE: Ashby slug is capitalized 'Nash' - use as-is."
+      "headcount_band": "51-200",
+      "reason": "Last-mile delivery orchestration API. Technical Customer Success Manager (remote NA) roles live. Added 2026-06-25 (verified live: 22 jobs). NOTE: Ashby slug is capitalized 'Nash' - use as-is. headcount_band added 2026-07-19 (~134 employees, WebSearch-verified) when a board dork re-surfaced it as a false 'unfamiliar company'."
     },
     {
       "name": "RevenueCat",
