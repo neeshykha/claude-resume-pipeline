@@ -21,10 +21,37 @@
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19 and 2026-07-20: direct CXS POST still returns 403 (errorCode S22, permission denied) -- same multi-week outage. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, and 2026-07-21: direct CXS POST still returns 403 (errorCode S22, permission denied) -- same multi-week outage. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
     }
   ],
   "enrolled": [
+    {
+      "name": "Seven AI",
+      "ats": "ashby",
+      "slug": "sevenai",
+      "enrolled_date": "2026-07-21",
+      "headcount_band": "51-200",
+      "enrolled_via": "Ashby board dork 2026-07-21",
+      "notes": "AI-native agentic cybersecurity platform (7AI), Boston HQ, 51-100 employees, backed by Greylock/CRV/Spark. Customer Engagement Manager (AI outcomes), Boston, is the surfacing role."
+    },
+    {
+      "name": "Foresight Data",
+      "ats": "ashby",
+      "slug": "foresight",
+      "enrolled_date": "2026-07-21",
+      "headcount_band": "1-50",
+      "enrolled_via": "Ashby board dork 2026-07-21",
+      "notes": "Pre-Series A AI/data platform for private markets (NYC HQ, $5.5M seed). Implementation Specialist (NYC Metro/SF, remote) is the surfacing role."
+    },
+    {
+      "name": "Absorb",
+      "ats": "ashby",
+      "slug": "absorblms",
+      "enrolled_date": "2026-07-21",
+      "headcount_band": "201-500",
+      "enrolled_via": "Ashby board dork 2026-07-21",
+      "notes": "LMS platform (Calgary HQ, ~500 employees). Implementation Project Manager and Customer Advocacy and Engagement Manager are the surfacing roles. Not AI-native -- no AI bonus."
+    },
     {
       "name": "EvolutionIQ",
       "ats": "greenhouse",
@@ -507,6 +534,22 @@
     }
   ],
   "rejected": [
+    {
+      "name": "Nanoheal",
+      "ats": "smartrecruiters",
+      "slug": "Nanoheal1",
+      "rejected_date": "2026-07-21",
+      "reason": "SmartRecruiters board dork hit ('Technical Account Manager'). Board live but only 2 total postings, both zombie/evergreen (releasedDate 2019-07-12 and 2021-04-29), both Sales-function, Orem UT onsite. Not a live opening.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Institute for AI Policy and Strategy",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-21",
+      "reason": "80K Hours lead ('People Operations Manager', Remote US/UK, $105K-$115K). Apply link is careers.rethinkpriorities.org (fiscal-sponsor custom career site), not Greenhouse/Ashby/Lever/Workday/SmartRecruiters -- not pollable.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "Augment CXM",
       "ats": "smartrecruiters",
