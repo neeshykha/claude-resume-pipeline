@@ -630,7 +630,8 @@
       "name": "1Password",
       "ats": "ashby",
       "slug": "1password",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "2000+"
     },
     {
       "name": "Redis",
@@ -683,7 +684,8 @@
       "name": "n8n",
       "ats": "ashby",
       "slug": "n8n",
-      "priority": "low"
+      "priority": "low",
+      "headcount_band": "501-2000"
     },
     {
       "name": "OpenRouter",
@@ -709,7 +711,8 @@
       "name": "Mattermost",
       "ats": "greenhouse",
       "slug": "mattermost",
-      "priority": "low"
+      "priority": "low",
+      "headcount_band": "51-200"
     },
     {
       "name": "Conversica",
@@ -1063,6 +1066,34 @@
       "slug": "sentry",
       "priority": "medium",
       "reason": "Developer error-monitoring platform. Senior Technical CSM + Solutions Engineer roles live. Added 2026-06-25 (verified live: 45 jobs, 8 hits). Technical CSM fit."
+    },
+    {
+      "name": "Seven AI",
+      "ats": "ashby",
+      "slug": "sevenai",
+      "priority": "medium",
+      "reason": "AI-native agentic cybersecurity platform (7AI), Boston HQ, 51-100 employees, backed by Greylock/CRV/Spark. Customer Engagement Manager (AI outcomes) is a strong title fit. Added 2026-07-21.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — AI-native agentic security",
+      "headcount_band": "51-200"
+    },
+    {
+      "name": "Foresight Data",
+      "ats": "ashby",
+      "slug": "foresight",
+      "priority": "medium",
+      "reason": "Pre-Series A AI/data platform for private markets (NYC HQ, $5.5M seed). Implementation Specialist (remote-eligible) is the surfacing role. Added 2026-07-21.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — Generative AI private-markets analytics",
+      "headcount_band": "1-50"
+    },
+    {
+      "name": "Absorb",
+      "ats": "ashby",
+      "slug": "absorblms",
+      "priority": "low",
+      "reason": "LMS platform (Calgary HQ, ~500 employees). Implementation Project Manager and Customer Advocacy and Engagement Manager are the surfacing roles. Not AI-native. Added 2026-07-21.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Attentive",
