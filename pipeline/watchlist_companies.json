@@ -859,7 +859,9 @@
       "slug": "writer",
       "priority": "high",
       "headcount_band": "501-2000",
-      "reason": "Enterprise AI writing platform — strong CSM/implementation pipeline, AI bonus"
+      "reason": "Enterprise AI writing platform — strong CSM/implementation pipeline, AI bonus",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - enterprise generative AI writing/agent platform"
     },
     {
       "name": "Moveworks",
