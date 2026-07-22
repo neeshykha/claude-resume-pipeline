@@ -26,6 +26,15 @@
   ],
   "enrolled": [
     {
+      "name": "Zocdoc",
+      "ats": "greenhouse",
+      "slug": "zocdoc",
+      "enrolled_date": "2026-07-21",
+      "headcount_band": "501-2000",
+      "enrolled_via": "User-surfaced (LinkedIn) -- WitnessAI-class miss, pollable board invisible to every discovery source",
+      "notes": "Healthcare booking platform, NYC HQ, health-tech passion domain. Senior AI Support Operations Manager (Tier-1 exact title + AI, strong scope match) and Customer Success Manager, SMB are the live fit-space roles."
+    },
+    {
       "name": "Seven AI",
       "ats": "ashby",
       "slug": "sevenai",
