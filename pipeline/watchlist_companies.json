@@ -93,9 +93,9 @@
         "frequency": "daily"
       },
       {
-        "name": "Passion Verticals (EV/Health/Agtech discovery)",
-        "query": "(\"EV charging\" OR \"electric vehicle\" OR \"climate tech\" OR \"digital health\" OR healthtech OR agtech OR \"vertical farming\") (\"customer success manager\" OR \"technical account manager\" OR \"implementation manager\" OR \"support operations\" OR \"solutions engineer\") jobs remote OR Atlanta",
-        "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config → passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias.",
+        "name": "Passion Verticals (EV/Health/Agtech/SportsTech discovery)",
+        "query": "(\"EV charging\" OR \"electric vehicle\" OR \"climate tech\" OR \"digital health\" OR healthtech OR agtech OR \"vertical farming\" OR \"sports technology\" OR \"sports analytics\" OR \"player tracking\") (\"customer success manager\" OR \"technical account manager\" OR \"implementation manager\" OR \"support operations\" OR \"solutions engineer\") jobs remote OR Atlanta",
+        "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config → passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias. 'sports technology'/'sports analytics'/'player tracking' added 2026-07-22 for the new sports_technology domain -- this targets companies with real CSM/TAM/implementation-shaped roles (e.g. Sportradar, Catapult, Trackman, Zebra Sports), not field-hardware-technician titles like Hawk-Eye Innovations' actual Atlanta postings, which are a genuinely different job function and don't clear the title-tier bar regardless of the passion bonus.",
         "status": "active",
         "frequency": "daily"
       },
@@ -208,6 +208,23 @@
             "food system",
             "vertical farm",
             "grower"
+          ]
+        },
+        "sports_technology": {
+          "description": "Sports technology broadly: officiating/line-calling systems, broadcast and video tracking tech, player/ball tracking and performance analytics, sports biomechanics, across any sport (tennis is a personal anchor interest, added 2026-07-22 after Hawk-Eye Innovations came up as a company Aneesh has always found cool)",
+          "poller_keywords": [
+            "sports technology",
+            "sports tech",
+            "sports analytics",
+            "sports performance",
+            "player tracking",
+            "ball tracking",
+            "officiating technology",
+            "line-calling",
+            "broadcast technology",
+            "biomechanics",
+            "optical tracking",
+            "tennis technology"
           ]
         }
       }

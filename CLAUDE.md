@@ -212,8 +212,9 @@ run surfaced four roles from a single company because structural bonuses were st
 2. **Cap total company-level bonuses at +30.** The sum of all structural bonuses that describe
    the *company* rather than the *role* — AI/ML, watchlist (+10), Atlanta-enterprise (+10) /
    Atlanta-startup (+20), IoT (+15), small-company (+15 ≤200 / +8 201-500), passion-domain
-   (+10, `_scoring_config → passion_domains`: electrification/EV, health tech,
-   agriculture/gardening/food) — is capped at **+30 combined**. Role-fit signal (title match + keyword overlap, max 60) must remain the
+   (+10, current domain list lives in `_scoring_config → passion_domains` — that JSON is the
+   only source of truth, don't restate the domain names here) — is capped at **+30 combined**.
+   Role-fit signal (title match + keyword overlap, max 60) must remain the
    larger share of any score. If the raw structural bonuses exceed 30, clamp to 30.
 
    **Small-company bonus (added 2026-06-30 to fix the ignored sub-500 segment).** When a company
