@@ -21,10 +21,116 @@
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, and 2026-07-21: direct CXS POST still returns 403 (errorCode S22, permission denied) -- same multi-week outage. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, 2026-07-21, and 2026-07-22: direct CXS POST still returns 403 (errorCode S22, permission denied) -- same multi-week outage, now 3+ weeks. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
+    },
+    {
+      "name": "Red Hat",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "BuiltIn Remote 2026-07-22",
+      "first_seen": "2026-07-22",
+      "why": "Customer Success Executive listing seen on BuiltIn. Large enterprise (IBM-owned, 2000+) -- lower priority than sub-500 discoveries, deferred this run for budget."
+    },
+    {
+      "name": "Motorola Solutions",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "BuiltIn Remote 2026-07-22",
+      "first_seen": "2026-07-22",
+      "why": "Customer Success Manager - Enterprise Accounts (Remote) listing seen on BuiltIn. Large enterprise (2000+) -- deferred this run for budget."
+    },
+    {
+      "name": "Cambium Learning",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "why": "Customer Success Manager (Remote) listing seen via myworkdayjobs.com dork. EdTech. Deferred this run for budget -- needs real Workday site-name resolution (guess-list pattern per verify_workday.py notes)."
+    },
+    {
+      "name": "Pluralsight",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "why": "Customer Success Manager (Remote, USA) listing seen via myworkdayjobs.com dork. Dallas TX HQ, tech/edtech. Deferred this run for budget."
+    },
+    {
+      "name": "Rackspace",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "why": "Customer Success Manager listing seen via myworkdayjobs.com dork. Large managed-cloud provider (2000+). Deferred this run for budget."
+    },
+    {
+      "name": "CrowdStrike",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "why": "Technical Account Manager II - Customer Onboarding (Remote) listing seen via myworkdayjobs.com dork. Large cybersecurity vendor (2000+). Deferred this run for budget."
+    },
+    {
+      "name": "Autodesk",
+      "ats": "workday",
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "Workday Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "why": "Customer Success Manager, Named Accounts (Remote) listing seen via myworkdayjobs.com dork. Large enterprise (2000+). Deferred this run for budget."
+    },
+    {
+      "name": "EcoVadis",
+      "ats": "smartrecruiters",
+      "slug": "ecovadis",
+      "source": "SmartRecruiters Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "why": "Customer Success Coordinator listing found (Mexico City, 1-year contract) -- not US-reachable as seen. Board otherwise unverified for other fit-space roles; deferred this run for budget."
+    },
+    {
+      "name": "Momentus Technologies",
+      "ats": "smartrecruiters",
+      "slug": "MomentusTechnologies",
+      "source": "SmartRecruiters Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "why": "Customer Success Manager listing found (Singapore) -- not US-reachable as seen. Board otherwise unverified for other fit-space roles; deferred this run for budget."
     }
   ],
   "enrolled": [
+    {
+      "name": "QGenda",
+      "ats": "greenhouse",
+      "slug": "qgenda",
+      "enrolled_date": "2026-07-22",
+      "headcount_band": "501-2000",
+      "enrolled_via": "BuiltIn Atlanta 2026-07-22",
+      "notes": "Healthcare workforce scheduling/management platform, Atlanta HQ, 800+ employees. Health-tech passion domain + Atlanta-enterprise bonus both apply. Live fit-space roles: Technical Account Manager, Technical Account Manager (Credentialing), Customer Support Specialist x2, Implementation Consultant (New Grad)."
+    },
+    {
+      "name": "Truv",
+      "ats": "lever",
+      "slug": "truv",
+      "enrolled_date": "2026-07-22",
+      "headcount_band": "51-200",
+      "enrolled_via": "BuiltIn Atlanta 2026-07-22",
+      "notes": "Payroll/income-verification API platform, Las Vegas HQ, 68 employees per web search (headcount backfill same run). Live fit-space roles: Customer Success Manager (Miami) and Senior Technical Account Manager, Public Sector (Remote) -- verify the public-sector role doesn't require clearance before tailoring."
+    },
+    {
+      "name": "Cymulate",
+      "ats": "greenhouse",
+      "slug": "cymulate",
+      "enrolled_date": "2026-07-22",
+      "headcount_band": "201-500",
+      "enrolled_via": "BuiltIn Atlanta 2026-07-22",
+      "notes": "Cybersecurity exposure-validation/breach-attack-simulation platform, NY/Tel Aviv HQ, ~260 employees. Live fit-space role: Technical Account Manager (United States). Not blockchain/crypto -- cybersecurity SaaS, passes hard filter."
+    },
     {
       "name": "Zocdoc",
       "ats": "greenhouse",
@@ -543,6 +649,54 @@
     }
   ],
   "rejected": [
+    {
+      "name": "Stedi",
+      "ats": "ashby",
+      "slug": "stedi",
+      "rejected_date": "2026-07-22",
+      "reason": "Ashby board dork hit ('Customer Success Engineer'). Board live (12 jobs) but the CS Engineer role has closed -- current board is BD/eng/product/legal only, zero fit-space titles.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Axonius",
+      "ats": "greenhouse",
+      "slug": "axonius",
+      "rejected_date": "2026-07-22",
+      "reason": "BuiltIn Remote hit ('Senior Onboarding Technical Account Manager'). Board live (24 jobs) but that listing has closed; the only current fit-adjacent role is 'Technical Account Management (SkillBridge: On-the-job training)' -- a DoD SkillBridge program slot for transitioning military members, not a standard opening Aneesh is eligible for.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "DoiT",
+      "ats": "greenhouse",
+      "slug": "doitintl",
+      "rejected_date": "2026-07-22",
+      "reason": "Greenhouse board dork hit (Senior Cloud Architect, Delivery (GenAI)). Board live (86 jobs) but zero CS/TAM/implementation/support-ops titled roles -- board skews cloud architect/eng/sales.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Assent",
+      "ats": "smartrecruiters",
+      "slug": "Assent",
+      "rejected_date": "2026-07-22",
+      "reason": "SmartRecruiters board dork hit. Board live (29 jobs) but every CS-titled role is Ottawa/Amsterdam/Pune -- no US-reachable fit-space role.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Argyle",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-22",
+      "reason": "BuiltIn Atlanta hit ('Customer Success Engineer'). No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Chainalysis",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-22",
+      "reason": "Ashby board dork hit ('Technical Account Manager - Israel'). Blockchain analytics company -- fails the hard crypto/web3/blockchain exclusion filter regardless of board/role fit.",
+      "recheck_if_resurfaced": false
+    },
     {
       "name": "Nanoheal",
       "ats": "smartrecruiters",

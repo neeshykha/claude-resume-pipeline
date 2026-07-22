@@ -624,7 +624,8 @@
       "ats": "ashby",
       "slug": "vanta",
       "priority": "high",
-      "reason": "Compliance SaaS, technical CSM roles"
+      "headcount_band": "51-200",
+      "reason": "Compliance SaaS, technical CSM roles. Headcount ~50-99 per web search 2026-07-22 (banded 51-200)."
     },
     {
       "name": "1Password",
@@ -978,7 +979,8 @@
       "ats": "ashby",
       "slug": "harvey",
       "priority": "high",
-      "reason": "AI-native legal platform. Strong pipeline: Engagement Manager, Scaled CSM, Support Operations Engineer, TAM. Added 2026-06-25 (verified live: 296 jobs, 22 target hits). Enterprise AI deployment fit.",
+      "headcount_band": "501-2000",
+      "reason": "AI-native legal platform. Strong pipeline: Engagement Manager, Scaled CSM, Support Operations Engineer, TAM. Added 2026-06-25 (verified live: 296 jobs, 22 target hits). Enterprise AI deployment fit. Headcount ~1,441-1,462 per web search 2026-07-22.",
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) - enterprise legal AI"
     },
@@ -1842,6 +1844,36 @@
       "enrolled_date": "2026-07-18",
       "enrolled_via": "Industrial IoT / Physical-World Hardware discovery source, first seen 2026-07-18",
       "reason": "AI-driven industrial IoT condition-monitoring platform (Westerville, OH HQ; protects manufacturers' critical rotating/industrial equipment before it fails). Verified live board, 27 jobs: Senior Manager of Implementation (Remote), Team Lead, Customer Success (United States), plus multiple Condition Monitoring Engineer roles. Direct match to Aneesh's stated interest in physical-world/industrial-equipment sensing."
+    },
+    {
+      "name": "QGenda",
+      "ats": "greenhouse",
+      "slug": "qgenda",
+      "priority": "high",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-22",
+      "enrolled_via": "BuiltIn Atlanta discovery source, first seen 2026-07-22",
+      "reason": "Healthcare workforce scheduling/management platform, Atlanta HQ, 800+ employees. Health-tech passion domain AND Atlanta-enterprise bonus both apply. Verified live board: Technical Account Manager, Technical Account Manager (Credentialing), Customer Support Specialist x2, Implementation Consultant (2025 New Grad)."
+    },
+    {
+      "name": "Truv",
+      "ats": "lever",
+      "slug": "truv",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-22",
+      "enrolled_via": "BuiltIn Atlanta discovery source, first seen 2026-07-22",
+      "reason": "Payroll/income-verification API platform, Las Vegas HQ. Headcount unconfirmed (LinkedIn didn't surface a clean count) -- left null, not guessed. Verified live board: Customer Success Manager (Miami) and Senior Technical Account Manager, Public Sector (Remote) -- confirm the public-sector role doesn't require clearance before tailoring."
+    },
+    {
+      "name": "Cymulate",
+      "ats": "greenhouse",
+      "slug": "cymulate",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-22",
+      "enrolled_via": "BuiltIn Atlanta discovery source, first seen 2026-07-22",
+      "reason": "Cybersecurity exposure-validation / breach-and-attack-simulation SaaS platform, NY/Tel Aviv HQ, ~260 employees. Verified live board: Technical Account Manager (United States)."
     }
   ]
 }
