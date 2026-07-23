@@ -21,7 +21,7 @@
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, 2026-07-21, and 2026-07-22: direct CXS POST still returns 403 (errorCode S22, permission denied) -- same multi-week outage, now 3+ weeks. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, 2026-07-21, 2026-07-22, and 2026-07-23: direct CXS POST still returns 403 -- same outage, now 5 consecutive checks / 4+ weeks. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
     },
     {
       "name": "Red Hat",
@@ -121,6 +121,24 @@
       "headcount_band": "51-200",
       "enrolled_via": "BuiltIn Atlanta 2026-07-22",
       "notes": "Payroll/income-verification API platform, Las Vegas HQ, 68 employees per web search (headcount backfill same run). Live fit-space roles: Customer Success Manager (Miami) and Senior Technical Account Manager, Public Sector (Remote) -- verify the public-sector role doesn't require clearance before tailoring."
+    },
+    {
+      "name": "Relay Payments",
+      "ats": "greenhouse",
+      "slug": "relaypayments",
+      "enrolled_date": "2026-07-23",
+      "headcount_band": "51-200",
+      "enrolled_via": "Atlanta Board Sweep 2026-07-23",
+      "notes": "Atlanta-HQ fintech, ~129 employees. Enterprise Solutions Engineer + Enterprise Technical Account Manager, both Atlanta, GA."
+    },
+    {
+      "name": "UpKeep",
+      "ats": "greenhouse",
+      "slug": "upkeep",
+      "enrolled_date": "2026-07-23",
+      "headcount_band": "51-200",
+      "enrolled_via": "Industrial IoT discovery 2026-07-23",
+      "notes": "CMMS/asset ops platform, LA HQ, ~117 employees. Customer Success Manager + Sr. Implementation Manager, both LA/Hybrid (not remote)."
     },
     {
       "name": "Cymulate",
@@ -1247,6 +1265,22 @@
       "slug": "kaleris",
       "rejected_date": "2026-07-16",
       "reason": "Greenhouse board dork hit ('Customer Support Engineer', Atlanta-HQ supply chain SaaS). WebSearch surfaced apparently-live job-boards.greenhouse.io/kaleris listings, but both boards-api.greenhouse.io/v1/boards/kaleris/jobs and job-boards.greenhouse.io/kaleris direct-hit 404 -- same stale-search-cache pattern documented for Forethought/Aisera. Board is dead, not a slug problem.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "CSI (Computer Services, Inc.)",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-23",
+      "reason": "AI Adoption Manager listing (remote) surfaced via AI-Titled Roles discovery. No Greenhouse/Ashby/Lever/SmartRecruiters board found -- likely an unsupported ATS or direct careers-page-only posting. Also 1,477 employees (Paducah, KY core-banking processor), well above the sub-500 discovery-layer bias, so not worth further pursuit even if a board surfaces later.",
+      "recheck_if_resurfaced": false
+    },
+    {
+      "name": "Simpplr",
+      "ats": "greenhouse",
+      "slug": "simpplr",
+      "rejected_date": "2026-07-23",
+      "reason": "Greenhouse board dork hit ('Technical Account Manager'). Board live but down to 1 open job (Information Security Engineer, India) -- zero US-reachable fit-space titles. The surfacing TAM listing has closed.",
       "recheck_if_resurfaced": true
     }
   ]
