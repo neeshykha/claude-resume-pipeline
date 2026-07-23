@@ -64,6 +64,13 @@
         "frequency": "daily"
       },
       {
+        "name": "Atlanta Board Sweep (all 3 ATSes)",
+        "query": "(site:jobs.ashbyhq.com OR site:job-boards.greenhouse.io OR site:jobs.lever.co) (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"enablement\" OR \"solutions engineer\" OR \"support operations\" OR \"deployment\") (Atlanta OR \"Georgia\")",
+        "notes": "Added 2026-07-22 to close an Atlanta discovery gap. Of the board dorks, only BuiltIn Atlanta was location-scoped -- the generic Ashby/Greenhouse/Lever 'Boards - Target Roles' dorks carry NO location term, so an Atlanta role at an off-watchlist company surfaced only if WebSearch happened to rank it, with nothing nudging toward local. This single all-3-ATS query (same shape as the Tier-1 Manager-Title Sweep) targets Atlanta/Georgia directly without adding three separate per-host queries to the daily WebSearch budget. Rationale: Aneesh is Atlanta-based and remote roles draw far more applicants, so local roles are a higher-signal, lower-competition target worth a dedicated discovery pass. Same enroll guidance as the other board dorks: surface unfamiliar companies, verify the board is live, add to the watchlist. Complements the poll_ats.py pre-score change (same date) that gives already-watchlisted Atlanta roles a +4 edge over remote at the shortlist-selection stage -- this source is the discovery-layer half of the same Atlanta-prioritization intent.",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
         "name": "AI-Native & AI-Safety Orgs (vertical discovery)",
         "query": "(\"AI safety\" OR \"AI security\" OR \"AI governance\" OR \"frontier model\" OR \"applied AI\" OR \"AI research\" OR \"contact center AI\" OR \"customer support AI\") (\"customer success\" OR \"technical account\" OR operations OR implementation OR deployment OR solutions) jobs 2026",
         "notes": "Catches AI-native, AI-safety, AI-security, and AI-governance orgs that are off the watchlist and whose fitting roles may be titled differently (e.g. 'Operations Generalist'). Vertical/company discovery, not title-keyed — surface the COMPANY, then verify board + add to watchlist so the poller scans its full roster. Apply AI bonus (+20) to in-vertical hits. Added 2026-06-25 after a manually-found FAR.AI role exposed that the discovery layer was too title-narrow; 'AI security'/'AI governance'/'technical account' added 2026-07-02 after WitnessAI (AI security, 102 people, Atlanta-hybrid TAM) was invisible to this query for the same reason.",
