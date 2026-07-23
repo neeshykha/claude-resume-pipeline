@@ -12,6 +12,8 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 - PDFs via `render_pdf.py` + JSON data files — never copy/edit `generate_pdf.py`
 - Coverage checks via `check_coverage.py` — never hand-rolled bash loops
 - Tracking updates via `update_tracking.py` — never hand-edit `seen_jobs.json`
+- Application-confirmation promotions via `mark_applied.py` (Step 0.5) — never hand-edit
+  `outcomes.csv`'s `stage`/`applied_date` columns
 - Read `master_resume.md` ONCE, reuse for all tailorings
 - WebSearch limited to the active `_websearch_sources` entries + recovery searches
 
@@ -57,6 +59,47 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
    Precedence: the style guide (item 3) + CLAUDE.md voice rules govern FORM; the career
    narrative governs SUBSTANCE; `master_resume.md` remains the only source of factual
    claims. Step 4 says how to apply it per document.
+
+## Step 0.5: Application confirmation sync (Gmail `+jobs` alias)
+
+**Added 2026-07-24, closes a real gap found the hard way:** on 2026-07-23 the pipeline
+skipped a genuinely fresh Assembled req on the mistaken assumption that an earlier
+`stage=surfaced` row in `outcomes.csv` meant Aneesh had actually applied. It didn't —
+`stage=surfaced` only ever meant "tailored and drafted," never "confirmed sent," because
+Gmail MCP access here is `create_draft`-only. This step closes that gap going forward.
+
+Aneesh applies to jobs using `khan.aneesh10@gmail.com` (his system of record) with a Gmail
+filter there forwarding application-confirmation emails to `aneeshk10+jobs@gmail.com` —
+which lands in this pipeline's connected inbox, searchable and untouched by the rest of his
+mail. **This only works once Aneesh has actually set up that filter on his end** (add
+`aneeshk10+jobs@gmail.com` as a verified forwarding address in `khan.aneesh10@gmail.com`'s
+settings, then a filter matching subject `(application OR "thank you for applying" OR
+"received your application")` with action "Forward it to" that address). Until then this
+step will simply find zero results every run — that's expected, not an error, and costs one
+cheap search call.
+
+1. Search Gmail for messages `to:aneeshk10+jobs@gmail.com newer_than:3d` (the 3-day window
+   gives safe overlap across runs; already-promoted rows won't match again since matching
+   only looks at `stage=surfaced` rows).
+2. For each result, read the sender/subject/body to identify the company and, if stated, the
+   specific requisition URL. **Always try to extract the URL from the email body first** —
+   confirmation emails from Greenhouse/Ashby/Lever/Workday usually restate the job link or a
+   requisition ID. Only fall back to company-name-only matching when the email genuinely
+   doesn't say which requisition it confirms.
+3. Write a small `pipeline/jobs/confirmations_[date].json`:
+   ```json
+   {"confirmations": [{"url": "https://...", "company": "...", "applied_date": "2026-MM-DD"}]}
+   ```
+   (`url` optional if truly not stated; `applied_date` = the date the confirmation email was
+   received, not today's date, if they differ.)
+4. Run `.venv/bin/python pipeline/mark_applied.py pipeline/jobs/confirmations_[date].json`.
+   It matches by URL first, falls back to company name only among still-`surfaced` rows, and
+   **skips and reports (never guesses) any company name that matches more than one surfaced
+   row** — read its stdout output and resolve ambiguous ones by hand only if the email body
+   gives enough detail to disambiguate confidently; otherwise leave them surfaced.
+5. Note the promoted count in `run_[date].json → pipeline_notes` and `SESSION_STATE.md`. Do
+   not mention this step in the digest email unless something promoted or something was
+   ambiguous — routine zero-result runs are silent housekeeping, not digest content.
 
 ## Step 1: ATS polling
 
