@@ -1017,16 +1017,32 @@ def poll_all(run_date: date) -> dict:
         # alongside an excluded region -- but without this check they'd still
         # fall to the lowest bucket below since they don't contain the literal
         # word "remote". Treat them the same as a remote US role.
-        us_named = (any(t in loc for t in US_SPECIFIC_INCLUDE)
+        us_named = (any(term in loc for term in US_SPECIFIC_INCLUDE)
                     or re.search(r'\bus\b', loc))
-        if "remote" in loc or us_named:
+        # Atlanta gets a shortlist-selection edge (+4) over the generic
+        # remote/US bucket, and must be checked FIRST: "atlanta"/"georgia" are
+        # also in US_SPECIFIC_INCLUDE, so before 2026-07-22 the "remote or
+        # us_named" branch below caught them first and every US location tied at
+        # +20 -- even though the full-scoring rubric (CLAUDE.md Step 2c) ranks
+        # Atlanta highest. That let a marginal remote role beat a strong Atlanta
+        # one for a top-25 slot before Claude ever scored it. The +4 edge
+        # mirrors the rubric's own Atlanta(+20)-over-remote(+16) gap; Aneesh is
+        # Atlanta-based and remote roles draw far more applicants, so local
+        # roles are a higher-signal, lower-competition target to surface first.
+        #
+        # Every OTHER US-reachable location intentionally ties at the base US
+        # score. There is deliberately NO separate NYC/Boston tier here: those
+        # terms are in US_SPECIFIC_INCLUDE too, so pre-2026-07-22 "elif new
+        # york"/"elif boston" branches were also dead code -- and reviving them
+        # would push US-reachable roles BELOW remote at the shortlist stage,
+        # denying them a fair shot at full scoring (where Aneesh's openness to
+        # NYC/NJ, and the finer remote/other ordering, is actually weighed).
+        # The shortlist stage should be inclusive; the fine location ranking
+        # belongs to Step 2c, not here.
+        if "atlanta" in loc or "georgia" in loc:
+            score += 24
+        elif "remote" in loc or us_named:
             score += 20
-        elif "atlanta" in loc:
-            score += 20
-        elif "new york" in loc or "nyc" in loc:
-            score += 12
-        elif "boston" in loc:
-            score += 5
         else:
             score += 3
 
