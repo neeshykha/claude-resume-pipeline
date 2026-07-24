@@ -391,7 +391,8 @@
         "Field Engineer",
         "Support Engineer",
         "Product CSM",
-        "Technical CSM"
+        "Technical CSM",
+        "Technical Success Manager"
       ]
     },
     "borderline_fragments": {
@@ -678,6 +679,26 @@
       "bonus_reason": "AI/ML voice platform"
     },
     {
+      "name": "Customer.io",
+      "ats": "greenhouse",
+      "slug": "customerio",
+      "priority": "high",
+      "reason": "Customer engagement/marketing automation platform, ~500 employees, Americas-remote. Verified live board 2026-07-24: 23 jobs, 2 fit-space -- Manager, Customer Success and Technical Operations Manager (tier1_true_match), both Americas Remote.",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-24",
+      "enrolled_via": "Greenhouse Boards - Target Roles WebSearch dork, verified 2026-07-24"
+    },
+    {
+      "name": "Zscaler",
+      "ats": "greenhouse",
+      "slug": "zscaler",
+      "priority": "medium",
+      "reason": "Zero-trust security, NASDAQ:ZS, 2000+ employees. Verified live board 2026-07-24: 317 jobs. Uses 'Technical Success Manager' as its internal TAM-equivalent title (not 'Technical Account Manager') -- Technical Success Manager | Remote - USA is live; added to supplemental_exact_titles so the poller catches this title convention. SmartRecruiters discovery hit ('Manager, Technical Account Management', Atlanta GA) did not reappear on the live Greenhouse board -- may be closed/stale; Greenhouse is the confirmed live board.",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-07-24",
+      "enrolled_via": "SmartRecruiters Boards WebSearch dork surfaced company; verified live board is Greenhouse 2026-07-24"
+    },
+    {
       "name": "ElevenLabs",
       "ats": "ashby",
       "slug": "elevenlabs",
@@ -706,7 +727,8 @@
       "name": "Roboflow",
       "ats": "ashby",
       "slug": "roboflow",
-      "priority": "low"
+      "priority": "low",
+      "headcount_band": "51-200"
     },
     {
       "name": "n8n",
@@ -719,13 +741,15 @@
       "name": "OpenRouter",
       "ats": "ashby",
       "slug": "openrouter",
-      "priority": "low"
+      "priority": "low",
+      "headcount_band": "1-50"
     },
     {
       "name": "Quantum Metric",
       "ats": "lever",
       "slug": "quantummetric",
-      "priority": "medium"
+      "priority": "medium",
+      "headcount_band": "501-2000"
     },
     {
       "name": "PointClickCare",

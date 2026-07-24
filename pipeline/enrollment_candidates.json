@@ -668,6 +668,22 @@
   ],
   "rejected": [
     {
+      "name": "Collider",
+      "ats": "ashby",
+      "slug": "collider",
+      "rejected_date": "2026-07-24",
+      "reason": "80K Hours lead. Board live but only 1 job total: generic 'Operations Manager', NYC on-site, no support/CS/TAM keywords -- description frames it as running the physical systems for a co-working 'hub', not software support ops. No fit-space role.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Relocity",
+      "ats": "greenhouse",
+      "slug": "relocity",
+      "rejected_date": "2026-07-24",
+      "reason": "BuiltIn Remote hit ('Customer Success & Implementation Manager (SaaS Enterprise)'). Board live (12 jobs) but that listing has closed; current board is relocation-consulting roles (Director of Sales, Relocation Consultant/Contractor, Product Support Specialist) -- not the SaaS CS function that surfaced it.",
+      "recheck_if_resurfaced": true
+    },
+    {
       "name": "Stedi",
       "ats": "ashby",
       "slug": "stedi",
