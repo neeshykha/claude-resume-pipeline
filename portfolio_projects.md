@@ -6,6 +6,12 @@ Format per entry: repo URL, one-line description, when to cite it, and a resume-
 
 ---
 
+## deflection-audit
+**URL:** https://github.com/neeshykha/deflection-audit
+**What:** Audits the deflection rate an AI support deployment reports. Vendors count deflection as conversations the AI closed without a human handoff, which counts closures rather than resolutions — abandonment, re-contacts, and later escalations all look identical to a success. This re-judges every AI-closed conversation from the transcript alone (at close time, without seeing the follow-up signal), then recomputes the rate crediting only closures that hold up. On a 40-conversation labeled set: 80.0% claimed vs. 55.0% audited, a 25-point overstatement. Two layers by design — the auditor is scored against ground truth first (25/32 outcomes, 8/11 confusable-pattern traps) before its numbers are trusted. Ships a static HTML report, a reusable QA rubric, and 18 unit tests covering the deterministic half.
+**Cite when:** JD asks about measuring AI deployment success, post-launch adoption or ROI, deflection/containment metrics, AI quality assurance, or "how do you know the AI is actually working." Especially strong for Deployment Strategist, AI Engagement/Enablement, and AI Operations roles — it answers the rollout-health question the other repos don't touch. Also the best evidence of metric skepticism applied to a number he personally owns (85% deflection via Maven AGI at iApts). Pairs with claude-eval-kit as proof that kit generalizes to a second domain.
+**Resume line:** Built an audit tool measuring true vs. reported AI support deflection, finding a 25-point overstatement on a labeled conversation set by re-judging closures on whether the customer's problem was actually resolved.
+
 ## sf-caseops-mcp
 **URL:** https://github.com/neeshykha/sf-caseops-mcp
 **What:** A read-only MCP server exposing Salesforce case operations (SOQL, case lookups, queue volumes, weekly created-vs-closed trend) as tools an AI agent can call. Auth is delegated entirely to the `sf` CLI keychain; read-only is enforced by construction (only wraps query/describe subcommands, SELECT-only guard on raw SOQL). Built from real support-ops practice and running against a live org daily.
