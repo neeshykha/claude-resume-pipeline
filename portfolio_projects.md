@@ -36,6 +36,12 @@ Format per entry: repo URL, one-line description, when to cite it, and a resume-
 **Cite when:** JD mentions AI evaluation, LLM output quality, AI deployment rigor, ticket triage/routing, or support AI. Especially strong for AI Engagement Manager and forward-deployed roles — it demonstrates measuring an AI system, not just shipping one.
 **Resume line:** Built an LLM-based support ticket triage classifier with a full evaluation harness (confusion matrix, cost-weighted miss analysis); caught 100% of critical-severity tickets on a labeled test set.
 
+## Stride-App
+**URL:** https://github.com/neeshykha/Stride-App
+**What:** A native macOS habit and home-project tracker in SwiftUI (Swift 6, macOS 14+, XcodeGen). Local-first — JSON on disk, no account, no sync. Habits support three completion shapes (checkbox, tally, checklist) and two scheduling models, weekly-by-day and every-N-days intervals; the interval mode exists because home maintenance is "every 90 days," which a weekday scheduler cannot represent. Also projects, quick tasks with recurrence, personal/work workspaces, and time-of-day grouping. Built April 2026 for his own use and not actively maintained, which the README states plainly.
+**Cite when:** ONLY when the JD or company culture rewards personal building, curiosity, or breadth beyond one stack — startups, AI-native companies, product-minded teams, or any interview where "what do you build for yourself" comes up. It is the only non-Python, non-AI repo in the portfolio, so its value is range and self-direction. **Do not cite it** for AI deployment, evaluation rigor, or engineering depth — it is a single-commit personal app with no tests, and over-reaching with it weakens an otherwise strong set. Never lead with it.
+**Resume line:** Built and shipped a native macOS habit and project tracker in SwiftUI, designing a local-first data layer with schema-compatible decoding so files written by earlier versions remain readable.
+
 ## claude-resume-pipeline
 **URL:** https://github.com/neeshykha/claude-resume-pipeline
 **What:** AI-powered resume tailoring and job discovery pipeline. CLAUDE.md encodes ATS optimization logic; Python handles ATS board polling (50+ companies), composite scoring, and PDF rendering.
