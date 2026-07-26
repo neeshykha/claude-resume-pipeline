@@ -36,8 +36,8 @@
       },
       {
         "name": "AI-Titled Roles (Broad Discovery)",
-        "query": "(\"AI Success Manager\" OR \"AI Outcomes Manager\" OR \"AI Adoption\" OR \"AI Enablement Manager\" OR \"AI Transformation Lead\" OR \"AI Value Partner\" OR \"AI Engagement Lead\" OR \"AI Delivery Manager\" OR \"AI GTM\") jobs remote 2026",
-        "notes": "Catch-all WebSearch for novel AI-prefixed role titles that don't match named tiers. Companies are still coining these. Run every pipeline pass. Apply AI/LLM bonus (+20) to any hits. Check for salary floor before surfacing. Score against tier2b_ai_wildcard (+18) if no higher tier matches. ('AI Enablement Manager' added 2026-07-02 after a Crowe posting with that exact Tier-2 title was missed by every discovery source.)",
+        "query": "(\"AI Success Manager\" OR \"AI Outcomes Manager\" OR \"AI Adoption\" OR \"AI Enablement Manager\" OR \"AI Operations Manager\" OR \"AI Transformation Lead\" OR \"AI Value Partner\" OR \"AI Engagement Lead\" OR \"AI Delivery Manager\" OR \"AI GTM\") jobs remote 2026",
+        "notes": "Catch-all WebSearch for novel AI-prefixed role titles that don't match named tiers. Companies are still coining these. Run every pipeline pass. Apply AI/LLM bonus (+20) to any hits. Check for salary floor before surfacing. Score against tier2b_ai_wildcard (+18) if no higher tier matches. ('AI Enablement Manager' added 2026-07-02 after a Crowe posting with that exact Tier-2 title was missed by every discovery source. 'AI Operations Manager' added 2026-07-24 after Clutch's 'AI Operations Manager, Emma' posting was missed by this query despite the exact phrase already being a poller supplemental_exact_titles entry -- the WebSearch query and the ATS-poller title list had drifted apart.)",
         "status": "active",
         "frequency": "daily",
         "scoring_notes": "Apply +20 AI bonus + tier2b_ai_wildcard title match (+18) = strong signal. Verify salary floor."
@@ -1131,6 +1131,16 @@
       "priority": "high",
       "headcount_band": "501-2000",
       "reason": "Healthcare booking platform, NYC HQ (~1,352 employees), health-tech passion domain. User-surfaced (LinkedIn) 2026-07-21 -- WitnessAI-class miss, pollable board invisible to every discovery source. Verified live: 51 jobs incl. Senior AI Support Operations Manager (Tier-1 exact title + AI, near-literal match to Aneesh's current scope: AI vendor selection/integration, QA auditing, deflection metrics) and Customer Success Manager, SMB."
+    },
+    {
+      "name": "Clutch",
+      "ats": "ashby",
+      "slug": "withclutch",
+      "priority": "high",
+      "headcount_band": "201-500",
+      "score_bonus": 20,
+      "bonus_reason": "AI-native fintech; builds AI agents (Emma) for credit union collections/origination",
+      "reason": "San Francisco HQ (~264 employees). Vertical AI fintech for credit unions -- NOT the same company as the Canadian used-car retailer 'Clutch' on Greenhouse (job-boards.greenhouse.io/clutch, unrelated). User-surfaced (LinkedIn) 2026-07-24 -- WitnessAI-class miss, pollable Ashby board invisible to every discovery source. Verified live: 13 jobs incl. AI Operations Manager, Emma (owns full post-sale lifecycle of the AI agent, near-literal match to Aneesh's Maven AGI vendor-selection/integration/deflection work), Senior Customer Success Manager, Senior Support Engineer, Director of Professional Services."
     },
     {
       "name": "Seven AI",
