@@ -1140,7 +1140,9 @@
       "headcount_band": "201-500",
       "score_bonus": 20,
       "bonus_reason": "AI-native fintech; builds AI agents (Emma) for credit union collections/origination",
-      "reason": "San Francisco HQ (~264 employees). Vertical AI fintech for credit unions -- NOT the same company as the Canadian used-car retailer 'Clutch' on Greenhouse (job-boards.greenhouse.io/clutch, unrelated). User-surfaced (LinkedIn) 2026-07-24 -- WitnessAI-class miss, pollable Ashby board invisible to every discovery source. Verified live: 13 jobs incl. AI Operations Manager, Emma (owns full post-sale lifecycle of the AI agent, near-literal match to Aneesh's Maven AGI vendor-selection/integration/deflection work), Senior Customer Success Manager, Senior Support Engineer, Director of Professional Services."
+      "reason": "San Francisco HQ (~264 employees). Vertical AI fintech for credit unions -- NOT the same company as the Canadian used-car retailer 'Clutch' on Greenhouse (job-boards.greenhouse.io/clutch, unrelated). User-surfaced (LinkedIn) 2026-07-24 -- WitnessAI-class miss, pollable Ashby board invisible to every discovery source. Verified live: 13 jobs incl. AI Operations Manager, Emma, Senior Customer Success Manager, Senior Support Engineer, Director of Professional Services.",
+      "role_exclusions": ["AI Operations Manager, Emma"],
+      "role_exclusion_note": "2026-07-24: Aneesh declined this specific role on ethical grounds -- Emma is Clutch's debt-collections AI agent, and the role is built around scaling collections outreach. Never surface or tailor this exact title/role again. This is a ROLE-scoped carve-out, not a company-wide exclusion: Aneesh explicitly does NOT want debt-collections-industry roles blanket-filtered (decided case-by-case, not added as a hard filter like crypto/web3). Other Clutch roles not specifically built around the collections agent (CSM, Support Engineer, Professional Services -- likely touching the loan-origination side of the platform) remain fair game for normal scoring."
     },
     {
       "name": "Seven AI",
