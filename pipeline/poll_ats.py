@@ -332,6 +332,10 @@ US_SPECIFIC_INCLUDE = [
 # kill. Generic Head-of/Director titles that aren't tier-1 stay excluded.
 TITLE_EXCLUDE = [
     "vice president", "vp ", "vp,", "head of", "director",
+    # Listed separately from bare "director" so the small-company seniority
+    # relaxation (SMALL_CO_RELAXED_EXCLUSIONS) does NOT cover them: a Senior
+    # Director sits a level above the Director scope that relaxation targets.
+    "senior director", "sr director", "sr. director",
     "staff engineer", "principal engineer", "senior staff",
     "staff product", "staff software", "principal product",
     "chief ", "c-suite",
@@ -374,6 +378,39 @@ def title_excluded(title: str) -> bool:
     """Check if title should be excluded (too senior, wrong function)."""
     t = title.lower()
     return any(excl in t for excl in TITLE_EXCLUDE)
+
+
+# Seniority terms in TITLE_EXCLUDE that are relaxed at SMALL companies only.
+# Rationale (2026-07-27): Aneesh ruled director-level out as above his purview,
+# but that judgment was about large orgs. At a 60-person company "Director of
+# Customer Success" is typically his current scope with a bigger title, while at
+# a 3,000-person company it is a genuine level above. VP/chief/staff/principal
+# are deliberately NOT relaxed — those stay too senior at any size.
+SMALL_CO_RELAXED_EXCLUSIONS = {"head of", "director"}
+SMALL_CO_BANDS_FOR_SENIORITY = {"1-50", "51-200"}
+
+
+def title_exclusion_reasons(title: str) -> list[str]:
+    """Which TITLE_EXCLUDE terms a title trips (empty means none)."""
+    t = title.lower()
+    return [excl for excl in TITLE_EXCLUDE if excl in t]
+
+
+def title_excluded_for_company(title: str, headcount_band) -> bool:
+    """title_excluded(), but relaxes director/head-of at small companies.
+
+    Only relaxes when EVERY exclusion the title trips is in the relaxed set, so
+    "VP, Head of Customer Success" still dies on the "vp " term. A relaxed title
+    still has to match a scoring tier to surface at all, so this widens the gate
+    without lowering the bar.
+    """
+    reasons = title_exclusion_reasons(title)
+    if not reasons:
+        return False
+    if (headcount_band in SMALL_CO_BANDS_FOR_SENIORITY
+            and all(r in SMALL_CO_RELAXED_EXCLUSIONS for r in reasons)):
+        return False
+    return True
 
 
 def title_hard_excluded(title: str) -> bool:
@@ -478,6 +515,13 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             raw = job_data.get("releasedDate")
             if raw:
                 return datetime.fromisoformat(raw.replace("Z", "+00:00")).date()
+        elif ats == "workable":
+            # published_on is a plain ISO date ("2026-07-23"). Prefer it over
+            # created_at, which is when the req was opened internally and can
+            # predate publication by months.
+            raw = job_data.get("published_on") or job_data.get("created_at")
+            if raw:
+                return datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
         elif ats == "workday":
             # Workday's CXS list response has no ISO date, only a relative
             # "postedOn" string ("Posted Today" / "Posted Yesterday" /
@@ -545,6 +589,12 @@ def parse_location(job_data: dict, ats: str) -> str:
         return cats.get("location", "Unknown") if isinstance(cats, dict) else "Unknown"
     elif ats == "workday":
         return job_data.get("_workday_location") or "Unknown"
+    elif ats == "workable":
+        parts = [job_data.get("city"), job_data.get("state"), job_data.get("country")]
+        full = ", ".join(p for p in parts if p)
+        if job_data.get("telecommuting"):
+            full = f"Remote {full}".strip()
+        return full or "Unknown"
     elif ats == "smartrecruiters":
         loc = job_data.get("location", {}) or {}
         full = loc.get("fullLocation") or ", ".join(
@@ -567,6 +617,9 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
         return job_data.get("hostedUrl", job_data.get("applyUrl", ""))
     elif ats == "workday":
         return job_data.get("_apply_url", "")
+    elif ats == "workable":
+        return (job_data.get("shortlink") or job_data.get("url")
+                or job_data.get("application_url", ""))
     elif ats == "smartrecruiters":
         jid = job_data.get("id", "")
         return f"https://jobs.smartrecruiters.com/{slug}/{jid}"
@@ -595,6 +648,28 @@ def fetch_ashby(slug: str) -> list[dict]:
         content_length = resp.headers.get("content-length")
         if content_length and int(content_length) > 5_000_000:
             return [{"_error": f"Response too large: {content_length} bytes"}]
+        resp.raise_for_status()
+        data = resp.json()
+        return data.get("jobs", [])
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
+def fetch_workable(slug: str) -> list[dict]:
+    """Fetch jobs from Workable's public job-board widget API.
+
+    Added 2026-07-27. Workable had been documented as unsupported since the
+    poller was written, which silently made every Workable-hosted company
+    permanently invisible — a whole-ATS blind spot rather than a policy choice.
+    The public widget endpoint needs no auth and returns everything the poller
+    needs: title, city/state/country, published_on (real ISO date, so the
+    freshness filter works properly rather than being neutral), telecommuting
+    (remote flag), description (for the industry exclusion), and url.
+    `?details=true` is required for the description field.
+    """
+    url = ATS_ENDPOINTS["workable"].format(slug=slug)
+    try:
+        resp = requests.get(url, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()
         data = resp.json()
         return data.get("jobs", [])
@@ -844,6 +919,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_lever(slug)
         elif ats == "smartrecruiters":
             jobs = fetch_smartrecruiters(slug)
+        elif ats == "workable":
+            jobs = fetch_workable(slug)
         elif ats == "workday":
             jobs = fetch_workday(company)
         else:
@@ -902,8 +979,11 @@ def poll_all(run_date: date) -> dict:
             # Title exclusion — but an exact TIER-1 match overrides it: tier1
             # includes "Head of Support" / "Director of Support Operations",
             # which the generic "head of"/"director" exclusions would kill.
-            # Non-tier1 senior titles (VP of CS, Director of CSM...) stay out.
-            if title_excluded(title) and not (exact_match and MATCHER.is_tier1(title)):
+            # Non-tier1 senior titles (VP of CS, Director of CSM...) stay out,
+            # EXCEPT at small companies, where director/head-of is usually the
+            # same scope under a bigger label (see title_excluded_for_company).
+            if (title_excluded_for_company(title, company.get("headcount_band"))
+                    and not (exact_match and MATCHER.is_tier1(title))):
                 stats["excluded"] += 1
                 continue
 
