@@ -149,7 +149,8 @@
     "lever": "https://api.lever.co/v0/postings/{slug}?mode=json",
     "ashby": "https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true",
     "workday": "POST https://{wd_host}/wday/cxs/{wd_tenant}/{wd_site}/jobs",
-    "smartrecruiters": "https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100"
+    "smartrecruiters": "https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100",
+    "workable": "https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true"
   },
   "_smartrecruiters_notes": "ats='smartrecruiters'. slug is the case-sensitive company identifier (e.g. 'BoschGroup', not 'bosch') — find it from a careers.smartrecruiters.com/{slug} or jobs.smartrecruiters.com/{slug} URL. Public postings API, no auth. Poller fetches one page (limit=100); fine for small companies. Added 2026-06-30 to widen enrollable boards beyond GH/Ashby/Lever/Workday.",
   "_workday_notes": "Workday entries use ats='workday' and carry wd_host (incl. wdN datacenter), wd_tenant, and wd_site instead of relying on slug for the endpoint (slug is still set = tenant, for dedup-key prefixing). The public careers page is JS-rendered; poll_ats.py POSTs to the internal CXS JSON API instead. Salary is NOT in the list response (it's on each job's detail page), so the poller treats it as neutral and Claude pulls exact salary + posting date from the JD at tailoring time, where the salary-floor and 21-day freshness gates are applied. wd_host/wd_tenant/wd_site are NOT guessable per company - verify new tenants with pipeline/verify_workday.py before adding (find the exact careers URL first, e.g. via 'site:myworkdayjobs.com [company]').",
@@ -285,6 +286,13 @@
         "Engagement Manager",
         "Workforce Manager",
         "Contact Center Manager",
+        "Director of Customer Success",
+        "Head of Customer Success",
+        "Director of Customer Experience",
+        "Head of Customer Experience",
+        "Director of Technical Support",
+        "Director of Implementation",
+        "Head of Implementation",
         "AI Success Manager",
         "AI Success Strategist",
         "AI Outcomes Manager",
