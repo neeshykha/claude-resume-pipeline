@@ -42,12 +42,28 @@ JOBS_DIR = os.path.join(SCRIPT_DIR, "jobs")
 REQUEST_TIMEOUT = 30  # seconds
 DEDUP_WINDOW_DAYS = 30
 MAX_PER_COMPANY_PER_RUN = 2  # diversity cap: max roles per company in the surfaced shortlist (prevents one company sweeping the run)
-SHORTLIST_SIZE = 25
+# Raised 25 -> 40 on 2026-07-27. A funnel audit showed 128 title-matched jobs
+# survive every downstream filter but only 25 reach the digest, so the cap
+# itself was discarding ~100 qualified candidates per run (PointClickCare's five
+# remote-US health-tech roles, Huntress TAM, and Smartsheet Sr. CSM were all
+# stranded below the line). Costs slightly more tokens per run; the balance
+# quotas below still apply.
+SHORTLIST_SIZE = 40
 
 # Populated from watchlist_companies.json by _init_config():
 ATS_ENDPOINTS = {}       # ← _endpoints (workday excluded; fetch_workday builds its URL from wd_* fields)
 MIN_SALARY = None        # ← _scoring_config.salary_floor_usd
-MAX_POSTING_AGE_DAYS = 21  # hard filter (CLAUDE.md Step 2b) — all ATSes; Workday dates are approximate, see extract_posted_date
+# Hard freshness filter (CLAUDE.md Step 2b) — all ATSes; Workday dates are
+# approximate, see extract_posted_date. Raised 21 -> 40 on 2026-07-27 from the
+# funnel audit: it was the 2nd-largest killer of title-matched jobs (509 of
+# 1,289), and only 24% of matched postings are ever <=20 days old. On the day of
+# the change it had just killed three genuinely strong roles (Second Nature
+# Manager of Technical Implementations at 53d, Miovision Technical CSM at 48d,
+# and EliseAI's entire housing pipeline). 40 days is deliberate, not maximal:
+# the audit's age histogram has a large 84d+ zombie/evergreen bucket (230 jobs)
+# that a wider window would drag in. Justified by Aneesh's search being
+# opportunistic rather than urgent — a five-week-old req is usually still open.
+MAX_POSTING_AGE_DAYS = 40
 COMPANY_CAP = None       # ← _scoring_config.company_cap_max_applied_pending
 SMALL_COMPANY_BONUS = {}  # ← _scoring_config.small_company_bonus
 MATCHER = None           # ← TitleMatcher built from _title_scoring_tiers + _poller_config
@@ -371,6 +387,20 @@ def title_hard_excluded(title: str) -> bool:
     return any(term in t for term in HARD_EXCLUDE_TERMS)
 
 
+# Bare location labels that name a work ARRANGEMENT rather than a place. These
+# carry no geographic signal, so they must not be treated as "not US".
+GEOGRAPHY_FREE_LOCATIONS = {
+    "hybrid", "distributed", "flexible", "various", "multiple locations",
+    "multiple", "anywhere", "global", "worldwide", "remote", "onsite",
+    "in office", "in-office", "tbd", "na", "n/a", "-", "other",
+}
+
+
+def _norm_loc_label(loc: str) -> str:
+    """Normalize a location string for geography-free-label comparison."""
+    return re.sub(r"[^a-z/ -]", "", loc.lower()).strip(" -")
+
+
 def location_relevant(location: str, title: str) -> bool:
     """Check if the job location is US-relevant. Also checks title for region indicators."""
     loc = location.lower()
@@ -399,6 +429,17 @@ def location_relevant(location: str, title: str) -> bool:
     # If location is vague/empty but title doesn't have region markers, keep it
     # (Claude can filter further)
     if not loc or loc in ("unknown", ""):
+        return True
+
+    # Geography-free labels carry no location signal at all, so excluding them
+    # is a false negative, not a filter. Found 2026-07-27 by funnel audit: bare
+    # "Hybrid" (37 title-matched jobs) and "Distributed" (17) were being dropped
+    # here purely for not matching an include term. Treat them as NEUTRAL, the
+    # same way an absent salary or an unparseable posting date is treated —
+    # keep the job and let the JD read settle it. Safe because the
+    # LOCATION_EXCLUDE check above already ran, so "Hybrid - London" is gone
+    # before it reaches this point; only a bare, geography-free label survives.
+    if _norm_loc_label(loc) in GEOGRAPHY_FREE_LOCATIONS:
         return True
 
     # Default: exclude non-matching locations
@@ -1305,7 +1346,7 @@ def main():
     print(f"Companies polled: {s['companies_polled']}")
     print(f"Total jobs scanned: {s['total_jobs_scanned']}")
     print(f"Title matches (pre-filter): {s['title_matched']}")
-    print(f"Top 25 by pre-score → output (from {s.get('total_matched_before_cap', s['title_matched'])})")
+    print(f"Top {SHORTLIST_SIZE} by pre-score → output (from {s.get('total_matched_before_cap', s['title_matched'])})")
     print(f"Borderline (for Claude review): {s['title_borderline']} (of which {s['title_ai_wildcard']} via AI-wildcard)")
     print(f"Dedup skipped: {s['dedup_skipped']}")
     print(f"Diversity-capped (>{MAX_PER_COMPANY_PER_RUN}/company, dropped from shortlist): {s.get('diversity_dropped', 0)}")
