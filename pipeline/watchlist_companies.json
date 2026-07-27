@@ -114,6 +114,20 @@
         "frequency": "daily"
       },
       {
+        "name": "PropTech / Resident Experience (vertical discovery)",
+        "query": "(site:jobs.ashbyhq.com OR site:job-boards.greenhouse.io OR site:jobs.lever.co) (\"property management\" OR \"resident experience\" OR proptech OR multifamily OR \"smart apartment\" OR \"real estate technology\" OR \"leasing platform\") (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"support operations\" OR \"solutions engineer\" OR \"onboarding\")",
+        "notes": "Added 2026-07-27. This was the single largest discovery gap in the whole source list: PropTech is Aneesh's OWN CURRENT INDUSTRY (iApartments is smart-apartment technology) and had zero dedicated coverage -- Second Nature surfaced on 2026-07-27 only because a generic Ashby/Greenhouse/Lever dork happened to rank it. Domain expertise transfers directly here in a way it doesn't for most verticals: resident-facing workflows, property-manager stakeholders, and in-unit smart-home hardware are literally his day job, which makes him a credible internal-quality candidate rather than a 'reasonable stretch'. Target companies include AppFolio, Yardi, Entrata, SmartRent, Latch, RealPage, Buildium, Propertyware, Knock, Funnel, HappyCo, Lessen. Same enroll guidance as the other board dorks: surface unfamiliar companies, verify the board is live with US-reachable fit-space roles, add to the watchlist. No passion-domain scoring bonus attached -- this is discovery reach, and his PropTech fit already scores through ordinary keyword overlap.",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
+        "name": "AI Support Vendor Consolidation (M&A watch)",
+        "query": "(acquires OR acquisition OR \"acquired by\" OR merger) (\"AI agent\" OR \"customer support AI\" OR \"contact center AI\" OR \"customer service platform\" OR \"support automation\" OR \"AI deflection\") 2026",
+        "notes": "Added 2026-07-27. NOT a title or company query -- an EVENT query, and that's the point. M&A in Aneesh's exact vertical is structurally invisible to a discovery layer keyed on titles and company names, yet it both kills watchlist entries and creates new ones. Two such events have now been found purely by accident: Moveworks -> ServiceNow (found 2026-07-15 while investigating a 404) and Zendesk -> Forethought (found 2026-07-27 the same way, completed 2026-03-26, ~$200M+). In both cases the acquired company's board went 404 and the pipeline burned weekly recovery searches against a permanently dead slug for weeks, while the ACQUIRER -- hiring for the exact same function under a new title convention ('AI Success Strategist' at Zendesk) -- was either absent from the watchlist entirely or not connected to the dead entry. Run on/after the 1st of each month (see frequency); this is quarterly-scale news, not daily. On a hit: (1) mark the acquired company's board_status permanent if its board is dead, (2) verify and enroll the acquirer if it's off-watchlist, (3) check whether the absorbed team hires under a NEW title convention and add that title to _title_scoring_tiers.",
+        "status": "active",
+        "frequency": "monthly"
+      },
+      {
         "name": "Tier-1 Manager-Title Sweep (all 3 ATSes at once)",
         "query": "(site:jobs.lever.co OR site:job-boards.greenhouse.io OR site:jobs.ashbyhq.com) (\"Technical Support Operations Manager\" OR \"Support Operations Manager\" OR \"Customer Operations Manager\" OR \"Technical Support Manager\" OR \"Customer Support Manager\" OR \"Technical Operations Manager\" OR \"Support Engineering Manager\")",
         "notes": "Added 2026-07-14 after a test run: a rare-exact-title sweep across all three major ATSes at once surfaces companies the broader 'customer success/technical account/implementation' dorks miss (those get crowded out by large, well-known companies). Found Model N (Manager, Support Operations) and Aledade (Director, Application Support Operations — health-tech passion domain) on the first run. Deliberately scoped to Manager-level Tier-1 titles only — 'Head of Support' and 'Director of Support Operations' excluded per Aneesh: those read as above his current level/purview, not a fit worth surfacing even though they're still scored as tier1_true_match in _title_scoring_tiers for ATS-poller hits (open question whether that config should change too — see _title_scoring_tiers note).",
@@ -1991,6 +2005,70 @@
       "enrolled_date": "2026-07-27",
       "enrolled_via": "Ashby Boards - Target Roles WebSearch dork, first seen 2026-07-27",
       "reason": "Smart mobility / traffic-intelligence IoT platform (Kitchener, Canada HQ, ~500 employees, US operations). Verified live board (10 jobs, 1 fit-space): Technical Customer Success Manager, United States, Remote. IoT-adjacent product touches Aneesh's connected-devices background."
+    },
+    {
+      "name": "HappyCo",
+      "ats": "lever",
+      "slug": "happyco",
+      "priority": "high",
+      "headcount_band": null,
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "PropTech / Resident Experience discovery source, first run 2026-07-27",
+      "reason": "Multifamily property operations + maintenance platform (Carlsbad CA, remote-first across US/Canada/Australia; 6M+ units, 3.5M rental homes). Direct adjacency to iApartments. Source of the 2026-07-27 top pick, Senior Manager of Customer Support (Remote US): a Tier-1 title whose required-quals list reads like the master resume (BPO/outsourced vendor ownership, Zendesk/Jira/Intercom, scaling a support org from the ground up, hands-on AI tooling). headcount_band left null deliberately -- multiple searches returned no reliable figure, and the rule is never guess."
+    },
+    {
+      "name": "EliseAI",
+      "ats": "ashby",
+      "slug": "eliseai",
+      "priority": "high",
+      "headcount_band": "501-2000",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- conversational/agentic AI, housing and healthcare verticals",
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "PropTech / Resident Experience discovery source, first run 2026-07-27",
+      "reason": "Agentic AI for housing and healthcare (NYC HQ, 550+ employees as of Q2 2026; offices NYC/SF/Boston/Chicago/Toronto). Unusually deep fit-space pipeline -- 101 open roles including Manager of Customer Success | Housing, AI Engagement Manager | Housing, Solutions Engineer Implementation & Delivery | Housing, GTM Product Enablement Manager | Housing. Doubly relevant: AI-native AND multifamily housing, which is Aneesh's actual industry. Most roles are NYC onsite, which is inside his stated acceptable geography (remote / Atlanta / NYC-NJ). Every fit-space role was past the 21-day freshness cutoff on enrollment day; monitor for fresh reqs."
+    },
+    {
+      "name": "ApartmentIQ",
+      "ats": "greenhouse",
+      "slug": "apartmentiq",
+      "priority": "medium",
+      "headcount_band": null,
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "PropTech / Resident Experience discovery source, first run 2026-07-27",
+      "reason": "Multifamily competitive-data platform (claims coverage of 40M units). Senior Enterprise Customer Success Manager, Remote, posted 2026-07-22 -- fresh and fit-space, listed as an also-live FYI on 2026-07-27 behind the higher-scoring HappyCo pick. headcount_band unverified, left null."
+    },
+    {
+      "name": "Uniti AI",
+      "ats": "ashby",
+      "slug": "uniti",
+      "priority": "medium",
+      "headcount_band": null,
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- AI leasing/engagement agents for real estate operators",
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "PropTech / Resident Experience discovery source, first run 2026-07-27",
+      "reason": "AI for real estate operators. Small board (10 jobs) but 3 are fit-space: Implementation Manager, Implementation Lead, Customer Success Manager. All listed at 'Uniti HQ' with isRemote=false -- confirm the actual office location before tailoring, it was not resolvable from the board API."
+    },
+    {
+      "name": "Ambrook",
+      "ats": "ashby",
+      "slug": "ambrook",
+      "priority": "medium",
+      "headcount_band": null,
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "PropTech / Resident Experience discovery source, first run 2026-07-27 (surfaced on a property-management term, but the company is actually agriculture fintech)",
+      "reason": "Financial software for farms and ranches. PASSION DOMAIN: agriculture/food systems (see _scoring_config -> passion_domains) -- apply the +10 semantically, this is a genuine agriculture-mission company, not a keyword accident. Fit-space roles are remote: Customer Success Manager (SF, isRemote=true) and Support Lead (NY, isRemote=true); both were past the freshness cutoff on enrollment day. Small board (10 jobs). headcount_band unverified, left null."
+    },
+    {
+      "name": "Genea",
+      "ats": "greenhouse",
+      "slug": "genea",
+      "priority": "low",
+      "headcount_band": null,
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "PropTech / Resident Experience discovery source, first run 2026-07-27",
+      "reason": "Smart-building access control and physical security (submeter billing, HVAC, access). Building-hardware adjacency to iApartments. Thin board (5 jobs); the surfacing role, Security L2 Technical Support Team Lead (Remote US), is IC/team-lead level and was already past the freshness cutoff. Low priority -- enrolled to monitor rather than for current openings."
     },
     {
       "name": "Zendesk",
