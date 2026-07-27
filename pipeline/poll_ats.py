@@ -350,6 +350,16 @@ TITLE_EXCLUDE = [
     # token-subset matching would otherwise let "Product Marketing Manager"
     # match the supplemental "Product Manager" title
     "product marketing",
+    # Contiguous "product manager" means an actual PM role. This is a SUBSTRING
+    # list, which is exactly what distinguishes it from the stemmed-token
+    # matcher: "Group Product Manager, Fleet Operations" contains the phrase and
+    # dies, while "Product Operations Manager" does not and survives. Added
+    # 2026-07-27 with the product-ops carve-out — without it, token-subset
+    # matching let a Group PM role match the new tier2 "Product Operations
+    # Manager" entry (product + operations + manager all present, just not
+    # adjacent) and ride its protected-tier status past the function-mismatch
+    # demotion. No tier title contains the contiguous phrase, so this is safe.
+    "product manager",
     # Language-specific roles (Aneesh speaks English/German/Hindi only)
     "mandarin", "cantonese", "spanish speaking", "french speaking",
     "portuguese speaking", "japanese speaking", "korean speaking",
