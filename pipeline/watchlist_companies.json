@@ -426,6 +426,12 @@
         "specialist"
       ]
     },
+    "hard_exclude_title_terms": {
+      "terms": [
+        "marketing"
+      ],
+      "notes": "HARD title kill-list, checked BEFORE and independently of the tier1-exact override in poll_ats.poll_all. Unlike function_mismatch_titles (which is bypassed for protected tiers) and unlike TITLE_EXCLUDE (which an exact tier1 match overrides), nothing overrides these terms. Plain case-insensitive substring match on the title. Added 2026-07-27 after Customer.io's 'Technical Marketing Operations Manager' scored tier1_true_match at prescore 30 -- the TOP tier -- and sailed through every existing filter: stemmed-token matching sees 'Technical...Operations Manager' inside it, tier1 is a protected tier so is_function_mismatch() short-circuits to False, and the pre-existing 'Marketing Manager' function_mismatch entry never got evaluated. Aneesh does not want Marketing-function roles at all, so this needs to be unconditional rather than tier-sensitive. Note 'product marketing' already sits in poll_ats.TITLE_EXCLUDE for the same token-subset reason; this generalizes it. Keep this list SHORT and reserved for whole job functions Aneesh categorically rules out -- it is unconditional, so a term added here can silently kill a real match with no digest trace."
+    },
     "function_mismatch_titles": {
       "titles": [
         "Product Manager",
