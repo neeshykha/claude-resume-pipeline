@@ -65,19 +65,21 @@ MIN_SALARY = None        # ← _scoring_config.salary_floor_usd
 # opportunistic rather than urgent — a five-week-old req is usually still open.
 MAX_POSTING_AGE_DAYS = 40
 COMPANY_CAP = None       # ← _scoring_config.company_cap_max_applied_pending
+CAP_PENDING_MAX_AGE_DAYS = None  # ← _scoring_config.company_cap_pending_max_age_days
 SMALL_COMPANY_BONUS = {}  # ← _scoring_config.small_company_bonus
 MATCHER = None           # ← TitleMatcher built from _title_scoring_tiers + _poller_config
 
 
 def _init_config(watchlist: dict):
     """Load all shared knobs from the parsed watchlist JSON into module globals."""
-    global MIN_SALARY, COMPANY_CAP, MATCHER
+    global MIN_SALARY, COMPANY_CAP, CAP_PENDING_MAX_AGE_DAYS, MATCHER
     ATS_ENDPOINTS.clear()
     ATS_ENDPOINTS.update({k: v for k, v in watchlist["_endpoints"].items()
                           if not v.startswith("POST")})
     sc = watchlist["_scoring_config"]
     MIN_SALARY = sc["salary_floor_usd"]
     COMPANY_CAP = sc["company_cap_max_applied_pending"]
+    CAP_PENDING_MAX_AGE_DAYS = sc.get("company_cap_pending_max_age_days", 60)
     SMALL_COMPANY_BONUS.clear()
     SMALL_COMPANY_BONUS.update(sc["small_company_bonus"])
     HARD_EXCLUDE_TERMS.clear()
@@ -829,12 +831,33 @@ def count_unapplied_by_company(seen_jobs: dict) -> dict[str, int]:
     cap. Queued/unapplied roles do NOT count — surfacing a role we haven't
     applied to should never be blocked by other roles we also haven't applied
     to. (Function name kept for caller compatibility.)
+
+    Pending applications also AGE OUT (added 2026-07-27). `outcome: null` was
+    doing double duty: it means both "still waiting to hear" and "nobody ever
+    recorded a result". After a couple of months of silence an application is
+    not in flight, it is an unrecorded rejection — but the cap was treating it
+    as live forever. An audit found every capped company was blocked by
+    applications 41 or 81 days old with zero recorded outcomes (Samsara 7x81d,
+    Anthropic 5x81d, Observe.AI/Hightouch 3x81d). Entries older than
+    CAP_PENDING_MAX_AGE_DAYS stop counting, so companies unblock on their own
+    instead of being frozen out by silence. Undated applied entries are
+    conservatively still counted.
     """
     counts = {}
+    today = date.today()
     for entry in seen_jobs.values():
-        if entry.get("applied", False) and entry.get("outcome") is None:
-            company = slugify(entry.get("company", ""))
-            counts[company] = counts.get(company, 0) + 1
+        if not (entry.get("applied", False) and entry.get("outcome") is None):
+            continue
+        applied_date = entry.get("applied_date")
+        if applied_date:
+            try:
+                age = (today - date.fromisoformat(applied_date)).days
+            except (ValueError, TypeError):
+                age = None
+            if age is not None and age > CAP_PENDING_MAX_AGE_DAYS:
+                continue
+        company = slugify(entry.get("company", ""))
+        counts[company] = counts.get(company, 0) + 1
     return counts
 
 
