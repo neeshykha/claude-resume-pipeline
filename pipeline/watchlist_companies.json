@@ -2095,6 +2095,19 @@
       "reason": "Smart-building access control and physical security (submeter billing, HVAC, access). Building-hardware adjacency to iApartments. Thin board (5 jobs); the surfacing role, Security L2 Technical Support Team Lead (Remote US), is IC/team-lead level and was already past the freshness cutoff. Low priority -- enrolled to monitor rather than for current openings."
     },
     {
+      "name": "Salesforce",
+      "ats": "workday",
+      "slug": "salesforce",
+      "wd_host": "salesforce.wd12.myworkdayjobs.com",
+      "wd_tenant": "salesforce",
+      "wd_site": "External_Career_Site",
+      "priority": "high",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "User-surfaced (Atlanta job alert email) 2026-07-27 -- another WitnessAI-class miss: pollable board, never on the watchlist",
+      "reason": "Strongest domain adjacency on the whole watchlist: Aneesh administers Salesforce Service Cloud daily (25+ Flows, Omni-Channel, custom objects) and integrates Claude with it via CLI and webhooks. Verified live Workday board 2026-07-27 with real fit-space roles: Customer Success Manager (Core Sales/Service Clouds), Success Architect / Senior Success Architect, Customer Success Manager MuleSoft, Customer Success Architect. Also owns Slack, which posts customer-facing roles under the Slack brand on the same board. Note the standing hard filter still applies to Salesforce-branded PM/engineering titles."
+    },
+    {
       "name": "Zendesk",
       "ats": "workday",
       "slug": "zendesk",
