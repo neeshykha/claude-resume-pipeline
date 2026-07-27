@@ -286,6 +286,11 @@
         "Engagement Manager",
         "Workforce Manager",
         "Contact Center Manager",
+        "Support Delivery Lead",
+        "Founding Support Lead",
+        "Technical Support Team Lead",
+        "Support Readiness Manager",
+        "Support Quality Manager",
         "Director of Customer Success",
         "Head of Customer Success",
         "Director of Customer Experience",
@@ -315,6 +320,7 @@
         "Senior Customer Success Manager",
         "Technical Customer Success Manager",
         "Customer Success Engineer",
+        "AI Success Engineer",
         "Customer Enablement Manager",
         "Technical Enablement Manager",
         "Solutions Engineer",
@@ -477,7 +483,8 @@
     "jd_verification_required_titles": {
       "titles": [
         "Forward Deployed Engineer",
-        "AI Enablement Program Manager"
+        "AI Enablement Program Manager",
+        "AI Success Engineer"
       ],
       "notes": "Titles with a documented history of JD-level mismatch despite matching the gate (see tier4 forward_deployed_engineer_note). The poller tags matches jd_verification_required=true, and when filling the per-company diversity cap it takes a company's NON-flagged roles first, so a risky top pick can't crowd out a safer second-best title from the same company (the Confido 2026-07-09 failure mode). Flagged roles still surface when slots remain. ALWAYS read the full JD before tailoring one of these, regardless of score. 'AI Enablement Program Manager' added 2026-07-15 after Klaviyo's posting under that exact title (tier2_strong_overlap, pre_score 53, looked like a strong fit) turned out to be an Engineering-department developer-experience/onboarding role requiring 5-8+ years of software engineering and Git/CI/CD proficiency -- zero overlap with support/CS-flavored AI enablement work. The title alone is not a reliable signal for this company category; some orgs use 'AI Enablement' for internal engineering tooling, not customer/adoption-facing AI rollout."
     }

@@ -338,6 +338,12 @@ TITLE_EXCLUDE = [
     "senior director", "sr director", "sr. director",
     "staff engineer", "principal engineer", "senior staff",
     "staff product", "staff software", "principal product",
+    # Plain software-engineering roles. Added 2026-07-27 after provenance
+    # tagging surfaced Klaviyo's "Senior Software Engineer, Customer Agent" on
+    # the shortlist: the tier3 entry "Customer Engineer" token-matches into
+    # "Software ENGINEER, CUSTOMER Agent". No target tier title contains
+    # "software engineer", so this is safe.
+    "software engineer",
     "chief ", "c-suite",
     # token-subset matching would otherwise let "Product Marketing Manager"
     # match the supplemental "Product Manager" title
@@ -1078,6 +1084,24 @@ def poll_all(run_date: date) -> dict:
                 stats["cap_suppressed"] += 1
                 continue
 
+            # Provenance: which 2026-07-27 filter change made this visible?
+            # Empty list = would have surfaced under the old rules too. This
+            # exists so the widening can be EVALUATED per-change instead of
+            # judged on raw volume: five filters were relaxed at once, and
+            # without attribution a later quality drop can't be traced to the
+            # change that caused it. Digest surfaces these (Step 5).
+            provenance = []
+            if posting_age_days is not None and posting_age_days > 21:
+                provenance.append(f"age_{posting_age_days}d_over_old_21d_limit")
+            if _norm_loc_label(location.lower()) in GEOGRAPHY_FREE_LOCATIONS:
+                provenance.append("geo_free_location_was_dropped")
+            if ats == "workable":
+                provenance.append("workable_ats_newly_supported")
+            if (title_excluded(title)
+                    and not title_excluded_for_company(
+                        title, company.get("headcount_band"))):
+                provenance.append("director_relaxed_small_company")
+
             # Build result entry
             entry = {
                 "dedup_key": dedup_key,
@@ -1091,6 +1115,7 @@ def poll_all(run_date: date) -> dict:
                 "salary_min": salary_min,
                 "posted_date": posted_date.isoformat() if posted_date else None,
                 "posting_age_days": posting_age_days,
+                "provenance": provenance,
                 "match_type": "exact" if is_exact else "borderline",
                 "borderline_score": borderline_count if not is_exact else None,
                 "headcount_band": company.get("headcount_band"),
@@ -1346,6 +1371,23 @@ def poll_all(run_date: date) -> dict:
         try_take(job, top_matched, taken)
 
     top_matched.sort(key=lambda j: -j["pre_score"])
+
+    # Rank-based provenance: anything past position 25 only exists because
+    # SHORTLIST_SIZE was raised 25 -> 40 on 2026-07-27. Tagged after the final
+    # sort, since rank isn't knowable per-job earlier.
+    for rank, job in enumerate(top_matched, start=1):
+        if rank > 25:
+            job.setdefault("provenance", []).append(
+                f"rank_{rank}_over_old_25_cap")
+
+    stats["provenance_counts"] = {}
+    for job in top_matched:
+        for tag in job.get("provenance", []):
+            key = tag.split("_over_old")[0].split("_was_")[0]
+            key = re.sub(r"^age_\d+d", "age_over_21d", key)
+            key = re.sub(r"^rank_\d+", "rank_over_25", key)
+            stats["provenance_counts"][key] = stats["provenance_counts"].get(key, 0) + 1
+
     stats["diversity_dropped"] = diversity_dropped
     stats["shortlist_small"] = sum(
         1 for j in top_matched if (j.get("headcount_band") or "") in SMALL_BANDS)
@@ -1427,6 +1469,11 @@ def main():
     print(f"Total jobs scanned: {s['total_jobs_scanned']}")
     print(f"Title matches (pre-filter): {s['title_matched']}")
     print(f"Top {SHORTLIST_SIZE} by pre-score → output (from {s.get('total_matched_before_cap', s['title_matched'])})")
+    prov = s.get("provenance_counts") or {}
+    if prov:
+        print("Shortlist entries visible ONLY due to the 2026-07-27 filter widening:")
+        for k, v in sorted(prov.items(), key=lambda kv: -kv[1]):
+            print(f"  {k}: {v}")
     print(f"Borderline (for Claude review): {s['title_borderline']} (of which {s['title_ai_wildcard']} via AI-wildcard)")
     print(f"Dedup skipped: {s['dedup_skipped']}")
     print(f"Diversity-capped (>{MAX_PER_COMPANY_PER_RUN}/company, dropped from shortlist): {s.get('diversity_dropped', 0)}")
