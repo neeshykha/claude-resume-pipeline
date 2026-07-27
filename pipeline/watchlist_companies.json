@@ -272,6 +272,7 @@
         "Workforce Manager",
         "Contact Center Manager",
         "AI Success Manager",
+        "AI Success Strategist",
         "AI Outcomes Manager",
         "AI Adoption Manager",
         "AI Transformation Manager",
@@ -815,7 +816,8 @@
       "ats": "greenhouse",
       "slug": "onetrust",
       "priority": "high",
-      "reason": "Atlanta HQ, privacy/compliance SaaS — large Atlanta employer"
+      "reason": "Atlanta HQ, privacy/compliance SaaS — large Atlanta employer",
+      "headcount_band": "2000+"
     },
     {
       "name": "Florence Healthcare",
@@ -830,14 +832,16 @@
       "ats": "greenhouse",
       "slug": "salesloft",
       "priority": "high",
-      "reason": "Atlanta HQ, sales engagement platform — large Atlanta employer"
+      "reason": "Atlanta HQ, sales engagement platform — large Atlanta employer",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Calendly",
       "ats": "greenhouse",
       "slug": "calendly",
       "priority": "high",
-      "reason": "Atlanta HQ, scheduling SaaS — mid/large Atlanta employer"
+      "reason": "Atlanta HQ, scheduling SaaS — mid/large Atlanta employer",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Storable",
@@ -973,12 +977,12 @@
       "ats": "greenhouse",
       "slug": "forethought",
       "priority": "medium",
-      "reason": "AI support triage and deflection. Maven-type company. Board was empty 2026-05-19 (may have paused hiring) but CSM and Engagement Manager roles existed previously. Monitor.",
+      "reason": "AI support triage and deflection. Maven-type company. ROOT CAUSE FOUND 2026-07-27: Zendesk announced a definitive agreement to acquire Forethought on 2026-03-11 and completed the acquisition on 2026-03-26 (~$200M+ deal, Zendesk's largest in two decades) -- Forethought never migrated ATS because it stopped existing as an independent hiring entity, same pattern as Moveworks/ServiceNow. Forethought's product (self-improving AI agents) is being folded into Zendesk's Resolution Platform; the absorbed team appears to be hiring under a new title convention, 'AI Success Strategist' -- see the new Zendesk watchlist entry below.",
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — AI support deflection/triage",
       "board_status": "404_confirmed",
-      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). Re-verified 404 on 2026-07-02, 2026-07-09, 2026-07-16, and 2026-07-23 (boards-api still 404, despite stale search-engine cache showing old job-boards.greenhouse.io listings each time — WebSearch is not a reliable check for this slug).",
-      "recheck_after": "2026-07-30"
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18. Re-verified 404 on 2026-07-02, 2026-07-09, 2026-07-16, and 2026-07-23. ROOT CAUSE CONFIRMED 2026-07-27 (see reason field): Zendesk acquired Forethought, completed 2026-03-26. The board is permanently dead, not a transient outage.",
+      "board_status_permanent": true
     },
     {
       "name": "Talkdesk",
@@ -998,8 +1002,8 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — AI service management. NOTE: apply -15 location penalty if no US remote option on role",
       "board_status": "404_confirmed",
-      "board_status_note": "Re-verified 2026-07-13 and again 2026-07-20: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404. WebSearch again surfaced apparently-live job-boards.greenhouse.io/aiserajobs listings (incl. Enterprise CSM) but these are stale search-cache — confirmed once more via direct curl to the boards-api endpoint (404). Don't trust WebSearch snippets alone for this check.",
-      "recheck_after": "2026-07-27"
+      "board_status_note": "Re-verified 2026-07-13, 2026-07-20, and 2026-07-27: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404, and this run also confirmed the human-facing job-boards.greenhouse.io/aiserajobs page 404s directly. WebSearch again surfaced apparently-live listings (incl. Enterprise CSM) but these are stale search-cache — confirmed via direct curl to both endpoints. Don't trust WebSearch snippets alone for this check.",
+      "recheck_after": "2026-08-03"
     },
     {
       "name": "Sierra",
@@ -1961,6 +1965,39 @@
       "enrolled_date": "2026-07-23",
       "enrolled_via": "Industrial IoT discovery source, first seen 2026-07-23",
       "reason": "Cloud-native CMMS / Asset Operations Management platform (industrial IoT, predictive maintenance), Los Angeles HQ, ~117 employees. Verified live board (6 jobs): Customer Success Manager and Sr. Implementation Manager, both LA / Hybrid -- not remote or Atlanta, so location score will be low, but real fit-space titles at a small company. No passion-domain bonus per the Industrial IoT source's discovery-only scoring rule."
+    },
+    {
+      "name": "Second Nature",
+      "ats": "ashby",
+      "slug": "second-nature",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "Greenhouse/Ashby/Lever Boards - Target Roles WebSearch dork, first seen 2026-07-27",
+      "reason": "Resident experience / property management platform (Raleigh NC HQ, ~200-370 employees, distributed team). Verified live board (13 jobs, 3 fit-space, all Remote USA): Manager Technical Implementations, Technical Implementation Manager, Implementation Manager. Adjacent to Aneesh's smart-apartment/resident-facing background at iApartments -- not a listed passion domain, but a strong substantive parallel worth noting in tailoring."
+    },
+    {
+      "name": "Miovision",
+      "ats": "ashby",
+      "slug": "miovision",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "Ashby Boards - Target Roles WebSearch dork, first seen 2026-07-27",
+      "reason": "Smart mobility / traffic-intelligence IoT platform (Kitchener, Canada HQ, ~500 employees, US operations). Verified live board (10 jobs, 1 fit-space): Technical Customer Success Manager, United States, Remote. IoT-adjacent product touches Aneesh's connected-devices background."
+    },
+    {
+      "name": "Zendesk",
+      "ats": "workday",
+      "slug": "zendesk",
+      "wd_host": "zendesk.wd1.myworkdayjobs.com",
+      "wd_tenant": "zendesk",
+      "wd_site": "zendesk",
+      "priority": "high",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-07-27",
+      "enrolled_via": "Found while investigating why Forethought's board 404s (see Forethought entry) -- Zendesk acquired Forethought, completed 2026-03-26.",
+      "reason": "Customer service platform, direct-domain fit (Aneesh's exact industry). Verified live Workday board (126 jobs). The absorbed Forethought team appears to hire under a new title convention, 'AI Success Strategist' (Principal/Senior/base levels seen) -- these own end-to-end AI roadmap delivery for enterprise customers, a near-literal match to Aneesh's Maven AGI vendor-selection-to-deflection story. 'Senior AI Success Strategist' (Remote, GA included in the eligible-state list, OTE $118K-$178K) was tailored 2026-07-27. No AI/ML score_bonus applied -- Zendesk-the-company isn't AI-native as a whole (20+ year old CX platform), even though this specific role is AI-focused."
     }
   ]
 }

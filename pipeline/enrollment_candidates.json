@@ -21,7 +21,7 @@
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, 2026-07-21, 2026-07-22, and 2026-07-23: direct CXS POST still returns 403 -- same outage, now 5 consecutive checks / 4+ weeks. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, 2026-07-21, 2026-07-22, 2026-07-23, and 2026-07-27: direct CXS POST still returns 403 (errorCode S22) -- same outage, now 6 consecutive checks / 5+ weeks. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
     },
     {
       "name": "Red Hat",
@@ -664,9 +664,89 @@
       "headcount_band": "201-500",
       "enrolled_via": "Ashby board dork 2026-07-16",
       "notes": "AI agent framework (LangSmith/LangGraph), ~280-325 employees, 98 open roles. Strong fit-space pipeline: Engagement Manager, Deployed Engineer (incl. Atlanta), Customer Engineer, Solutions Architect, Senior Technical Support Engineer, GTM Onboarding & Enablement Lead."
+    },
+    {
+      "name": "Second Nature",
+      "ats": "ashby",
+      "slug": "second-nature",
+      "enrolled_date": "2026-07-27",
+      "headcount_band": "201-500",
+      "enrolled_via": "Greenhouse/Ashby/Lever Boards - Target Roles WebSearch dork 2026-07-27"
+    },
+    {
+      "name": "Miovision",
+      "ats": "ashby",
+      "slug": "miovision",
+      "enrolled_date": "2026-07-27",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Ashby Boards - Target Roles WebSearch dork 2026-07-27"
+    },
+    {
+      "name": "Zendesk",
+      "ats": "workday",
+      "slug": "zendesk",
+      "enrolled_date": "2026-07-27",
+      "headcount_band": "2000+",
+      "enrolled_via": "Investigating the standing Forethought 404 -- found Zendesk acquired Forethought (completed 2026-03-26); Zendesk itself was never on the watchlist despite being a direct-industry company"
     }
   ],
   "rejected": [
+    {
+      "name": "CallRail",
+      "ats": "greenhouse",
+      "slug": "callrail",
+      "rejected_date": "2026-07-27",
+      "reason": "Tier-1 Manager-Title Sweep hit (Technical Support Manager, Atlanta GA hybrid). Board live (8 jobs) but that listing is gone -- current fit-adjacent roles are Technical Support Specialist Tier I/II, IC-level entry titles well below Aneesh's manager scope.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Model N",
+      "ats": "lever",
+      "slug": "modeln",
+      "rejected_date": "2026-07-27",
+      "reason": "Tier-1 Manager-Title Sweep hit (Manager, Support Operations -- originally found 2026-07-14 per source notes, never enrolled). Board live (12 jobs) but that listing has closed; remaining roles are India-based ops/support or a Medicaid Operations Director, no current fit-space title.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Business Wire",
+      "ats": "lever",
+      "slug": "businesswire",
+      "rejected_date": "2026-07-27",
+      "reason": "Tier-1 Manager-Title Sweep hit (Technology Operations Manager). Board live but only 4 total jobs, none fit-space -- too thin to monitor.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "TTEC Digital",
+      "ats": "lever",
+      "slug": "ttecdigital",
+      "rejected_date": "2026-07-27",
+      "reason": "Tier-1 Manager-Title Sweep hit (Technical Operations Manager). Board live (73 jobs) but every CS/TAM/implementation-shaped role is Manila/Bogota/Hyderabad -- no US-reachable fit-space role.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Beamery",
+      "ats": "ashby",
+      "slug": "beamery",
+      "rejected_date": "2026-07-27",
+      "reason": "Ashby board dork hit (Customer Success Manager, AI HR tech). Board live (7 jobs) but zero CS/TAM/implementation-titled roles currently -- that listing has closed.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "EV Connect",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-27",
+      "reason": "Passion Verticals discovery hit (Customer Success Manager, EV charging). No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Fusion Risk Management",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-27",
+      "reason": "BuiltIn Remote hit (Customer Success Manager). No Greenhouse/Ashby/Lever board found via WebSearch -- searches instead surfaced an unrelated company (Commonwealth Fusion Systems). Not pollable.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "Collider",
       "ats": "ashby",
