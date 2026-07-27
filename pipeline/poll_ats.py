@@ -64,6 +64,11 @@ def _init_config(watchlist: dict):
     COMPANY_CAP = sc["company_cap_max_applied_pending"]
     SMALL_COMPANY_BONUS.clear()
     SMALL_COMPANY_BONUS.update(sc["small_company_bonus"])
+    HARD_EXCLUDE_TERMS.clear()
+    HARD_EXCLUDE_TERMS.extend(
+        t.lower() for t in watchlist.get("_poller_config", {})
+        .get("hard_exclude_title_terms", {}).get("terms", [])
+    )
     MATCHER = TitleMatcher(watchlist)
 
 
@@ -326,6 +331,12 @@ TITLE_EXCLUDE = [
 # Industry exclusions
 EXCLUDED_TERMS = ["crypto", "web3", "blockchain", "defi", "nft"]
 
+# Unconditional title kill-list, loaded from
+# _poller_config.hard_exclude_title_terms. Unlike TITLE_EXCLUDE (overridable by
+# an exact tier1 match) and function_mismatch_titles (bypassed for protected
+# tiers), NOTHING overrides these — see title_hard_excluded().
+HARD_EXCLUDE_TERMS = []
+
 
 def slugify(text: str) -> str:
     """Convert text to dedup-key slug: lowercase, kebab-case (matching seen_jobs.json format)."""
@@ -347,6 +358,17 @@ def title_excluded(title: str) -> bool:
     """Check if title should be excluded (too senior, wrong function)."""
     t = title.lower()
     return any(excl in t for excl in TITLE_EXCLUDE)
+
+
+def title_hard_excluded(title: str) -> bool:
+    """Whole job functions Aneesh categorically rules out, killed regardless of
+    tier. Separate from title_excluded() because that one is deliberately
+    overridable by an exact tier1 match — an override that let Customer.io's
+    'Technical Marketing Operations Manager' through as a tier1/prescore-30 hit
+    on 2026-07-27 (stemmed-token matching finds 'Technical…Operations Manager'
+    inside it). Terms come from _poller_config.hard_exclude_title_terms."""
+    t = title.lower()
+    return any(term in t for term in HARD_EXCLUDE_TERMS)
 
 
 def location_relevant(location: str, title: str) -> bool:
@@ -807,13 +829,34 @@ def poll_all(run_date: date) -> dict:
         unapplied = unapplied_counts.get(company_slug, 0)
         is_capped = unapplied >= COMPANY_CAP
 
+        # Per-company role carve-outs (watchlist `role_exclusions`): specific
+        # roles Aneesh has declined outright, e.g. on ethical grounds. Scoped to
+        # the role, NOT the company — other roles there score normally.
+        role_exclusions = [r.lower() for r in company.get("role_exclusions", [])]
+
         for job_data in jobs:
             title = job_data.get("title", job_data.get("text", ""))
             if not title:
                 continue
 
+            # Declined-role check. Until 2026-07-27 this list was config-only
+            # documentation that nothing enforced, so an excluded role kept
+            # placing high on the shortlist every run (Clutch's collections-agent
+            # role sat at prescore 69) and suppression relied on whoever was
+            # reading the run remembering the note. Now the poller drops it.
+            if any(excl in title.lower() for excl in role_exclusions):
+                stats["excluded"] += 1
+                continue
+
             # Check title match
             exact_match = MATCHER.match_exact(title)
+
+            # Hard function exclusion — checked FIRST and never overridden, not
+            # even by an exact tier1 match (that override is what let a
+            # "Technical Marketing Operations Manager" through at prescore 30).
+            if title_hard_excluded(title):
+                stats["excluded"] += 1
+                continue
 
             # Title exclusion — but an exact TIER-1 match overrides it: tier1
             # includes "Head of Support" / "Director of Support Operations",
