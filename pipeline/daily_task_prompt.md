@@ -408,6 +408,18 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **aneeshk1
 - Subject: `Daily Job Matches — [date] ([N] jobs)`
 - Top note: "Open this draft, attach the PDFs listed at the bottom, and send."
 - HTML table: title, company, location, salary, score, JD coverage %, apply link
+- **Provenance column/notes (added 2026-07-27).** Every `matched` entry carries a
+  `provenance` array from `poll_ats.py`. A non-empty array means the role is visible ONLY
+  because of the 2026-07-27 filter widening (`age_*_over_old_21d_limit`,
+  `rank_*_over_old_25_cap`, `geo_free_location_was_dropped`, `workable_ats_newly_supported`,
+  `director_relaxed_small_company`). Surface these in the digest as a short human-readable
+  tag, e.g. "(newly visible: 28 days old, would have been cut at 21)". Purpose: five filters
+  were relaxed at once, so without per-role attribution a later quality drop can't be traced
+  to the change that caused it, and the widening would be judged on raw volume — which is
+  the wrong metric, since relaxing filters raises volume by construction. Report the
+  `stats.provenance_counts` summary in the digest housekeeping section too. If Aneesh
+  consistently ignores roles carrying one particular tag, roll THAT change back rather than
+  reverting the whole widening.
 - Per-job tailoring diff below the table
 - "Also live (FYI)" lines for same-company extras; near-misses section at the bottom
   (one line each with reason tag, e.g. "scored 74" / "pay $92K midpoint"); omit if none
