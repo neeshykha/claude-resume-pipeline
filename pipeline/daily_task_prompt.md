@@ -168,9 +168,15 @@ For each company in the `errors` array with a 404:
 ### 1c. Supplemental WebSearch (discovery beyond the watchlist)
 
 Read `pipeline/watchlist_companies.json → _websearch_sources.sources` and run every entry
-whose `status` is `"active"`. That block is the single source of truth — never hardcode
-query lists anywhere else. Each entry's `notes` explain what it catches and how to score
-hits.
+whose `status` is `"active"` **and whose `frequency` is due**. That block is the single
+source of truth — never hardcode query lists anywhere else. Each entry's `notes` explain
+what it catches and how to score hits.
+
+**Frequency gating (added 2026-07-27):** `frequency: "daily"` runs every run.
+`frequency: "monthly"` runs only on/after the 1st of the month, same rule as
+`harvest_hn_hiring.py` — check whether it already ran this month before spending the call.
+Monthly sources exist for signals that change on a quarterly scale (e.g. the AI Support
+Vendor Consolidation M&A watch); running them daily is wasted budget.
 
 Known access quirks (do not retry once failed): Wellfound/Glassdoor/Remoterocketship 403
 on WebFetch — snippets only. Ashby/Workday/NICE careers pages are JS-rendered — use API
