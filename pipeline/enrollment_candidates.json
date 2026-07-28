@@ -21,7 +21,7 @@
       "needs_ats_resolution": true,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, 2026-07-21, 2026-07-22, 2026-07-23, and 2026-07-27: direct CXS POST still returns 403 (errorCode S22) -- same outage, now 6 consecutive checks / 5+ weeks. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
+      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, 2026-07-21, 2026-07-22, 2026-07-23, 2026-07-27, and 2026-07-28: direct CXS POST still returns 403 (errorCode S22) -- same outage, now 7 consecutive checks / 6+ weeks. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
     },
     {
       "name": "Red Hat",
@@ -42,24 +42,6 @@
       "why": "Customer Success Manager - Enterprise Accounts (Remote) listing seen on BuiltIn. Large enterprise (2000+) -- deferred this run for budget."
     },
     {
-      "name": "Cambium Learning",
-      "ats": "workday",
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "Workday Boards - Target Roles 2026-07-22",
-      "first_seen": "2026-07-22",
-      "why": "Customer Success Manager (Remote) listing seen via myworkdayjobs.com dork. EdTech. Deferred this run for budget -- needs real Workday site-name resolution (guess-list pattern per verify_workday.py notes)."
-    },
-    {
-      "name": "Pluralsight",
-      "ats": "workday",
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "Workday Boards - Target Roles 2026-07-22",
-      "first_seen": "2026-07-22",
-      "why": "Customer Success Manager (Remote, USA) listing seen via myworkdayjobs.com dork. Dallas TX HQ, tech/edtech. Deferred this run for budget."
-    },
-    {
       "name": "Rackspace",
       "ats": "workday",
       "slug": null,
@@ -76,34 +58,45 @@
       "source": "Workday Boards - Target Roles 2026-07-22",
       "first_seen": "2026-07-22",
       "why": "Technical Account Manager II - Customer Onboarding (Remote) listing seen via myworkdayjobs.com dork. Large cybersecurity vendor (2000+). Deferred this run for budget."
-    },
-    {
-      "name": "Autodesk",
-      "ats": "workday",
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "Workday Boards - Target Roles 2026-07-22",
-      "first_seen": "2026-07-22",
-      "why": "Customer Success Manager, Named Accounts (Remote) listing seen via myworkdayjobs.com dork. Large enterprise (2000+). Deferred this run for budget."
-    },
-    {
-      "name": "EcoVadis",
-      "ats": "smartrecruiters",
-      "slug": "ecovadis",
-      "source": "SmartRecruiters Boards - Target Roles 2026-07-22",
-      "first_seen": "2026-07-22",
-      "why": "Customer Success Coordinator listing found (Mexico City, 1-year contract) -- not US-reachable as seen. Board otherwise unverified for other fit-space roles; deferred this run for budget."
-    },
-    {
-      "name": "Momentus Technologies",
-      "ats": "smartrecruiters",
-      "slug": "MomentusTechnologies",
-      "source": "SmartRecruiters Boards - Target Roles 2026-07-22",
-      "first_seen": "2026-07-22",
-      "why": "Customer Success Manager listing found (Singapore) -- not US-reachable as seen. Board otherwise unverified for other fit-space roles; deferred this run for budget."
     }
   ],
   "enrolled": [
+    {
+      "name": "Cambium Learning Group",
+      "ats": "workday",
+      "slug": "cambiumlearning",
+      "enrolled_date": "2026-07-28",
+      "headcount_band": "2000+",
+      "enrolled_via": "Workday Boards - Target Roles, pending since 2026-07-22, resolved 2026-07-28",
+      "notes": "EdTech K-12 assessment/learning software. Live fit-space role: Customer Success Manager (Remote), REQ-4271."
+    },
+    {
+      "name": "Pluralsight",
+      "ats": "workday",
+      "slug": "pluralsight",
+      "enrolled_date": "2026-07-28",
+      "headcount_band": "2000+",
+      "enrolled_via": "Workday Boards - Target Roles, pending since 2026-07-22, resolved 2026-07-28",
+      "notes": "Tech skills/learning platform, Dallas TX HQ. Live fit-space role: Customer Success Manager (Remote, hybrid option near Dallas), R0014258."
+    },
+    {
+      "name": "Commure",
+      "ats": "ashby",
+      "slug": "Commure",
+      "enrolled_date": "2026-07-28",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Tier-1 Manager-Title Sweep 2026-07-28",
+      "notes": "Healthcare operations/AI software, ~1,200 employees. Health tech passion domain. Live fit-space role: Clinical Implementation Specialist (United States, Remote)."
+    },
+    {
+      "name": "Boulevard",
+      "ats": "greenhouse",
+      "slug": "boulevard",
+      "enrolled_date": "2026-07-28",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Tier-1 Manager-Title Sweep 2026-07-28",
+      "notes": "Salon/spa client experience platform, ~575 employees, LA HQ. Live fit-space role: Technical Account Manager (Remote - USA), exact Tier-2 title match."
+    },
     {
       "name": "QGenda",
       "ats": "greenhouse",
@@ -691,6 +684,78 @@
     }
   ],
   "rejected": [
+    {
+      "name": "EcoVadis",
+      "ats": "smartrecruiters",
+      "slug": "ecovadis",
+      "rejected_date": "2026-07-28",
+      "reason": "Board live (31 postings) but zero US-reachable fit-space roles -- all customer-facing roles are Warsaw/London/Barcelona/Paris. Prior pending note flagged a Mexico City Customer Success Coordinator, also non-US.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Momentus Technologies",
+      "ats": "smartrecruiters",
+      "slug": "MomentusTechnologies",
+      "rejected_date": "2026-07-28",
+      "reason": "Board live (200 OK) but zero open postings currently (totalFound=0). The Singapore CS Manager role that originally surfaced it has closed.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Antavo",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-28",
+      "reason": "AI Loyalty Cloud, surfaced via BuiltIn Remote (Technical Customer Success Manager EMEA). EMEA-scoped role, not US-reachable.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Wabtec",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-28",
+      "reason": "Large industrial/rail transportation conglomerate (20K+ employees), surfaced via BuiltIn Atlanta dork. The fit-space role found (Customer Success & Technical Account Manager) is based in Australia, not US. No pollable Greenhouse/Ashby/Lever board identified; not worth further resolution effort for a non-US role at a company well outside target profile.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Apollo.io",
+      "ats": "greenhouse",
+      "slug": "apolloio",
+      "rejected_date": "2026-07-28",
+      "reason": "Tier-1 Manager-Title Sweep hit (Support Operations Manager). Board live (40 jobs) but that listing has closed -- current customer-facing roles are Account Manager SMB and Solutions Consultant (presales), which are sales-function, not support/CS fit.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Mozilla",
+      "ats": "greenhouse",
+      "slug": "mozilla",
+      "rejected_date": "2026-07-28",
+      "reason": "Tier-1 Manager-Title Sweep hit (Manager, Customer Support Operations). Board live (77 jobs) but that listing has closed -- only remaining fit-adjacent roles are Senior Solutions Engineer (DACH), Firefox Enterprise, which are Germany-based.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "ShipBob",
+      "ats": "greenhouse",
+      "slug": "shipbobinc",
+      "rejected_date": "2026-07-28",
+      "reason": "Tier-1 Manager-Title Sweep hit (Operations Support Manager). Board live (65 jobs) but the open roles are all physical warehouse/fulfillment operations (Area Manager Fulfillment, Warehouse Support Specialist) -- a different job function, not software CS/TAM/support ops.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Atlassian",
+      "ats": "lever",
+      "slug": "atlassian",
+      "rejected_date": "2026-07-28",
+      "reason": "Tier-1 Manager-Title Sweep hit (Technical Support Manager, Cloud) via a stale search-cache Lever URL. Direct API check: jobs.lever.co/atlassian returns 0 total postings -- Atlassian is no longer on Lever. Not worth resolving their actual (likely custom) careers site for one stale hit.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Quantum-Si",
+      "ats": "greenhouse",
+      "slug": "quantumsi25",
+      "rejected_date": "2026-07-28",
+      "reason": "Tier-1 Manager-Title Sweep hit (Senior Customer and Technical Support Manager), biotech/genomics sequencing. Board live but currently empty (0 open roles) -- the surfacing listing has closed. Recheck if it resurfaces with a live role.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "Greenlight",
       "ats": "lever",

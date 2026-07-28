@@ -150,9 +150,9 @@
     "rotation_per_run": 3,
     "companies": [
       {"name": "Google", "why": "Atlanta office. Its gUP org runs a whole family of support roles (Product Support Manager gUP Search, gUP Platforms and Devices, gUP Shopping Support Ops, Product Solutions Manager Home). Confirmed unpollable 2026-07-27. Proven vein: the Home role was tailored that day.", "query": "site:google.com/about/careers (\"product support manager\" OR \"product solutions manager\" OR \"support strategy\" OR \"customer support\") Atlanta OR remote", "last_checked": "2026-07-27"},
-      {"name": "Microsoft", "why": "Atlanta presence, large CX/support org. Custom careers site.", "query": "site:jobs.careers.microsoft.com (\"customer success\" OR \"support\" OR \"technical account manager\") Atlanta", "last_checked": null},
-      {"name": "Apple", "why": "Atlanta presence. AppleCare support org. Custom careers site.", "query": "site:jobs.apple.com (\"support\" OR \"customer\" OR \"AppleCare\") manager Atlanta", "last_checked": null},
-      {"name": "Amazon / AWS", "why": "Atlanta offices. Huge TAM/support org. Custom careers site.", "query": "site:amazon.jobs (\"technical account manager\" OR \"customer success\" OR \"support operations\") Atlanta", "last_checked": null},
+      {"name": "Microsoft", "why": "Atlanta presence, large CX/support org. Custom careers site.", "query": "site:jobs.careers.microsoft.com (\"customer success\" OR \"support\" OR \"technical account manager\") Atlanta", "last_checked": "2026-07-28"},
+      {"name": "Apple", "why": "Atlanta presence. AppleCare support org. Custom careers site.", "query": "site:jobs.apple.com (\"support\" OR \"customer\" OR \"AppleCare\") manager Atlanta", "last_checked": "2026-07-28"},
+      {"name": "Amazon / AWS", "why": "Atlanta offices. Huge TAM/support org. Custom careers site.", "query": "site:amazon.jobs (\"technical account manager\" OR \"customer success\" OR \"support operations\") Atlanta", "last_checked": "2026-07-28"},
       {"name": "Meta", "why": "Atlanta office. Custom careers site.", "query": "site:metacareers.com (\"customer success\" OR \"support\" OR \"operations manager\") Atlanta", "last_checked": null},
       {"name": "Home Depot", "why": "Atlanta HQ with a real internal tech org. Workday tenant exists but the site name did not resolve on 2026-07-27 (HTTP 422 on the guess). If a search reveals the real site name, switch to polling and enroll.", "query": "site:careers.homedepot.com OR site:myworkdayjobs.com \"home depot\" (\"customer success\" OR \"support manager\" OR \"technical account\")", "last_checked": null},
       {"name": "Cox Automotive", "why": "Atlanta HQ (Cox Enterprises). Automotive software/marketplace tech. Workday site name unresolved (404 on the guess).", "query": "site:myworkdayjobs.com cox (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\")", "last_checked": null},
@@ -839,6 +839,7 @@
       "ats": "lever",
       "slug": "conversica",
       "priority": "medium",
+      "headcount_band": "51-200",
       "reason": "AI-powered revenue"
     },
     {
@@ -846,6 +847,7 @@
       "ats": "lever",
       "slug": "netomi",
       "priority": "medium",
+      "headcount_band": "51-200",
       "reason": "AI customer service"
     },
     {
@@ -853,6 +855,7 @@
       "ats": "lever",
       "slug": "regal.ai",
       "priority": "low",
+      "headcount_band": "51-200",
       "board_status": "404_confirmed",
       "board_status_note": "Lever regalvoice slug dead as of 2026-06-25 (two consecutive 404s). Recovered slug: regal.ai. No CS/TAM roles at regal.ai as of 2026-06-25 — only AI FDE (coding-heavy) and AI Product Specialist (entry-level). Continue monitoring for CS/TAM openings."
     },
@@ -2062,6 +2065,52 @@
       "enrolled_date": "2026-07-27",
       "enrolled_via": "PropTech / Resident Experience discovery source, first run 2026-07-27",
       "reason": "Multifamily property operations + maintenance platform (Carlsbad CA, remote-first across US/Canada/Australia; 6M+ units, 3.5M rental homes). Direct adjacency to iApartments. Source of the 2026-07-27 top pick, Senior Manager of Customer Support (Remote US): a Tier-1 title whose required-quals list reads like the master resume (BPO/outsourced vendor ownership, Zendesk/Jira/Intercom, scaling a support org from the ground up, hands-on AI tooling). headcount_band left null deliberately -- multiple searches returned no reliable figure, and the rule is never guess."
+    },
+    {
+      "name": "Cambium Learning Group",
+      "ats": "workday",
+      "wd_host": "cambiumlearning.wd1.myworkdayjobs.com",
+      "wd_tenant": "cambiumlearning",
+      "wd_site": "camb",
+      "slug": "cambiumlearning",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-07-28",
+      "enrolled_via": "Workday Boards - Target Roles WebSearch dork, pending since 2026-07-22, resolved 2026-07-28",
+      "reason": "EdTech (K-12 assessment/learning software), ~2,600-3,800 employees depending on source. Verified live Workday board (32 jobs): Customer Success Manager (Remote), REQ-4271, is the fit-space role."
+    },
+    {
+      "name": "Pluralsight",
+      "ats": "workday",
+      "wd_host": "pluralsight.wd1.myworkdayjobs.com",
+      "wd_tenant": "pluralsight",
+      "wd_site": "Careers",
+      "slug": "pluralsight",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-07-28",
+      "enrolled_via": "Workday Boards - Target Roles WebSearch dork, pending since 2026-07-22, resolved 2026-07-28",
+      "reason": "Tech skills/learning platform (Dallas TX HQ, ~1,864 employees). Verified live Workday board (24 jobs): Customer Success Manager (Remote, hybrid option near Dallas), R0014258, is the fit-space role."
+    },
+    {
+      "name": "Commure",
+      "ats": "ashby",
+      "slug": "Commure",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-28",
+      "enrolled_via": "Tier-1 Manager-Title Sweep WebSearch dork, first seen 2026-07-28",
+      "reason": "Healthcare operations software (ambient AI clinical documentation, provider copilots, revenue cycle) -- San Francisco HQ, ~1,200 employees, backed by General Catalyst/Sequoia/YC. Health tech passion domain. Verified live board (64 jobs): Clinical Implementation Specialist (United States, Remote) is the current fit-space role; also carried a Technical Operations Manager, Enterprise Central Ops (Ashby dork hit) that had closed by verification time."
+    },
+    {
+      "name": "Boulevard",
+      "ats": "greenhouse",
+      "slug": "boulevard",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-28",
+      "enrolled_via": "Tier-1 Manager-Title Sweep WebSearch dork, first seen 2026-07-28",
+      "reason": "Client experience / appointment platform for salons, spas, and self-care businesses (Los Angeles HQ, ~575 employees, Series D $188M raised). Verified live board (19 jobs): Technical Account Manager (Remote - USA) is an exact Tier-2 title match; also carries Revenue Enablement Manager (CX)."
     },
     {
       "name": "EliseAI",
