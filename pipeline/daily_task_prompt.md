@@ -427,6 +427,11 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **aneeshk1
 
 - Subject: `Daily Job Matches — [date] ([N] jobs)`
 - Top note: "Open this draft, attach the PDFs listed at the bottom, and send."
+- **Pass RAW HTML to `htmlBody`, never HTML-escaped entities.** Write `<p>`, not `&lt;p&gt;`.
+  Escaping the markup makes Gmail render every tag as literal visible text and the digest
+  arrives as an unreadable wall of angle brackets (happened 2026-07-27). If a draft has
+  already been SENT, `update_draft` fails with "Message not a draft" — create a corrected
+  replacement draft rather than trying to patch it.
 - HTML table: title, company, location, salary, score, JD coverage %, apply link
 - **Provenance column/notes (added 2026-07-27).** Every `matched` entry carries a
   `provenance` array from `poll_ats.py`. A non-empty array means the role is visible ONLY
