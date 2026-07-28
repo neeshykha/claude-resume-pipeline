@@ -692,6 +692,14 @@
   ],
   "rejected": [
     {
+      "name": "Greenlight",
+      "ats": "lever",
+      "slug": "greenlight",
+      "rejected_date": "2026-07-27",
+      "reason": "Atlanta-HQ family fintech, probed while seeding the blind-spot rotation. Board IS live and pollable (lever/greenlight, 19 jobs) but has zero fit-space roles -- the single customer-adjacent title is Account Executive, Financial Institutions, which is sales. Recheck if a CS/support/implementation role opens; the board is pollable so enrollment would be trivial.",
+      "recheck_if_resurfaced": true
+    },
+    {
       "name": "CallRail",
       "ats": "greenhouse",
       "slug": "callrail",

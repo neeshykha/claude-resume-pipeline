@@ -182,6 +182,26 @@ Known access quirks (do not retry once failed): Wellfound/Glassdoor/Remoterocket
 on WebFetch — snippets only. Ashby/Workday/NICE careers pages are JS-rendered — use API
 endpoints. LinkedIn redirects to login — snippets only.
 
+### 1c-2. Blind-spot company rotation (companies with NO pollable ATS)
+
+Read `watchlist_companies.json → _blind_spot_companies`. Take the `rotation_per_run`
+companies with the OLDEST `last_checked` (nulls first), run each one's `query` via
+WebSearch, and assess any fit-space hit on the normal rubric. Write today's date back to
+`last_checked` for exactly those companies.
+
+These are named employers that CANNOT be enrolled because they use custom career sites
+(Google, Apple, Amazon, Meta, Microsoft, Delta) or an unresolved Workday tenant. A targeted
+search is the only way they ever surface. Every hit here is by definition a role the
+automated layer structurally cannot see, so treat them with the same seriousness as an ATS
+hit — the 2026-07-27 Google "Product Solutions Manager, Home" find came from exactly this
+class and was tailored the same day.
+
+**If a rotation company turns out to have a pollable board after all, ENROLL it on the
+watchlist and delete it from `_blind_spot_companies`.** Polling always beats searching. For
+the Workday-tenant entries specifically, a `site:myworkdayjobs.com <company>` hit that
+reveals the real site name is a promotion opportunity, not just a job listing — same
+pattern that unstuck Availity, NCR Voyix, and Cengage (see Step 1d).
+
 ### 1d. Discovery feeders + enrollment queue
 
 `pipeline/enrollment_candidates.json` is the standing queue that stops off-watchlist
