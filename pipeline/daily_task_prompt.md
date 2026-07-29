@@ -34,6 +34,14 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 - Temp scripts go to `pipeline/_taskname.py` (the `_*.py` pattern is allow-listed), NOT `/tmp/`
 - Use `Read`/`Write` tools for small file edits; use the helper scripts for big/structured ones
 
+**Placeholder resolution (do this first, every run).** This file is published in a PUBLIC repo,
+so mail-routing details appear as `{{TOKEN}}` placeholders rather than literal values. Read
+`pipeline/local_config.json` (gitignored) once at the start of the run and substitute
+`{{APPLY_ACCOUNT}}`, `{{CONFIRM_ALIAS}}`, `{{DIGEST_RECIPIENT}}`, and
+`{{CONFIRMATIONS_LABEL_ID}}` wherever they appear below. **Never write a resolved value back
+into this file or any other tracked file.** If `local_config.json` is missing, STOP and send a
+brief digest saying so rather than guessing an address.
+
 ## Step 0: Duplicate-trigger guard, pre-run notes, style guide
 
 1. **Duplicate-trigger guard.** The scheduler has double-fired on the same day before
@@ -68,19 +76,30 @@ skipped a genuinely fresh Assembled req on the mistaken assumption that an earli
 `stage=surfaced` only ever meant "tailored and drafted," never "confirmed sent," because
 Gmail MCP access here is `create_draft`-only. This step closes that gap going forward.
 
-Aneesh applies to jobs using `khan.aneesh10@gmail.com` (his system of record) with a Gmail
-filter there forwarding application-confirmation emails to `aneeshk10+jobs@gmail.com` —
-which lands in this pipeline's connected inbox, searchable and untouched by the rest of his
-mail. **This only works once Aneesh has actually set up that filter on his end** (add
-`aneeshk10+jobs@gmail.com` as a verified forwarding address in `khan.aneesh10@gmail.com`'s
-settings, then a filter matching subject `(application OR "thank you for applying" OR
-"received your application")` with action "Forward it to" that address). Until then this
-step will simply find zero results every run — that's expected, not an error, and costs one
-cheap search call.
+Aneesh applies to jobs using `{{APPLY_ACCOUNT}}` (his system of record). A filter
+there forwards application-confirmation emails to `{{CONFIRM_ALIAS}}`, which lands
+in this pipeline's connected inbox, searchable and untouched by the rest of his mail. A
+second filter on the receiving side labels those messages `JobConfirmations`.
+**Both filters were set up and verified 2026-07-28; this step is live, and a run that
+returns zero results now means no new confirmations, not a missing filter.**
 
-1. Search Gmail for messages `to:aneeshk10+jobs@gmail.com newer_than:3d` (the 3-day window
+1. Search Gmail for
+   `deliveredto:{{CONFIRM_ALIAS}} -from:linkedin.com newer_than:3d` (the 3-day window
    gives safe overlap across runs; already-promoted rows won't match again since matching
    only looks at `stage=surfaced` rows).
+
+   **The `-from:linkedin.com` exclusion is load-bearing.** LinkedIn job alerts are forwarded
+   to this same alias on purpose (one verified forwarding address instead of two) and are
+   consumed by Step 1d-2 as company discovery. Without the exclusion they would flow into
+   this step's confirmation matcher, which is looking for "did he apply" evidence and would
+   find dozens of roles he has never applied to.
+
+   **Use `deliveredto:`, not `to:`.** Gmail forwarding preserves the original `To:` header,
+   so a forwarded confirmation still reads `to:{{APPLY_ACCOUNT}}` and the old
+   `to:{{CONFIRM_ALIAS}}` query silently returns nothing. `deliveredto:` was verified
+   working against this inbox on 2026-07-28. The `JobConfirmations` label
+   (id `{{CONFIRMATIONS_LABEL_ID}}`) is an equivalent fallback if `deliveredto:` ever breaks;
+   the Gmail MCP requires the label ID, not the display name.
 2. For each result, read the sender/subject/body to identify the company and, if stated, the
    specific requisition URL. **Always try to extract the URL from the email body first** —
    confirmation emails from Greenhouse/Ashby/Lever/Workday usually restate the job link or a
@@ -97,9 +116,23 @@ cheap search call.
    **skips and reports (never guesses) any company name that matches more than one surfaced
    row** — read its stdout output and resolve ambiguous ones by hand only if the email body
    gives enough detail to disambiguate confidently; otherwise leave them surfaced.
-5. Note the promoted count in `run_[date].json → pipeline_notes` and `SESSION_STATE.md`. Do
-   not mention this step in the digest email unless something promoted or something was
-   ambiguous — routine zero-result runs are silent housekeeping, not digest content.
+5. **Record any real OUTCOMES the same pass (added 2026-07-28).** Confirmation forwarding
+   catches rejections, interview invitations, and "role filled" notices as well as receipts.
+   Those are the only outcome signal this system ever gets: do not let them pass as
+   housekeeping. For each such email write `pipeline/jobs/outcomes_[date].json` and run
+   `.venv/bin/python pipeline/mark_outcome.py pipeline/jobs/outcomes_[date].json`
+   (schema in its docstring). Rules:
+   - A supplied `title` is a REQUIREMENT, not a hint. If no row matches it, set
+     `append_if_missing` rather than letting it land on a different req at that company.
+   - Use `title_exact` when one req's title is a prefix of another's at the same company
+     (Talkdesk "CX Manager" vs "CX Manager - Health & Life Sciences").
+   - Record only what the email literally says. Never infer an outcome from silence.
+   - Set `source_channel` to `referral` or `user_surfaced` when the email establishes it.
+6. Note the promoted count and any outcomes in `run_[date].json → pipeline_notes` and
+   `SESSION_STATE.md`. Do not mention this step in the digest email unless something
+   promoted, an outcome landed, or something was ambiguous — routine zero-result runs are
+   silent housekeeping, not digest content. **A rejection or interview always goes in the
+   digest**, with the stated reason when one is given.
 
 ## Step 1: ATS polling
 
@@ -206,7 +239,13 @@ pattern that unstuck Availity, NCR Voyix, and Cengage (see Step 1d).
 
 `pipeline/enrollment_candidates.json` is the standing queue that stops off-watchlist
 sightings from dead-ending. Run the feeders:
-- `.venv/bin/python pipeline/poll_remotive.py` — daily; appends name-only leads
+- `.venv/bin/python pipeline/poll_remotive.py` — daily; appends name-only leads.
+  **DEGRADED as of 2026-07-28** and will self-report as such: Remotive's public API now
+  ignores `search`/`category`/`limit` and serves the same fixed 36-job window for every
+  request, so discovery is impossible and the seed list is inert. The script detects this
+  itself and exits without touching the queue. Leave it in the routine: the check is
+  self-healing and the feeder resumes automatically if Remotive restores the API. Do not
+  spend time debugging a zero-lead Remotive run unless the DEGRADED line is absent.
 - `.venv/bin/python pipeline/poll_80k.py` — daily; 80,000 Hours board via its public
   Algolia backend (added 2026-07-13, replaces the old lossy WebSearch dork for this
   source). Leads arrive with (ats, slug) pre-resolved when the apply link is a
@@ -225,6 +264,16 @@ Process every `pending` entry:
 1. `needs_ats_resolution: true` → resolve the ATS
    (`site:greenhouse.io OR site:jobs.ashbyhq.com OR site:jobs.lever.co <company>`); no
    board found → reject with reason.
+
+   **Before rejecting, check `manual_review`.** If the entry carries `manual_review: true`,
+   still reject it (no board means the poller can never watch it), but surface it ONCE in the
+   digest under "Manual channel — no pollable board" with the company, the
+   `manual_review_why` title/location, and a link to the company's own careers page if one
+   turned up during resolution. Then set `manual_review_surfaced: true` on the rejected entry
+   so it is never re-surfaced. Rationale: the rejection is correct for the pipeline and wrong
+   for Aneesh; this is the one path where a strong-title Atlanta/Remote role would otherwise
+   vanish silently. Do not tailor it and do not score it: the digest line is the deliverable,
+   and he decides whether to pursue it by hand.
 2. Verify the board is live (direct API check; `verify_workday.py` for Workday) with
    US-reachable fit-space roles. Europe/APAC-only → reject.
    **Workday-specific fallback (added 2026-07-14):** if `verify_workday.py`'s
@@ -246,6 +295,73 @@ Process every `pending` entry:
 
 ATS providers the poller speaks: Greenhouse, Ashby, Lever, Workday, SmartRecruiters
 (case-sensitive slug). Workable is unsupported — note Workable-only companies in the digest.
+
+### 1d-2. LinkedIn lead harvest (COMPANY discovery only, added 2026-07-28)
+
+LinkedIn job alerts and "jobs you may be interested in" emails are forwarded from
+`{{APPLY_ACCOUNT}}` to `{{CONFIRM_ALIAS}}`, the same alias as application
+confirmations. Step 0.5 excludes them with `-from:linkedin.com`; this step is the only
+consumer.
+
+**Harvest COMPANIES, never roles. This is the whole design.** Every link in these emails is
+a `linkedin.com/jobs/view/<id>` URL, not the source ATS, and LinkedIn walls those behind a
+login, so resolving each role would cost one blocked fetch per role for a snippet. A company
+name costs nothing and is worth more: once enrolled, the poller scans that company's ENTIRE
+roster every day, forever, which strictly dominates scoring the one role LinkedIn happened
+to show. (Nexus Cognitive is the case in point — an Atlanta AI company with four fit-space
+roles including a tier-1 Head of Support, invisible to every discovery source until an
+unrelated email exposed it.)
+
+1. Search Gmail for `deliveredto:{{CONFIRM_ALIAS}} from:linkedin.com newer_than:1d`.
+   Zero results is normal and not an error. **Read snippets/subjects, not full bodies** —
+   these emails are long and a full read of several will blow the run's context budget.
+2. Extract company names. Ignore salaries and links.
+
+   **One exception (added 2026-07-28, from a real miss).** Also note when a card's title
+   matches `tier1_true_match`, `tier2_strong_overlap`, or `tier2c_tooling_systems` AND its
+   location is Atlanta or Remote US. Both values are already plain text in the email, so
+   reading them costs nothing and requires resolving no links. When both hold, set
+   `manual_review: true` on that company's pending entry plus a one-line `manual_review_why`
+   naming the title and location.
+
+   **Match loosely, substring in EITHER direction, and do not tighten this.** A bare
+   "Operations Manager" should flag off tier-1's "Support Operations Manager", and a bare
+   "Account Manager" off tier-2's "Technical Account Manager". This is deliberately looser
+   than the poller's scoring matcher because the cost of a false positive here is one extra
+   digest line, seen once, while the cost of a false negative is a strong Atlanta role
+   vanishing unseen. The flag is also gated hard by circumstance: it only ever matters for a
+   LinkedIn-sourced company that ALSO turns out to have no pollable board, which is a narrow
+   intersection.
+
+   This is a FLAG, not a job. Do not fetch the posting, score it, or tailor from it. Its only
+   purpose is Step 1d below: a company with no pollable ATS gets rejected, and without this
+   flag a strong-title Atlanta or Remote role at such a company disappears with it, unseen.
+   Prompting case: "Operations Manager, Evlo AI, Atlanta GA (Remote)" — tier-1-adjacent title
+   in the two weakest buckets, at a company with no ATS board, which the company-only design
+   would have discarded without Aneesh ever seeing it.
+3. **Dedupe in ONE batched call:** `.venv/bin/python pipeline/check_company.py "A" "B" "C" ...`
+   (it accepts many names per call and searches the watchlist plus all three queue buckets).
+   Only a result of UNKNOWN is a real lead.
+4. **Hard cap: append at most 15 new companies per run.** If more survive dedupe, take them
+   in the order they appeared and leave the rest; tomorrow's run will catch them, and the
+   3-day/1-day windows overlap enough that nothing is lost. This cap is what keeps the step's
+   cost flat no matter how noisy the alerts get — do not raise it to "clear the backlog."
+5. Append each to `enrollment_candidates.json → pending` using the standard `_schema` shape,
+   with `needs_ats_resolution: true`, `source: "LinkedIn alert"`, `first_seen` = today, and a
+   `why` naming the alert it came from. Carry `manual_review` / `manual_review_why` from step 2
+   when set. Step 1d resolves the ATS and enrolls or rejects them on this or a later run at its
+   own pace.
+6. Note the harvested/capped counts in `run_[date].json → pipeline_notes`. Digest mention
+   only if something notable enrolled — routine harvesting is housekeeping.
+
+**Do NOT** score, fetch JDs for, or tailor anything from this step. If a specific LinkedIn
+role is worth assessing, Aneesh pastes it and the User-Surfaced Finds Protocol handles it.
+
+**Setup dependency:** this needs the forwarding filter on `{{APPLY_ACCOUNT}}`
+(`from:(linkedin.com)` + job-alert subject terms → forward to `{{CONFIRM_ALIAS}}`).
+Until that exists the search returns zero every run, which costs one cheap call and is not
+an error. A `JobLeads` label on the receiving side is optional convenience for Aneesh's own
+browsing; this step keys off sender, not label, so it does not depend on one.
 
 ### 1e. Housekeeping: headcount_band backfill (max 3/run)
 
@@ -423,7 +539,7 @@ ATS optimization → tailor → verify). Per job:
 
 ## Step 5: Email digest
 
-Gmail MCP `create_draft` (drafts only — no send, no attachments) to **aneeshk10@gmail.com**:
+Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST_RECIPIENT}}**:
 
 - Subject: `Daily Job Matches — [date] ([N] jobs)`
 - Top note: "Open this draft, attach the PDFs listed at the bottom, and send."
@@ -448,6 +564,10 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **aneeshk1
 - Per-job tailoring diff below the table
 - "Also live (FYI)" lines for same-company extras; near-misses section at the bottom
   (one line each with reason tag, e.g. "scored 74" / "pay $92K midpoint"); omit if none
+- **"Manual channel — no pollable board"** section: companies rejected at Step 1d that carried
+  `manual_review: true`. One line each (company, the flagged title and location, careers-page
+  link if found). Omit the section entirely if none. These are NOT scored or tailored; they are
+  roles the automated layer structurally cannot watch, surfaced once so Aneesh can decide.
 - Note any ATS errors, capped companies, enrollments/rejections, and skill gaps observed
 
 ## Step 6: Update tracking

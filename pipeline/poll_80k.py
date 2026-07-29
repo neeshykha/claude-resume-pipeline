@@ -50,6 +50,12 @@ ALGOLIA_HEADERS = {
 TIMEOUT = 30
 HITS_PER_SEED = 50
 
+# NOTE: every phrase in TITLE_PHRASES needs a seed that can actually surface it.
+# Until 2026-07-28 four phrases ("deployment", "engagement manager",
+# "professional services", "solutions") were unreachable: they were accepted by
+# the filter but no seed ever put such a title in the candidate pool, so the
+# filter was gating against titles it could never see. Adding the missing seeds
+# grew the pool from 153 to 224 unique hits. Keep these two lists in sync.
 SEARCH_SEEDS = [
     "operations manager",
     "operations lead",
@@ -59,18 +65,39 @@ SEARCH_SEEDS = [
     "technical account manager",
     "implementation",
     "support operations",
+    "solutions",
+    "deployment",
+    "engagement manager",
+    "professional services",
+    "support engineer",
+    "enablement",
+    "onboarding",
 ]
 
-# Title must contain one of these to count as fit-space.
+# Title must contain one of these to count as fit-space. Mirrors the tier list
+# in CLAUDE.md ("Target Roles for Reference"); "enablement" (tier 3) and
+# "onboarding" (tier 4) were missing until 2026-07-28.
 TITLE_PHRASES = [
     "operations", "customer success", "technical account", "implementation",
     "program manager", "support", "deployment", "engagement manager",
-    "professional services", "solutions",
+    "professional services", "solutions", "enablement", "onboarding",
 ]
 
 # ...but not these (research/eng/legal/junior-admin roles dominate this board).
+#
+# "engineer"/"engineering" were removed 2026-07-28. TITLE_PHRASES is the real
+# gate: a title still has to contain "support", "solutions", "customer success",
+# etc. to pass, so "Software Engineer" and "Research Engineer" remain excluded
+# on their own merits ("research" is still listed). Blanket-excluding the word
+# was killing "Technical Support Engineer", "Customer Success Engineer", and
+# "Solutions Engineer", all of which are tier 1-3 titles in Aneesh's own rubric.
+# It cost a live HiddenLayer (AI security) lead on the 2026-07-28 audit.
+#
+# "associate" is deliberately KEPT. Every associate-titled hit in that audit was
+# either below the salary floor or off-lane finance/grants work, so excluding it
+# here is cheaper than filtering it at enrollment.
 TITLE_EXCLUDE = [
-    "research", "scientist", "engineer", "engineering", "counsel", "attorney",
+    "research", "scientist", "counsel", "attorney",
     "intern", "fellow", "phd", "professor", "assistant", "coordinator",
     "associate", "chair", "trustee", "chief ", "ceo", "cto", "cfo",
 ]

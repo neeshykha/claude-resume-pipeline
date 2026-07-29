@@ -6,7 +6,8 @@ Usage:
     .venv/bin/python pipeline/mark_applied.py <confirmations.json>
 
 <confirmations.json> is a small file Claude writes after searching Gmail for
-`to:aneeshk10+jobs@gmail.com` confirmations and matching each one against
+confirmations delivered to the alias in pipeline/local_config.json (gitignored;
+this repo is public) and matching each one against
 outcomes.csv rows that are still stage=surfaced. Schema:
 
 {

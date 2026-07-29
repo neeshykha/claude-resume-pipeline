@@ -149,21 +149,96 @@
     "run_instructions": "Each daily run, take the `rotation_per_run` companies with the OLDEST `last_checked` (nulls first), run each one's `query` via WebSearch, and assess any fit-space hit against the normal rubric. Then write today's date back to `last_checked` for those companies. At 3/run over 15 companies each company gets checked about every 5 days, for 3 WebSearch calls per run. If a company turns out to have a pollable board after all, ENROLL it on the watchlist and delete it from this list -- polling always beats searching.",
     "rotation_per_run": 3,
     "companies": [
-      {"name": "Google", "why": "Atlanta office. Its gUP org runs a whole family of support roles (Product Support Manager gUP Search, gUP Platforms and Devices, gUP Shopping Support Ops, Product Solutions Manager Home). Confirmed unpollable 2026-07-27. Proven vein: the Home role was tailored that day.", "query": "site:google.com/about/careers (\"product support manager\" OR \"product solutions manager\" OR \"support strategy\" OR \"customer support\") Atlanta OR remote", "last_checked": "2026-07-27"},
-      {"name": "Microsoft", "why": "Atlanta presence, large CX/support org. Custom careers site.", "query": "site:jobs.careers.microsoft.com (\"customer success\" OR \"support\" OR \"technical account manager\") Atlanta", "last_checked": "2026-07-28"},
-      {"name": "Apple", "why": "Atlanta presence. AppleCare support org. Custom careers site.", "query": "site:jobs.apple.com (\"support\" OR \"customer\" OR \"AppleCare\") manager Atlanta", "last_checked": "2026-07-28"},
-      {"name": "Amazon / AWS", "why": "Atlanta offices. Huge TAM/support org. Custom careers site.", "query": "site:amazon.jobs (\"technical account manager\" OR \"customer success\" OR \"support operations\") Atlanta", "last_checked": "2026-07-28"},
-      {"name": "Meta", "why": "Atlanta office. Custom careers site.", "query": "site:metacareers.com (\"customer success\" OR \"support\" OR \"operations manager\") Atlanta", "last_checked": null},
-      {"name": "Home Depot", "why": "Atlanta HQ with a real internal tech org. Workday tenant exists but the site name did not resolve on 2026-07-27 (HTTP 422 on the guess). If a search reveals the real site name, switch to polling and enroll.", "query": "site:careers.homedepot.com OR site:myworkdayjobs.com \"home depot\" (\"customer success\" OR \"support manager\" OR \"technical account\")", "last_checked": null},
-      {"name": "Cox Automotive", "why": "Atlanta HQ (Cox Enterprises). Automotive software/marketplace tech. Workday site name unresolved (404 on the guess).", "query": "site:myworkdayjobs.com cox (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\")", "last_checked": null},
-      {"name": "Equifax", "why": "Atlanta HQ. Data/analytics platform with enterprise clients. Workday site name unresolved (404 on the guess).", "query": "site:myworkdayjobs.com equifax (\"customer success\" OR \"technical account manager\" OR \"implementation manager\")", "last_checked": null},
-      {"name": "Global Payments", "why": "Atlanta HQ fintech. Workday site name unresolved (422 on the guess).", "query": "site:myworkdayjobs.com \"global payments\" (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\")", "last_checked": null},
-      {"name": "Intuit / Mailchimp", "why": "Mailchimp is Atlanta-based and now Intuit-owned. Workday tenant returned 401 on 2026-07-27, so it is auth-gated rather than public.", "query": "site:jobs.intuit.com (\"customer success\" OR \"support operations\" OR \"technical account\") Atlanta OR Mailchimp", "last_checked": null},
-      {"name": "Delta Air Lines", "why": "Atlanta HQ and a personal-interest employer for Aneesh (SkyMiles/Medallion loyalty). Uses Avature, which the poller does not speak. Target its tech/digital org, not airport operations.", "query": "site:delta.avature.net OR site:jobs.delta.com (\"customer experience\" OR \"technical\" OR \"operations manager\" OR \"customer success\") technology", "last_checked": null},
-      {"name": "Electrify America", "why": "EV charging, a stated passion domain. Confirmed 2026-07-06 to have no Greenhouse/Ashby/Lever/Workday board.", "query": "\"Electrify America\" careers (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation\")", "last_checked": null},
-      {"name": "Arrive / ParkMobile", "why": "Atlanta-based parking and mobility platform (ParkMobile, EasyPark, Flowbird). Surfaced a Technical Account Manager, Atlanta on 2026-07-27 via a job-alert email; careers.arrive.com is a custom site with no pollable board found.", "query": "site:careers.arrive.com OR \"ParkMobile\" careers (\"technical account manager\" OR \"customer success\" OR \"implementation\") Atlanta", "last_checked": null},
-      {"name": "Alston Construction", "why": "Surfaced an AI Program Manager (Atlanta, $99K-$135K) on 2026-07-20 that was a real substance match. Custom careers site, no pollable board.", "query": "\"Alston Construction\" careers (\"AI program manager\" OR \"technology manager\" OR \"operations manager\")", "last_checked": null},
-      {"name": "InComm Payments", "why": "Atlanta HQ payments technology, mid-tier operating company. No pollable board identified.", "query": "\"InComm Payments\" careers (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\") Atlanta", "last_checked": null}
+      {
+        "name": "Google",
+        "why": "Atlanta office. Its gUP org runs a whole family of support roles (Product Support Manager gUP Search, gUP Platforms and Devices, gUP Shopping Support Ops, Product Solutions Manager Home). Confirmed unpollable 2026-07-27. Proven vein: the Home role was tailored that day.",
+        "query": "site:google.com/about/careers (\"product support manager\" OR \"product solutions manager\" OR \"support strategy\" OR \"customer support\") Atlanta OR remote",
+        "last_checked": "2026-07-27"
+      },
+      {
+        "name": "Microsoft",
+        "why": "Atlanta presence, large CX/support org. Custom careers site.",
+        "query": "site:jobs.careers.microsoft.com (\"customer success\" OR \"support\" OR \"technical account manager\") Atlanta",
+        "last_checked": "2026-07-28"
+      },
+      {
+        "name": "Apple",
+        "why": "Atlanta presence. AppleCare support org. Custom careers site.",
+        "query": "site:jobs.apple.com (\"support\" OR \"customer\" OR \"AppleCare\") manager Atlanta",
+        "last_checked": "2026-07-28"
+      },
+      {
+        "name": "Amazon / AWS",
+        "why": "Atlanta offices. Huge TAM/support org. Custom careers site.",
+        "query": "site:amazon.jobs (\"technical account manager\" OR \"customer success\" OR \"support operations\") Atlanta",
+        "last_checked": "2026-07-28"
+      },
+      {
+        "name": "Meta",
+        "why": "Atlanta office. Custom careers site.",
+        "query": "site:metacareers.com (\"customer success\" OR \"support\" OR \"operations manager\") Atlanta",
+        "last_checked": null
+      },
+      {
+        "name": "Home Depot",
+        "why": "Atlanta HQ with a real internal tech org. Workday tenant exists but the site name did not resolve on 2026-07-27 (HTTP 422 on the guess). If a search reveals the real site name, switch to polling and enroll.",
+        "query": "site:careers.homedepot.com OR site:myworkdayjobs.com \"home depot\" (\"customer success\" OR \"support manager\" OR \"technical account\")",
+        "last_checked": null
+      },
+      {
+        "name": "Cox Automotive",
+        "why": "Atlanta HQ (Cox Enterprises). Automotive software/marketplace tech. Workday site name unresolved (404 on the guess).",
+        "query": "site:myworkdayjobs.com cox (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\")",
+        "last_checked": null
+      },
+      {
+        "name": "Equifax",
+        "why": "Atlanta HQ. Data/analytics platform with enterprise clients. Workday site name unresolved (404 on the guess).",
+        "query": "site:myworkdayjobs.com equifax (\"customer success\" OR \"technical account manager\" OR \"implementation manager\")",
+        "last_checked": null
+      },
+      {
+        "name": "Global Payments",
+        "why": "Atlanta HQ fintech. Workday site name unresolved (422 on the guess).",
+        "query": "site:myworkdayjobs.com \"global payments\" (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\")",
+        "last_checked": null
+      },
+      {
+        "name": "Intuit / Mailchimp",
+        "why": "Mailchimp is Atlanta-based and now Intuit-owned. Workday tenant returned 401 on 2026-07-27, so it is auth-gated rather than public.",
+        "query": "site:jobs.intuit.com (\"customer success\" OR \"support operations\" OR \"technical account\") Atlanta OR Mailchimp",
+        "last_checked": null
+      },
+      {
+        "name": "Delta Air Lines",
+        "why": "Atlanta HQ and a personal-interest employer for Aneesh (SkyMiles/Medallion loyalty). Uses Avature, which the poller does not speak. Target its tech/digital org, not airport operations.",
+        "query": "site:delta.avature.net OR site:jobs.delta.com (\"customer experience\" OR \"technical\" OR \"operations manager\" OR \"customer success\") technology",
+        "last_checked": null
+      },
+      {
+        "name": "Electrify America",
+        "why": "EV charging, a stated passion domain. Confirmed 2026-07-06 to have no Greenhouse/Ashby/Lever/Workday board.",
+        "query": "\"Electrify America\" careers (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation\")",
+        "last_checked": null
+      },
+      {
+        "name": "Arrive / ParkMobile",
+        "why": "Atlanta-based parking and mobility platform (ParkMobile, EasyPark, Flowbird). Surfaced a Technical Account Manager, Atlanta on 2026-07-27 via a job-alert email; careers.arrive.com is a custom site with no pollable board found.",
+        "query": "site:careers.arrive.com OR \"ParkMobile\" careers (\"technical account manager\" OR \"customer success\" OR \"implementation\") Atlanta",
+        "last_checked": null
+      },
+      {
+        "name": "Alston Construction",
+        "why": "Surfaced an AI Program Manager (Atlanta, $99K-$135K) on 2026-07-20 that was a real substance match. Custom careers site, no pollable board.",
+        "query": "\"Alston Construction\" careers (\"AI program manager\" OR \"technology manager\" OR \"operations manager\")",
+        "last_checked": null
+      },
+      {
+        "name": "InComm Payments",
+        "why": "Atlanta HQ payments technology, mid-tier operating company. No pollable board identified.",
+        "query": "\"InComm Payments\" careers (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\") Atlanta",
+        "last_checked": null
+      }
     ]
   },
   "_endpoints": {
@@ -426,6 +501,31 @@
         "AI GTM Manager",
         "AI GTM Lead",
         "AI Enablement Manager"
+      ]
+    },
+    "tier2c_tooling_systems": {
+      "title_match_score": 22,
+      "description": "Tool-building and systems-ownership roles. Added 2026-07-28 after Aneesh identified tool creation and maintenance as his PRIMARY interest, with AI as a co-equal secondary one. Grounded in real master_resume.md experience: 25+ Salesforce Flow automations, Service Cloud admin, the Maven AGI deployment, and the CES/QA tooling he built. Scored at tier2 weight (+22, strong overlap) rather than tier1 because pure-systems roles often want deeper integration/config depth than a support-ops role exercises.",
+      "notes": "The salary floor filters the junior end of this family on its own: bare 'Salesforce Administrator' reqs frequently land under the floor and drop out, so listing them here is safe and costs nothing.",
+      "titles": [
+        "Business Systems Manager",
+        "Business Systems Analyst",
+        "Support Systems Manager",
+        "Systems Manager",
+        "Platform Operations Manager",
+        "Internal Tools Manager",
+        "Tooling Manager",
+        "Support Tooling Manager",
+        "Automation Manager",
+        "Automation Program Manager",
+        "GTM Systems Manager",
+        "Sales Systems Manager",
+        "Revenue Systems Manager",
+        "Revenue Operations Manager",
+        "CRM Administrator",
+        "Salesforce Administrator",
+        "Senior Salesforce Administrator",
+        "Salesforce Business Analyst"
       ]
     }
   },
@@ -1216,7 +1316,9 @@
       "score_bonus": 20,
       "bonus_reason": "AI-native fintech; builds AI agents (Emma) for credit union collections/origination",
       "reason": "San Francisco HQ (~264 employees). Vertical AI fintech for credit unions -- NOT the same company as the Canadian used-car retailer 'Clutch' on Greenhouse (job-boards.greenhouse.io/clutch, unrelated). User-surfaced (LinkedIn) 2026-07-24 -- WitnessAI-class miss, pollable Ashby board invisible to every discovery source. Verified live: 13 jobs incl. AI Operations Manager, Emma, Senior Customer Success Manager, Senior Support Engineer, Director of Professional Services.",
-      "role_exclusions": ["AI Operations Manager, Emma"],
+      "role_exclusions": [
+        "AI Operations Manager, Emma"
+      ],
       "role_exclusion_note": "2026-07-24: Aneesh declined this specific role on ethical grounds -- Emma is Clutch's debt-collections AI agent, and the role is built around scaling collections outreach. Never surface or tailor this exact title/role again. This is a ROLE-scoped carve-out, not a company-wide exclusion: Aneesh explicitly does NOT want debt-collections-industry roles blanket-filtered (decided case-by-case, not added as a hard filter like crypto/web3). Other Clutch roles not specifically built around the collections agent (CSM, Support Engineer, Professional Services -- likely touching the loan-origination side of the platform) remain fair game for normal scoring."
     },
     {
@@ -2192,6 +2294,49 @@
       "enrolled_date": "2026-07-27",
       "enrolled_via": "Found while investigating why Forethought's board 404s (see Forethought entry) -- Zendesk acquired Forethought, completed 2026-03-26.",
       "reason": "Customer service platform, direct-domain fit (Aneesh's exact industry). Verified live Workday board (126 jobs). The absorbed Forethought team appears to hire under a new title convention, 'AI Success Strategist' (Principal/Senior/base levels seen) -- these own end-to-end AI roadmap delivery for enterprise customers, a near-literal match to Aneesh's Maven AGI vendor-selection-to-deflection story. 'Senior AI Success Strategist' (Remote, GA included in the eligible-state list, OTE $118K-$178K) was tailored 2026-07-27. No AI/ML score_bonus applied -- Zendesk-the-company isn't AI-native as a whole (20+ year old CX platform), even though this specific role is AI-focused."
+    },
+    {
+      "name": "Nexus Cognitive",
+      "ats": "ashby",
+      "slug": "nexus-cognitive",
+      "priority": "high",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-28",
+      "enrolled_via": "confirmation backfill 2026-07-28; Aneesh applied to their TAM req and was rejected, which is how the company surfaced at all",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - NexusOne, AI-native converged data platform",
+      "reason": "Atlanta HQ, ~100+ employees across US and India, AI-native data platform. Verified live Ashby board 2026-07-28: 17 postings, of which FOUR are Atlanta-HQ fit-space roles including 'Head of Support' (tier1 true match), 'Technical Account Manager', 'Delivery Manager', and 'Forward Deployed Engagement Manager', plus TAMs in Charlotte and NYC. Atlanta + AI-native + sub-200 headcount is the exact intersection the watchlist was thinnest on; this company was invisible to every discovery source until a rejection email exposed it."
+    },
+    {
+      "name": "PlayOn",
+      "ats": "lever",
+      "slug": "playonsports",
+      "priority": "high",
+      "enrolled_date": "2026-07-28",
+      "enrolled_via": "confirmation backfill 2026-07-28; Aneesh applied to their AI Customer Experience Manager req, closed when another candidate accepted",
+      "reason": "Metro Atlanta HQ (Alpharetta/Chamblee GA), high school sports streaming and ticketing (NFHS Network, GoFan, MaxPreps). Verified live Lever board 2026-07-28: 16 postings, 6 in metro Atlanta. Hits BOTH the Atlanta gap and the sports_technology passion domain, which had produced zero surfaced roles in eight weeks. headcount_band deliberately omitted rather than guessed; Step 1e backfill will set it."
+    },
+    {
+      "name": "Sprout.ai",
+      "ats": "ashby",
+      "slug": "sprout-ai",
+      "priority": "low",
+      "enrolled_date": "2026-07-28",
+      "enrolled_via": "confirmation backfill 2026-07-28; Aneesh applied to their Technical CSM (US) req",
+      "reason": "Insurance-claims AI, UK HQ. Verified live Ashby board 2026-07-28 but only ONE posting live and it is Japan-remote. Enrolled at low priority rather than rejected under the Europe/APAC-only rule because the US Technical CSM req Aneesh applied to existed recently, so the board is not structurally US-free; a daily poll costs one API call. Re-evaluate if it stays APAC-only."
+    },
+    {
+      "name": "Autodesk",
+      "ats": "workday",
+      "slug": "autodesk",
+      "wd_host": "autodesk.wd1.myworkdayjobs.com",
+      "wd_tenant": "autodesk",
+      "wd_site": "Ext",
+      "priority": "low",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-07-28",
+      "enrolled_via": "confirmation backfill 2026-07-28; confirmation email did not name the role",
+      "reason": "Design/engineering software, large enterprise. Verified live Workday CXS endpoint 2026-07-28 (site 'Ext'): 309 postings match customer-success terms, though the visible sample skewed heavily international (Tokyo, Amman, Malaysia). Low priority: big-company roles carry no structural bonus and the US fit-space density is unproven."
     }
   ]
 }
