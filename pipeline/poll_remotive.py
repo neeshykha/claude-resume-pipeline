@@ -44,8 +44,17 @@ TITLE_PHRASES = [
     "customer experience", "support operations", "forward deployed", "engagement manager",
     "customer operations", "technical support manager", "deployment strategist",
 ]
+# Every phrase above needs a seed that can actually surface it. Until 2026-07-28
+# seven of the fourteen ("solutions consultant", "customer experience", "support
+# operations", "engagement manager", "customer operations", "technical support
+# manager", "deployment strategist") had no seed, so the filter was gating
+# against titles the search could never return. Same defect found and fixed in
+# poll_80k.py the same day. Keep the two lists in sync.
 SEARCH_SEEDS = ["customer success", "technical account manager", "implementation",
-                "solutions engineer", "professional services", "forward deployed"]
+                "solutions engineer", "solutions consultant", "professional services",
+                "forward deployed", "customer experience", "support operations",
+                "engagement manager", "customer operations",
+                "technical support manager", "deployment strategist"]
 
 # candidate_required_location values that count as US-reachable.
 US_OK = ["usa", "us", "u.s.", "united states", "north america", "americas",
@@ -92,10 +101,43 @@ def fetch(seed):
     return r.json().get("jobs", []) or []
 
 
+# Sentinel string no real posting should match. If searching for it returns the
+# same number of jobs as a real query, the API is ignoring `search` entirely.
+DEGRADED_SENTINEL = "zzz_nonexistent_query_zzz"
+
+
+def api_is_degraded():
+    """True when Remotive's API ignores query params and serves a fixed feed.
+
+    Found 2026-07-28: every seed returned an identical 36 jobs, and so did
+    `search=<nonsense>`, `category=customer-service`, and `limit=5`. The public
+    API now reports job-count 36 for any request, i.e. it exposes a small fixed
+    window instead of the full board. With `search` inert the seed list is
+    decorative and the feeder cannot discover anything: it had been running
+    daily for zero yield.
+
+    This is checked at runtime rather than the feeder being deleted, so the
+    moment Remotive restores the API the poller resumes on its own.
+    """
+    try:
+        real = len(fetch("customer success"))
+        junk = len(fetch(DEGRADED_SENTINEL))
+    except Exception:
+        return False  # a transient fetch error is not a degradation verdict
+    return real > 0 and real == junk
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
+
+    if api_is_degraded():
+        print("DEGRADED: Remotive's API is ignoring query params and serving a "
+              "fixed window (see api_is_degraded docstring). Discovery is not "
+              "possible; skipping without touching the queue. This check is "
+              "self-healing: it will resume automatically if the API recovers.")
+        return
 
     known, queue = load_known_names()
     seen_this_run = set()

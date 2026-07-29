@@ -10,6 +10,18 @@ pipeline/SESSION_STATE.md
 pipeline/jobs/
 pipeline/logs/
 pipeline/outcomes.csv
+# Backup/temp siblings written by mark_applied.py, mark_outcome.py, and
+# repair_outcomes.py. outcomes.csv itself was ignored but its .bak was not, so
+# Step 7's `git add -A` would have published the full application history --
+# companies, titles, scores, rejections -- to this PUBLIC repo the first time a
+# confirmation actually promoted something. Caught 2026-07-28 before any run;
+# `git log --all -- pipeline/*.bak` confirms none were ever committed.
+pipeline/*.bak
+pipeline/*.tmp
+# Mail-routing details referenced as {{PLACEHOLDER}} tokens by daily_task_prompt.md.
+# Kept local because that spec is published and these values map two of Aneesh's
+# identities to each other.
+pipeline/local_config.json
 pipeline/NEXT_RUN_NOTES.md
 pipeline/STRATEGY.md
 pipeline/pending_schedule.md

@@ -2,13 +2,14 @@
   "_description": "Standing enrollment queue for off-watchlist companies surfaced by the discovery layer. Historically a sighting just got noted in a run file and dead-ended. This file fixes that: feeders append to `pending`; the next run verifies each pending board and either enrolls it (-> watchlist_companies.json + move to `enrolled`) or rejects it (move to `rejected` with a reason so it's never re-evaluated). This is what converts a one-time sighting into permanent daily monitoring.",
   "_feeders": {
     "description": "Scripts/sources that append to `pending`. All are DISCOVERY FEEDERS (they find companies); the watchlist poller is the durable job source once a company is enrolled.",
+    "LinkedIn alert (Step 1d-2)": "Daily. Company names harvested from LinkedIn job-alert emails forwarded to the confirmation alias (see pipeline/local_config.json). Names only, never roles: LinkedIn job links are login-walled and are not the source ATS, so every lead arrives needs_ats_resolution=true. Hard cap 15 new companies per run to keep the step's cost flat regardless of alert volume. Added 2026-07-28.",
     "harvest_hn_hiring.py": "Monthly. Parses the HN 'Ask HN: Who is hiring?' thread via the Algolia API and extracts (ats, slug) directly from ATS apply links in comments -> directly enrollable. Highest-yield sub-500 source. Run on/after the 1st.",
     "poll_remotive.py": "Daily. Remotive remote-jobs JSON API. Remotive does NOT expose the ATS link, so it yields NAME-ONLY leads (needs_ats_resolution=true) that the enrollment step must resolve to an ATS before enrolling. (RemoteOK evaluated 2026-06-30 and dropped for data quality.)",
     "poll_80k.py": "Daily. 80,000 Hours job board via its public Algolia backend (added 2026-07-13 -- replaces the lossy WebSearch site: dork, which surfaced ~5 orgs vs 84+ live listings). EA / AI-safety / public-good orgs. Hits carry url_external, so leads arrive with (ats, slug) PRE-RESOLVED when the apply link is Greenhouse/Ashby/Lever; otherwise name-only. Filters to US-reachable, target-role-shaped, non-junior titles. Salary floor still applies at enrollment -- some board roles are volunteer/hourly.",
     "websearch board dorks": "Daily, run by Claude. site:jobs.ashbyhq.com / job-boards.greenhouse.io / jobs.lever.co target-role dorks. Surface unfamiliar companies -> append to pending."
   },
   "_schema": {
-    "pending": "[{name, ats, slug, source, first_seen, why, [needs_ats_resolution]}] \u2014 verify board live + has US-reachable fit-space roles, then enroll or reject. If needs_ats_resolution=true, name-only: resolve the ATS first (site:greenhouse.io OR ashby OR lever <company>).",
+    "pending": "[{name, ats, slug, source, first_seen, why, [needs_ats_resolution], [manual_review], [manual_review_why]}] \u2014 verify board live + has US-reachable fit-space roles, then enroll or reject. If needs_ats_resolution=true, name-only: resolve the ATS first (site:greenhouse.io OR ashby OR lever <company>). manual_review=true (set by Step 1d-2 when a LinkedIn card carried a tier1/tier2/tier2c title in Atlanta or Remote US) means: if this entry is rejected for having no pollable board, surface it once in the digest under 'Manual channel \u2014 no pollable board' before it disappears, then set manual_review_surfaced=true.",
     "enrolled": "[{name, ats, slug, enrolled_date, headcount_band}] \u2014 audit log; the live entry lives in watchlist_companies.json.",
     "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced}] \u2014 don't re-evaluate unless it resurfaces with new roles."
   },
@@ -58,6 +59,67 @@
       "source": "Workday Boards - Target Roles 2026-07-22",
       "first_seen": "2026-07-22",
       "why": "Technical Account Manager II - Customer Onboarding (Remote) listing seen via myworkdayjobs.com dork. Large cybersecurity vendor (2000+). Deferred this run for budget."
+    },
+    {
+      "name": "Windfall Trust",
+      "ats": "ashby",
+      "slug": "windfall",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-28",
+      "why": "80K Hours \u2014 'Senior Engagement Manager, Scenarios Advisory' | Remote, USA | $150,000 - $200,000 | https://jobs.ashbyhq.com/windfall/6ee76fd2-df83-482d-af1f-9f0d81313b18?utm_source=80000hours&utm_medium=job-board"
+    },
+    {
+      "name": "HiddenLayer",
+      "ats": "greenhouse",
+      "slug": "hiddenlayer",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-28",
+      "why": "80K Hours \u2014 'Technical Support Engineer' | HI | salary unlisted | https://job-boards.greenhouse.io/hiddenlayer/jobs/4915355007?utm_source=80000hours&utm_medium=job-board"
+    },
+    {
+      "name": "Transluce",
+      "ats": null,
+      "slug": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-28",
+      "why": "80K Hours \u2014 'Operations Generalist' | San Francisco Bay Area | $110,000 - $160,000 | https://jobs.gem.com/transluce/am9icG9zdDoq-FKTd-JXCK4eCHw1wzGA?utm_source=80000hours&utm_medium=job-board",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "CopilotIQ",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-07-29",
+      "why": "LinkedIn alert: Senior Manager, IT \u2014 health tech remote patient monitoring."
+    },
+    {
+      "name": "Finastra",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-07-29",
+      "why": "LinkedIn alert: Technical Program/Project Manager \u2014 fintech infrastructure."
+    },
+    {
+      "name": "Trimble",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-07-29",
+      "why": "LinkedIn alert: Principal Solutions Engineer \u2014 infrastructure tech."
+    },
+    {
+      "name": "Toast",
+      "ats": null,
+      "slug": null,
+      "needs_ats_resolution": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-07-29",
+      "why": "LinkedIn alert: Principal, CX Standards & Operating Systems \u2014 restaurant tech."
     }
   ],
   "enrolled": [

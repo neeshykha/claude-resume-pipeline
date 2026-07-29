@@ -214,10 +214,17 @@ class TitleMatcher:
         pc = watchlist["_poller_config"]
 
         self.exact = []  # (frozenset tokens, tier_name, prescore)
-        for tier_name in ("tier1_true_match", "tier2_strong_overlap",
-                          "tier3_reasonable_stretch", "tier4_weak_stretch"):
+        # Discover exact-match tiers dynamically rather than listing them here.
+        # This used to be a hardcoded 4-tuple, which silently made any NEW tier
+        # inert: tier2c_tooling_systems was added to the JSON on 2026-07-28 and
+        # matched nothing at all until this loop was generalized, despite
+        # CLAUDE.md promising that adding a tier to the JSON is sufficient.
+        # tier2b_ai_wildcard is excluded because it is handled separately below
+        # (signal words + explicit titles, not a plain title list).
+        for tier_name in sorted(k for k in tiers
+                                if k.startswith("tier") and k != "tier2b_ai_wildcard"):
             spec = tiers[tier_name]
-            for t in spec["titles"]:
+            for t in spec.get("titles", []):
                 self._add_exact(t, tier_name, spec["title_match_score"])
         wc = tiers["tier2b_ai_wildcard"]
         self.ai_wildcard_score = wc["title_match_score"]

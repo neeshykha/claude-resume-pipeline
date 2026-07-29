@@ -49,8 +49,13 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SEEN_JOBS = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
 SEEN_URLS = os.path.join(SCRIPT_DIR, "jobs", "seen_urls.json")
 OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
+# NOTE: this list is the canonical outcomes.csv schema and must stay in sync
+# with CANONICAL in repair_outcomes.py. Three incompatible shapes accumulated
+# here historically and silently hid 32% of the file from mark_applied.py;
+# change both files together, then run repair_outcomes.py to migrate.
 OUTCOMES_HEADER = ["applied_date", "company", "title", "url", "fit_score",
-                   "jd_coverage_pct", "stage", "outcome", "notes"]
+                   "jd_coverage_pct", "stage", "outcome", "notes",
+                   "source_channel"]
 
 
 def load_json(path, default):
@@ -155,7 +160,8 @@ def main() -> int:
                 continue
             w.writerow([run_date, j["company"], j["title"], j.get("url", ""),
                         j.get("score", ""), j.get("jd_coverage_pct", ""),
-                        "surfaced", "", j.get("notes", "")])
+                        "surfaced", "", j.get("notes", ""),
+                        j.get("source_channel", "pipeline")])
             appended += 1
 
     print(f"seen_jobs: +{len(added)} new, {len(touched)} re-touched, "
