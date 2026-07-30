@@ -260,7 +260,24 @@ Only a result of UNKNOWN goes to `pending`. (Added 2026-07-19 after a dork re-su
 Nash as "unfamiliar" and it was nearly double-enrolled; Metronome, Lightrun, and Cognite
 re-surface regularly too.)
 
-Process every `pending` entry:
+**Process AT LEAST 4 `pending` entries every run, OLDEST `first_seen` first. This is a floor,
+not a ceiling: clear more if budget allows, but never fewer, and never zero.**
+
+Why it is worded as a bounded floor instead of "process every pending entry" (which is what it
+said until 2026-07-29): unbounded work gets deferred. An audit on 2026-07-29 found the queue had
+silently stopped draining. Gainsight had been pending **26 days**, four more entries 7 days, and
+the 2026-07-29 run added four new LinkedIn leads while enrolling and rejecting *nothing* -- its
+`enrollments` array was empty. The cost was concrete: Windfall Trust sat unprocessed with a
+$150K-$200K tier-2 remote role and an already-resolved Ashby slug, one verification step from
+enrollment. A bounded floor is achievable under any budget; "every entry" is not, so it got
+skipped entirely rather than partially.
+
+**Staleness alarm.** If any `pending` entry has a `first_seen` more than 7 days old after this
+step runs, say so in the digest housekeeping section with the company name and age. Silent
+accumulation is the failure mode this is guarding against, so make neglect visible rather than
+letting the queue grow unobserved.
+
+For each entry processed:
 1. `needs_ats_resolution: true` → resolve the ATS
    (`site:greenhouse.io OR site:jobs.ashbyhq.com OR site:jobs.lever.co <company>`); no
    board found → reject with reason.
@@ -292,6 +309,15 @@ Process every `pending` entry:
    guess), `enrolled_date`, `enrolled_via`, any `score_bonus`; move to `enrolled`.
    Fail → move to `rejected` with a one-line reason.
 4. Bias toward sub-500 companies — this layer exists to catch the long tail.
+
+**Workday site-name resolution actually works; use it rather than deferring.** On 2026-07-29 all
+five Workday-hosted backlog entries resolved in one pass. The guess matrix alone got Motorola
+Solutions (`motorolasolutions.wd5`, site `careers`). The documented WebSearch fallback
+(`site:myworkdayjobs.com <company>`) got the other four, and none of the real site names were
+guessable: Red Hat = `Jobs`, CrowdStrike = `crowdstrikecareers`, Trimble = `TrimbleCareers`,
+Finastra = `FINC`. That single search per company is cheap and has a high hit rate, so a Workday
+company should not sit in `pending` for weeks. Only Gainsight resisted, and that is a genuine 403
+block rather than a wrong site name (rejected 2026-07-29 after 8 rechecks).
 
 ATS providers the poller speaks: Greenhouse, Ashby, Lever, Workday, SmartRecruiters
 (case-sensitive slug). Workable is unsupported — note Workable-only companies in the digest.
@@ -399,6 +425,19 @@ tier2b_ai_wildcard`'s `title_match_score` (+18) for the title-match component.
 `slugify`: lowercase, non-alphanumeric stripped, spaces→hyphens). Skip candidates whose
 key is in `seen_jobs.json` with `first_seen_date` within 30 days, or whose exact URL is in
 `seen_urls.json`.
+
+**Known collision, documented 2026-07-29 (not fixed, deliberately).** The key carries no
+location or requisition discriminator, so two genuinely distinct reqs with the same title at the
+same company collapse to one key. Observed live: Dialpad's "Revenue Operations Manager,
+Downmarket" appeared twice in the same shortlist as job IDs `8606878002` (Austin) and
+`8610614002` (Tempe), consuming two of forty slots for what is effectively one opportunity, and
+`seen_jobs.json` can only track one of them.
+
+Adding a discriminator to the key format would invalidate every historical key in
+`seen_jobs.json` at once and flood the next run with thousands of falsely-new jobs, which is a far
+worse outcome than one wasted slot. **When you notice a same-key pair in a run, keep the
+better-located one and put the other in "also live (FYI)".** Revisit the key format only
+alongside a deliberate `seen_jobs.json` migration.
 
 ### 2b. Hard filters
 

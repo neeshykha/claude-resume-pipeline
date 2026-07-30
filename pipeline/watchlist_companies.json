@@ -177,19 +177,19 @@
         "name": "Meta",
         "why": "Atlanta office. Custom careers site.",
         "query": "site:metacareers.com (\"customer success\" OR \"support\" OR \"operations manager\") Atlanta",
-        "last_checked": null
+        "last_checked": "2026-07-30"
       },
       {
         "name": "Home Depot",
         "why": "Atlanta HQ with a real internal tech org. Workday tenant exists but the site name did not resolve on 2026-07-27 (HTTP 422 on the guess). If a search reveals the real site name, switch to polling and enroll.",
         "query": "site:careers.homedepot.com OR site:myworkdayjobs.com \"home depot\" (\"customer success\" OR \"support manager\" OR \"technical account\")",
-        "last_checked": null
+        "last_checked": "2026-07-30"
       },
       {
         "name": "Cox Automotive",
         "why": "Atlanta HQ (Cox Enterprises). Automotive software/marketplace tech. Workday site name unresolved (404 on the guess).",
         "query": "site:myworkdayjobs.com cox (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\")",
-        "last_checked": null
+        "last_checked": "2026-07-30"
       },
       {
         "name": "Equifax",
@@ -588,9 +588,12 @@
     "hard_exclude_title_terms": {
       "terms": [
         "marketing",
-        "technical program"
+        "technical program",
+        "finance systems",
+        "treasury",
+        "system integrator"
       ],
-      "notes": "HARD title kill-list, checked BEFORE and independently of the tier1-exact override in poll_ats.poll_all. Unlike function_mismatch_titles (which is bypassed for protected tiers) and unlike TITLE_EXCLUDE (which an exact tier1 match overrides), nothing overrides these terms. Plain case-insensitive substring match on the title. Added 2026-07-27 after Customer.io's 'Technical Marketing Operations Manager' scored tier1_true_match at prescore 30 -- the TOP tier -- and sailed through every existing filter: stemmed-token matching sees 'Technical...Operations Manager' inside it, tier1 is a protected tier so is_function_mismatch() short-circuits to False, and the pre-existing 'Marketing Manager' function_mismatch entry never got evaluated. Aneesh does not want Marketing-function roles at all, so this needs to be unconditional rather than tier-sensitive. Note 'product marketing' already sits in poll_ats.TITLE_EXCLUDE for the same token-subset reason; this generalizes it. Keep this list SHORT and reserved for whole job functions Aneesh categorically rules out -- it is unconditional, so a term added here can silently kill a real match with no digest trace. 'technical program' added 2026-07-28 after the identical failure mode recurred: Weights & Biases (CoreWeave)'s 'Technical Program Management - Product Operations' (reports to VP of Engineering Operations, owns internal NPI/launch-readiness process with zero customer-facing responsibilities per the fetched JD) also matched tier1_true_match's 'Technical Operations Manager' via the same {technical, operation, manage} stem subset. This title concept was ALREADY in function_mismatch_titles as 'Technical Program Manager' (added 2026-07-19, consumed ~13/25 shortlist slots historically) -- the tier1 protected_tiers bypass defeated that existing safeguard, the same architectural gap as the marketing case. Used the substring 'technical program' rather than 'technical program manager' because the live title said 'Management' (matches 'Technical Support Operations Manager' etc. via a stemmed check but Manager/Management differ as literal substrings); confirmed no legitimate target title elsewhere in this file contains 'technical program' (Technical Project Manager uses 'project', not 'program', so it's unaffected)."
+      "notes": "HARD title kill-list, checked BEFORE and independently of the tier1-exact override in poll_ats.poll_all. Unlike function_mismatch_titles (which is bypassed for protected tiers) and unlike TITLE_EXCLUDE (which an exact tier1 match overrides), nothing overrides these terms. Plain case-insensitive substring match on the title. Added 2026-07-27 after Customer.io's 'Technical Marketing Operations Manager' scored tier1_true_match at prescore 30 -- the TOP tier -- and sailed through every existing filter: stemmed-token matching sees 'Technical...Operations Manager' inside it, tier1 is a protected tier so is_function_mismatch() short-circuits to False, and the pre-existing 'Marketing Manager' function_mismatch entry never got evaluated. Aneesh does not want Marketing-function roles at all, so this needs to be unconditional rather than tier-sensitive. Note 'product marketing' already sits in poll_ats.TITLE_EXCLUDE for the same token-subset reason; this generalizes it. Keep this list SHORT and reserved for whole job functions Aneesh categorically rules out -- it is unconditional, so a term added here can silently kill a real match with no digest trace. 'technical program' added 2026-07-28 after the identical failure mode recurred: Weights & Biases (CoreWeave)'s 'Technical Program Management - Product Operations' (reports to VP of Engineering Operations, owns internal NPI/launch-readiness process with zero customer-facing responsibilities per the fetched JD) also matched tier1_true_match's 'Technical Operations Manager' via the same {technical, operation, manage} stem subset. This title concept was ALREADY in function_mismatch_titles as 'Technical Program Manager' (added 2026-07-19, consumed ~13/25 shortlist slots historically) -- the tier1 protected_tiers bypass defeated that existing safeguard, the same architectural gap as the marketing case. Used the substring 'technical program' rather than 'technical program manager' because the live title said 'Management' (matches 'Technical Support Operations Manager' etc. via a stemmed check but Manager/Management differ as literal substrings); confirmed no legitimate target title elsewhere in this file contains 'technical program' (Technical Project Manager uses 'project', not 'program', so it's unaffected). ADDED 2026-07-29 after the first live run of tier2c_tooling_systems produced ~50% false positives: 'finance systems' and 'treasury' caught Anthropic's 'Senior Business Systems Analyst, Finance Systems' and 'Senior Manager, Finance Systems - Treasury' (finance-domain roles, not the support/business/revenue systems work the tier was built for), and 'system integrator' caught LangChain's 'System Integrator Alliance Manager' (a channel/partnerships role that matched on System+Manager). 'alliance' was deliberately NOT added: Partner Success Manager is a legitimate tier4 title and a blanket alliance exclusion would kill it."
     },
     "function_mismatch_titles": {
       "titles": [
@@ -619,6 +622,28 @@
     }
   },
   "companies": [
+    {
+      "name": "Fireworks AI",
+      "ats": "greenhouse",
+      "slug": "fireworksai",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-07-30",
+      "enrolled_via": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — generative AI inference platform",
+      "reason": "AI inference platform. Verified live board 2026-07-30: Technical Account Manager, Enterprise (job 4335490009) is the fit-space role."
+    },
+    {
+      "name": "Vercel",
+      "ats": "greenhouse",
+      "slug": "vercel",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-07-30",
+      "enrolled_via": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
+      "reason": "Frontend cloud/dev infra platform. Verified live board 2026-07-30: Developer Success Engineer (5989803004), Senior Technical Account Manager (6112845004), Technical Account Manager (6121381004)."
+    },
     {
       "name": "EvolutionIQ",
       "ats": "greenhouse",
@@ -2337,6 +2362,133 @@
       "enrolled_date": "2026-07-28",
       "enrolled_via": "confirmation backfill 2026-07-28; confirmation email did not name the role",
       "reason": "Design/engineering software, large enterprise. Verified live Workday CXS endpoint 2026-07-28 (site 'Ext'): 309 postings match customer-success terms, though the visible sample skewed heavily international (Tokyo, Amman, Malaysia). Low priority: big-company roles carry no structural bonus and the US fit-space density is unproven."
+    },
+    {
+      "name": "Windfall Trust",
+      "ats": "ashby",
+      "slug": "windfall",
+      "priority": "high",
+      "reason": "Verified live Ashby board 2026-07-29: 4 jobs, 1 fit-space -- 'Senior Engagement Manager, Scenarios Advisory', Remote (US preferred), $150,000-$200,000. Tier-2 title well above the salary floor. Surfaced by the 80,000 Hours feeder only after its seed/phrase misalignment was fixed on 2026-07-28; it was structurally invisible before that.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "HiddenLayer",
+      "ats": "greenhouse",
+      "slug": "hiddenlayer",
+      "priority": "medium",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- AI/ML model security and detection",
+      "reason": "Verified live Greenhouse board 2026-07-29: 8 jobs, 3 fit-space -- AI Solutions Architect (Federal, Remote US), Customer Success Manager (Federal, Remote US), Technical Support Engineer (Remote). AI-security vertical; also a tooling company, so a candidate for the pending tooling company bonus.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "Toast",
+      "ats": "greenhouse",
+      "slug": "toast",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "reason": "Restaurant POS/platform. Verified live Greenhouse board 2026-07-29: 288 jobs, 8 fit-space, notably 'Principal, CX Standards & Operating Systems' (Remote) and 'Senior Manager, GTM Sales Engineer & AI solutions' (Remote). Surfaced via the LinkedIn harvest (Step 1d-2) on its first live run.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "CopilotIQ",
+      "ats": "greenhouse",
+      "slug": "copilotiq",
+      "priority": "medium",
+      "reason": "Remote patient monitoring for chronic conditions: HEALTH-TECH passion domain (apply the +10 semantically at Step 2c). Verified live Greenhouse board 2026-07-29: 8 jobs, 1 fit-space ('Supply Chain Operations Manager', Remote) -- thin today, but a small health-tech board turns over quickly. Surfaced via the LinkedIn harvest.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "Red Hat",
+      "ats": "workday",
+      "slug": "redhat",
+      "wd_host": "redhat.wd5.myworkdayjobs.com",
+      "wd_tenant": "redhat",
+      "wd_site": "Jobs",
+      "priority": "high",
+      "headcount_band": "2000+",
+      "reason": "Enterprise open source (Linux/OpenShift/Ansible), IBM subsidiary. Verified live Workday CXS 2026-07-29 (site 'Jobs'): 50 matching, including 'Security Technical Account Manager - Project Lightwell' (Boston) and 'OpenShift Technical Account Manager'. Red Hat is one of the few large employers that runs a genuine, large TAM organization -- tier-2 exact title at scale. Site name required a WebSearch fallback; the guess matrix missed it.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "Finastra",
+      "ats": "workday",
+      "slug": "finastra",
+      "wd_host": "finastra.wd3.myworkdayjobs.com",
+      "wd_tenant": "finastra",
+      "wd_site": "FINC",
+      "priority": "high",
+      "headcount_band": "2000+",
+      "reason": "Open-finance software (lending, payments, treasury, universal banking). Verified live Workday CXS 2026-07-29 (site 'FINC'): 24 matching, and THREE are Atlanta -- 'Customer Success Enablement Specialist, Retail Lending', 'Customer Success Manager, Retail Lending', and 'Customer Success Director'. Atlanta fit-space density is the watchlist's thinnest area, so this is a high-value enrollment. Surfaced via the LinkedIn harvest on its first live run.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "CrowdStrike",
+      "ats": "workday",
+      "slug": "crowdstrike",
+      "wd_host": "crowdstrike.wd5.myworkdayjobs.com",
+      "wd_tenant": "crowdstrike",
+      "wd_site": "crowdstrikecareers",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "reason": "Endpoint/cloud security platform. Verified live Workday CXS 2026-07-29 (site 'crowdstrikecareers'): 71 matching, including 'Manager, Platform Professional Services' (Remote, tier-2 title). Site name required a WebSearch fallback.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "Trimble",
+      "ats": "workday",
+      "slug": "trimble",
+      "wd_host": "trimble.wd1.myworkdayjobs.com",
+      "wd_tenant": "trimble",
+      "wd_site": "TrimbleCareers",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "reason": "Positioning, modeling and connectivity hardware/software for construction, agriculture and transportation: industrial-IoT adjacent (consider the IoT +15 at Step 2c) and touches the agriculture passion domain. Verified live Workday CXS 2026-07-29 (site 'TrimbleCareers'): 91 matching, several Customer Success Manager roles plus the 'Operations Manager' (Sunnyvale) that appeared in the LinkedIn alert which surfaced this company.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "Motorola Solutions",
+      "ats": "workday",
+      "slug": "motorolasolutions",
+      "wd_host": "motorolasolutions.wd5.myworkdayjobs.com",
+      "wd_tenant": "motorolasolutions",
+      "wd_site": "careers",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "reason": "Public-safety and enterprise security communications (land mobile radio, video, command centre software): IoT/physical-world adjacent. Verified live Workday CXS 2026-07-29 (site 'careers'): 339 matching, many Customer Success Manager and Customer Success Advocate roles. Resolved by the guess matrix without needing a search.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "Rackspace",
+      "ats": "workday",
+      "slug": "rackspace",
+      "wd_host": "rackspace.wd1.myworkdayjobs.com",
+      "wd_tenant": "rackspace",
+      "wd_site": "External",
+      "priority": "low",
+      "headcount_band": "2000+",
+      "reason": "Multicloud managed services. Verified live Workday CXS 2026-07-29 (site 'External') but THIN: only 4 postings matched customer-success/operations terms and NONE were fit-space (Enterprise Delivery Executive, Network Engineer, Cyber Security Manager, Marketing Specialist). Its Lever board returns 0 jobs. Enrolled at low priority rather than rejected because the board is genuinely live and one probe term is weak evidence; PRUNE if it stays fit-space-empty for a few weeks.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)"
+    },
+    {
+      "name": "Airbnb",
+      "ats": "greenhouse",
+      "slug": "airbnb",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "reason": "Verified live Greenhouse board 2026-07-29: 190 jobs, 59 fit-space. Runs a large in-house Community Support organisation (Community Support Forecasting & Demand Planning Analyst, Community Support Engineering, Business Operations and Growth Lead, several US/Remote-USA). Support-operations-at-scale is Aneesh's actual function, so the fit-space density here is real rather than incidental. Surfaced via the LinkedIn harvest catch-up pass.",
+      "enrolled_date": "2026-07-29",
+      "enrolled_via": "Step 1d backlog drain 2026-07-29 (catch-up pass leads)"
     }
   ]
 }
