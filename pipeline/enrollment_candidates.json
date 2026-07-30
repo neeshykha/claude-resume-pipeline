@@ -9,120 +9,41 @@
     "websearch board dorks": "Daily, run by Claude. site:jobs.ashbyhq.com / job-boards.greenhouse.io / jobs.lever.co target-role dorks. Surface unfamiliar companies -> append to pending."
   },
   "_schema": {
-    "pending": "[{name, ats, slug, source, first_seen, why, [needs_ats_resolution], [manual_review], [manual_review_why]}] \u2014 verify board live + has US-reachable fit-space roles, then enroll or reject. If needs_ats_resolution=true, name-only: resolve the ATS first (site:greenhouse.io OR ashby OR lever <company>). manual_review=true (set by Step 1d-2 when a LinkedIn card carried a tier1/tier2/tier2c title in Atlanta or Remote US) means: if this entry is rejected for having no pollable board, surface it once in the digest under 'Manual channel \u2014 no pollable board' before it disappears, then set manual_review_surfaced=true.",
-    "enrolled": "[{name, ats, slug, enrolled_date, headcount_band}] \u2014 audit log; the live entry lives in watchlist_companies.json.",
-    "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced}] \u2014 don't re-evaluate unless it resurfaces with new roles."
+    "pending": "[{name, ats, slug, source, first_seen, why, [needs_ats_resolution], [manual_review], [manual_review_why]}] — verify board live + has US-reachable fit-space roles, then enroll or reject. If needs_ats_resolution=true, name-only: resolve the ATS first (site:greenhouse.io OR ashby OR lever <company>). manual_review=true (set by Step 1d-2 when a LinkedIn card carried a tier1/tier2/tier2c title in Atlanta or Remote US) means: if this entry is rejected for having no pollable board, surface it once in the digest under 'Manual channel — no pollable board' before it disappears, then set manual_review_surfaced=true.",
+    "enrolled": "[{name, ats, slug, enrolled_date, headcount_band}] — audit log; the live entry lives in watchlist_companies.json.",
+    "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced}] — don't re-evaluate unless it resurfaces with new roles."
   },
-  "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
+  "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry — for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards — their fit roles aren't US-reachable.",
   "pending": [
     {
-      "name": "Gainsight",
-      "ats": "workday",
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "Workday board dork 2026-07-03",
-      "first_seen": "2026-07-03",
-      "why": "Senior Technical Project Manager - CS platform vendor itself (direct-domain fit). Real site name resolved 2026-07-14 via WebSearch (Gainsight_External_Careers) and confirmed via the Browser pane. RECHECKED 2026-07-19, 2026-07-20, 2026-07-21, 2026-07-22, 2026-07-23, 2026-07-27, and 2026-07-28: direct CXS POST still returns 403 (errorCode S22) -- same outage, now 7 consecutive checks / 6+ weeks. Recheck next run; if it resolves, wd_host=gainsight.wd5.myworkdayjobs.com wd_tenant=gainsight wd_site=Gainsight_External_Careers is ready to add directly."
-    },
-    {
-      "name": "Red Hat",
+      "name": "Ferguson",
       "ats": null,
       "slug": null,
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Remote 2026-07-22",
-      "first_seen": "2026-07-22",
-      "why": "Customer Success Executive listing seen on BuiltIn. Large enterprise (IBM-owned, 2000+) -- lower priority than sub-500 discoveries, deferred this run for budget."
-    },
-    {
-      "name": "Motorola Solutions",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "BuiltIn Remote 2026-07-22",
-      "first_seen": "2026-07-22",
-      "why": "Customer Success Manager - Enterprise Accounts (Remote) listing seen on BuiltIn. Large enterprise (2000+) -- deferred this run for budget."
-    },
-    {
-      "name": "Rackspace",
-      "ats": "workday",
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "Workday Boards - Target Roles 2026-07-22",
-      "first_seen": "2026-07-22",
-      "why": "Customer Success Manager listing seen via myworkdayjobs.com dork. Large managed-cloud provider (2000+). Deferred this run for budget."
-    },
-    {
-      "name": "CrowdStrike",
-      "ats": "workday",
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "Workday Boards - Target Roles 2026-07-22",
-      "first_seen": "2026-07-22",
-      "why": "Technical Account Manager II - Customer Onboarding (Remote) listing seen via myworkdayjobs.com dork. Large cybersecurity vendor (2000+). Deferred this run for budget."
-    },
-    {
-      "name": "Windfall Trust",
-      "ats": "ashby",
-      "slug": "windfall",
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-28",
-      "why": "80K Hours \u2014 'Senior Engagement Manager, Scenarios Advisory' | Remote, USA | $150,000 - $200,000 | https://jobs.ashbyhq.com/windfall/6ee76fd2-df83-482d-af1f-9f0d81313b18?utm_source=80000hours&utm_medium=job-board"
-    },
-    {
-      "name": "HiddenLayer",
-      "ats": "greenhouse",
-      "slug": "hiddenlayer",
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-28",
-      "why": "80K Hours \u2014 'Technical Support Engineer' | HI | salary unlisted | https://job-boards.greenhouse.io/hiddenlayer/jobs/4915355007?utm_source=80000hours&utm_medium=job-board"
-    },
-    {
-      "name": "Transluce",
-      "ats": null,
-      "slug": null,
-      "source": "80K Hours Algolia API",
-      "first_seen": "2026-07-28",
-      "why": "80K Hours \u2014 'Operations Generalist' | San Francisco Bay Area | $110,000 - $160,000 | https://jobs.gem.com/transluce/am9icG9zdDoq-FKTd-JXCK4eCHw1wzGA?utm_source=80000hours&utm_medium=job-board",
+      "source": "AI-Titled Roles WebSearch dork 2026-07-30",
+      "first_seen": "2026-07-30",
+      "why": "Surfaced via 'Lead Artificial Intelligence (AI) Enablement Operations Project Manager' listing on Remotive aggregator (posting itself not the source ATS). Large industrial distributor (Fortune 500) -- likely Workday but tenant unresolved; needs ATS resolution before verification.",
       "needs_ats_resolution": true
-    },
-    {
-      "name": "CopilotIQ",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-07-29",
-      "why": "LinkedIn alert: Senior Manager, IT \u2014 health tech remote patient monitoring."
-    },
-    {
-      "name": "Finastra",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-07-29",
-      "why": "LinkedIn alert: Technical Program/Project Manager \u2014 fintech infrastructure."
-    },
-    {
-      "name": "Trimble",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-07-29",
-      "why": "LinkedIn alert: Principal Solutions Engineer \u2014 infrastructure tech."
-    },
-    {
-      "name": "Toast",
-      "ats": null,
-      "slug": null,
-      "needs_ats_resolution": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-07-29",
-      "why": "LinkedIn alert: Principal, CX Standards & Operating Systems \u2014 restaurant tech."
     }
   ],
   "enrolled": [
+    {
+      "name": "Fireworks AI",
+      "ats": "greenhouse",
+      "slug": "fireworksai",
+      "enrolled_date": "2026-07-30",
+      "headcount_band": "51-200",
+      "enrolled_via": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
+      "notes": "AI inference platform. Technical Account Manager, Enterprise is the live fit-space role."
+    },
+    {
+      "name": "Vercel",
+      "ats": "greenhouse",
+      "slug": "vercel",
+      "enrolled_date": "2026-07-30",
+      "headcount_band": "501-2000",
+      "enrolled_via": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
+      "notes": "Frontend cloud/dev infra platform. Developer Success Engineer, Senior Technical Account Manager, and Technical Account Manager all live."
+    },
     {
       "name": "Cambium Learning Group",
       "ats": "workday",
@@ -400,7 +321,7 @@
       "enrolled_date": "2026-07-02",
       "headcount_band": "1-50",
       "enrolled_via": "AI-Native & AI-Safety Orgs discovery source 2026-07-02",
-      "notes": "AI safety research nonprofit, Berkeley. Current roles are ops-adjacent (Business Operations Associate, Senior Programs & Strategy Manager, both Remote US) but not strong title matches \u2014 mostly research/eng heavy. Enrolled per the explicit 'FAR.AI-type org' callout in _websearch_sources; watch for better title fits as new reqs post."
+      "notes": "AI safety research nonprofit, Berkeley. Current roles are ops-adjacent (Business Operations Associate, Senior Programs & Strategy Manager, both Remote US) but not strong title matches — mostly research/eng heavy. Enrolled per the explicit 'FAR.AI-type org' callout in _websearch_sources; watch for better title fits as new reqs post."
     },
     {
       "name": "Nimble Gravity",
@@ -743,9 +664,118 @@
       "enrolled_date": "2026-07-27",
       "headcount_band": "2000+",
       "enrolled_via": "Investigating the standing Forethought 404 -- found Zendesk acquired Forethought (completed 2026-03-26); Zendesk itself was never on the watchlist despite being a direct-industry company"
+    },
+    {
+      "name": "Windfall Trust",
+      "ats": "ashby",
+      "slug": "windfall",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": null
+    },
+    {
+      "name": "HiddenLayer",
+      "ats": "greenhouse",
+      "slug": "hiddenlayer",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": null
+    },
+    {
+      "name": "Toast",
+      "ats": "greenhouse",
+      "slug": "toast",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "CopilotIQ",
+      "ats": "greenhouse",
+      "slug": "copilotiq",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": null
+    },
+    {
+      "name": "Red Hat",
+      "ats": "workday",
+      "slug": "redhat",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Finastra",
+      "ats": "workday",
+      "slug": "finastra",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "CrowdStrike",
+      "ats": "workday",
+      "slug": "crowdstrike",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Trimble",
+      "ats": "workday",
+      "slug": "trimble",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Motorola Solutions",
+      "ats": "workday",
+      "slug": "motorolasolutions",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Rackspace",
+      "ats": "workday",
+      "slug": "rackspace",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Airbnb",
+      "ats": "greenhouse",
+      "slug": "airbnb",
+      "enrolled_date": "2026-07-29",
+      "headcount_band": "2000+"
     }
   ],
   "rejected": [
+    {
+      "name": "Proton AI",
+      "ats": "greenhouse",
+      "slug": "protonai",
+      "rejected_date": "2026-07-30",
+      "reason": "Greenhouse board dork hit ('Technical Customer Success Manager', Cambridge MA). Board live (8 jobs) but zero CS/TAM/implementation/support-ops titled roles currently -- board is sales/marketing/engineering/finance/recruiting only.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Flex",
+      "ats": "greenhouse",
+      "slug": "flex",
+      "rejected_date": "2026-07-30",
+      "reason": "Atlanta/Georgia board sweep hit ('Strategic Account Manager', multifamily rent-payment fintech). Board live (54 jobs) but zero CS/TAM/implementation/support-ops titled roles -- the surfacing role is a sales-function Account Manager, not support/CS fit.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Twilio",
+      "ats": "greenhouse",
+      "slug": "twilio",
+      "rejected_date": "2026-07-30",
+      "reason": "Tier-1 Manager-Title Sweep hit ('Manager, Technical Support'). Board live but every fit-space role is offshore (Remote Colombia, Remote India, Remote Singapore) -- no US-reachable posting.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Rithum",
+      "ats": "greenhouse",
+      "slug": "rithumliboard",
+      "rejected_date": "2026-07-30",
+      "reason": "Greenhouse board dork hit ('Technical Account Manager'). Board live but zero CS/TAM/implementation/support-ops titled roles currently -- board is sales/marketing/legal/HR/treasury/ad-account-management only.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "EcoVadis",
       "ats": "smartrecruiters",
@@ -1135,7 +1165,7 @@
       "ats": "ashby",
       "slug": "teambridge",
       "rejected_date": "2026-06-30",
-      "reason": "Board live but 0 open jobs on 2026-06-30 \u2014 nothing to monitor.",
+      "reason": "Board live but 0 open jobs on 2026-06-30 — nothing to monitor.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1191,7 +1221,7 @@
       "ats": "greenhouse",
       "slug": "gladly",
       "rejected_date": "2026-06-30",
-      "reason": "Greenhouse slug 'gladly' 404 \u2014 find real ATS/slug if resurfaced (customer service platform, would be a fit).",
+      "reason": "Greenhouse slug 'gladly' 404 — find real ATS/slug if resurfaced (customer service platform, would be a fit).",
       "recheck_if_resurfaced": true
     },
     {
@@ -1199,7 +1229,7 @@
       "ats": "greenhouse",
       "slug": "kustomer",
       "rejected_date": "2026-06-30",
-      "reason": "Greenhouse slug 'kustomer' 404 \u2014 find real ATS/slug if resurfaced (CRM/support, would be a fit).",
+      "reason": "Greenhouse slug 'kustomer' 404 — find real ATS/slug if resurfaced (CRM/support, would be a fit).",
       "recheck_if_resurfaced": true
     },
     {
@@ -1207,7 +1237,7 @@
       "ats": "greenhouse",
       "slug": "espressive",
       "rejected_date": "2026-06-30",
-      "reason": "Greenhouse slug 'espressive' 404 \u2014 find real ATS/slug if resurfaced (AI service desk, would be a fit).",
+      "reason": "Greenhouse slug 'espressive' 404 — find real ATS/slug if resurfaced (AI service desk, would be a fit).",
       "recheck_if_resurfaced": true
     },
     {
@@ -1215,7 +1245,7 @@
       "ats": "ashby",
       "slug": "lago",
       "rejected_date": "2026-06-30",
-      "reason": "Live (open-source billing, Paris HQ); fit roles (FDE, Customer Support Engineer, Technical Account Executive, Solutions Engineer) are ALL Europe-remote / France \u2014 not US-reachable. Re-check if a US-remote role opens.",
+      "reason": "Live (open-source billing, Paris HQ); fit roles (FDE, Customer Support Engineer, Technical Account Executive, Solutions Engineer) are ALL Europe-remote / France — not US-reachable. Re-check if a US-remote role opens.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1231,7 +1261,7 @@
       "ats": "ashby",
       "slug": "clerky",
       "rejected_date": "2026-07-01",
-      "reason": "Resurfaced via Remotive again (same listing as 2026-06-30 rejection): resolved to ashby/clerky, still only 1 job (worldwide 'Customer Operations & Writing Specialist' blend) \u2014 too thin/marginal to monitor. Re-check if more CS/ops roles appear.",
+      "reason": "Resurfaced via Remotive again (same listing as 2026-06-30 rejection): resolved to ashby/clerky, still only 1 job (worldwide 'Customer Operations & Writing Specialist' blend) — too thin/marginal to monitor. Re-check if more CS/ops roles appear.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1239,7 +1269,7 @@
       "ats": "ashby",
       "slug": "aureliussystems",
       "rejected_date": "2026-07-01",
-      "reason": "Live (20 jobs) but defense-tech/directed-energy cUAS company \u2014 all roles are engineering/robotics/hardware. The one keyword match, 'Lead, Forward Deployed Engineer', is onsite SF at a defense contractor: not a CS/support-ops fit, and the domain implies clearance requirements Aneesh doesn't have. Re-check only if a clearly non-defense support/CS role appears.",
+      "reason": "Live (20 jobs) but defense-tech/directed-energy cUAS company — all roles are engineering/robotics/hardware. The one keyword match, 'Lead, Forward Deployed Engineer', is onsite SF at a defense contractor: not a CS/support-ops fit, and the domain implies clearance requirements Aneesh doesn't have. Re-check only if a clearly non-defense support/CS role appears.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1247,7 +1277,7 @@
       "ats": "ashby",
       "slug": "close",
       "rejected_date": "2026-07-01",
-      "reason": "Surfaced via WebSearch Ashby board dork (listing showed a Customer Success Associate role). Verified live board 2026-07-01: only 5 jobs, all eng/marketing (Backend SWE, SRE, Support SWE, Frontend SWE, Agentic Growth Marketing Lead) \u2014 the CS Associate listing had already closed. Re-check if a CS/support role reopens.",
+      "reason": "Surfaced via WebSearch Ashby board dork (listing showed a Customer Success Associate role). Verified live board 2026-07-01: only 5 jobs, all eng/marketing (Backend SWE, SRE, Support SWE, Frontend SWE, Agentic Growth Marketing Lead) — the CS Associate listing had already closed. Re-check if a CS/support role reopens.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1255,7 +1285,7 @@
       "ats": "greenhouse",
       "slug": "emergentlabsinc",
       "rejected_date": "2026-07-02",
-      "reason": "Live (37 jobs) but the only fit-space role, Manager - Technical Account Management, is based in Bangalore \u2014 not US-reachable. Rest of board is Enterprise AE and eng roles.",
+      "reason": "Live (37 jobs) but the only fit-space role, Manager - Technical Account Management, is based in Bangalore — not US-reachable. Rest of board is Enterprise AE and eng roles.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1327,7 +1357,7 @@
       "ats": "greenhouse",
       "slug": "talonone",
       "rejected_date": "2026-07-07",
-      "reason": "Board live (resolved via greenhouse.io/talonone) but every posting is Australia/Berlin/London/Singapore-based, including the Customer Success Manager and Technical Account Manager Lead roles \u2014 no US-reachable role.",
+      "reason": "Board live (resolved via greenhouse.io/talonone) but every posting is Australia/Berlin/London/Singapore-based, including the Customer Success Manager and Technical Account Manager Lead roles — no US-reachable role.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1335,7 +1365,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-07",
-      "reason": "No standard ATS (Greenhouse/Ashby/Lever/Workday) \u2014 GovAI runs an 'expression of interest' form at governance.ai/opportunities, not pollable by poll_ats.py.",
+      "reason": "No standard ATS (Greenhouse/Ashby/Lever/Workday) — GovAI runs an 'expression of interest' form at governance.ai/opportunities, not pollable by poll_ats.py.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1513,6 +1543,58 @@
       "rejected_date": "2026-07-23",
       "reason": "Greenhouse board dork hit ('Technical Account Manager'). Board live but down to 1 open job (Information Security Engineer, India) -- zero US-reachable fit-space titles. The surfacing TAM listing has closed.",
       "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Transluce",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-29",
+      "reason": "Hosts on jobs.gem.com. Gem is not an ATS the poller speaks (Greenhouse, Ashby, Lever, Workday, SmartRecruiters, Workable), so the company cannot be monitored even though the role was real ('Operations Generalist', SF Bay, $110,000-$160,000).",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Gainsight",
+      "ats": "workday",
+      "slug": null,
+      "rejected_date": "2026-07-29",
+      "reason": "Pending since 2026-07-03 (26 days). Real Workday site name was resolved (Gainsight_External_Careers) but the direct CXS POST has returned 403 on every recheck: 2026-07-19, 07-20, 07-21, 07-22, 07-23, 07-27, 07-28, and again today. That is a genuine block, not a wrong site name. Rejecting to stop it consuming a Step 1d slot every run; it was the oldest thing in the queue and never resolvable by the documented fallback.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Microsoft",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-29",
+      "reason": "Already covered by _blind_spot_companies rotation in watchlist_companies.json (custom career site, not pollable). Enrolling would duplicate that coverage with a board the poller cannot read. Not a new discovery.",
+      "recheck_if_resurfaced": false
+    },
+    {
+      "name": "Lime",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-29",
+      "reason": "No Greenhouse/Ashby/Lever board found (probed lime, limebike on all three; all 404) and a targeted WebSearch did not resolve a supported ATS either. NOTE: micromobility sits in the electrification/EV passion domain, so this is a thematically desirable company -- recheck properly if it resurfaces, and consider _blind_spot_companies if it turns out to run a custom site.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Huntington National Bank",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-29",
+      "reason": "No Greenhouse/Ashby/Lever board found via standard resolution. Low thematic fit besides: regional retail bank, no AI/tooling/Atlanta/passion-domain signal. Not worth a Workday site hunt at this priority.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Evlo AI",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-07-29",
+      "reason": "No supported ATS. Probed evlo/evloai on Greenhouse and Lever (all 404) on 2026-07-28 and again 2026-07-29; ~30 roles exist but are LinkedIn-only. Business looks like an AI training-data / expert-network operation, so 'Operations Manager' may mean running the contractor marketplace rather than a support function.",
+      "recheck_if_resurfaced": true,
+      "manual_review": true,
+      "manual_review_why": "Operations Manager | Atlanta, GA (Remote) | matched tier1_true_match ('Support Operations Manager')",
+      "manual_review_surfaced": true,
+      "manual_review_surfaced_via": "interactive session 2026-07-29"
     }
   ]
 }
