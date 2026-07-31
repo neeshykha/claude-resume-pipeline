@@ -97,9 +97,15 @@ returns zero results now means no new confirmations, not a missing filter.**
    **Use `deliveredto:`, not `to:`.** Gmail forwarding preserves the original `To:` header,
    so a forwarded confirmation still reads `to:{{APPLY_ACCOUNT}}` and the old
    `to:{{CONFIRM_ALIAS}}` query silently returns nothing. `deliveredto:` was verified
-   working against this inbox on 2026-07-28. The `JobConfirmations` label
-   (id `{{CONFIRMATIONS_LABEL_ID}}`) is an equivalent fallback if `deliveredto:` ever breaks;
-   the Gmail MCP requires the label ID, not the display name.
+   working against this inbox on 2026-07-28.
+
+   **Do NOT fall back to `label:{{CONFIRMATIONS_LABEL_ID}}` on its own.** Verified 2026-07-30:
+   the `JobConfirmations` filter also matches forwarded LinkedIn job alerts, so every LinkedIn
+   email currently carries BOTH the JobLeads and JobConfirmations labels. A label-only query
+   would pull ~20 job alerts a day into the confirmation matcher, which is looking for evidence
+   that Aneesh applied. If `deliveredto:` ever breaks, the safe fallback is
+   `label:{{CONFIRMATIONS_LABEL_ID}} -from:linkedin.com`. The `-from:linkedin.com` clause is
+   what keeps the two streams apart, whichever selector is used.
 2. For each result, read the sender/subject/body to identify the company and, if stated, the
    specific requisition URL. **Always try to extract the URL from the email body first** —
    confirmation emails from Greenhouse/Ashby/Lever/Workday usually restate the job link or a
@@ -338,17 +344,40 @@ to show. (Nexus Cognitive is the case in point — an Atlanta AI company with fo
 roles including a tier-1 Head of Support, invisible to every discovery source until an
 unrelated email exposed it.)
 
+**THIS STEP IS MANDATORY AND MUST BE LOGGED, even when it finds nothing.** Record a
+`step_1d_2_linkedin_harvest` object in `run_[date].json` on every run: the query used, the count
+of threads returned, companies extracted, and how many were newly queued. **On 2026-07-30 this
+step did not execute at all** — the run record contained zero mentions of LinkedIn and the step
+was absent from `searches_run` — while roughly a dozen unprocessed alerts sat in the inbox. It
+had run correctly the day before, so the failure mode is silent omission, not breakage. A logged
+zero is verifiable; an absent section is indistinguishable from a skipped step.
+
 1. Search Gmail for `deliveredto:{{CONFIRM_ALIAS}} from:linkedin.com newer_than:1d`.
    Zero results is normal and not an error. **Read snippets/subjects, not full bodies** —
-   these emails are long and a full read of several will blow the run's context budget.
+   these emails are long and a full read of several will blow the run's context budget. The
+   subject line alone carries the company and title (`<Title> at <Company>`), which is all this
+   step needs.
+
+   **Expect non-job LinkedIn mail in the results and skip it silently.** The filter forwards all
+   of `from:linkedin.com` by design, so messaging digests (`messaging-digest-noreply@`), Premium
+   promotions (`linkedin@em.linkedin.com`), and LinkedIn News (`editors-noreply@`) arrive too:
+   about 15% of volume. Job alerts come from `jobalerts-noreply@linkedin.com` and
+   `jobs-noreply@linkedin.com`. LinkedIn also re-sends the same alert hours apart under a
+   slightly different subject, so dedupe by company, not by message.
 2. Extract company names. Ignore salaries and links.
 
    **One exception (added 2026-07-28, from a real miss).** Also note when a card's title
    matches `tier1_true_match`, `tier2_strong_overlap`, or `tier2c_tooling_systems` AND its
-   location is Atlanta or Remote US. Both values are already plain text in the email, so
-   reading them costs nothing and requires resolving no links. When both hold, set
-   `manual_review: true` on that company's pending entry plus a one-line `manual_review_why`
-   naming the title and location.
+   location is Atlanta or Remote US. When both hold, set `manual_review: true` on that company's
+   pending entry plus a one-line `manual_review_why` naming the title and location.
+
+   **Correction, 2026-07-30: the title is in the subject line, the location is NOT.** LinkedIn
+   subjects are `<Title> at <Company>`, so a title-tier check is free but a location check is
+   not. Do this in two stages rather than reading every body: check the title against the tiers
+   from the subject alone, and ONLY for the small number of cards that already match a tier,
+   open that one message to read its location. Tier-matching titles are a minority of any day's
+   alerts, so this stays cheap. The earlier wording claimed both values were in the subject,
+   which was wrong.
 
    **Match loosely, substring in EITHER direction, and do not tighten this.** A bare
    "Operations Manager" should flag off tier-1's "Support Operations Manager", and a bare
@@ -365,6 +394,13 @@ unrelated email exposed it.)
    Prompting case: "Operations Manager, Evlo AI, Atlanta GA (Remote)" — tier-1-adjacent title
    in the two weakest buckets, at a company with no ATS board, which the company-only design
    would have discarded without Aneesh ever seeing it.
+2b. **Drop job-board aggregators at extraction; they are not employers.** Platforms that repost
+   other companies' listings (Swooped, Jobot, Dice, ZipRecruiter, Talentify, Lensa, and similar)
+   surface in LinkedIn alerts as though they were hiring. Enrolling one pollutes the watchlist
+   with duplicated third-party reqs. Swooped was caught and blocklisted on 2026-07-30. If you are
+   unsure whether a name is an employer or an aggregator, that uncertainty alone is reason enough
+   to skip it: a real employer will resurface.
+
 3. **Dedupe in ONE batched call:** `.venv/bin/python pipeline/check_company.py "A" "B" "C" ...`
    (it accepts many names per call and searches the watchlist plus all three queue buckets).
    Only a result of UNKNOWN is a real lead.
@@ -469,8 +505,19 @@ score >110 to surface. Queued/unapplied roles do NOT count. Trust the poller's
 - Freshness: `_scoring_config → freshness_bonus_2d` (≤2 days) / `freshness_bonus_7d` (≤7 days)
 
 **Company-level bonuses — capped at +30 combined (Scoring Guardrails in CLAUDE.md):**
-- AI/ML: a company's config `score_bonus` IS its AI bonus — count once, never stack a
-  generic +20 on top. Non-watchlist AI-native company: +20 once.
+- **A watchlist company's config `score_bonus` IS its complete vertical bonus. Count it once,
+  read `bonus_reason` to see which vertical(s) it represents, and never add anything on top
+  of it for AI or tooling.** As of 2026-07-29 that value encodes three cases: `20` for AI/ML,
+  `20` for developer/infra tooling, and `30` for a company that is genuinely both (already
+  pre-clamped at the cap). Current distribution: 55 AI-only, 19 tooling-only, 9 both.
+- Tooling means the company's PRODUCT is a tool: devtools, dev infra, observability,
+  security tooling, data/API platforms. Added 2026-07-29 after Aneesh named tool creation and
+  maintenance as his primary interest, with AI co-equal secondary. The list is CURATED, not
+  keyword-derived: an automated pass was ~40% wrong in both directions and missed LaunchDarkly,
+  1Password, Vanta, Expel, LogicGate, and Chainguard outright. To add a company, edit its
+  `score_bonus`/`bonus_reason` by hand.
+- Non-watchlist company with no config bonus: +20 once if AI-native, +20 once if it is a
+  tooling company, +30 if clearly both. Never both a config bonus and a manual one.
 - Watchlist +10 · Atlanta-startup +20 · Atlanta-enterprise +10 · IoT +15
 - Small-company: per `_scoring_config → small_company_bonus` by `headcount_band`
   (absent band = 0, never guess)
