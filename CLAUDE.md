@@ -231,11 +231,24 @@ scored lower due to title distance. Volume over perfection at that tier.
 These prevent company-level attributes from drowning out role fit. Added 2026-06-23 after a
 run surfaced four roles from a single company because structural bonuses were stacking.
 
-1. **Count the AI/industry bonus ONCE.** A watchlist company's `score_bonus` in
-   `watchlist_companies.json` (e.g. Cresta `score_bonus: 20`, `bonus_reason: "AI/ML platform"`)
-   IS the AI/ML bonus for that company — do **not** also add a separate generic "+20 AI/ML"
-   on top. For a company with a config `score_bonus`, use that value and add nothing more for
-   AI/ML. For a non-watchlist AI-native company with no config bonus, apply +20 once. Never both.
+1. **Count the vertical bonus ONCE.** A watchlist company's `score_bonus` in
+   `watchlist_companies.json` IS that company's complete vertical bonus — do **not** add a
+   separate generic "+20 AI/ML" or "+20 tooling" on top. Read `bonus_reason` to see which
+   vertical it encodes. As of 2026-07-29 there are three cases:
+   - `20` + "AI/ML platform" — AI-native company (55 companies)
+   - `20` + "Developer/infra tooling" — the company's product is a tool: devtools, dev infra,
+     observability, security tooling, data/API platforms (19 companies). Added after Aneesh
+     named tool creation and maintenance as his primary interest, AI co-equal secondary.
+   - `30` + both — genuinely both, already pre-clamped at the +30 cap (9 companies)
+
+   For a non-watchlist company with no config bonus: +20 once if AI-native, +20 once if a
+   tooling company, +30 if clearly both. Never a config bonus and a manual one together.
+
+   **The tooling list is curated by hand and must stay that way.** A keyword pass over the
+   `reason` text was tried on 2026-07-28 and produced ~40% false positives in both directions
+   ("deployment" matched every AI-application company; "iam" substring-matched inside "Miami")
+   while missing LaunchDarkly, 1Password, Vanta, Expel, LogicGate, and Chainguard entirely.
+   To classify a new company, edit its `score_bonus`/`bonus_reason` directly.
 
 2. **Cap total company-level bonuses at +30.** The sum of all structural bonuses that describe
    the *company* rather than the *role* — AI/ML, watchlist (+10), Atlanta-enterprise (+10) /

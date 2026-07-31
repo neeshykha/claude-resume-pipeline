@@ -32,7 +32,14 @@ WATCHLIST_PATH = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 QUEUE_PATH = os.path.join(SCRIPT_DIR, "enrollment_candidates.json")
 SEEN_JOBS_PATH = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
 
-SUPPORTED_ATS = {"greenhouse", "greenhouse_eu", "ashby", "lever", "workday", "smartrecruiters"}
+# Must stay in sync with ATS_ENDPOINTS in poll_ats.py and `_endpoints` in
+# watchlist_companies.json. "workable" was added to the poller and to the
+# endpoints block on 2026-07-27 but NOT here, so any Workable company failed
+# validation on enrollment — and since Step 1-pre halts on a validation error
+# and poll_ats.py refuses to run against a malformed watchlist, enrolling one
+# would have blocked the whole daily run. Caught 2026-07-30 enrolling Hawk-Eye.
+SUPPORTED_ATS = {"greenhouse", "greenhouse_eu", "ashby", "lever", "workday",
+                 "smartrecruiters", "workable"}
 VALID_BANDS = {"1-50", "51-200", "201-500", "501-2000", "2000+"}
 QUEUE_BUCKETS = ("pending", "enrolled", "rejected")
 
