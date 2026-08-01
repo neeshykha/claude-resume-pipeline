@@ -55,7 +55,8 @@ OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
 # change both files together, then run repair_outcomes.py to migrate.
 OUTCOMES_HEADER = ["applied_date", "company", "title", "url", "fit_score",
                    "jd_coverage_pct", "stage", "outcome", "notes",
-                   "source_channel"]
+                   "source_channel", "surfaced_date", "unmet_hard_reqs",
+                   "vendor_tool_named_in_jd"]
 
 
 def load_json(path, default):
@@ -158,10 +159,16 @@ def main() -> int:
             u = (j.get("url") or "").rstrip("/").lower()
             if u and u in existing_urls:
                 continue
+            # surfaced_date is written once, here, and never updated again --
+            # mark_applied.py overwrites applied_date on promotion, so this is
+            # the only durable record of when the role was first surfaced.
             w.writerow([run_date, j["company"], j["title"], j.get("url", ""),
                         j.get("score", ""), j.get("jd_coverage_pct", ""),
                         "surfaced", "", j.get("notes", ""),
-                        j.get("source_channel", "pipeline")])
+                        j.get("source_channel", "pipeline"),
+                        run_date,
+                        j.get("unmet_hard_reqs", ""),
+                        j.get("vendor_tool_named_in_jd", "")])
             appended += 1
 
     print(f"seen_jobs: +{len(added)} new, {len(touched)} re-touched, "

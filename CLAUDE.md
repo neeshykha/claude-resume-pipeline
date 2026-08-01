@@ -109,7 +109,9 @@ Output PDF to `tailored/Aneesh_Khan_[Company]_[Role].pdf`
 ### 7. Show a Summary
 After generating, display:
 - **Targeting**: [Job Title] at [Company]
-- **JD Coverage**: N/15 top JD phrases present (exact substring match) + % — this is the authoritative ATS readiness metric
+- **JD Coverage**: N/15 top JD phrases present (exact substring match) + %. This is a pass/fail ATS-parsing gate at 80%, NOT a readiness or fit metric — do not rank roles by it (see the `jd_coverage_pct` note in the tracking-files section for why)
+- **Unmet hard requirements**: the count of JD hard requirements that can't be honestly claimed, plus a one-line list. This is the readiness signal; it goes in `outcomes.csv → unmet_hard_reqs`
+- **Vendor tool named in the JD**: the incumbent AI/support tool the posting names, if any (`Intercom/Fin`, `Forethought AI`). Goes in `outcomes.csv → vendor_tool_named_in_jd`, blank if none
 - **Key changes**: Brief list of what was adjusted and why
 - **Keyword match**: List of JD keywords that are now reflected in the resume, grouped by (exact match vs. semantic match)
 - **Missing keywords**: Any JD requirements that don't map to actual experience (flag these honestly — do NOT add fake experience)
@@ -179,8 +181,26 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | `outcomes.csv` outcome (rejected/interview/offer) | `mark_outcome.py` | infer an outcome from silence |
 | `outcomes.csv` schema migrations | `repair_outcomes.py` | hand-fix drifted rows |
 
-**`outcomes.csv` canonical schema (10 columns as of 2026-07-28):**
-`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel`
+**`outcomes.csv` canonical schema (13 columns as of 2026-08-01):**
+`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd`
+
+The last three landed 2026-08-01 from the conversion audit (SESSION_STATE 2026-08-01):
+
+- **`surfaced_date`** — when the pipeline first surfaced the role, written once by
+  `update_tracking.py` and never updated. It exists because `applied_date` meant two different
+  things depending on stage, and `mark_applied.py` overwrote it on promotion, destroying the only
+  record of how long a role sat unsent. Backfilled from `seen_jobs.json → first_seen_date` by
+  `backfill_surfaced_date.py` (147 of 168 rows recovered; the 21 blanks are confirmation-backfill
+  rows the poller never saw, left blank rather than guessed). `age_report.py` reads this column.
+- **`unmet_hard_reqs`** — count of JD hard requirements that cannot be honestly claimed. This is
+  the intended replacement for `jd_coverage_pct` as a readiness signal. Populate it at Step 6
+  from the genuine gaps already identified during tailoring.
+- **`vendor_tool_named_in_jd`** — the incumbent AI/support tool the JD names, when it names one
+  (`Intercom/Fin`, `Forethought AI`, `Zendesk`). Blank when the JD names none. Recorded to test
+  whether vendor mismatch is a recurring rejection cause; at n=2 it is a hypothesis, not a finding.
+
+**Stage vocabulary:** `surfaced` (tailored, not confirmed sent), `applied`, `rejected`, `closed`,
+`expired` (retired by `age_report.py` after 45 days with no confirmation), `tailored` (legacy).
 
 `source_channel` is `pipeline`, `user_surfaced`, `referral`, or `linkedin`. It exists because a
 CodeRabbit application submitted through an employee referral was indistinguishable from a cold
@@ -193,10 +213,21 @@ ATS apply, and those convert at very different rates. Vocabulary lives in `KNOWN
 cosmetic: `mark_applied.py` silently skips any row whose column count differs from the header, and
 a 2026-07-28 audit found 32% of the file invisible to promotion for exactly that reason.
 
-**A caution on `jd_coverage_pct`.** It measures whether the resume mirrors the posting's language,
-not whether Aneesh clears the hiring manager's bar. The Vanta AI Optimization Specialist role
-scored ~111 with 15/15 coverage and was rejected at the recruiter screen over unlisted
-Intercom/Fin experience. Treat coverage as an ATS-parsing check, not a fit score.
+**`jd_coverage_pct` is a pass/fail gate, not a ranking signal. Never sort, compare, or
+prioritize roles by it.** It measures whether the resume mirrors the posting's language, not
+whether Aneesh clears the hiring manager's bar. The Vanta AI Optimization Specialist role scored
+~111 with 15/15 coverage and was rejected at the recruiter screen over unlisted Intercom/Fin
+experience.
+
+The 2026-08-01 audit established that this is a **variance** problem, not a small-sample problem,
+which is a stronger claim than the earlier caution made: **22 of 26 applied rows with coverage
+recorded (85%) sit at >=93%, and 15 of 26 (58%) are exactly 100%.** The metric is
+range-restricted by construction, because Step 6 targets >=80% and the second-pass rule pushes it
+higher. A number the process optimizes to a target cannot explain variation in outcomes at ANY
+sample size, so no amount of additional outcome data will rehabilitate it. Vanta at 15/15 was not
+an anomaly needing explanation; it was the modal value.
+
+Use it exactly one way: as a gate at 80% during tailoring. For readiness, use `unmet_hard_reqs`.
 
 Title matching is config-driven as of 2026-07-09: `poll_ats.py` builds its matcher at runtime from `watchlist_companies.json → _title_scoring_tiers` + `_poller_config` (stemmed-token matching, so word-form and word-order variants match automatically). To teach the poller a new title, edit the JSON; `poll_ats.py` carries no title lists, endpoints, or scoring numbers of its own. Whole TIERS are also discovered dynamically: any `_title_scoring_tiers` key starting with `tier` (except the specially-handled `tier2b_ai_wildcard`) is loaded automatically. That was a hardcoded 4-tuple until 2026-07-28, which silently made the newly added `tier2c_tooling_systems` match nothing despite this paragraph promising otherwise. After ANY hand edit to `watchlist_companies.json` or `enrollment_candidates.json`, run `.venv/bin/python pipeline/validate_config.py` (syntax + schema check). The daily run also runs it at Step 1-pre, and `poll_ats.py` refuses to poll against a malformed watchlist.
 

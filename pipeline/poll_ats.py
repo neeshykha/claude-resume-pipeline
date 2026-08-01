@@ -1375,16 +1375,49 @@ def poll_all(run_date: date) -> dict:
 
     # Build the shortlist with per-company diversity cap AND small/large balance.
     kept_per_company = {}
+    kept_dedup_keys = set()
+    sibling_collapsed = []
     diversity_dropped = 0
 
     def try_take(job, shortlist, taken_keys):
         nonlocal diversity_dropped
+        # Same-dedup_key sibling collapse (added 2026-07-31).
+        # dedup_key is {company}::{title-slug} with no location or requisition
+        # discriminator, so two genuinely distinct reqs with the same title at
+        # the same company collapse to one key and would otherwise each consume
+        # a shortlist slot for what is effectively one opportunity. Observed
+        # twice: Dialpad "Revenue Operations Manager, Downmarket" as job IDs
+        # 8606878002 (Austin) and 8610614002 (Tempe), on both 2026-07-29 and
+        # 2026-07-31.
+        #
+        # This was previously only a prose instruction in daily_task_prompt.md
+        # Step 2a ("keep the better-located one, put the other in also-live"),
+        # and it was skipped on both runs -- hence enforcing it in code.
+        # Deliberately does NOT change the key FORMAT: doing that would
+        # invalidate every historical key in seen_jobs.json at once and flood
+        # the next run with falsely-new jobs. This is a within-run collapse
+        # only, so history stays valid. The dropped sibling is preserved in
+        # `sibling_collapsed` for the digest's "also live (FYI)" section rather
+        # than being silently discarded.
+        dk = job.get("dedup_key")
+        if dk and dk in kept_dedup_keys:
+            sibling_collapsed.append({
+                "company": job.get("company"),
+                "title": job.get("title"),
+                "url": job.get("url"),
+                "location": job.get("location"),
+                "dedup_key": dk,
+            })
+            taken_keys.add(id(job))
+            return False
         co = slugify(job.get("company", ""))
         if kept_per_company.get(co, 0) >= MAX_PER_COMPANY_PER_RUN:
             diversity_dropped += 1
             taken_keys.add(id(job))  # cap won't free up; don't retry or re-count
             return False
         kept_per_company[co] = kept_per_company.get(co, 0) + 1
+        if dk:
+            kept_dedup_keys.add(dk)
         shortlist.append(job)
         taken_keys.add(id(job))
         return True
@@ -1429,6 +1462,7 @@ def poll_all(run_date: date) -> dict:
             stats["provenance_counts"][key] = stats["provenance_counts"].get(key, 0) + 1
 
     stats["diversity_dropped"] = diversity_dropped
+    stats["sibling_collapsed"] = len(sibling_collapsed)
     stats["shortlist_small"] = sum(
         1 for j in top_matched if (j.get("headcount_band") or "") in SMALL_BANDS)
     stats["shortlist_large_or_unknown"] = len(top_matched) - stats["shortlist_small"]
@@ -1470,6 +1504,7 @@ def poll_all(run_date: date) -> dict:
     return {
         "run_date": run_date.isoformat(),
         "matched": top_matched,
+        "sibling_collapsed": sibling_collapsed,
         "borderline": borderline_capped,
         "function_mismatch": function_mismatch[:40],
         "reseen_keys": reseen,

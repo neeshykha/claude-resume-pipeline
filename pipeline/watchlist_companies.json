@@ -214,19 +214,19 @@
         "name": "Delta Air Lines",
         "why": "Atlanta HQ and a personal-interest employer for Aneesh (SkyMiles/Medallion loyalty). Uses Avature, which the poller does not speak. Target its tech/digital org, not airport operations.",
         "query": "site:delta.avature.net OR site:jobs.delta.com (\"customer experience\" OR \"technical\" OR \"operations manager\" OR \"customer success\") technology",
-        "last_checked": null
+        "last_checked": "2026-08-01"
       },
       {
         "name": "Electrify America",
         "why": "EV charging, a stated passion domain. Confirmed 2026-07-06 to have no Greenhouse/Ashby/Lever/Workday board.",
         "query": "\"Electrify America\" careers (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation\")",
-        "last_checked": null
+        "last_checked": "2026-08-01"
       },
       {
         "name": "Arrive / ParkMobile",
         "why": "Atlanta-based parking and mobility platform (ParkMobile, EasyPark, Flowbird). Surfaced a Technical Account Manager, Atlanta on 2026-07-27 via a job-alert email; careers.arrive.com is a custom site with no pollable board found.",
         "query": "site:careers.arrive.com OR \"ParkMobile\" careers (\"technical account manager\" OR \"customer success\" OR \"implementation\") Atlanta",
-        "last_checked": null
+        "last_checked": "2026-08-01"
       },
       {
         "name": "Alston Construction",
@@ -608,9 +608,17 @@
         "technical program",
         "finance systems",
         "treasury",
-        "system integrator"
+        "system integrator",
+        "sales incentives",
+        "incentive compensation",
+        "system safety",
+        "systems safety",
+        "information systems security",
+        "rocket",
+        "missile",
+        "financial systems"
       ],
-      "notes": "HARD title kill-list, checked BEFORE and independently of the tier1-exact override in poll_ats.poll_all. Unlike function_mismatch_titles (which is bypassed for protected tiers) and unlike TITLE_EXCLUDE (which an exact tier1 match overrides), nothing overrides these terms. Plain case-insensitive substring match on the title. Added 2026-07-27 after Customer.io's 'Technical Marketing Operations Manager' scored tier1_true_match at prescore 30 -- the TOP tier -- and sailed through every existing filter: stemmed-token matching sees 'Technical...Operations Manager' inside it, tier1 is a protected tier so is_function_mismatch() short-circuits to False, and the pre-existing 'Marketing Manager' function_mismatch entry never got evaluated. Aneesh does not want Marketing-function roles at all, so this needs to be unconditional rather than tier-sensitive. Note 'product marketing' already sits in poll_ats.TITLE_EXCLUDE for the same token-subset reason; this generalizes it. Keep this list SHORT and reserved for whole job functions Aneesh categorically rules out -- it is unconditional, so a term added here can silently kill a real match with no digest trace. 'technical program' added 2026-07-28 after the identical failure mode recurred: Weights & Biases (CoreWeave)'s 'Technical Program Management - Product Operations' (reports to VP of Engineering Operations, owns internal NPI/launch-readiness process with zero customer-facing responsibilities per the fetched JD) also matched tier1_true_match's 'Technical Operations Manager' via the same {technical, operation, manage} stem subset. This title concept was ALREADY in function_mismatch_titles as 'Technical Program Manager' (added 2026-07-19, consumed ~13/25 shortlist slots historically) -- the tier1 protected_tiers bypass defeated that existing safeguard, the same architectural gap as the marketing case. Used the substring 'technical program' rather than 'technical program manager' because the live title said 'Management' (matches 'Technical Support Operations Manager' etc. via a stemmed check but Manager/Management differ as literal substrings); confirmed no legitimate target title elsewhere in this file contains 'technical program' (Technical Project Manager uses 'project', not 'program', so it's unaffected). ADDED 2026-07-29 after the first live run of tier2c_tooling_systems produced ~50% false positives: 'finance systems' and 'treasury' caught Anthropic's 'Senior Business Systems Analyst, Finance Systems' and 'Senior Manager, Finance Systems - Treasury' (finance-domain roles, not the support/business/revenue systems work the tier was built for), and 'system integrator' caught LangChain's 'System Integrator Alliance Manager' (a channel/partnerships role that matched on System+Manager). 'alliance' was deliberately NOT added: Partner Success Manager is a legitimate tier4 title and a blanket alliance exclusion would kill it."
+      "notes": "HARD title kill-list, checked BEFORE and independently of the tier1-exact override in poll_ats.poll_all. Unlike function_mismatch_titles (which is bypassed for protected tiers) and unlike TITLE_EXCLUDE (which an exact tier1 match overrides), nothing overrides these terms. Plain case-insensitive substring match on the title. Added 2026-07-27 after Customer.io's 'Technical Marketing Operations Manager' scored tier1_true_match at prescore 30 -- the TOP tier -- and sailed through every existing filter: stemmed-token matching sees 'Technical...Operations Manager' inside it, tier1 is a protected tier so is_function_mismatch() short-circuits to False, and the pre-existing 'Marketing Manager' function_mismatch entry never got evaluated. Aneesh does not want Marketing-function roles at all, so this needs to be unconditional rather than tier-sensitive. Note 'product marketing' already sits in poll_ats.TITLE_EXCLUDE for the same token-subset reason; this generalizes it. Keep this list SHORT and reserved for whole job functions Aneesh categorically rules out -- it is unconditional, so a term added here can silently kill a real match with no digest trace. 'technical program' added 2026-07-28 after the identical failure mode recurred: Weights & Biases (CoreWeave)'s 'Technical Program Management - Product Operations' (reports to VP of Engineering Operations, owns internal NPI/launch-readiness process with zero customer-facing responsibilities per the fetched JD) also matched tier1_true_match's 'Technical Operations Manager' via the same {technical, operation, manage} stem subset. This title concept was ALREADY in function_mismatch_titles as 'Technical Program Manager' (added 2026-07-19, consumed ~13/25 shortlist slots historically) -- the tier1 protected_tiers bypass defeated that existing safeguard, the same architectural gap as the marketing case. Used the substring 'technical program' rather than 'technical program manager' because the live title said 'Management' (matches 'Technical Support Operations Manager' etc. via a stemmed check but Manager/Management differ as literal substrings); confirmed no legitimate target title elsewhere in this file contains 'technical program' (Technical Project Manager uses 'project', not 'program', so it's unaffected). ADDED 2026-07-29 after the first live run of tier2c_tooling_systems produced ~50% false positives: 'finance systems' and 'treasury' caught Anthropic's 'Senior Business Systems Analyst, Finance Systems' and 'Senior Manager, Finance Systems - Treasury' (finance-domain roles, not the support/business/revenue systems work the tier was built for), and 'system integrator' caught LangChain's 'System Integrator Alliance Manager' (a channel/partnerships role that matched on System+Manager). 'alliance' was deliberately NOT added: Partner Success Manager is a legitimate tier4 title and a blanket alliance exclusion would kill it. ADDED 2026-07-31: 'sales incentives' and 'incentive compensation' after Red Hat's 'Senior Business Systems Analyst - Sales Incentives' cleared tier2c on the first run following the finance-systems excludes. Same class as the Anthropic finance-systems false positives: real systems work, wrong domain (sales-comp administration). Kept narrow on purpose -- a bare 'incentive' or 'compensation' would be far too broad. ADDED 2026-07-31 (second pass): 'system safety', 'systems safety', 'information systems security', 'rocket', 'missile'. Narrowly scoped to defense/hardware employers, where 'Systems' means ENGINEERING systems rather than business systems. Needed only because Anduril-class companies are being enrolled; verified NOT a problem at SaaS scaleups (Stripe 0 tier2c false positives, Figma 0, Databricks 1 marginal, Notion 1 TRUE positive). Note function_mismatch_titles already demotes the 'Engineering Manager' and 'Program Manager' variants, so these five only cover what survives that. ADDED 2026-07-31 (third pass): 'financial systems'. The existing 'finance systems' term did NOT catch Brex's 'Senior Manager, Accounting, Financial Systems', which took a shortlist slot on the scaleup-expansion test poll. Same false-positive class, different word form; the stemmed-token matcher does not help here because hard excludes are plain substring checks."
     },
     "function_mismatch_titles": {
       "titles": [
@@ -662,7 +670,9 @@
       "enrolled_via": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — generative AI inference platform",
-      "reason": "AI inference platform. Verified live board 2026-07-30: Technical Account Manager, Enterprise (job 4335490009) is the fit-space role."
+      "reason": "AI inference platform. Verified live board 2026-07-30: Technical Account Manager, Enterprise (job 4335490009) is the fit-space role.",
+      "board_status": "404_seen_2026-08-01",
+      "board_status_note": "First 404 seen this run — matches the harvest_ats.py --prune finding on 2026-07-31 that this board died within a day of enrollment. Not yet confirmed (needs a second consecutive 404 per Step 1b)."
     },
     {
       "name": "Vercel",
@@ -1119,6 +1129,7 @@
       "ats": "greenhouse",
       "slug": "gleanwork",
       "priority": "high",
+      "headcount_band": "501-2000",
       "reason": "Enterprise search AI — strong technical CSM/TAM pipeline, AI bonus"
     },
     {
@@ -1133,6 +1144,7 @@
       "ats": "greenhouse",
       "slug": "observeai",
       "priority": "medium",
+      "headcount_band": "201-500",
       "reason": "Contact center AI — similar profile to NICE/Level AI"
     },
     {
@@ -2591,6 +2603,259 @@
       "enrolled_date": "2026-07-30",
       "enrolled_via": "LinkedIn alert audit 2026-07-30",
       "reason": "Sony-owned sports officiating and tracking technology (ball tracking, SMART replay, 20+ sports): the anchor company for the sports_technology passion domain, which Aneesh named directly and which had produced ZERO surfaced roles in eight weeks. Workable endpoint resolves (HTTP 200) but returned 0 open jobs on 2026-07-30, so enrollment is a placeholder that will start producing when they post. Workable ATS support was only added to the poller 2026-07-27, which is why this was unreachable before. His LinkedIn alert for this company is deliberately KEPT as a cross-check while the board reads empty."
+    },
+    {
+      "name": "Databricks",
+      "ats": "greenhouse",
+      "slug": "databricks",
+      "priority": "high",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Data/AI lakehouse platform. Verified live Greenhouse board 2026-07-31: 804 jobs, 32 tier1/tier2 matches (largest fit-space of any company measured in the sweep), incl. multiple Deployment Strategist roles. Many postings are international, so expect the US-reachable subset to be smaller.",
+      "headcount_band": "2000+",
+      "score_bonus": 30,
+      "bonus_reason": "AI/ML platform + developer/infra tooling (+30, pre-clamped at the +30 company cap)"
+    },
+    {
+      "name": "Stripe",
+      "ats": "greenhouse",
+      "slug": "stripe",
+      "priority": "high",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Payments infrastructure. Verified live 2026-07-31: 548 jobs, 13 tier1/tier2 incl. Implementation Consultant and Professional Services roles. Runs a large technical support and TAM function. Skews international; US subset smaller.",
+      "headcount_band": "2000+",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20) - payments API platform"
+    },
+    {
+      "name": "Brex",
+      "ats": "greenhouse",
+      "slug": "brex",
+      "priority": "high",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Corporate spend/fintech. Verified live 2026-07-31: 302 jobs, 12 US-reachable tier1/tier2, notably THREE 'Enterprise Implementation Consultant' openings (Seattle, Salt Lake City, San Francisco) - an exact tier2 title at volume.",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Scale AI",
+      "ats": "greenhouse",
+      "slug": "scaleai",
+      "priority": "high",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "AI data/evaluation platform. Verified live 2026-07-31: 214 jobs, 11 US tier1/tier2 incl. 'Deployment Strategist' (Washington DC) and 'Deployment Engineering Manager, Enterprise' - both exact tier2 titles.",
+      "headcount_band": "501-2000",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - AI training data and evaluation"
+    },
+    {
+      "name": "Plaid",
+      "ats": "ashby",
+      "slug": "plaid",
+      "priority": "high",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Fintech data connectivity API. Verified live Ashby board 2026-07-31: 113 jobs, 5 US tier1/tier2 including **'Head of Support' (United States)** - a tier1 EXACT title, remote-eligible. Strongest single role surfaced by the sweep.",
+      "headcount_band": "501-2000",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20) - fintech data API platform"
+    },
+    {
+      "name": "Airtable",
+      "ats": "greenhouse",
+      "slug": "airtable",
+      "priority": "high",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Collaborative database/app platform. Verified live 2026-07-31: 40 jobs, 4 US tier1/tier2 and unusually senior + REMOTE: 'Director, Technical Account Management' (Remote US) and 'Director, AI Transformation & Customer Success' (Remote US). Small board, high hit density.",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Gong",
+      "ats": "greenhouse",
+      "slug": "gongio",
+      "priority": "medium",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Revenue intelligence (conversation AI over sales calls). Verified live 2026-07-31 (slug is 'gongio', not 'gong'): 101 jobs, 3 US tier1/tier2 incl. two 'Engagement Manager' roles and 'Senior Manager, Professional Services Team'.",
+      "headcount_band": "501-2000",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - revenue intelligence / conversation AI"
+    },
+    {
+      "name": "Anduril",
+      "ats": "greenhouse",
+      "slug": "andurilindustries",
+      "priority": "high",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Defense autonomy. Verified live 2026-07-31: 2,136 jobs, 7 tier1 and 11 tier2 - and TWO tier1 roles in ATLANTA ('Head of Integrated Product Support, Launched Effects' and 'Manager, Launched Effects Technical Operations'), plus 'Head of Customer Support' (Costa Mesa). Atlanta tier1 density is the watchlist's scarcest resource. CAUTION: this board is the reason the hard-exclude list gained 'system safety', 'rocket', and 'missile' - engineering-heavy employers make 'Systems' mean engineering systems.",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Figma",
+      "ats": "greenhouse",
+      "slug": "figma",
+      "priority": "medium",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Design/collaboration platform. Verified live 2026-07-31: 176 jobs, 4 tier1/tier2 (multiple Technical Account Manager), though the TAM roles observed were London/Tokyo/Sao Paulo - US subset unproven. Enrolled because the board is large and turns over.",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Notion",
+      "ats": "ashby",
+      "slug": "notion",
+      "priority": "medium",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Workspace/productivity platform. Verified live 2026-07-31: 109 jobs, 3 tier1/tier2 incl. 'Technical Support Manager, EMEA' (tier1) and 'Customer Experience Strategy & Operations Lead' (NY). Also produced a clean tier2c 'Business Systems Analyst' hit.",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Miro",
+      "ats": "ashby",
+      "slug": "miro",
+      "priority": "medium",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Visual collaboration platform. Verified live 2026-07-31: 44 jobs, 4 tier1/tier2, all Technical Account Manager (Austin US, plus Munich/Sydney). High hit density for a small board.",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Gusto",
+      "ats": "greenhouse",
+      "slug": "gusto",
+      "priority": "medium",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Payroll/HR platform. Verified live 2026-07-31: 85 jobs, 2 tier2 (Principal Product Operations Manager, Denver/SF). Large in-house support org typical of payroll providers.",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Verkada",
+      "ats": "greenhouse",
+      "slug": "verkada",
+      "priority": "medium",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Cloud-managed physical security (cameras, access control): IoT-adjacent, consider the IoT bonus at Step 2c. Verified live 2026-07-31: 275 jobs, 1 US tier1/tier2 ('Technical Support Engineering Manager', San Mateo) but a large board that turns over.",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Abridge",
+      "ats": "ashby",
+      "slug": "abridge",
+      "priority": "medium",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Ambient clinical documentation AI: HEALTH-TECH passion domain (+10 semantically at Step 2c) AND AI-native. Verified live 2026-07-31: 42 jobs, 1 US tier1/tier2 ('Director of Implementation, Enterprise and Commercial', NYC). Sub-500 headcount so the small-company bonus applies.",
+      "headcount_band": "201-500",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - clinical conversation AI"
+    },
+    {
+      "name": "Navan",
+      "ats": "greenhouse",
+      "slug": "tripactions",
+      "priority": "low",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Travel/expense platform (slug is still the legacy 'tripactions'). Verified live 2026-07-31: 198 jobs, 1 US tier1/tier2. Thin today; prune if it stays that way.",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Ironclad",
+      "ats": "ashby",
+      "slug": "ironcladhq",
+      "priority": "low",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Contract lifecycle management with AI. Verified live Ashby board 2026-07-31 (32 jobs) but ZERO US tier1/tier2 open today. Enrolled at low priority because the function exists at this company class; PRUNE if it stays empty.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) - contract lifecycle AI"
+    },
+    {
+      "name": "Linear",
+      "ats": "ashby",
+      "slug": "linear",
+      "priority": "low",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Issue tracking/project tooling for engineering teams. Verified live 2026-07-31 (23 jobs) but ZERO US tier1/tier2 today. Small, selective board; low priority.",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20) - issue tracking for software teams"
+    },
+    {
+      "name": "Webflow",
+      "ats": "greenhouse",
+      "slug": "webflow",
+      "priority": "low",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Visual web development platform. Verified live 2026-07-31 (28 jobs), ZERO US tier1/tier2 today. Low priority; prune if persistently empty."
+    },
+    {
+      "name": "Discord",
+      "ats": "greenhouse",
+      "slug": "discord",
+      "priority": "low",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Consumer communications platform. Verified live 2026-07-31 (45 jobs), ZERO tier1/tier2 today. Consumer support orgs often run through BPO rather than in-house ops roles, so expectations should be modest."
+    },
+    {
+      "name": "Carta",
+      "ats": "greenhouse",
+      "slug": "carta",
+      "priority": "low",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
+      "reason": "Cap table/equity management. Verified live 2026-07-31: 59 jobs, 4 title matches but ZERO tier1/tier2. Low priority.",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Outreach",
+      "ats": "lever",
+      "slug": "outreach",
+      "priority": "low",
+      "headcount_band": "501-2000",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — 'the only complete agentic AI platform for revenue teams'; the Manager, Customer Operations req explicitly asks for hands-on Claude-based agentic workflow design. Added 2026-08-01 after JD read at tailoring time (auto-enrollment left this unset, curated bonus fields don't get set automatically).",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (33 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Manager, Customer Operations (Revenue Operations)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Benchling",
+      "ats": "ashby",
+      "slug": "benchling",
+      "priority": "low",
+      "enrolled_date": "2026-07-31",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Implementation Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Everbridge",
+      "ats": "lever",
+      "slug": "everbridge",
+      "priority": "low",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-08-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager (xMatters)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Connecteam",
+      "ats": "greenhouse",
+      "slug": "connecteam",
+      "priority": "low",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-08-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (72 jobs) with 8 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Professional Service Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
