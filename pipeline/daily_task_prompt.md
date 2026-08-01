@@ -266,8 +266,42 @@ Only a result of UNKNOWN goes to `pending`. (Added 2026-07-19 after a dork re-su
 Nash as "unfamiliar" and it was nearly double-enrolled; Metronome, Lightrun, and Cognite
 re-surface regularly too.)
 
-**Process AT LEAST 4 `pending` entries every run, OLDEST `first_seen` first. This is a floor,
-not a ceiling: clear more if budget allows, but never fewer, and never zero.**
+**RUN THE HARVEST LAYER FIRST — it does the expensive part deterministically:**
+
+```bash
+.venv/bin/python pipeline/harvest_ats.py --from-pending
+```
+
+Dry-run by default; re-run with `--apply` to enroll. For each pending name it generates
+deterministic slug variants, probes Greenhouse/Ashby/Lever/Workable directly, and scores the
+resulting board with the **same `TitleMatcher` the poller uses**, so a company is judged on real
+tier1/tier2/tier2c US-reachable fit-titles rather than keyword guessing. Auto-enrolls at LOW
+priority (auto-enrollment must never outrank hand-vetted companies), rejects with a specific
+reason, and empties the queue as it goes.
+
+**This replaces the per-company WebSearch that used to gate this step**, which is why the floor
+below exists at all. Built 2026-07-31 on CLAUDE.md's long-standing trigger. On its first run it
+resolved **Outreach** (`lever/outreach` — two tier1 titles: "Manager, Customer Operations" US and
+"Manager, Technical Support" Seattle) and **Benchling** (`ashby/benchling` — Implementation Manager
+and TAM), both of which had failed manual slug guessing an hour earlier.
+
+Names it cannot resolve are reported, not guessed at. Those are usually Workday or a non-obvious
+slug, and are worth ONE manual `site:myworkdayjobs.com <company>` search each if the company
+matters — the same fallback that cracked Red Hat (`Jobs`), CrowdStrike (`crowdstrikecareers`),
+Trimble (`TrimbleCareers`), and Finastra (`FINC`).
+
+**Dead-board audit — run `--prune` weekly** (it is a report; it writes nothing):
+
+```bash
+.venv/bin/python pipeline/harvest_ats.py --prune
+```
+
+First run on 2026-07-31 across 199 pollable companies found 4 dead (404) and 3 empty, including
+**Fireworks AI, whose board died within a day of being enrolled**. Set `board_status` by hand on
+anything it flags.
+
+**Then process AT LEAST 4 remaining `pending` entries by hand, OLDEST `first_seen` first — a
+floor, not a ceiling. Never fewer, never zero.**
 
 Why it is worded as a bounded floor instead of "process every pending entry" (which is what it
 said until 2026-07-29): unbounded work gets deferred. An audit on 2026-07-29 found the queue had
@@ -471,9 +505,20 @@ Downmarket" appeared twice in the same shortlist as job IDs `8606878002` (Austin
 
 Adding a discriminator to the key format would invalidate every historical key in
 `seen_jobs.json` at once and flood the next run with thousands of falsely-new jobs, which is a far
-worse outcome than one wasted slot. **When you notice a same-key pair in a run, keep the
-better-located one and put the other in "also live (FYI)".** Revisit the key format only
-alongside a deliberate `seen_jobs.json` migration.
+worse outcome than a few wasted slots. Revisit the key format only alongside a deliberate
+`seen_jobs.json` migration.
+
+**ENFORCED IN CODE as of 2026-07-31 — you no longer have to catch this by hand.** This used to be
+a prose instruction here ("keep the better-located one, put the other in also-live") and it was
+skipped on both the 07-29 and 07-31 runs, so `poll_ats.py`'s `try_take()` now collapses same-key
+siblings during shortlist assembly. The dropped sibling is preserved in the poller output's
+**`sibling_collapsed`** array (and counted in `stats.sibling_collapsed`).
+
+**Read `sibling_collapsed` and put those roles in the digest's "also live (FYI)" section.** They
+are real, distinct requisitions, just at a company/title already represented in the shortlist. On
+the 07-31 data this reclaimed 3 slots, not the 1 originally observed: Dialpad "Revenue Operations
+Manager, Downmarket", Zip "Senior Customer Success Manager - Technical", and Klaviyo "Sr. Lead
+Engineer - Customer Agent".
 
 ### 2b. Hard filters
 
@@ -661,21 +706,51 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST
 1. Write `pipeline/jobs/track_[date].json`:
    ```json
    {"run_date": "YYYY-MM-DD", "jobs": [{"dedup_key": "...", "company": "...",
-     "title": "...", "url": "...", "score": 0, "jd_coverage_pct": 0, "notes": ""}]}
+     "title": "...", "url": "...", "score": 0, "jd_coverage_pct": 0, "notes": "",
+     "unmet_hard_reqs": 0, "vendor_tool_named_in_jd": ""}]}
    ```
    (surfaced top 3-4 only, not near-misses)
+
+   **`unmet_hard_reqs` and `vendor_tool_named_in_jd` are required, added 2026-08-01.**
+   You already identify both during tailoring; these fields just stop them from being
+   trapped in prose where nothing can count them.
+   - `unmet_hard_reqs`: integer count of the JD's HARD requirements that cannot be
+     honestly claimed from `master_resume.md`. Count the same gaps you disclose in the
+     cover letter and report at Step 4. Nice-to-haves don't count; only requirements a
+     screener would treat as disqualifying. `0` is a legitimate value, empty is not.
+   - `vendor_tool_named_in_jd`: the incumbent AI/support/CX tool the JD names, verbatim
+     (`Intercom/Fin`, `Forethought AI`, `Zendesk`, `Ada`). Empty string when the JD names
+     none. Record what the JD says, not whether Aneesh has used it.
+
+   Why these exist: `jd_coverage_pct` cannot serve as a readiness signal, and the reason
+   is arithmetic rather than sample size. 85% of applied rows sit at >=93% coverage
+   because Step 4 optimizes coverage to a target, so it has no variance left to explain
+   anything. Vanta scored 15/15 and was rejected at screen for lacking Intercom/Fin.
+   See CLAUDE.md's `jd_coverage_pct` note.
 2. Run:
    ```bash
    .venv/bin/python pipeline/update_tracking.py pipeline/jobs/track_[date].json --touch-reseen pipeline/jobs/ats_hits_[date].json
    ```
    This updates `seen_jobs.json`, `seen_urls.json`, and `pipeline/outcomes.csv`
-   (canonical header: `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes`)
-   atomically. **Never hand-edit `seen_jobs.json`** — hand edits corrupted it on
-   2026-06-30. NOTE: `pipeline/jobs/outcomes.csv` is a stale orphan — never write to it.
-3. Write `pipeline/jobs/jobs_[date].json` (full structured records) and
+   (canonical header: `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,
+   outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd`)
+   atomically. `surfaced_date` is written automatically from the run date; never set it
+   by hand and never update it on an existing row. **Never hand-edit `seen_jobs.json`** —
+   hand edits corrupted it on 2026-06-30. NOTE: `pipeline/jobs/outcomes.csv` is a stale
+   orphan — never write to it.
+3. **Aging check (added 2026-08-01, report-only):**
+   ```bash
+   .venv/bin/python pipeline/age_report.py
+   ```
+   Read the output and carry one line into the digest whenever a role scoring >=100 has
+   sat at `stage=surfaced` for more than 30 days. That is tailoring work decaying unsent,
+   and it is the single largest measured loss in the system: the 2026-08-01 audit found a
+   24% send rate in July and a 22-day median age on surfaced rows. Do NOT run `--apply`
+   during an autonomous run; retiring rows is Aneesh's call.
+4. Write `pipeline/jobs/jobs_[date].json` (full structured records) and
    `pipeline/jobs/run_[date].json` (run metadata: searches run, stats, capped companies,
    pipeline_notes, near_misses array, email draft ID).
-4. Update `pipeline/SESSION_STATE.md`: today's output, near-misses, housekeeping, action
+5. Update `pipeline/SESSION_STATE.md`: today's output, near-misses, housekeeping, action
    queue. Session state never goes in `CLAUDE.md`.
 
 ## Step 7: Sync the public repo

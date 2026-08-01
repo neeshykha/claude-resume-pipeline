@@ -13,9 +13,35 @@ promotion path. An audit on 2026-07-28 found 47 of 149 rows (32%) in this
 state, which meant a third of the tracker could never be promoted no matter
 how well the Gmail confirmation loop worked.
 
-Canonical schema (10 columns as of 2026-07-28):
+Canonical schema (13 columns as of 2026-08-01):
     applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,
-    notes,source_channel
+    notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd
+
+The last three were added 2026-08-01 after a conversion audit (see
+SESSION_STATE 2026-08-01):
+
+  surfaced_date            When the pipeline first surfaced the role. Exists
+                           because `applied_date` was doing two jobs: on a
+                           surfaced row it held the SURFACING date, and
+                           mark_applied.py then OVERWROTE it with the
+                           confirmation date on promotion, destroying the only
+                           record of how long the role sat unsent. 66% of
+                           dated surfaced rows are >14 days old and that decay
+                           was invisible. Never overwritten once set.
+  unmet_hard_reqs          Count of JD hard requirements that cannot be
+                           honestly claimed. The intended replacement for
+                           jd_coverage_pct as a readiness signal: coverage is
+                           range-restricted by construction (85% of applied
+                           rows sit at >=93%) because the tailoring loop
+                           optimizes it to a target, so it cannot explain
+                           outcome variation at any sample size. This one
+                           varies, and it is what actually kills at screen.
+  vendor_tool_named_in_jd  The incumbent AI/support tool the JD names, when it
+                           names one (e.g. "Intercom/Fin", "Forethought AI").
+                           Vanta rejected Aneesh at screen for lacking
+                           Intercom/Fin despite 15/15 coverage. Recorded to
+                           test whether vendor mismatch is a real pattern; at
+                           n=2 it is a hypothesis, not a finding.
 
 `source_channel` records how the role reached Aneesh: "pipeline" (the daily
 run surfaced it), "user_surfaced" (his own browsing, fed in by hand), "referral"
@@ -28,8 +54,13 @@ column is to make per-channel conversion comparable once enough outcomes land.
 
 Recognized drifted shapes:
 
+  M. LEGACY_V1: the 10-column schema in force 2026-07-28 to 2026-08-01
+     -> widen with three empty trailing columns. Told apart from the drifted
+        10-column shapes below by column 9 holding a KNOWN_CHANNELS value
+        rather than a file path, so this branch must be tested first.
+
   L. legacy 9-column canonical (pre-source_channel)
-     -> append the default source_channel.
+     -> append the default source_channel, then widen.
 
   A. canonical + trailing PDF path
      date, company, title, url, score, coverage, stage, outcome, notes, pdf
@@ -57,7 +88,12 @@ OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
 
 CORE = ["applied_date", "company", "title", "url", "fit_score",
         "jd_coverage_pct", "stage", "outcome", "notes"]
-CANONICAL = CORE + ["source_channel"]
+# Schema in force 2026-07-28 through 2026-08-01. Kept as a named constant
+# because it is still a RECOGNIZED input shape, not just history: shape "M"
+# below widens these rows, and the header check accepts a file still on it.
+LEGACY_V1 = CORE + ["source_channel"]
+CANONICAL = LEGACY_V1 + ["surfaced_date", "unmet_hard_reqs",
+                         "vendor_tool_named_in_jd"]
 DEFAULT_CHANNEL = "pipeline"
 
 
@@ -81,34 +117,50 @@ def merge_notes(notes, pdf):
 KNOWN_CHANNELS = {"", "pipeline", "user_surfaced", "referral", "linkedin"}
 
 
+def pad(row):
+    """Widen a repaired row to full CANONICAL width with empty strings.
+
+    Every classify() branch returns through here, so adding a column to
+    CANONICAL never again requires touching the individual shape handlers.
+    """
+    return row + [""] * (len(CANONICAL) - len(row))
+
+
 def classify(row):
     """Return (shape, repaired_row) or (None, None) if unrecognized.
 
     Repaired rows always come back at full CANONICAL width. A drifted
-    10-column row and a current 10-column row are told apart by column 9:
-    in the current schema it holds a channel from KNOWN_CHANNELS, whereas in
-    the legacy 'trailing PDF path' shape it holds a file path.
+    10-column row and a LEGACY_V1 10-column row are told apart by column 9:
+    in V1 it holds a channel from KNOWN_CHANNELS, whereas in the legacy
+    'trailing PDF path' shape it holds a file path. That test is why the
+    V1 branch must run BEFORE the 10-column shape handlers below.
     """
+    # C is tested FIRST among the 10-column shapes. Its column 9 is often
+    # empty, and "" is a member of KNOWN_CHANNELS, so the V1 branch below
+    # would otherwise claim a shifted row and pad it instead of un-shifting
+    # it. Guarded to width 10 so it can never touch a real 13-column row.
+    if (len(row) == 10 and not row[0].strip() and not row[1].strip()
+            and row[2].strip()):
+        return "C", pad(row[1:] + [DEFAULT_CHANNEL])
+
     if len(row) == len(CANONICAL) and row[9].strip() in KNOWN_CHANNELS:
         return "ok", row
+    if len(row) == len(LEGACY_V1) and row[9].strip() in KNOWN_CHANNELS:
+        return "M", pad(row)
     if len(row) == len(CORE):
-        return "L", row + [DEFAULT_CHANNEL]
+        return "L", pad(row + [DEFAULT_CHANNEL])
     if len(row) != 10:
         return None, None
-
-    # C: two leading empties with a real company in position 2
-    if not row[0].strip() and not row[1].strip() and row[2].strip():
-        return "C", row[1:] + [DEFAULT_CHANNEL]
 
     # A: url in its canonical position, trailing extra field
     if is_url(row[3]):
         repaired = row[:9]
         repaired[8] = merge_notes(repaired[8], row[9])
-        return "A", repaired + [DEFAULT_CHANNEL]
+        return "A", pad(repaired + [DEFAULT_CHANNEL])
 
     # B: score where the url belongs, url shifted one right
     if is_num(row[3]) and is_url(row[4]):
-        return "B", [
+        return "B", pad([
             row[0],              # applied_date
             row[1],              # company
             row[2],              # title
@@ -119,7 +171,7 @@ def classify(row):
             row[8],              # outcome
             merge_notes(row[9], row[5]),
             DEFAULT_CHANNEL,
-        ]
+        ])
     return None, None
 
 
@@ -128,11 +180,13 @@ def main():
     with open(OUTCOMES, newline="", encoding="utf-8") as f:
         raw = list(csv.reader(f))
     header, rows = raw[0], raw[1:]
-    if header not in (CANONICAL, CORE):
+    if header not in (CANONICAL, LEGACY_V1, CORE):
         print(f"header is not a recognized schema: {header}", file=sys.stderr)
         return 2
 
-    out, counts, unknown = [], {"ok": 0, "A": 0, "B": 0, "C": 0, "L": 0}, []
+    out = []
+    counts = {"ok": 0, "A": 0, "B": 0, "C": 0, "L": 0, "M": 0}
+    unknown = []
     for i, row in enumerate(rows, start=2):
         shape, repaired = classify(row)
         if shape is None:
@@ -142,11 +196,13 @@ def main():
         counts[shape] += 1
         out.append(repaired)
 
-    total_fixed = counts["A"] + counts["B"] + counts["C"] + counts["L"]
+    total_fixed = (counts["A"] + counts["B"] + counts["C"] + counts["L"]
+                   + counts["M"])
     print(f"rows: {len(rows)} | already canonical: {counts['ok']}")
     print(f"repairable: {total_fixed} "
           f"(A trailing-pdf: {counts['A']}, B transposed: {counts['B']}, "
-          f"C shifted: {counts['C']}, L legacy-9col: {counts['L']})")
+          f"C shifted: {counts['C']}, L legacy-9col: {counts['L']}, "
+          f"M widen-v1: {counts['M']})")
     if unknown:
         print(f"UNRECOGNIZED, left untouched: {len(unknown)}")
         for ln, n, head in unknown:
