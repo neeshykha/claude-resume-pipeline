@@ -22,12 +22,11 @@ TARGET_TITLES = [
     "GTM Enablement Manager",
 ]
 
-# Locations (including remote)
+# Locations (including remote). Narrowed 2026-08-02 to Atlanta + remote only;
+# NYC/NJ removed when Aneesh scoped out anything requiring relocation.
 LOCATIONS = [
     "Remote",
     "Atlanta, GA",
-    "New York, NY",
-    "New Jersey",
 ]
 
 # Salary floor

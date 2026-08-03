@@ -55,3 +55,9 @@ env/
 pipeline/blank_stage_worksheet.md
 pipeline/*_worksheet.md
 pipeline/BROWSER_VERIFY_TASK.md
+
+# Throwaway analysis scripts (CLAUDE.md pipeline/_taskname.py convention).
+# Runs are meant to delete these; they do not always. Ignored so the repo-sync
+# step cannot publish them, as happened with _schema_test.py on 2026-08-01.
+pipeline/_*.py
+!pipeline/__init__.py
