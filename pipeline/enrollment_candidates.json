@@ -17,6 +17,48 @@
   "pending": [],
   "enrolled": [
     {
+      "name": "NVIDIA",
+      "ats": "workday",
+      "slug": "nvidia",
+      "enrolled_date": "2026-08-03",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "AlertMedia",
+      "ats": "greenhouse",
+      "slug": "alertmedia",
+      "enrolled_date": "2026-08-03",
+      "headcount_band": "501-2000"
+    },
+    {
+      "name": "Harris Computer",
+      "ats": "workday",
+      "slug": "harriscomputer",
+      "enrolled_date": "2026-08-03",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Workiva",
+      "ats": "workday",
+      "slug": "workiva",
+      "enrolled_date": "2026-08-03",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Automation Anywhere",
+      "ats": "workday",
+      "slug": "automationanywhere",
+      "enrolled_date": "2026-08-03",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "101 VOICE",
+      "ats": "smartrecruiters",
+      "slug": "itmanagementcorpdba101voice",
+      "enrolled_date": "2026-08-03",
+      "headcount_band": "1-50"
+    },
+    {
       "name": "Zoom",
       "ats": "workday",
       "slug": "zoom",
@@ -927,9 +969,69 @@
       "slug": "connecteam",
       "enrolled_date": "2026-08-01",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Later",
+      "ats": "greenhouse",
+      "slug": "later",
+      "enrolled_date": "2026-08-03",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Horizon3.ai",
+      "ats": "ashby",
+      "slug": "horizon3ai",
+      "enrolled_date": "2026-08-03",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Drata",
+      "ats": "ashby",
+      "slug": "drata",
+      "enrolled_date": "2026-08-03",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Axon",
+      "ats": "greenhouse",
+      "slug": "axon",
+      "enrolled_date": "2026-08-03",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
+    {
+      "name": "Lucid Software",
+      "ats": "greenhouse",
+      "slug": "lucidsoftware",
+      "rejected_date": "2026-08-03",
+      "reason": "Board live (39 jobs) but 0 US-reachable tier1/tier2/tier2c fit-titles per harvest_ats.py -- TAM/Implementation Consultant postings surfaced by WebSearch are EMEA/APAC-skewed or already closed.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "JD Power",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-03",
+      "reason": "Workday board live (jdpa.wd501.myworkdayjobs.com/jdpa/JDPower, 24 jobs) but the only fit-space titles (Head of AI Enablement, Senior Director Customer Success) are Remote Canada, not US-reachable. Remaining US-remote listings (Dealer Advisor, Solutions Specialist I) are sales-adjacent, not tier1/2/2c fit.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "AYR Global IT Solutions",
+      "ats": "smartrecruiters",
+      "slug": "AYRGlobalITSolutionsInc",
+      "rejected_date": "2026-08-03",
+      "reason": "Board resolves (173 postings) but every posting has a releasedDate in 2017 -- a zombie/evergreen SmartRecruiters account, same failure mode as Augment CXM. No live openings despite the API still serving records.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "RealPage",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-03",
+      "reason": "No pollable board found -- probed Greenhouse/Ashby/Lever/Workday name variants, no match. Likely a custom or unresolved Workday tenant. Named target company in PropTech source notes; revisit if a myworkdayjobs.com tenant surfaces via a targeted site: search.",
+      "recheck_if_resurfaced": true
+    },
     {
       "name": "Epiroc",
       "ats": null,
@@ -1988,6 +2090,30 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-01",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Deloitte",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-03",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Dot Compliance",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-03",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Avanos Medical",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-03",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true
     }

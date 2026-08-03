@@ -232,19 +232,22 @@
         "name": "Alston Construction",
         "why": "Surfaced an AI Program Manager (Atlanta, $99K-$135K) on 2026-07-20 that was a real substance match. Custom careers site, no pollable board.",
         "query": "\"Alston Construction\" careers (\"AI program manager\" OR \"technology manager\" OR \"operations manager\")",
-        "last_checked": null
+        "last_checked": "2026-08-03",
+        "last_hit": "2026-08-03: same AI Program Manager (Atlanta, $99K-$135K) posting already applied 2026-07-20. No new roles."
       },
       {
         "name": "InComm Payments",
         "why": "Atlanta HQ payments technology, mid-tier operating company. No pollable board identified.",
         "query": "\"InComm Payments\" careers (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\") Atlanta",
-        "last_checked": null
+        "last_checked": "2026-08-03",
+        "last_hit": "2026-08-03: only generic Account Manager roles (gift-card/incentives channel management), no CSM/TAM/support-ops fit-space title found."
       },
       {
         "name": "Netflix",
         "why": "No supported ATS: custom careers site (jobs.netflix.com), confirmed unpollable 2026-07-30 after Greenhouse, Lever, and Workday probes all failed. Surfaced by a LinkedIn alert for 'N-Tech Manager, Technology Systems and Operations (Creative)' -- a tier2c-shaped systems/ops role, so the fit-space is real rather than incidental. Added to the rotation rather than rejected for the same reason Google was: a large employer whose fitting roles are structurally invisible to the poller.",
         "query": "site:jobs.netflix.com (\"technology systems\" OR \"systems and operations\" OR \"technical support\" OR \"support operations\" OR \"customer operations\") remote OR Atlanta",
-        "last_checked": null
+        "last_checked": "2026-08-03",
+        "last_hit": "2026-08-03: only category overview pages returned (Enterprise Operations, Customer Service), no individual fit-space posting surfaced."
       },
       {
         "name": "Docusign",
@@ -671,8 +674,85 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — generative AI inference platform",
       "reason": "AI inference platform. Verified live board 2026-07-30: Technical Account Manager, Enterprise (job 4335490009) is the fit-space role.",
-      "board_status": "404_seen_2026-08-01",
-      "board_status_note": "First 404 seen this run — matches the harvest_ats.py --prune finding on 2026-07-31 that this board died within a day of enrollment. Not yet confirmed (needs a second consecutive 404 per Step 1b)."
+      "board_status": "404_confirmed",
+      "board_status_note": "First seen 404 on 2026-08-01 (matches the harvest_ats.py --prune finding on 2026-07-31 that this board died within a day of enrollment), re-confirmed 2026-08-03 via direct curl to both boards-api.greenhouse.io/v1/boards/fireworksai/jobs and job-boards.greenhouse.io/fireworksai (both 404). WebSearch snippets showed apparently-live listings (Forward Deployed PM, TAM Enterprise, etc.) but these are stale search-cache, same failure mode documented on the Aisera entry below — don't trust WebSearch alone for this board.",
+      "recheck_after": "2026-08-10"
+    },
+    {
+      "name": "NVIDIA",
+      "ats": "workday",
+      "slug": "nvidia",
+      "wd_host": "nvidia.wd5.myworkdayjobs.com",
+      "wd_tenant": "nvidia",
+      "wd_site": "NVIDIAExternalCareerSite",
+      "priority": "high",
+      "headcount_band": "2000+",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — AI computing/GPU platform",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "LinkedIn alert (Step 1d-2) 2026-08-03, manual_review flag",
+      "reason": "AI computing/GPU giant, ~36,000 employees. Initially reported no_board by harvest_ats.py's deterministic slug guesses; resolved via the documented Workday WebSearch fallback (site:myworkdayjobs.com nvidia -> NVIDIAExternalCareerSite). Verified live 2026-08-03 via direct CXS POST: 298 jobs, 177 in United States, genuine fit-space hits -- Senior Customer Success Manager (US remote-eligible, tier1); Senior Customer Success Operations Manager - Technology (Santa Clara, the original LinkedIn-alert role, tier1-adjacent); Manager, Customer Enablement Engineering - Networking (Santa Clara, tier2c). Most of the board is engineering/sales, so watch for genuine fit-space titles specifically rather than assuming broad fit."
+    },
+    {
+      "name": "AlertMedia",
+      "ats": "greenhouse",
+      "slug": "alertmedia",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "harvest_ats.py --from-pending (Greenhouse Boards - Target Roles WebSearch dork 2026-08-03)",
+      "reason": "Employee safety and business continuity/emergency communication platform, Austin TX HQ (~516 employees). Verified live 2026-08-03: 19 jobs, 3 US-reachable fit-titles -- AI & Automation Lead, Customer Operations (Austin, tier2c); Implementation Manager (Remote US, tier2); Technical Account Manager NEU (Remote/Dublin, tier2). No AI/ML or tooling score_bonus -- core product is safety/incident communication, not AI-native or dev infra."
+    },
+    {
+      "name": "Harris Computer",
+      "ats": "workday",
+      "slug": "harriscomputer",
+      "wd_host": "harriscomputer.wd3.myworkdayjobs.com",
+      "wd_tenant": "harriscomputer",
+      "wd_site": "HTN",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "Workday Boards - Target Roles WebSearch dork 2026-08-03",
+      "reason": "Vertical-market software conglomerate, wholly owned Constellation Software subsidiary (5000+ employees). Verified live 2026-08-03 via direct CXS POST: 47 jobs on the HTN site, mostly Quebec French-language support roles, but several genuine US-remote fit-titles -- (Remote) Director, Support Services (tier1); (Remote) Manager of Software Services & Support, 14 locations incl. Georgia (tier1); (Remote) Customer Success Lead (tier2); (Remote) Customer Success Representative and Application Consultant (tier3). No AI/ML or tooling score_bonus -- core product is vertical-market enterprise software, not AI-native or dev infra."
+    },
+    {
+      "name": "Workiva",
+      "ats": "workday",
+      "slug": "workiva",
+      "wd_host": "workiva.wd503.myworkdayjobs.com",
+      "wd_tenant": "workiva",
+      "wd_site": "careers",
+      "priority": "high",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "Workday Boards - Target Roles WebSearch dork 2026-08-03",
+      "reason": "GRC/compliance and financial reporting SaaS platform, public company (NYSE: WK, ~3,278 employees). Verified live 2026-08-03 via direct CXS POST: 84 jobs, multiple US-remote fit-titles -- AI Operations Lead, CPX (tier2b_ai_wildcard, the original WebSearch hit); Senior Customer Success Manager; Customer Success Manager - GRC; Senior Manager of Solution Consulting; Solutions Consultant - Financial Services (all tier2/tier3, all US Remote). No AI/ML or tooling score_bonus -- core product is GRC/reporting software, not AI-native or dev infra, despite the one AI-titled role."
+    },
+    {
+      "name": "Automation Anywhere",
+      "ats": "workday",
+      "slug": "automationanywhere",
+      "wd_host": "automationanywhere.wd5.myworkdayjobs.com",
+      "wd_tenant": "automationanywhere",
+      "wd_site": "automationanywherejobs",
+      "priority": "high",
+      "headcount_band": "2000+",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — agentic process automation (RPA + AI agents)",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "Workday Boards - Target Roles WebSearch dork 2026-08-03",
+      "reason": "Agentic process automation (RPA + AI agents) platform (~3,000-4,200 employees). Verified live 2026-08-03 via direct CXS POST: 42 jobs, US-reachable fit-titles -- Customer Success Manager (Remote US-TX, tier1); Engagement Manager (Remote CO, tier2); Technical Support Engineer (Remote, tier3)."
+    },
+    {
+      "name": "101 VOICE",
+      "ats": "smartrecruiters",
+      "slug": "itmanagementcorpdba101voice",
+      "priority": "low",
+      "headcount_band": "1-50",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "SmartRecruiters Boards - Target Roles WebSearch dork 2026-08-03",
+      "reason": "UCaaS/VoIP division of IT Management Corp, Santa Clara CA (~11-50 employees, per LinkedIn/LeadIQ). Verified live 2026-08-03: only 6 total postings but genuinely current (releasedDate range 2026-05-29 to 2026-07-31, unlike the AYR Global IT Solutions board rejected same day for 2017-dated zombie postings). One fit-space role: Client Success Manager (Remote, Santa Clara, tier1/tier2)."
     },
     {
       "name": "Vercel",
@@ -1099,7 +1179,8 @@
       "ats": "greenhouse",
       "slug": "storable",
       "priority": "medium",
-      "reason": "Storage SaaS, remote-friendly"
+      "headcount_band": "501-2000",
+      "reason": "Storage SaaS, remote-friendly. ~900 employees (verified 2026-08-03)."
     },
     {
       "name": "Cloverly",
@@ -1122,7 +1203,8 @@
       "ats": "greenhouse",
       "slug": "demandscience",
       "priority": "medium",
-      "reason": "Atlanta HQ, B2B marketing SaaS — Atlanta employer, CSM-heavy. Terminus merged into DemandScience Nov 2024. Current jobs are Philippines-only — monitor for US roles."
+      "headcount_band": "51-200",
+      "reason": "Atlanta HQ, B2B marketing SaaS — Atlanta employer, CSM-heavy. Terminus merged into DemandScience Nov 2024. Current jobs are Philippines-only — monitor for US roles. ~168 employees (verified 2026-08-03)."
     },
     {
       "name": "Glean",
@@ -1137,7 +1219,8 @@
       "ats": "greenhouse",
       "slug": "intercom",
       "priority": "medium",
-      "reason": "Customer messaging/support platform — historically strong CSM track"
+      "headcount_band": "501-2000",
+      "reason": "Customer messaging/support platform — historically strong CSM track. ~1,200-1,800 employees, sources vary (verified 2026-08-03)."
     },
     {
       "name": "Observe.ai",
@@ -1257,8 +1340,8 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — AI service management. NOTE: apply -15 location penalty if no US remote option on role",
       "board_status": "404_confirmed",
-      "board_status_note": "Re-verified 2026-07-13, 2026-07-20, and 2026-07-27: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404, and this run also confirmed the human-facing job-boards.greenhouse.io/aiserajobs page 404s directly. WebSearch again surfaced apparently-live listings (incl. Enterprise CSM) but these are stale search-cache — confirmed via direct curl to both endpoints. Don't trust WebSearch snippets alone for this check.",
-      "recheck_after": "2026-08-03"
+      "board_status_note": "Re-verified 2026-07-13, 2026-07-20, 2026-07-27, and 2026-08-03: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404, and this run again confirmed the human-facing job-boards.greenhouse.io/aiserajobs page 404s directly. WebSearch again surfaced apparently-live listings (Enterprise CSM, Sales Engineer, etc.) but these are stale search-cache — confirmed via direct curl to both endpoints. Don't trust WebSearch snippets alone for this check.",
+      "recheck_after": "2026-08-10"
     },
     {
       "name": "Sierra",
@@ -2858,6 +2941,42 @@
       "enrolled_date": "2026-08-01",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (72 jobs) with 8 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Professional Service Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Later",
+      "ats": "greenhouse",
+      "slug": "later",
+      "priority": "low",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (44 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. ' Revenue Operations Manager - Customer Operations '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Horizon3.ai",
+      "ats": "ashby",
+      "slug": "horizon3ai",
+      "priority": "low",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (97 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Staff Revenue Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Drata",
+      "ats": "ashby",
+      "slug": "drata",
+      "priority": "low",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (54 jobs) with 5 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Manager, Technical Support - Mexico'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Axon",
+      "ats": "greenhouse",
+      "slug": "axon",
+      "priority": "low",
+      "enrolled_date": "2026-08-03",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (482 jobs) with 41 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Certinia Implementation Consultant'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
