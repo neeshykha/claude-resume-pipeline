@@ -544,7 +544,20 @@ score >110 to surface. Queued/unapplied roles do NOT count. Trust the poller's
   the tiers yourself). `supplemental`-tier hits have no scoring tier — score them as the
   nearest real tier by function, or T4 if none fits.
 - Keyword overlap with master resume: up to +30
-- Location: Atlanta in-office +20 / hybrid +18 / remote US +16 / NYC-NJ +12 / other 0
+- Location: Atlanta in-office +20 / Atlanta hybrid +18 / remote US +16 / **everything else 0**
+
+  **Changed 2026-08-02: NYC-NJ (+12) removed, and "hybrid" now means ATLANTA hybrid only.**
+  Aneesh is scoping to Atlanta and fully-remote-US while he looks into what renting his house
+  would take. A hybrid or on-site role anywhere that is not metro Atlanta requires relocation,
+  so it scores the same 0 as any other non-qualifying location: San Jose hybrid, NYC hybrid,
+  and Boston on-site are now all 0. Previously the bare word "hybrid" was read as +18 regardless
+  of city, which is how PermitFlow (hybrid NYC, in-office Mon/Wed/Fri) and Zscaler (hybrid San
+  Jose/Bellevue/Dallas) both reached full tailoring in late July.
+
+  This is a SCORING change, not a hard filter: those roles can still appear as near-misses so
+  Aneesh can see what he is passing on, they just lose 16-20 points and will normally fall below
+  the 88 full-tailoring threshold. Do not add a location hard-exclude unless he asks. Revisit
+  this line if the rent-the-house question resolves.
 - Salary (midpoint basis): ≥$140K +10 / ≥$120K +8 / ≥floor or unlisted +5 / below 0
 - Source quality: Greenhouse·Lever +10 / Ashby·BuiltIn +8 / aggregator +5; −3 if >14 days old
 - Freshness: `_scoring_config → freshness_bonus_2d` (≤2 days) / `freshness_bonus_7d` (≤7 days)

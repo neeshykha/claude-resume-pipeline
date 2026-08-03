@@ -117,9 +117,10 @@ def score_location(job: Job) -> float:
         return 1.0
     if "atlanta" in loc:
         return 1.0
-    if "new york" in loc or "nyc" in loc or "new jersey" in loc or "nj" in loc:
-        return 0.9
-    # Unknown but might be acceptable
+    # NYC/NJ used to score 0.9 here. Removed 2026-08-02: Aneesh scoped his
+    # search to Atlanta and fully-remote-US only, so anywhere requiring
+    # relocation is now treated the same as any other non-qualifying location.
+    # The live rubric is daily_task_prompt.md Step 2c; keep the two in sync.
     return 0.3
 
 
