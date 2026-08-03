@@ -2114,7 +2114,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-03",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "Confirmed custom career site (careers.avanos.com), not on Greenhouse/Ashby/Lever/Workday -- unlike a slug-guessing miss, this is a genuine no-board case, verified by direct WebSearch for the tenant. Surfacing role (Systems Support Team Leader, req 7170, Alpharetta GA / Atlanta metro) was actually a strong functional fit despite the generic title -- day-to-day operational leadership over Salesforce CRM and sales-support systems/processes -- but failed on salary regardless: $70K-$101K, midpoint $85.5K, below both the $100K floor and the $90K near-miss floor. Don't re-reject on board-pollability alone if this resurfaces; check the specific role's salary too.",
       "recheck_if_resurfaced": true
     }
   ]
