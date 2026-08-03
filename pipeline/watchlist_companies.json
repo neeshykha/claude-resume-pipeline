@@ -1060,7 +1060,7 @@
       "headcount_band": "201-500",
       "reason": "Atlanta HQ, voice AI/security — IoT + AI + Atlanta triple fit",
       "score_penalty": -20,
-      "penalty_reason": "family conflict of interest — co-founder/investor relationship"
+      "penalty_reason": "family conflict of interest"
     },
     {
       "name": "OneTrust",
@@ -1949,7 +1949,9 @@
       "headcount_band": "501-2000",
       "enrolled_date": "2026-07-06",
       "enrolled_via": "user-surfaced (LinkedIn alert) -> verified",
-      "reason": "Healthcare real-world-data analytics company (~750 employees). Verified live 2026-07-06: AI Enablement Lead (Mavens), Remote US, $125K-$185K - exceptional fit, JD wants hands-on Claude/prompt-engineering/workflow-automation experience which is close to a direct description of Aneesh's actual iApartments role. Also has multiple Senior Salesforce Solutions Consultant reqs (mostly EMEA/India-based; one US-based). Health-tech passion domain applies. The \"Manager, Analytics Services\" role that originally surfaced this company is NOT a fit (needs SQL/Python/R + quantitative degree) - don't tailor for that one."
+      "reason": "Healthcare real-world-data analytics company (~750 employees). Verified live 2026-07-06: AI Enablement Lead (Mavens), Remote US, $125K-$185K - exceptional fit, JD wants hands-on Claude/prompt-engineering/workflow-automation experience which is close to a direct description of Aneesh's actual iApartments role. Also has multiple Senior Salesforce Solutions Consultant reqs (mostly EMEA/India-based; one US-based). Health-tech passion domain applies. The \"Manager, Analytics Services\" role that originally surfaced this company is NOT a fit (needs SQL/Python/R + quantitative degree) - don't tailor for that one.",
+      "score_penalty": -20,
+      "penalty_reason": "family conflict of interest"
     },
     {
       "name": "Macroscope",
