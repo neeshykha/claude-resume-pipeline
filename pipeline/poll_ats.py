@@ -98,6 +98,23 @@ def _init_config(watchlist: dict):
 MIN_SMALL_SLOTS = 10
 MIN_LARGE_SLOTS = 10
 SMALL_BANDS = {"1-50", "51-200", "201-500"}
+
+# Reserved quota for TRUE title matches (added 2026-08-02). Same failure mode
+# the small-company quota above was built for, and the 2026-08-01 conversion
+# audit measured it: tier1 titles are only 8% of what discovery surfaces, and
+# applied tier1 roles carry the LOWEST mean fit score of any tier (89.6 vs
+# 97.8 for tier2). The cause is structural rather than a scoring bug -- tier1's
+# +30 title match beats tier2's +22 by only 8 points, while the company-level
+# bonuses it usually lacks (AI/watchlist/Atlanta) are worth up to +30 together.
+# So a tier2 role at an AI-native watchlist company outscores a genuine
+# title match at a plain company, every time.
+#
+# Chosen over raising tier1's title_match_score because a score change would
+# also push tier1 roles across the 88/110 tailoring-tier thresholds, silently
+# redefining what "Priority" means. A reserved slot changes what Aneesh SEES
+# without distorting what the score CLAIMS.
+MIN_TIER1_SLOTS = 6
+TIER1_TIER_NAME = "tier1_true_match"
 BORDERLINE_SIZE = 20
 MIN_AI_WILDCARD_SLOTS = 10  # reserved quota; see borderline-list build below
 
@@ -1424,15 +1441,39 @@ def poll_all(run_date: date) -> dict:
 
     small_pool = [j for j in matched if (j.get("headcount_band") or "") in SMALL_BANDS]
     large_pool = [j for j in matched if (j.get("headcount_band") or "") not in SMALL_BANDS]
+    tier1_pool = [j for j in matched if j.get("title_tier") == TIER1_TIER_NAME]
 
     top_matched = []
     taken = set()
-    # Phase 1: fill each pool's reserved slots (score order within pool)
+    # Phase 0: reserve slots for true title matches BEFORE the size pools.
+    # Order matters: tier1 is the scarcer resource (8% of surfaced roles vs
+    # ~35% sub-500), so it claims first. Jobs taken here still count toward
+    # the size quotas below, since try_take() marks them taken -- this shifts
+    # WHICH jobs fill the size pools, it does not add slots to the shortlist.
+    tier1_taken = 0
+    tier1_accepted = set()
+    for job in tier1_pool:
+        if tier1_taken >= MIN_TIER1_SLOTS or len(top_matched) >= SHORTLIST_SIZE:
+            break
+        if try_take(job, top_matched, taken):
+            tier1_taken += 1
+            tier1_accepted.add(id(job))
+    # Phase 1: fill each pool's reserved slots (score order within pool).
+    # NOTE: `taken` holds jobs try_take REJECTED (sibling/diversity drops) as
+    # well as accepted ones, so it cannot be used to decide whether a job
+    # occupies a slot. tier1_accepted is the accepted-only set, and a tier1
+    # job already in the shortlist must COUNT toward its size quota -- skipping
+    # it without counting would over-fill that pool past its intended share.
     for pool, quota in ((small_pool, MIN_SMALL_SLOTS), (large_pool, MIN_LARGE_SLOTS)):
         count = 0
         for job in pool:
             if count >= quota or len(top_matched) >= SHORTLIST_SIZE:
                 break
+            if id(job) in tier1_accepted:
+                count += 1
+                continue
+            if id(job) in taken:
+                continue
             if try_take(job, top_matched, taken):
                 count += 1
     # Phase 2: open competition for the remaining slots

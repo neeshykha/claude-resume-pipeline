@@ -50,3 +50,7 @@ env/
 # (settings.local.json, skills/, worktrees/) stays local so auto-commit can't sweep it in
 .claude/*
 !.claude/settings.json
+
+# Working files holding real application history — never publish
+pipeline/blank_stage_worksheet.md
+pipeline/*_worksheet.md
