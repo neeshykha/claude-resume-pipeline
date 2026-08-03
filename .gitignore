@@ -54,3 +54,4 @@ env/
 # Working files holding real application history — never publish
 pipeline/blank_stage_worksheet.md
 pipeline/*_worksheet.md
+pipeline/BROWSER_VERIFY_TASK.md
