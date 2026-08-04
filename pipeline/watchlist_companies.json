@@ -153,13 +153,15 @@
         "name": "Google",
         "why": "Atlanta office. Its gUP org runs a whole family of support roles (Product Support Manager gUP Search, gUP Platforms and Devices, gUP Shopping Support Ops, Product Solutions Manager Home). Confirmed unpollable 2026-07-27. Proven vein: the Home role was tailored that day.",
         "query": "site:google.com/about/careers (\"product support manager\" OR \"product solutions manager\" OR \"support strategy\" OR \"customer support\") Atlanta OR remote",
-        "last_checked": "2026-07-27"
+        "last_checked": "2026-08-04",
+        "last_hit": "2026-08-04: 6 new Product Support Manager reqs surfaced beyond the two already tracked (Health, Play Monetization) and the applied Product Solutions Manager Home -- Google Fi, Pixel Differentiated Care, gUP Platforms and Devices (Boulder/Atlanta), gUP Android Ecosystem (Boulder/Atlanta), gUP Shopping Support Operations (Atlanta/NY/SF/Sunnyvale/Boulder), Play. Best Atlanta-optioned new req is gUP Shopping Support Operations -- carried into today's scoring pool as a blind-spot candidate; the rest are also-live FYI (diversity cap)."
       },
       {
         "name": "Microsoft",
         "why": "Atlanta presence, large CX/support org. Custom careers site.",
         "query": "site:jobs.careers.microsoft.com (\"customer success\" OR \"support\" OR \"technical account manager\") Atlanta",
-        "last_checked": "2026-07-28"
+        "last_checked": "2026-08-04",
+        "last_hit": "2026-08-04: multiple Customer Success Account Manager (CSAM) reqs surfaced (various levels: Senior, Principal, Director, Strategic Program) but none confirmed Atlanta-located in the search snippets -- Microsoft's careers site (jobs.careers.microsoft.com) is also mid-migration to a new platform per the search results, which may be degrading location metadata. Not carried into scoring without a confirmed US/Atlanta location; recheck next rotation."
       },
       {
         "name": "Apple",
@@ -253,7 +255,8 @@
         "name": "Docusign",
         "why": "Major e-signature/agreement platform with a real in-house support and customer-success organisation. Probed Greenhouse, Ashby, Lever and eight Workday tenant/site combinations on 2026-07-30: none resolved, so it is structurally unpollable. Added to rotation rather than rejected for the same reason as Google and Netflix -- the fit-space is genuine, only the plumbing is missing. Surfaced from Aneesh's LinkedIn on-site 'Jobs for you' feed, which is never emailed and therefore invisible to Step 1d-2.",
         "query": "site:careers.docusign.com (\"customer success\" OR \"technical account\" OR \"support operations\" OR \"implementation\" OR \"technical support manager\") remote OR Atlanta",
-        "last_checked": null
+        "last_checked": "2026-08-04",
+        "last_hit": "2026-08-04: only Product Manager - Customer Success roles surfaced (SF-based, PM function not support/CS-ops), plus unrelated PagerDuty results. No fit-space title found."
       }
     ]
   },
@@ -1235,14 +1238,16 @@
       "ats": "ashby",
       "slug": "cohere",
       "priority": "medium",
-      "reason": "LLM API platform — enterprise AI with TAM/CSM pipeline"
+      "reason": "LLM API platform — enterprise AI with TAM/CSM pipeline",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Weights & Biases (CoreWeave)",
       "ats": "greenhouse",
       "slug": "coreweave",
       "priority": "medium",
-      "reason": "MLOps/experiment tracking — technical CSM roles, developer-facing. W&B acquired by CoreWeave 2025; filter jobs for 'W&B' or 'Weights & Biases' in title"
+      "reason": "MLOps/experiment tracking — technical CSM roles, developer-facing. W&B acquired by CoreWeave 2025; filter jobs for 'W&B' or 'Weights & Biases' in title",
+      "headcount_band": "201-500"
     },
     {
       "name": "Writer",
@@ -1281,7 +1286,8 @@
       "priority": "medium",
       "reason": "ML observability startup — technical CSM track",
       "score_bonus": 30,
-      "bonus_reason": "AI/ML platform + developer/infra tooling (+30, pre-clamped at the +30 company-bonus cap; do NOT add more on top)"
+      "bonus_reason": "AI/ML platform + developer/infra tooling (+30, pre-clamped at the +30 company-bonus cap; do NOT add more on top)",
+      "headcount_band": "51-200"
     },
     {
       "name": "Cresta",
@@ -2687,7 +2693,9 @@
       "priority": "low",
       "enrolled_date": "2026-07-30",
       "enrolled_via": "LinkedIn alert audit 2026-07-30",
-      "reason": "Sony-owned sports officiating and tracking technology (ball tracking, SMART replay, 20+ sports): the anchor company for the sports_technology passion domain, which Aneesh named directly and which had produced ZERO surfaced roles in eight weeks. Workable endpoint resolves (HTTP 200) but returned 0 open jobs on 2026-07-30, so enrollment is a placeholder that will start producing when they post. Workable ATS support was only added to the poller 2026-07-27, which is why this was unreachable before. His LinkedIn alert for this company is deliberately KEPT as a cross-check while the board reads empty."
+      "reason": "Sony-owned sports officiating and tracking technology (ball tracking, SMART replay, 20+ sports): the anchor company for the sports_technology passion domain, which Aneesh named directly and which had produced ZERO surfaced roles in eight weeks. Workable endpoint resolves (HTTP 200) but returned 0 open jobs on 2026-07-30, so enrollment is a placeholder that will start producing when they post. Workable ATS support was only added to the poller 2026-07-27, which is why this was unreachable before. His LinkedIn alert for this company is deliberately KEPT as a cross-check while the board reads empty.",
+      "board_status": "404_seen_2026-08-04",
+      "board_status_note": "harvest_ats.py --prune flagged this DEAD (404) on 2026-08-04, first time since the 2026-07-30 enrollment (was HTTP 200/0 jobs then). Possible Workable slug change or transient outage. Not yet recheck-gated -- confirm on next run before setting recheck_after."
     },
     {
       "name": "Databricks",
@@ -2977,6 +2985,42 @@
       "enrolled_date": "2026-08-03",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (482 jobs) with 41 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Certinia Implementation Consultant'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "People Culture Talent",
+      "ats": "ashby",
+      "slug": "people-culture-talent",
+      "priority": "low",
+      "enrolled_date": "2026-08-04",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (19 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Deployment Strategist'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Orbital",
+      "ats": "ashby",
+      "slug": "orbital",
+      "priority": "low",
+      "enrolled_date": "2026-08-04",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (28 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager (Sales)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "WorkWave",
+      "ats": "lever",
+      "slug": "workwave",
+      "priority": "low",
+      "enrolled_date": "2026-08-04",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Salesforce Administrator'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Render",
+      "ats": "ashby",
+      "slug": "render",
+      "priority": "low",
+      "enrolled_date": "2026-08-04",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (35 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
