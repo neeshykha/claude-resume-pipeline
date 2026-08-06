@@ -1025,6 +1025,27 @@
       "slug": "render",
       "enrolled_date": "2026-08-04",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Instacart",
+      "ats": "greenhouse",
+      "slug": "instacart",
+      "enrolled_date": "2026-08-06",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Hercules",
+      "ats": "ashby",
+      "slug": "hercules",
+      "enrolled_date": "2026-08-06",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Headway",
+      "ats": "ashby",
+      "slug": "headway",
+      "enrolled_date": "2026-08-06",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -2350,6 +2371,58 @@
       "manual_review": true,
       "manual_review_why": "Implementation Manager (Grants), Atlanta, GA (Hybrid) -- tier2 title match at a confirmed Atlanta location.",
       "manual_review_surfaced": true
+    },
+    {
+      "name": "Bullhorn",
+      "ats": "workday",
+      "slug": "bullhorn/BullhornCareers",
+      "rejected_date": "2026-08-06",
+      "reason": "Resolved via manual site:myworkdayjobs.com search (bullhorn.wd1.myworkdayjobs.com, tenant BullhornCareers) after the deterministic harvest failed. Direct CXS probe confirmed the board is live (15 jobs) but zero US-reachable tier1/tier2/tier2c titles at check time: only Support-category posting is 'Product Support Analyst' (Remote EMEA - UK). Staffing/recruitment CRM SaaS, ~1,400 employees (Boston HQ), sub-2000 so worth another look if the role mix changes.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "PayMitto",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-06",
+      "reason": "Manual follow-up WebSearch confirmed: PayMitto uses JazzHR (paymitto.applytojob.com), not a poll_ats.py-supported ATS. Cross-border payments fintech, ~50 employees. Not pollable; surfaced once in the digest per manual_review protocol since the Implementation Manager (Atlanta) role is a real tier2 fit.",
+      "recheck_if_resurfaced": true,
+      "manual_review": true,
+      "manual_review_why": "Implementation Manager, Atlanta Metropolitan Area -- tier2_strong_overlap title match at a confirmed Atlanta location.",
+      "manual_review_surfaced": true,
+      "careers_page": "https://paymitto.applytojob.com/apply/"
+    },
+    {
+      "name": "Yahoo",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-06",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Amba",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-06",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Nodes & Links",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-06",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Philips",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-06",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
     }
   ]
 }

@@ -713,6 +713,23 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST
   link if found). Omit the section entirely if none. These are NOT scored or tailored; they are
   roles the automated layer structurally cannot watch, surfaced once so Aneesh can decide.
 - Note any ATS errors, capped companies, enrollments/rejections, and skill gaps observed
+- **"Full breakdown: what was checked" section (added 2026-08-06, standing requirement).**
+  Aneesh asked for this after catching a real discovery-layer miss by hand (Hercules, Philips,
+  and Headway all came from him screenshotting the LinkedIn app's own Jobs recommendation feed —
+  a product surface none of the automated channels touch, since Step 1d-2 only consumes forwarded
+  *job-alert emails*, a different LinkedIn surface entirely). Every digest must end with a
+  bulleted, source-by-source account of what ran and what it found, so a miss like that is
+  visible immediately rather than discovered by chance:
+  - ATS poll: companies polled, jobs scanned, matches, shortlist size
+  - WebSearch discovery: which of the active `_websearch_sources` ran, and a compressed list of
+    what surfaced (mostly-known vs. genuinely new)
+  - Discovery feeders: poll_remotive/poll_80k/harvest_hn_hiring status (including DEGRADED/skipped)
+  - Blind-spot rotation: which named employers were checked this run
+  - LinkedIn email-alert harvest: threads found, companies extracted, what happened to each
+  - Any user-surfaced companies processed this run, and explicitly which channel (if any) would
+    have caught them on its own — if none would have, say so plainly, the way this entry does
+  - A short "Confirmations & tracking" bullet list: promotions, outcomes, enrollments/rejections,
+    headcount backfill, enrollment-queue staleness
 
 ## Step 6: Update tracking
 
