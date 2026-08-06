@@ -167,19 +167,22 @@
         "name": "Apple",
         "why": "Atlanta presence. AppleCare support org. Custom careers site.",
         "query": "site:jobs.apple.com (\"support\" OR \"customer\" OR \"AppleCare\") manager Atlanta",
-        "last_checked": "2026-07-28"
+        "last_checked": "2026-08-06",
+        "last_hit": "2026-08-06: AppleCare/support manager roles found (Channel Support Program Manager, Customer Support Team Manager - Retail Customer Care, AppleCare Service Support Program Manager) but none confirmed Atlanta-located in search snippets -- results skewed toward the general US/AppleCare search pages, not a location-scoped hit. Not carried into scoring; recheck next rotation."
       },
       {
         "name": "Amazon / AWS",
         "why": "Atlanta offices. Huge TAM/support org. Custom careers site.",
         "query": "site:amazon.jobs (\"technical account manager\" OR \"customer success\" OR \"support operations\") Atlanta",
-        "last_checked": "2026-07-28"
+        "last_checked": "2026-08-06",
+        "last_hit": "2026-08-06: several TAM postings found (Enterprise Support, CMHK, LATAM, EMEA-Partner) but none confirmed Atlanta-located -- all snippets pointed to other regions/HQ. Not carried into scoring; recheck next rotation."
       },
       {
         "name": "Meta",
         "why": "Atlanta office. Custom careers site.",
         "query": "site:metacareers.com (\"customer success\" OR \"support\" OR \"operations manager\") Atlanta",
-        "last_checked": "2026-07-30"
+        "last_checked": "2026-08-06",
+        "last_hit": "2026-08-06: only Atlanta-adjacent hit was a third-party BuiltIn mirror of 'Customer Success Operations Manager II' claiming Atlanta remote hiring -- not confirmed on metacareers.com itself, and the direct Meta results (Enterprise Support Tech, Critical Operations Manager, Channel Operations Manager) carried no Atlanta signal. Not carried into scoring; recheck next rotation."
       },
       {
         "name": "Home Depot",
@@ -1296,7 +1299,8 @@
       "priority": "high",
       "reason": "Contact center AI — real-time agent coaching + AI assist for support teams. Maven-type company (AI to simplify support). Remote US confirmed active: AI Value Partner, Enterprise SE, Senior FDE AI Agent, FDE Manager. Strong title fit for Aneesh's background.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) — contact center AI squarely in Maven-type category"
+      "bonus_reason": "AI/ML platform (+20) — contact center AI squarely in Maven-type category",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Decagon",
@@ -1305,7 +1309,8 @@
       "priority": "medium",
       "reason": "AI customer support agents (Series B, top-tier). Maven-type company. NOTE: historically SF on-site dominant — monitor for remote roles opening up.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) — AI support agents. Offset: apply -10 location penalty if role is SF on-site only"
+      "bonus_reason": "AI/ML platform (+20) — AI support agents. Offset: apply -10 location penalty if role is SF on-site only",
+      "headcount_band": "201-500"
     },
     {
       "name": "Ada",
@@ -1314,7 +1319,8 @@
       "priority": "medium",
       "reason": "AI customer service automation platform. Maven-type company. Toronto HQ, distributed team model. Mostly engineering roles historically — monitor for CS/implementation openings.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) — AI customer service automation"
+      "bonus_reason": "AI/ML platform (+20) — AI customer service automation",
+      "headcount_band": "201-500"
     },
     {
       "name": "Forethought",
@@ -3021,6 +3027,50 @@
       "enrolled_date": "2026-08-04",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (35 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Instacart",
+      "ats": "greenhouse",
+      "slug": "instacart",
+      "priority": "low",
+      "enrolled_date": "2026-08-06",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (117 jobs) with 8 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'AI Engagement Manager '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Hercules",
+      "ats": "ashby",
+      "slug": "hercules",
+      "priority": "medium",
+      "enrolled_date": "2026-08-06",
+      "enrolled_via": "User-surfaced (Aneesh spotted 'AI Operations Lead' directly in the LinkedIn app Jobs feed, not a forwarded alert email -- confirmed the harvest layer's auto-enrollment same run)",
+      "reason": "hercules.app -- AI app builder (a16z-backed, founding team of Fig), 300k+ users, ~250 support tickets/day. 'AI Operations Lead' role is a very close functional match: own support end to end, build AI automations to scale ticket handling. Real caveats found on direct JD read: requires 'extensive Stripe experience' (refunds/chargebacks/credit notes) Aneesh doesn't have, expects ~150 tickets/day personally closed (heavily IC, not manager-of-team scope), one weekend/month required, and despite the Ashby location tag 'Remote - North America' the JD states a 'very strong preference for in-office' (SF) with remote only for 'exceptional candidates... willing/able to travel to the office regularly' -- not a clean remote role in practice. $100K-$250K + equity.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- AI app builder, squarely AI-native"
+    },
+    {
+      "name": "Headway",
+      "ats": "ashby",
+      "slug": "headway",
+      "priority": "low",
+      "enrolled_date": "2026-08-06",
+      "enrolled_via": "User-surfaced (Aneesh spotted 'Applied AI Lead, Rev Ops', $121K-$190K, in the LinkedIn app Jobs feed) + harvest_ats.py auto-enrollment same run",
+      "reason": "Mental health care marketplace/EHR platform. Auto-enrolled by the ATS harvest layer: board verified live (69 jobs) with 1 US-reachable tier1/tier2/tier2c fit-title at harvest time ('Program Manager, Talent & AI Enablement'). NOTE: the specific req Aneesh saw ('Applied AI Lead, Rev Ops') is NOT present on the live board as of 2026-08-06 -- either already closed, or a stale/duplicate LinkedIn listing. Not tailored; flagged as a discrepancy rather than silently dropped. Enrolled at LOW priority so the poller watches for it (or its replacement) going forward."
+    },
+    {
+      "name": "Philips",
+      "ats": "workday",
+      "slug": "philips",
+      "wd_host": "philips.wd3.myworkdayjobs.com",
+      "wd_tenant": "philips",
+      "wd_site": "jobs-and-careers",
+      "priority": "high",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-08-06",
+      "enrolled_via": "User-surfaced (Aneesh spotted 'Support Process Excellence Manager' directly in the LinkedIn app Jobs feed, not a forwarded alert email). harvest_ats.py's deterministic slug guessing failed to resolve this company; resolved by hand via one manual site:myworkdayjobs.com search per the standing Workday fallback protocol.",
+      "reason": "Global health technology company (Netherlands HQ, public, 2000+ employees). Verified live via direct CXS probe 2026-08-06: 'Support Process Excellence Manager', posted 1 day ago, U.S. Remote (field role, explicitly #LI-Remote), $117K-$186K in the GA salary band (highest tier $131K-$208K for CA/CT/DC/MA/NJ/NY/WA). Owns ITIL discipline, workflow controls in ServiceNow, and 'practical AI adoption in support workflows' -- strong functional overlap with Aneesh's Salesforce Service Cloud + Maven AGI ownership at iApartments, though the JD's platform is ServiceNow (not Salesforce) and it names ITIL specifically, both real gaps to disclose rather than paper over.",
+      "score_bonus": 10,
+      "bonus_reason": "Passion domain (+10) -- health technology, per _scoring_config.passion_domains"
     }
   ]
 }
