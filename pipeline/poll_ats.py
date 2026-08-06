@@ -40,6 +40,7 @@ JOBS_DIR = os.path.join(SCRIPT_DIR, "jobs")
 # poller-only mechanics with no JSON counterpart.
 
 REQUEST_TIMEOUT = 30  # seconds
+SMARTRECRUITERS_MAX_POSTINGS = 500  # pagination cap for fetch_smartrecruiters; see its docstring
 DEDUP_WINDOW_DAYS = 30
 MAX_PER_COMPANY_PER_RUN = 2  # diversity cap: max roles per company in the surfaced shortlist (prevents one company sweeping the run)
 # Raised 25 -> 40 on 2026-07-27. A funnel audit showed 128 title-matched jobs
@@ -738,15 +739,31 @@ def fetch_smartrecruiters(slug: str) -> list[dict]:
 
     Returns the `content` array, normalizing each posting's title into a "title"
     key (SmartRecruiters uses "name") so the shared title-extraction path in
-    poll_all works unchanged. Single page (limit=100) — enrolled SR companies are
-    small; companies with >100 postings would need pagination (not needed yet).
+    poll_all works unchanged. Paginates (limit=100/page) up to SMARTRECRUITERS_MAX_POSTINGS
+    total, since large boards (ServiceNow: 400+) silently hid postings past the first
+    page under the old single-page fetch — confirmed 2026-08-06 when a live, Atlanta-based
+    "Manager, Customer Success Management" posting never appeared in poller output because
+    it sorted past position 100.
     """
-    url = ATS_ENDPOINTS["smartrecruiters"].format(slug=slug)
+    base_url = ATS_ENDPOINTS["smartrecruiters"].format(slug=slug)
+    postings: list[dict] = []
+    offset = 0
     try:
-        resp = requests.get(url, timeout=REQUEST_TIMEOUT, headers={"Accept": "application/json"})
-        resp.raise_for_status()
-        data = resp.json()
-        postings = data.get("content", []) or []
+        while offset < SMARTRECRUITERS_MAX_POSTINGS:
+            resp = requests.get(
+                base_url,
+                params={"offset": offset},
+                timeout=REQUEST_TIMEOUT,
+                headers={"Accept": "application/json"},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            page = data.get("content", []) or []
+            postings.extend(page)
+            total_found = data.get("totalFound", len(postings))
+            offset += len(page)
+            if not page or offset >= total_found:
+                break
         for p in postings:
             p["title"] = p.get("name", "")
         return postings
