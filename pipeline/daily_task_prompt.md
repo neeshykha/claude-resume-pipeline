@@ -438,6 +438,37 @@ zero is verifiable; an absent section is indistinguishable from a skipped step.
 3. **Dedupe in ONE batched call:** `.venv/bin/python pipeline/check_company.py "A" "B" "C" ...`
    (it accepts many names per call and searches the watchlist plus all three queue buckets).
    Only a result of UNKNOWN is a real lead.
+
+3b. **Auto-trigger a one-off check for tier-matching alerts at ALREADY-known blind-spot
+   companies (added 2026-08-07).** Step 2's `manual_review` flag only protects companies
+   discovered THIS run that go through the pending → resolve → reject pipeline — it never
+   fires for a company already classified blind-spot in a prior session (Google, Amazon,
+   Microsoft, Apple, Meta, Delta, etc. — see `_blind_spot_companies`), because those never
+   touch the pending queue at all: `check_company.py` just returns "already known" and the
+   step stops. That's the right outcome for the COMPANY (nothing new to enroll), but it
+   silently discards the ROLE signal sitting in the subject line — the same failure
+   `manual_review` was built to prevent, just on the other side of the known/unknown line.
+   Caught 2026-08-07 when Aneesh read the raw emails himself: a Google "Technical Account
+   Manager, Google Cloud Consulting" (exact tier-2 title), an Amazon "Operations Manager"
+   (tier-1 loose match), and a Microsoft "Customer Success Account Manager" (tier-2 loose
+   match via "Account Manager") all alerted the same day and were logged as "already known"
+   with zero role-level check.
+
+   For each card whose title tier-matched in step 2 (same loose-substring rule) AND whose
+   company resolved to an entry in `_blind_spot_companies` specifically — not just any
+   already-known company; pollable companies are already covered daily by the poller, so
+   this only matters where the poller structurally cannot reach — run ONE WebSearch to try
+   to verify/locate the specific posting (the same move the User-Surfaced Finds Protocol
+   makes on request). Add one line to the digest's "Manual channel — no pollable board"
+   section with whatever was found (title, location if confirmed, a link if one resolved).
+   Do NOT tailor or score from it — this is visibility, not a pick; Aneesh decides whether
+   to pursue it by hand, same as the rest of that section.
+
+   **Cap: at most 3 auto-triggered checks per run**, oldest-alert-first if more qualify, so
+   a noisy day can't run away with WebSearch budget — the intersection of "tier-matching
+   title" AND "blind-spot company" should be rare by construction. Log the count (checked,
+   found, cap-deferred) in `run_[date].json → step_1d_2_linkedin_harvest`.
+
 4. **Hard cap: append at most 15 new companies per run.** If more survive dedupe, take them
    in the order they appeared and leave the rest; tomorrow's run will catch them, and the
    3-day/1-day windows overlap enough that nothing is lost. This cap is what keeps the step's
@@ -450,8 +481,10 @@ zero is verifiable; an absent section is indistinguishable from a skipped step.
 6. Note the harvested/capped counts in `run_[date].json → pipeline_notes`. Digest mention
    only if something notable enrolled — routine harvesting is housekeeping.
 
-**Do NOT** score, fetch JDs for, or tailor anything from this step. If a specific LinkedIn
-role is worth assessing, Aneesh pastes it and the User-Surfaced Finds Protocol handles it.
+**Do NOT** score, fetch JDs for, or tailor anything from this step, except the narrow
+blind-spot auto-trigger in step 3b, which does one verification WebSearch and stops at a
+digest line, never a tailored pick. Otherwise: if a specific LinkedIn role is worth
+assessing, Aneesh pastes it and the User-Surfaced Finds Protocol handles it.
 
 **Setup dependency:** this needs the forwarding filter on `{{APPLY_ACCOUNT}}`
 (`from:(linkedin.com)` + job-alert subject terms → forward to `{{CONFIRM_ALIAS}}`).
