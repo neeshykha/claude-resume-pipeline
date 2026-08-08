@@ -733,7 +733,8 @@
       "headcount_band": "2000+",
       "enrolled_date": "2026-08-03",
       "enrolled_via": "Workday Boards - Target Roles WebSearch dork 2026-08-03",
-      "reason": "GRC/compliance and financial reporting SaaS platform, public company (NYSE: WK, ~3,278 employees). Verified live 2026-08-03 via direct CXS POST: 84 jobs, multiple US-remote fit-titles -- AI Operations Lead, CPX (tier2b_ai_wildcard, the original WebSearch hit); Senior Customer Success Manager; Customer Success Manager - GRC; Senior Manager of Solution Consulting; Solutions Consultant - Financial Services (all tier2/tier3, all US Remote). No AI/ML or tooling score_bonus -- core product is GRC/reporting software, not AI-native or dev infra, despite the one AI-titled role."
+      "reason": "GRC/compliance and financial reporting SaaS platform, public company (NYSE: WK, ~3,278 employees). Verified live 2026-08-03 via direct CXS POST: 84 jobs, multiple US-remote fit-titles -- AI Operations Lead, CPX (tier2b_ai_wildcard, the original WebSearch hit); Senior Customer Success Manager; Customer Success Manager - GRC; Senior Manager of Solution Consulting; Solutions Consultant - Financial Services (all tier2/tier3, all US Remote). No AI/ML or tooling score_bonus -- core product is GRC/reporting software, not AI-native or dev infra, despite the one AI-titled role.",
+      "application_friction_note": "Added 2026-08-07: applying to the AI Operations Lead, CPX req requires creating an account on Workiva's Workday instance before submitting -- not universal across Workday tenants (Philips' Workday application did not require this same day). Aneesh declined to apply for this reason. Not a hard exclude for future roles, just a known friction point worth surfacing if a future Workiva pick is close to threshold."
     },
     {
       "name": "Automation Anywhere",
