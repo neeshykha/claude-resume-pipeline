@@ -628,9 +628,26 @@ score >110 to surface. Queued/unapplied roles do NOT count. Trust the poller's
   Poller entries may carry a `passion_domain` tag as a hint — confirm it, don't trust it.
 
 **Penalties (small — reach is fine):** title gap −5 (named IC function Aneesh never held
-by exact title, once per job); seniority mismatch −5 (JD explicitly requires 6+ years in
-that specific function AND no prior title in it). Max −10 combined. Do not penalize reach
-beyond these two.
+by exact title, once per job); seniority mismatch −5 (JD explicitly requires **any**
+stated years-of-experience minimum in that specific function AND no prior title in it —
+originally written as "6+ years", generalized 2026-08-10 because Chainguard's bar was
+"5+ years" and the literal 6 meant the penalty never fired). Max −10 combined. Do not
+penalize reach beyond these two.
+
+**HARD-REQUIREMENT TIER CAP (added 2026-08-10, overrides the score-based tier).** If the
+JD states an explicit minimum years-of-experience in a specific function and Aneesh has
+**zero** years in that function by title, the role is capped at **light tier** no matter
+what it scored: summary rewrite + skills reorder only, no cover letter, and the gap named
+in the digest as a hard requirement rather than a soft gap. Same cap applies to any
+requirement the JD marks as non-negotiable in its own words ("required, not preferred",
+"must have"). This exists because the penalty system alone (max −10) cannot move a role
+that scored 104 below the 88 full-tailoring threshold, so a genuine disqualifier was still
+producing full-tier work: Chainguard 2026-08-10 scored 104 with a "5+ years in Data
+Governance or GTM Systems" bar Aneesh does not meet at all, and got a cover letter. Meanwhile
+LaunchDarkly's comparable coding gap was correctly demoted the same run — the inconsistency,
+not the individual call, is what this rule fixes. Judgment still applies to what counts as
+"the same function": Service Cloud admin work is not GTM Systems experience, but a Support
+Operations Manager req asking for "5+ years in support operations" is squarely met.
 
 **Diversity cap:** surface ≤2 roles per company per run; fully tailor only the single
 best-scoring one — additional same-company roles are "also live (FYI)" digest lines.
@@ -662,6 +679,32 @@ with the identical conclusion in every digest from 07-15 through 07-19.)
 WebFetch each top job's apply URL. On failure (403/JS), WebSearch for a cached or mirrored
 copy (BuiltIn, ZipRecruiter, Greenhouse cache). If the JD is unreachable two runs in a
 row, drop it to the near-miss list with a note rather than stalling.
+
+**Ask for the requirements section VERBATIM, not a summary (added 2026-08-10, from a real
+mis-score).** WebFetch answers your prompt with a small summarizing model, so a generic
+prompt ("extract the description, salary, and top keywords") gets back a paraphrased
+responsibilities list with the hard qualification bar silently dropped. The prompt must
+explicitly demand the qualifications/requirements block quoted exactly, especially any
+`N+ years of experience in [function]` line. Use wording like:
+
+> "Extract the COMPLETE requirements/qualifications section verbatim, especially any
+> years-of-experience requirements. Quote the exact text, don't summarize. Then separately:
+> title, salary range, posting date, location/remote policy, top 15 keyword phrases."
+
+What went wrong without it: Chainguard's "Senior Data Governance and Tooling Manager"
+(2026-08-10) leads its requirements with **"5+ years of experience in Data Governance or GTM
+Systems roles"** — a function Aneesh has zero years in. The generic fetch returned only
+responsibilities, that line was never seen, and the role was scored 104 and fully tailored
+WITH a cover letter, when the same run correctly demoted LaunchDarkly to light tier for a
+comparable hard gap (production coding) that happened to appear in the summarized output.
+Disclosing a gap honestly in the cover letter is not a substitute for scoring it correctly:
+the tier decision is what allocates Aneesh's limited application effort.
+
+**Ambiguous location shorthand: resolve it from the JD body, never the shortlist string.**
+Same run, Automation Anywhere's "Engagement Manager" showed `CO Remote` in the poller
+output; the JD body said "Remote role within **Colombia**." Two-letter codes in Workday
+location strings are not reliably US state codes. Caught before tailoring, but only by
+reading the body.
 
 **If the top-scored role at a company fails the JD read** (real skill mismatch — e.g. a
 Forward Deployed Engineer listing that turns out to require production coding), don't just
