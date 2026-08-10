@@ -76,12 +76,22 @@ skipped a genuinely fresh Assembled req on the mistaken assumption that an earli
 `stage=surfaced` only ever meant "tailored and drafted," never "confirmed sent," because
 Gmail MCP access here is `create_draft`-only. This step closes that gap going forward.
 
-Aneesh applies to jobs using `{{APPLY_ACCOUNT}}` (his system of record). A filter
-there forwards application-confirmation emails to `{{CONFIRM_ALIAS}}`, which lands
+Aneesh applies to jobs using `{{APPLY_ACCOUNT}}` (his system of record). Filters
+there forward application-confirmation emails to `{{CONFIRM_ALIAS}}`, which lands
 in this pipeline's connected inbox, searchable and untouched by the rest of his mail. A
-second filter on the receiving side labels those messages `JobConfirmations`.
-**Both filters were set up and verified 2026-07-28; this step is live, and a run that
+filter on the receiving side labels those messages `JobConfirmations`.
+**Set up 2026-07-28, expanded 2026-08-02, and re-verified in-browser 2026-08-03 (see
+SESSION_STATE, "GMAIL OUTCOME-CAPTURE VERIFIED"); this step is live, and a run that
 returns zero results now means no new confirmations, not a missing filter.**
+
+**The sending side is THREE overlapping filters, not one — do not "clean up" the older two.**
+Alongside the main 15-domain filter (`successfactors.com` and `taleo.net` added 2026-08-09) sit
+two older filters that match on subject lines
+("thank you for applying", "your application", ...). They look redundant; they are not.
+Confirmations sent from company-owned addresses rather than ATS domains reach the alias
+only through the subject match: Zocdoc (`careers@`, 2026-08-02) and Datadog
+(`no-reply@datadoghq.com`, 2026-08-07) both arrived that way — 2 of the first 8 captures.
+Deleting the subject filters would silently drop that class of confirmation.
 
 1. Search Gmail for
    `deliveredto:{{CONFIRM_ALIAS}} -from:linkedin.com newer_than:3d` (the 3-day window

@@ -1,5 +1,5 @@
 {
-  "_description": "Target companies for direct ATS board polling. Primary discovery source \u2014 preferred over WebSearch because ATS JSON endpoints return structured, fresh, deduplicated data with no 403/JS issues.",
+  "_description": "Target companies for direct ATS board polling. Primary discovery source — preferred over WebSearch because ATS JSON endpoints return structured, fresh, deduplicated data with no 403/JS issues.",
   "_websearch_sources": {
     "description": "Supplemental discovery sources run via WebSearch each daily pipeline run. Use these to find companies NOT on the ATS watchlist, especially Atlanta startups.",
     "sources": [
@@ -14,7 +14,7 @@
         "name": "BuiltIn Atlanta",
         "url": "https://builtin.com/atlanta",
         "query": "site:builtin.com/job (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions engineer\" OR \"support operations\" OR \"customer operations\" OR \"deployment\") Atlanta",
-        "notes": "Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount \u2264200. Query broadened 2026-06-25 to include customer success + solutions engineer terms.",
+        "notes": "Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount ≤200. Query broadened 2026-06-25 to include customer success + solutions engineer terms.",
         "status": "active",
         "frequency": "daily"
       },
@@ -22,7 +22,7 @@
         "name": "BuiltIn Remote",
         "url": "https://builtin.com/jobs/remote",
         "query": "site:builtin.com/job (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions engineer\" OR \"support operations\" OR \"customer operations\" OR \"deployment\") remote",
-        "notes": "Remote roles from tech companies nationally. No Atlanta bonus \u2014 needs stronger title/keyword fit to clear threshold. Salary floor ($100K) still applies. Query broadened 2026-06-25.",
+        "notes": "Remote roles from tech companies nationally. No Atlanta bonus — needs stronger title/keyword fit to clear threshold. Salary floor ($100K) still applies. Query broadened 2026-06-25.",
         "status": "active",
         "frequency": "daily"
       },
@@ -31,7 +31,7 @@
         "url": "https://wellfound.com/jobs",
         "query": "site:wellfound.com (\"customer success\" OR \"technical account\" OR implementation OR \"solutions engineer\" OR deployment OR \"support operations\" OR \"customer operations\") startup remote OR Atlanta",
         "status": "disabled",
-        "disabled_reason": "Tested 2026-06-30: the site:wellfound.com dork returns SEO role-category pages (wellfound.com/role/r/...) and the homepage, not live individual jobs \u2014 only ~2 of 10 results were real postings, and stale. Wellfound gates job detail behind auth + client-side rendering (same failure mode as Hypepotamus). Dead weight; it burned a daily WebSearch slot for near-zero yield. Reinvest the slot into the Ashby/Greenhouse/Lever board dorks below, which DO surface live sub-500 boards directly. Revisit only if a non-auth Wellfound listing endpoint appears.",
+        "disabled_reason": "Tested 2026-06-30: the site:wellfound.com dork returns SEO role-category pages (wellfound.com/role/r/...) and the homepage, not live individual jobs — only ~2 of 10 results were real postings, and stale. Wellfound gates job detail behind auth + client-side rendering (same failure mode as Hypepotamus). Dead weight; it burned a daily WebSearch slot for near-zero yield. Reinvest the slot into the Ashby/Greenhouse/Lever board dorks below, which DO surface live sub-500 boards directly. Revisit only if a non-auth Wellfound listing endpoint appears.",
         "frequency": "daily"
       },
       {
@@ -45,21 +45,21 @@
       {
         "name": "Ashby Boards - Target Roles",
         "query": "site:jobs.ashbyhq.com (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"enablement\" OR \"solutions consultant\" OR \"deployment\" OR \"professional services\" OR \"customer engineer\") 2026",
-        "notes": "Discovers Ashby-hosted companies NOT on the watchlist. Returns ~10 results; scan for UNFAMILIAR company names (skip ones already on the watchlist). When a new company appears, verify its board (pipeline/verify_workday.py pattern or a direct Ashby API check) and add it to the watchlist so the poller scans its full roster going forward. Added 2026-06-25. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term.",
+        "notes": "Discovers Ashby-hosted companies NOT on the watchlist. Returns ~10 results; scan for UNFAMILIAR company names (skip ones already on the watchlist). When a new company appears, verify its board (pipeline/verify_workday.py pattern or a direct Ashby API check) and add it to the watchlist so the poller scans its full roster going forward. Added 2026-06-25. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
         "status": "active",
         "frequency": "daily"
       },
       {
         "name": "Greenhouse Boards - Target Roles",
         "query": "site:job-boards.greenhouse.io (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"enablement\" OR \"solutions engineer\" OR \"deployment\" OR \"professional services\") 2026",
-        "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term.",
+        "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
         "status": "active",
         "frequency": "daily"
       },
       {
         "name": "Lever Boards - Target Roles",
         "query": "site:jobs.lever.co (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"enablement\" OR \"solutions consultant\" OR \"deployment\") 2026",
-        "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss). 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term.",
+        "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss). 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
         "status": "active",
         "frequency": "daily"
       },
@@ -73,7 +73,7 @@
       {
         "name": "AI-Native & AI-Safety Orgs (vertical discovery)",
         "query": "(\"AI safety\" OR \"AI security\" OR \"AI governance\" OR \"frontier model\" OR \"applied AI\" OR \"AI research\" OR \"contact center AI\" OR \"customer support AI\") (\"customer success\" OR \"technical account\" OR operations OR implementation OR deployment OR solutions) jobs 2026",
-        "notes": "Catches AI-native, AI-safety, AI-security, and AI-governance orgs that are off the watchlist and whose fitting roles may be titled differently (e.g. 'Operations Generalist'). Vertical/company discovery, not title-keyed \u2014 surface the COMPANY, then verify board + add to watchlist so the poller scans its full roster. Apply AI bonus (+20) to in-vertical hits. Added 2026-06-25 after a manually-found FAR.AI role exposed that the discovery layer was too title-narrow; 'AI security'/'AI governance'/'technical account' added 2026-07-02 after WitnessAI (AI security, 102 people, Atlanta-hybrid TAM) was invisible to this query for the same reason.",
+        "notes": "Catches AI-native, AI-safety, AI-security, and AI-governance orgs that are off the watchlist and whose fitting roles may be titled differently (e.g. 'Operations Generalist'). Vertical/company discovery, not title-keyed — surface the COMPANY, then verify board + add to watchlist so the poller scans its full roster. Apply AI bonus (+20) to in-vertical hits. Added 2026-06-25 after a manually-found FAR.AI role exposed that the discovery layer was too title-narrow; 'AI security'/'AI governance'/'technical account' added 2026-07-02 after WitnessAI (AI security, 102 people, Atlanta-hybrid TAM) was invisible to this query for the same reason.",
         "status": "active",
         "frequency": "daily"
       },
@@ -95,21 +95,21 @@
       {
         "name": "Workday Boards - Target Roles",
         "query": "site:myworkdayjobs.com (\"AI Enablement\" OR \"technical account manager\" OR \"customer success manager\" OR \"support operations\" OR \"implementation manager\") Atlanta OR remote",
-        "notes": "Closes the Workday blind spot found 2026-07-02: a Crowe 'AI Enablement Manager' (Atlanta, Tier-2 title, salary in range) was invisible to the pipeline because board dorks only covered Ashby/Greenhouse/Lever and Crowe isn't watchlist material. Workday hosts the enterprise segment specifically. Individual myworkdayjobs.com pages are JS-rendered \u2014 do NOT WebFetch them; verify hits via the Workday CXS API instead (POST https://{host}/wday/cxs/{tenant}/{site}/jobs with searchText \u2014 see _workday_notes / verify_workday.py). Enroll recurring-fit companies onto the watchlist with wd_host/wd_tenant/wd_site.",
+        "notes": "Closes the Workday blind spot found 2026-07-02: a Crowe 'AI Enablement Manager' (Atlanta, Tier-2 title, salary in range) was invisible to the pipeline because board dorks only covered Ashby/Greenhouse/Lever and Crowe isn't watchlist material. Workday hosts the enterprise segment specifically. Individual myworkdayjobs.com pages are JS-rendered — do NOT WebFetch them; verify hits via the Workday CXS API instead (POST https://{host}/wday/cxs/{tenant}/{site}/jobs with searchText — see _workday_notes / verify_workday.py). Enroll recurring-fit companies onto the watchlist with wd_host/wd_tenant/wd_site.",
         "status": "active",
         "frequency": "daily"
       },
       {
         "name": "Passion Verticals (EV/Health/Agtech/SportsTech discovery)",
         "query": "(\"EV charging\" OR \"electric vehicle\" OR \"climate tech\" OR \"digital health\" OR healthtech OR agtech OR \"vertical farming\" OR \"sports technology\" OR \"sports analytics\" OR \"player tracking\") (\"customer success manager\" OR \"technical account manager\" OR \"implementation manager\" OR \"support operations\" OR \"solutions engineer\") jobs remote OR Atlanta",
-        "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config \u2192 passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias. 'sports technology'/'sports analytics'/'player tracking' added 2026-07-22 for the new sports_technology domain -- this targets companies with real CSM/TAM/implementation-shaped roles (e.g. Sportradar, Catapult, Trackman, Zebra Sports), not field-hardware-technician titles like Hawk-Eye Innovations' actual Atlanta postings, which are a genuinely different job function and don't clear the title-tier bar regardless of the passion bonus.",
+        "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config → passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias. 'sports technology'/'sports analytics'/'player tracking' added 2026-07-22 for the new sports_technology domain -- this targets companies with real CSM/TAM/implementation-shaped roles (e.g. Sportradar, Catapult, Trackman, Zebra Sports), not field-hardware-technician titles like Hawk-Eye Innovations' actual Atlanta postings, which are a genuinely different job function and don't clear the title-tier bar regardless of the passion bonus.",
         "status": "active",
         "frequency": "daily"
       },
       {
         "name": "Industrial IoT / Physical-World Hardware (discovery only, no scoring bonus)",
         "query": "(site:jobs.ashbyhq.com OR site:job-boards.greenhouse.io OR site:jobs.lever.co) (\"industrial IoT\" OR \"condition monitoring\" OR \"predictive maintenance\" OR \"industrial automation\" OR \"asset tracking\") (\"customer success\" OR \"technical account\" OR \"solutions engineer\" OR \"implementation\" OR deployment)",
-        "notes": "Added 2026-07-18 after Aneesh described being drawn to physical-world/industrial-equipment sensing (anchor example: a sensor device on spinning machinery) \u2014 narrower than generic 'hardware' or 'wireless communication' on purpose, to avoid pulling in consumer telecom/carrier noise or double-counting his existing consumer-IoT background (First Alert/Newell/Luma), which already scores normally via keyword overlap. A plain (non-site-scoped) version of this query was tested first and returned mostly generic aggregator category pages (ZipRecruiter/Indeed/SimplyHired), not enrollable individual companies -- switched to the ATS-host-scoped pattern (same shape as the Ashby/Greenhouse/Lever 'Boards - Target Roles' sources) since that's what actually surfaces live individual postings; first live run found AssetWatch (industrial condition-monitoring platform), Advanced Technology Services, and ANYbotics (industrial robotics/predictive maintenance). UNLIKE the Passion Verticals source above, this is discovery/enrollment-only: hits get NO passion-domain scoring bonus (Aneesh explicitly deferred that decision -- see memory user_profile.md 'Open item, deliberately deferred'). Companies surfaced here go through the normal enrollment verification and are scored on the standard rubric like any other company -- no bonus, no special treatment, just a wider discovery net. Do not add a passion_domains entry for this vertical unless Aneesh explicitly asks.",
+        "notes": "Added 2026-07-18 after Aneesh described being drawn to physical-world/industrial-equipment sensing (anchor example: a sensor device on spinning machinery) — narrower than generic 'hardware' or 'wireless communication' on purpose, to avoid pulling in consumer telecom/carrier noise or double-counting his existing consumer-IoT background (First Alert/Newell/Luma), which already scores normally via keyword overlap. A plain (non-site-scoped) version of this query was tested first and returned mostly generic aggregator category pages (ZipRecruiter/Indeed/SimplyHired), not enrollable individual companies -- switched to the ATS-host-scoped pattern (same shape as the Ashby/Greenhouse/Lever 'Boards - Target Roles' sources) since that's what actually surfaces live individual postings; first live run found AssetWatch (industrial condition-monitoring platform), Advanced Technology Services, and ANYbotics (industrial robotics/predictive maintenance). UNLIKE the Passion Verticals source above, this is discovery/enrollment-only: hits get NO passion-domain scoring bonus (Aneesh explicitly deferred that decision -- see memory user_profile.md 'Open item, deliberately deferred'). Companies surfaced here go through the normal enrollment verification and are scored on the standard rubric like any other company -- no bonus, no special treatment, just a wider discovery net. Do not add a passion_domains entry for this vertical unless Aneesh explicitly asks.",
         "status": "active",
         "frequency": "daily"
       },
@@ -130,7 +130,7 @@
       {
         "name": "Tier-1 Manager-Title Sweep (all 3 ATSes at once)",
         "query": "(site:jobs.lever.co OR site:job-boards.greenhouse.io OR site:jobs.ashbyhq.com) (\"Technical Support Operations Manager\" OR \"Support Operations Manager\" OR \"Customer Operations Manager\" OR \"Technical Support Manager\" OR \"Customer Support Manager\" OR \"Technical Operations Manager\" OR \"Support Engineering Manager\")",
-        "notes": "Added 2026-07-14 after a test run: a rare-exact-title sweep across all three major ATSes at once surfaces companies the broader 'customer success/technical account/implementation' dorks miss (those get crowded out by large, well-known companies). Found Model N (Manager, Support Operations) and Aledade (Director, Application Support Operations \u2014 health-tech passion domain) on the first run. Deliberately scoped to Manager-level Tier-1 titles only \u2014 'Head of Support' and 'Director of Support Operations' excluded per Aneesh: those read as above his current level/purview, not a fit worth surfacing even though they're still scored as tier1_true_match in _title_scoring_tiers for ATS-poller hits (open question whether that config should change too \u2014 see _title_scoring_tiers note).",
+        "notes": "Added 2026-07-14 after a test run: a rare-exact-title sweep across all three major ATSes at once surfaces companies the broader 'customer success/technical account/implementation' dorks miss (those get crowded out by large, well-known companies). Found Model N (Manager, Support Operations) and Aledade (Director, Application Support Operations — health-tech passion domain) on the first run. Deliberately scoped to Manager-level Tier-1 titles only — 'Head of Support' and 'Director of Support Operations' excluded per Aneesh: those read as above his current level/purview, not a fit worth surfacing even though they're still scored as tier1_true_match in _title_scoring_tiers for ATS-poller hits (open question whether that config should change too — see _title_scoring_tiers note).",
         "status": "active",
         "frequency": "daily"
       },
@@ -206,20 +206,22 @@
         "name": "Global Payments",
         "why": "Atlanta HQ fintech. Workday site name unresolved (422 on the guess).",
         "query": "site:myworkdayjobs.com \"global payments\" (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\")",
-        "last_checked": "2026-07-31"
+        "last_checked": "2026-08-10",
+        "last_hit": "2026-08-10: TSYS (Global Payments' payment-tech subsidiary) Implementation Analyst I (entry-level, Tempe AZ) plus CSM/TAM listings via BuiltIn (Dubai CSM, UK&I Enterprise CSM, TAM Global Partnerships — no confirmed US-remote fit-space location). No fit-space hit."
       },
       {
         "name": "Intuit / Mailchimp",
         "why": "Mailchimp is Atlanta-based and now Intuit-owned. Workday tenant returned 401 on 2026-07-27, so it is auth-gated rather than public.",
         "query": "site:jobs.intuit.com (\"customer success\" OR \"support operations\" OR \"technical account\") Atlanta OR Mailchimp",
-        "last_checked": "2026-07-31",
-        "last_hit": "2026-07-31: real US-reachable hits via jobs.intuit.com direct WebSearch -- 'Senior Customer Success Manager (Mailchimp), Atlanta' and 'Customer Success Manager (Mailchimp), Atlanta/New Georgia'. Rough score ~68 (tier3 title match, Atlanta-enterprise bonus, no salary listed) -- below light_tailoring_threshold, not tailored, surfaced in digest as a blind-spot FYI."
+        "last_checked": "2026-08-10",
+        "last_hit": "2026-08-10: still live, same conclusion as 2026-07-31 -- 'Senior Customer Success Manager (Mailchimp), Atlanta' and 'Customer Success Manager (Mailchimp), Atlanta/New Georgia/New York'. Rough score ~68, below light_tailoring_threshold. Repeat-near-miss suppression applies going forward -- compress to one digest line unless something changes (retitled, new salary)."
       },
       {
         "name": "Delta Air Lines",
         "why": "Atlanta HQ and a personal-interest employer for Aneesh (SkyMiles/Medallion loyalty). Uses Avature, which the poller does not speak. Target its tech/digital org, not airport operations.",
         "query": "site:delta.avature.net OR site:jobs.delta.com (\"customer experience\" OR \"technical\" OR \"operations manager\" OR \"customer success\") technology",
-        "last_checked": "2026-08-01"
+        "last_checked": "2026-08-10",
+        "last_hit": "2026-08-10: Customer Service Manager (MRO, aerospace-technical), Specialist Customer Experience Strategy, Regional Sales Manager Technical Operations -- none clear tier1/tier2 support-ops/CSM title matches. No fit-space hit."
       },
       {
         "name": "Electrify America",
@@ -272,20 +274,20 @@
     "smartrecruiters": "https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100",
     "workable": "https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true"
   },
-  "_smartrecruiters_notes": "ats='smartrecruiters'. slug is the case-sensitive company identifier (e.g. 'BoschGroup', not 'bosch') \u2014 find it from a careers.smartrecruiters.com/{slug} or jobs.smartrecruiters.com/{slug} URL. Public postings API, no auth. Added 2026-06-30 to widen enrollable boards beyond GH/Ashby/Lever/Workday. FIXED 2026-08-06: fetch_smartrecruiters was single-page (limit=100), which silently hid postings past position 100 on large boards -- caught the hard way when a live, 6-day-old, Atlanta-based 'Manager, Customer Success Management' role at ServiceNow (416+ total postings) never appeared anywhere in poller output, only surfacing via a LinkedIn alert Aneesh spotted by hand. Now paginates up to SMARTRECRUITERS_MAX_POSTINGS (500). Note: offset-based pagination against a live-mutating board isn't perfectly race-safe -- a posting can still theoretically shift across a page boundary mid-fetch -- but this closes the vast majority of the gap (100 -> ~465 postings scanned for ServiceNow).",
+  "_smartrecruiters_notes": "ats='smartrecruiters'. slug is the case-sensitive company identifier (e.g. 'BoschGroup', not 'bosch') — find it from a careers.smartrecruiters.com/{slug} or jobs.smartrecruiters.com/{slug} URL. Public postings API, no auth. Added 2026-06-30 to widen enrollable boards beyond GH/Ashby/Lever/Workday. FIXED 2026-08-06: fetch_smartrecruiters was single-page (limit=100), which silently hid postings past position 100 on large boards -- caught the hard way when a live, 6-day-old, Atlanta-based 'Manager, Customer Success Management' role at ServiceNow (416+ total postings) never appeared anywhere in poller output, only surfacing via a LinkedIn alert Aneesh spotted by hand. Now paginates up to SMARTRECRUITERS_MAX_POSTINGS (500). Note: offset-based pagination against a live-mutating board isn't perfectly race-safe -- a posting can still theoretically shift across a page boundary mid-fetch -- but this closes the vast majority of the gap (100 -> ~465 postings scanned for ServiceNow).",
   "_workday_notes": "Workday entries use ats='workday' and carry wd_host (incl. wdN datacenter), wd_tenant, and wd_site instead of relying on slug for the endpoint (slug is still set = tenant, for dedup-key prefixing). The public careers page is JS-rendered; poll_ats.py POSTs to the internal CXS JSON API instead. Salary is NOT in the list response (it's on each job's detail page), so the poller treats it as neutral and Claude pulls exact salary + posting date from the JD at tailoring time, where the salary-floor and 21-day freshness gates are applied. wd_host/wd_tenant/wd_site are NOT guessable per company - verify new tenants with pipeline/verify_workday.py before adding (find the exact careers URL first, e.g. via 'site:myworkdayjobs.com [company]').",
   "_scoring_config": {
     "full_tailoring_threshold": 88,
     "light_tailoring_threshold": 78,
     "near_miss_salary_floor_usd": 90000,
-    "notes_near_miss": "Near-misses are listed (with links) in the email digest but NOT tailored, so Aneesh can eyeball them. Two kinds, unioned: (A) score near-miss \u2014 passes all hard filters incl. salary, but scores below light_tailoring_threshold (no lower score bound, capture all). (B) salary near-miss \u2014 passes all other filters but salary midpoint is below salary_floor_usd yet at or above near_miss_salary_floor_usd. See SKILL Step 2 + Step 5.",
+    "notes_near_miss": "Near-misses are listed (with links) in the email digest but NOT tailored, so Aneesh can eyeball them. Two kinds, unioned: (A) score near-miss — passes all hard filters incl. salary, but scores below light_tailoring_threshold (no lower score bound, capture all). (B) salary near-miss — passes all other filters but salary midpoint is below salary_floor_usd yet at or above near_miss_salary_floor_usd. See SKILL Step 2 + Step 5.",
     "company_cap_threshold": 110,
     "company_cap_max_applied_pending": 3,
     "company_cap_pending_max_age_days": 60,
     "notes_cap_pending_age": "Added 2026-07-27. An applied entry with outcome=null stops counting toward the company cap after this many days. Rationale: outcome=null was doing double duty -- it means both 'still waiting to hear' and 'nobody ever recorded a result' -- so a silent application blocked its company forever. An audit found EVERY capped company was frozen by applications 41 or 81 days old with zero recorded outcomes (Samsara 7 at 81d, Anthropic 5 at 81d, Observe.AI and Hightouch 3 each at 81d, Glean 4 spanning 41-81d). After 60 days of silence an application is realistically a rejection, not in flight. At this value Samsara/Anthropic/Observe.AI/Hightouch/Glean all unblock and Talkdesk (3 at 41d) correctly stays capped. This is a WORKAROUND for the missing outcome-confirmation loop, not a substitute: once application confirmations actually flow in (see daily_task_prompt.md Step 0.5), real outcomes will retire these entries properly and this age-out becomes a backstop rather than the primary mechanism.",
     "salary_floor_usd": 100000,
     "salary_comparison_basis": "midpoint",
-    "notes_salary": "Compare the MIDPOINT of a listed base-salary range against salary_floor_usd \u2014 never the bottom or top. Single figure: use as-is. OTE-only: estimate base (80% for variable/sales roles, 100% otherwise). No salary listed: do not filter, treat as neutral in scoring. See SKILL Step 2b for the authoritative rule.",
+    "notes_salary": "Compare the MIDPOINT of a listed base-salary range against salary_floor_usd — never the bottom or top. Single figure: use as-is. OTE-only: estimate base (80% for variable/sales roles, 100% otherwise). No salary listed: do not filter, treat as neutral in scoring. See SKILL Step 2b for the authoritative rule.",
     "light_tailoring_steps": [
       "summary_rewrite",
       "skills_reorder"
@@ -298,7 +300,7 @@
     ],
     "freshness_bonus_2d": 10,
     "freshness_bonus_7d": 2,
-    "notes_freshness": "Add +10 for postings \u22642 days old, +2 for \u22647 days. Validated by empirical data: response rates fall sharply after 48 hours.",
+    "notes_freshness": "Add +10 for postings ≤2 days old, +2 for ≤7 days. Validated by empirical data: response rates fall sharply after 48 hours.",
     "small_company_bonus": {
       "1-50": 15,
       "51-200": 15,
@@ -306,8 +308,8 @@
       "501-2000": 0,
       "2000+": 0
     },
-    "notes_small_company": "Counterweight for the sub-500 segment, which the watchlist + AI/Atlanta bonuses structurally bury (those bonuses correlate with big, well-known companies). Add +15 if the company's headcount_band is \u226450-200, +8 if 201-500, 0 above. Applies ONLY when the company entry carries a headcount_band field; if absent, treat as neutral (0) \u2014 do NOT guess. This is a COMPANY-LEVEL bonus and counts toward the +30 company-bonus cap in CLAUDE.md alongside AI/ML, watchlist, Atlanta, IoT. Consequence by design: a small AI-native company (AI +20 + small +15 = 35 \u2192 clamped to 30) gains little since it already surfaces; the lift lands where it's needed \u2014 small NON-AI companies (vertical SaaS, dev infra) like PermitFlow/Antithesis/Mintlify that have real role fit but no AI/Atlanta bonus to clear threshold. Rationale: at a 150-person company a support-ops/CSM/implementation hire has real scope; at a 3,000-person company it's one of dozens.",
-    "notes": "Light tailoring for IC-level roles 78-87. Full tailoring for 88+. Skip below 78. Capped companies require 110+ regardless of tier. Cap rule: count entries where applied=true AND outcome=null (pending applications). If that count \u2265 company_cap_max_applied_pending, new roles need company_cap_threshold to surface. Queued/unapplied roles do NOT count toward the cap \u2014 only submitted applications do.",
+    "notes_small_company": "Counterweight for the sub-500 segment, which the watchlist + AI/Atlanta bonuses structurally bury (those bonuses correlate with big, well-known companies). Add +15 if the company's headcount_band is ≤50-200, +8 if 201-500, 0 above. Applies ONLY when the company entry carries a headcount_band field; if absent, treat as neutral (0) — do NOT guess. This is a COMPANY-LEVEL bonus and counts toward the +30 company-bonus cap in CLAUDE.md alongside AI/ML, watchlist, Atlanta, IoT. Consequence by design: a small AI-native company (AI +20 + small +15 = 35 → clamped to 30) gains little since it already surfaces; the lift lands where it's needed — small NON-AI companies (vertical SaaS, dev infra) like PermitFlow/Antithesis/Mintlify that have real role fit but no AI/Atlanta bonus to clear threshold. Rationale: at a 150-person company a support-ops/CSM/implementation hire has real scope; at a 3,000-person company it's one of dozens.",
+    "notes": "Light tailoring for IC-level roles 78-87. Full tailoring for 88+. Skip below 78. Capped companies require 110+ regardless of tier. Cap rule: count entries where applied=true AND outcome=null (pending applications). If that count ≥ company_cap_max_applied_pending, new roles need company_cap_threshold to surface. Queued/unapplied roles do NOT count toward the cap — only submitted applications do.",
     "passion_domains": {
       "bonus": 10,
       "notes": "Mission-alignment bonus for Aneesh's personal interest areas (added 2026-07-02, from direct user input). Apply +10 ONCE per job if the company's product/mission sits in ANY of these domains; do not stack across domains. This is a COMPANY-LEVEL bonus and counts toward the +30 company-bonus cap alongside AI/ML, watchlist, Atlanta, IoT, small-company. Claude applies it SEMANTICALLY at Step 2c (company mission/product, not keyword accidents like 'patient rollout'). The poller uses poller_keywords only for a small pre_score lift so passion companies reach the shortlist.",
@@ -375,7 +377,7 @@
     }
   },
   "_title_scoring_tiers": {
-    "description": "Aneesh's background is Technical Support Operations Manager \u2014 he runs a support function end-to-end: hiring/training agents, AI deployment, knowledge base, Salesforce administration, QA auditing, BPO management. Score title match accordingly. Operations-first and implementation-first roles are true matches; pure relationship CSM is a stretch.",
+    "description": "Aneesh's background is Technical Support Operations Manager — he runs a support function end-to-end: hiring/training agents, AI deployment, knowledge base, Salesforce administration, QA auditing, BPO management. Score title match accordingly. Operations-first and implementation-first roles are true matches; pure relationship CSM is a stretch.",
     "tier1_true_match": {
       "title_match_score": 30,
       "titles": [
@@ -475,7 +477,7 @@
         "Product Customer Success",
         "Forward Deployed Engineer"
       ],
-      "forward_deployed_engineer_note": "Demoted from Tier 2 (+22) to Tier 4 (+8) on 2026-07-09 after a near-100% miss rate across 7+ runs (2026-06-25 through 2026-07-09) covering dozens of postings at Parloa, Modal, Baseten, Antithesis, PermitFlow, Roboflow, Komodo Health, and Confido. In the 2026 AI-infra hiring market this title has drifted to mean 'customer-facing software engineer who ships production code' (Kubernetes, Terraform, sometimes a CS-degree requirement), not deployment strategy or ops \u2014 a real skill mismatch with the master resume, not a scoring artifact. ALWAYS read the actual JD before tailoring an FDE role, regardless of score \u2014 do not trust title-tier alone for this specific title. Titles that tested well and stayed at Tier 2: Deployment Strategist, AI Deployment Manager, AI Deployment Lead."
+      "forward_deployed_engineer_note": "Demoted from Tier 2 (+22) to Tier 4 (+8) on 2026-07-09 after a near-100% miss rate across 7+ runs (2026-06-25 through 2026-07-09) covering dozens of postings at Parloa, Modal, Baseten, Antithesis, PermitFlow, Roboflow, Komodo Health, and Confido. In the 2026 AI-infra hiring market this title has drifted to mean 'customer-facing software engineer who ships production code' (Kubernetes, Terraform, sometimes a CS-degree requirement), not deployment strategy or ops — a real skill mismatch with the master resume, not a scoring artifact. ALWAYS read the actual JD before tailoring an FDE role, regardless of score — do not trust title-tier alone for this specific title. Titles that tested well and stayed at Tier 2: Deployment Strategist, AI Deployment Manager, AI Deployment Lead."
     },
     "tier2b_ai_wildcard": {
       "title_match_score": 18,
@@ -644,7 +646,7 @@
         "tier4_weak_stretch"
       ],
       "_known_issue_2026_07_27": "The protected_tiers mechanism checks only the title's BEST tier match, not every tier it matches. 'Product Customer Success Manager' is documented below as staying live via tier4 protection, but it actually resolves to tier3 (score 15 beats tier4's 8), and tier3 is not protected -- so it IS demoted today, contrary to the note. Pre-existing, not caused by the 2026-07-27 product-ops carve-out (it contains no contiguous 'product manager' and matches none of the new tier2 entries). Proper fix is for is_function_mismatch to honor ANY protected tier the title matches rather than just the best-scoring one; deferred as low value since tier4 is the weakest stretch tier.",
-      "notes": "Added 2026-07-19 after these title classes consumed ~13 of 25 shortlist slots and were manually skipped as 'poor function fit' in every run since at least 07-14 (Maven AGI PMs held the day's top two pre-scores). Titles matching these patterns are DEMOTED out of the shortlist into the output's function_mismatch section (kept as digest FYI lines, never scored or tailored). Protected tiers override the demotion: a title whose best tier match is tier1/tier2/tier4 is never demoted, so 'Product Engagement Manager, User Operations' (tier1, contains 'Product\u2026Manager'), 'Support Engineering Manager' (tier1, contains 'Engineering Manager'), and 'Product Customer Success Manager' (tier4, contains 'Product\u2026Manager') stay live. tier3/supplemental/tier2b/borderline matches get checked. 'Product Manager', 'Technical Program Manager', and 'Sales Engineer' were moved here FROM supplemental_exact_titles, where their 'surface for review' intent had turned into daily shortlist crowding. If one of these classes ever produces a real fit, move that specific title variant to a scoring tier."
+      "notes": "Added 2026-07-19 after these title classes consumed ~13 of 25 shortlist slots and were manually skipped as 'poor function fit' in every run since at least 07-14 (Maven AGI PMs held the day's top two pre-scores). Titles matching these patterns are DEMOTED out of the shortlist into the output's function_mismatch section (kept as digest FYI lines, never scored or tailored). Protected tiers override the demotion: a title whose best tier match is tier1/tier2/tier4 is never demoted, so 'Product Engagement Manager, User Operations' (tier1, contains 'Product…Manager'), 'Support Engineering Manager' (tier1, contains 'Engineering Manager'), and 'Product Customer Success Manager' (tier4, contains 'Product…Manager') stay live. tier3/supplemental/tier2b/borderline matches get checked. 'Product Manager', 'Technical Program Manager', and 'Sales Engineer' were moved here FROM supplemental_exact_titles, where their 'surface for review' intent had turned into daily shortlist crowding. If one of these classes ever produces a real fit, move that specific title variant to a scoring tier."
     },
     "jd_verification_required_titles": {
       "titles": [
@@ -678,11 +680,11 @@
       "enrolled_date": "2026-07-30",
       "enrolled_via": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 generative AI inference platform",
+      "bonus_reason": "AI/ML platform (+20) — generative AI inference platform",
       "reason": "AI inference platform. Verified live board 2026-07-30: Technical Account Manager, Enterprise (job 4335490009) is the fit-space role.",
       "board_status": "404_confirmed",
-      "board_status_note": "First seen 404 on 2026-08-01 (matches the harvest_ats.py --prune finding on 2026-07-31 that this board died within a day of enrollment), re-confirmed 2026-08-03 via direct curl to both boards-api.greenhouse.io/v1/boards/fireworksai/jobs and job-boards.greenhouse.io/fireworksai (both 404). WebSearch snippets showed apparently-live listings (Forward Deployed PM, TAM Enterprise, etc.) but these are stale search-cache, same failure mode documented on the Aisera entry below \u2014 don't trust WebSearch alone for this board.",
-      "recheck_after": "2026-08-10"
+      "board_status_note": "First seen 404 on 2026-08-01, re-confirmed 2026-08-03 and 2026-08-10 via direct curl to boards-api.greenhouse.io/v1/boards/fireworksai/jobs (404). WebSearch snippets keep showing apparently-live listings (AI Researcher, Forward Deployed PM, TAM Enterprise, etc.) but these are stale search-cache, same failure mode documented on the Aisera entry below — don't trust WebSearch alone for this board.",
+      "recheck_after": "2026-08-17"
     },
     {
       "name": "NVIDIA",
@@ -694,7 +696,7 @@
       "priority": "high",
       "headcount_band": "2000+",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI computing/GPU platform",
+      "bonus_reason": "AI/ML platform (+20) — AI computing/GPU platform",
       "enrolled_date": "2026-08-03",
       "enrolled_via": "LinkedIn alert (Step 1d-2) 2026-08-03, manual_review flag",
       "reason": "AI computing/GPU giant, ~36,000 employees. Initially reported no_board by harvest_ats.py's deterministic slug guesses; resolved via the documented Workday WebSearch fallback (site:myworkdayjobs.com nvidia -> NVIDIAExternalCareerSite). Verified live 2026-08-03 via direct CXS POST: 298 jobs, 177 in United States, genuine fit-space hits -- Senior Customer Success Manager (US remote-eligible, tier1); Senior Customer Success Operations Manager - Technology (Santa Clara, the original LinkedIn-alert role, tier1-adjacent); Manager, Customer Enablement Engineering - Networking (Santa Clara, tier2c). Most of the board is engineering/sales, so watch for genuine fit-space titles specifically rather than assuming broad fit."
@@ -746,7 +748,7 @@
       "priority": "high",
       "headcount_band": "2000+",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 agentic process automation (RPA + AI agents)",
+      "bonus_reason": "AI/ML platform (+20) — agentic process automation (RPA + AI agents)",
       "enrolled_date": "2026-08-03",
       "enrolled_via": "Workday Boards - Target Roles WebSearch dork 2026-08-03",
       "reason": "Agentic process automation (RPA + AI agents) platform (~3,000-4,200 employees). Verified live 2026-08-03 via direct CXS POST: 42 jobs, US-reachable fit-titles -- Customer Success Manager (Remote US-TX, tier1); Engagement Manager (Remote CO, tier2); Technical Support Engineer (Remote, tier3)."
@@ -780,7 +782,7 @@
       "enrolled_date": "2026-07-19",
       "enrolled_via": "Greenhouse board dork, first seen 2026-07-19",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI guidance platform for disability/injury claims management",
+      "bonus_reason": "AI/ML platform (+20) — AI guidance platform for disability/injury claims management",
       "reason": "AI claims-guidance platform (NYC, ~242 employees, acquired by CCC Intelligent Solutions Dec 2024 for $730M, still hires on its own Greenhouse board). Verified live board 2026-07-19: Agentic Solutions Consultant (NY/Chicago), Solutions Engineer (NY). The 'Technical Engagement Manager / Account Manager (AI/SaaS)' that surfaced it via the dork had already closed by verification time."
     },
     {
@@ -789,7 +791,7 @@
       "slug": "ServiceNow",
       "priority": "medium",
       "headcount_band": "2000+",
-      "reason": "Acquired Moveworks (AI for IT service management) \u2014 Moveworks roles now post on ServiceNow's SmartRecruiters board with a '- Moveworks' title suffix, e.g. 'Senior Customer Success Manager - Moveworks' (NY/Tokyo/London seen 2026-07-15). This is why Moveworks' own Greenhouse board has 404'd since 2026-06-18 \u2014 it didn't move ATS, it got absorbed. NOTE: board has 416 total postings and poll_ats.py's SmartRecruiters fetch is single-page (limit=100, see _smartrecruiters_notes) \u2014 deep/older Moveworks-branded postings past the first page of (mostly unrelated, large-corp) results may not surface. Title matching still filters noise from the page it does see.",
+      "reason": "Acquired Moveworks (AI for IT service management) — Moveworks roles now post on ServiceNow's SmartRecruiters board with a '- Moveworks' title suffix, e.g. 'Senior Customer Success Manager - Moveworks' (NY/Tokyo/London seen 2026-07-15). This is why Moveworks' own Greenhouse board has 404'd since 2026-06-18 — it didn't move ATS, it got absorbed. NOTE: board has 416 total postings and poll_ats.py's SmartRecruiters fetch is single-page (limit=100, see _smartrecruiters_notes) — deep/older Moveworks-branded postings past the first page of (mostly unrelated, large-corp) results may not surface. Title matching still filters noise from the page it does see.",
       "enrolled_date": "2026-07-15",
       "enrolled_via": "SmartRecruiters Boards discovery WebSearch source"
     },
@@ -799,7 +801,7 @@
       "slug": "samsara",
       "priority": "high",
       "headcount_band": "2000+",
-      "reason": "IoT/fleet \u2014 direct fit for Aneesh's IoT hardware background"
+      "reason": "IoT/fleet — direct fit for Aneesh's IoT hardware background"
     },
     {
       "name": "FullStory",
@@ -807,7 +809,7 @@
       "slug": "fullstory",
       "priority": "high",
       "headcount_band": "501-2000",
-      "reason": "Atlanta HQ, digital experience analytics, AI-powered \u2014 Aneesh specifically interested"
+      "reason": "Atlanta HQ, digital experience analytics, AI-powered — Aneesh specifically interested"
     },
     {
       "name": "Cloudflare",
@@ -844,8 +846,8 @@
       "priority": "high",
       "headcount_band": "201-500",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 leading AI agent/LLM orchestration framework, deeply AI-native",
-      "reason": "AI agent framework company (LangSmith/LangGraph). ~280-325 employees (verified 2026-07-16). Deep fit-space pipeline: Engagement Manager (NYC/SF), Deployed Engineer (many cities incl. Atlanta \u2014 jd_verification_required class, verify JD before tailoring), Customer Engineer (SF), Solutions Architect (many cities), Senior Technical Support Engineer (SF), GTM Onboarding & Enablement Lead (SF). Enrolled via Ashby board dork 2026-07-16."
+      "bonus_reason": "AI/ML platform (+20) — leading AI agent/LLM orchestration framework, deeply AI-native",
+      "reason": "AI agent framework company (LangSmith/LangGraph). ~280-325 employees (verified 2026-07-16). Deep fit-space pipeline: Engagement Manager (NYC/SF), Deployed Engineer (many cities incl. Atlanta — jd_verification_required class, verify JD before tailoring), Customer Engineer (SF), Solutions Architect (many cities), Senior Technical Support Engineer (SF), GTM Onboarding & Enablement Lead (SF). Enrolled via Ashby board dork 2026-07-16."
     },
     {
       "name": "Amplitude",
@@ -936,7 +938,7 @@
       "ats": "greenhouse",
       "slug": "nice",
       "priority": "medium",
-      "reason": "Contact center AI \u2014 direct fit",
+      "reason": "Contact center AI — direct fit",
       "headcount_band": "2000+"
     },
     {
@@ -960,18 +962,18 @@
       "priority": "high",
       "headcount_band": "2000+",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 frontier AI lab, was missing this bonus despite being unambiguously AI-native (same gap class as Maven AGI, fixed 2026-07-20)",
-      "reason": "AI \u2014 Aneesh's strongest differentiator. ~7,000-8,000 employees (verified 2026-07-16)."
+      "bonus_reason": "AI/ML platform (+20) — frontier AI lab, was missing this bonus despite being unambiguously AI-native (same gap class as Maven AGI, fixed 2026-07-20)",
+      "reason": "AI — Aneesh's strongest differentiator. ~7,000-8,000 employees (verified 2026-07-16)."
     },
     {
       "name": "Anthropic",
       "ats": "greenhouse",
       "slug": "anthropic",
       "priority": "high",
-      "reason": "AI \u2014 Aneesh's strongest differentiator",
+      "reason": "AI — Aneesh's strongest differentiator",
       "headcount_band": "2000+",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 frontier AI lab, was missing this bonus despite being unambiguously AI-native (same gap class as Maven AGI, fixed 2026-07-20)"
+      "bonus_reason": "AI/ML platform (+20) — frontier AI lab, was missing this bonus despite being unambiguously AI-native (same gap class as Maven AGI, fixed 2026-07-20)"
     },
     {
       "name": "Vanta",
@@ -1046,8 +1048,8 @@
       "priority": "high",
       "headcount_band": "51-200",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 enterprise conversational AI agent platform, was missing this bonus despite being unambiguously AI-native",
-      "reason": "Aneesh has implemented Maven AGI at iApts \u2014 direct product familiarity"
+      "bonus_reason": "AI/ML platform (+20) — enterprise conversational AI agent platform, was missing this bonus despite being unambiguously AI-native",
+      "reason": "Aneesh has implemented Maven AGI at iApts — direct product familiarity"
     },
     {
       "name": "Percona",
@@ -1122,7 +1124,7 @@
       "priority": "low",
       "headcount_band": "51-200",
       "board_status": "404_confirmed",
-      "board_status_note": "Lever regalvoice slug dead as of 2026-06-25 (two consecutive 404s). Recovered slug: regal.ai. No CS/TAM roles at regal.ai as of 2026-06-25 \u2014 only AI FDE (coding-heavy) and AI Product Specialist (entry-level). Continue monitoring for CS/TAM openings."
+      "board_status_note": "Lever regalvoice slug dead as of 2026-06-25 (two consecutive 404s). Recovered slug: regal.ai. No CS/TAM roles at regal.ai as of 2026-06-25 — only AI FDE (coding-heavy) and AI Product Specialist (entry-level). Continue monitoring for CS/TAM openings."
     },
     {
       "name": "Level AI",
@@ -1145,7 +1147,7 @@
       "slug": "pindropsecurity",
       "priority": "high",
       "headcount_band": "201-500",
-      "reason": "Atlanta HQ, voice AI/security \u2014 IoT + AI + Atlanta triple fit",
+      "reason": "Atlanta HQ, voice AI/security — IoT + AI + Atlanta triple fit",
       "score_penalty": -20,
       "penalty_reason": "family conflict of interest"
     },
@@ -1154,7 +1156,7 @@
       "ats": "greenhouse",
       "slug": "onetrust",
       "priority": "high",
-      "reason": "Atlanta HQ, privacy/compliance SaaS \u2014 large Atlanta employer",
+      "reason": "Atlanta HQ, privacy/compliance SaaS — large Atlanta employer",
       "headcount_band": "2000+"
     },
     {
@@ -1162,7 +1164,7 @@
       "ats": "greenhouse",
       "slug": "florencehealthcare",
       "priority": "high",
-      "reason": "Atlanta HQ, clinical trial SaaS \u2014 small Atlanta company, strong CSM/TAM profile",
+      "reason": "Atlanta HQ, clinical trial SaaS — small Atlanta company, strong CSM/TAM profile",
       "headcount_band": "201-500"
     },
     {
@@ -1170,7 +1172,7 @@
       "ats": "greenhouse",
       "slug": "salesloft",
       "priority": "high",
-      "reason": "Atlanta HQ, sales engagement platform \u2014 large Atlanta employer",
+      "reason": "Atlanta HQ, sales engagement platform — large Atlanta employer",
       "headcount_band": "501-2000"
     },
     {
@@ -1178,7 +1180,7 @@
       "ats": "greenhouse",
       "slug": "calendly",
       "priority": "high",
-      "reason": "Atlanta HQ, scheduling SaaS \u2014 mid/large Atlanta employer",
+      "reason": "Atlanta HQ, scheduling SaaS — mid/large Atlanta employer",
       "headcount_band": "501-2000"
     },
     {
@@ -1194,7 +1196,7 @@
       "ats": "greenhouse",
       "slug": "cloverly",
       "priority": "medium",
-      "reason": "Atlanta HQ, climate/carbon API \u2014 small Atlanta startup",
+      "reason": "Atlanta HQ, climate/carbon API — small Atlanta startup",
       "headcount_band": "1-50"
     },
     {
@@ -1203,7 +1205,7 @@
       "slug": "Flock%20Safety",
       "priority": "high",
       "headcount_band": "501-2000",
-      "reason": "Atlanta HQ, IoT safety cameras for public sector \u2014 IoT + Atlanta + public safety triple fit. NOTE: slug has URL-encoded space \u2014 use as-is in API URL. ~1,400-1,500 employees (verified 2026-07-16)."
+      "reason": "Atlanta HQ, IoT safety cameras for public sector — IoT + Atlanta + public safety triple fit. NOTE: slug has URL-encoded space — use as-is in API URL. ~1,400-1,500 employees (verified 2026-07-16)."
     },
     {
       "name": "Terminus (DemandScience)",
@@ -1211,7 +1213,7 @@
       "slug": "demandscience",
       "priority": "medium",
       "headcount_band": "51-200",
-      "reason": "Atlanta HQ, B2B marketing SaaS \u2014 Atlanta employer, CSM-heavy. Terminus merged into DemandScience Nov 2024. Current jobs are Philippines-only \u2014 monitor for US roles. ~168 employees (verified 2026-08-03)."
+      "reason": "Atlanta HQ, B2B marketing SaaS — Atlanta employer, CSM-heavy. Terminus merged into DemandScience Nov 2024. Current jobs are Philippines-only — monitor for US roles. ~168 employees (verified 2026-08-03)."
     },
     {
       "name": "Glean",
@@ -1219,7 +1221,7 @@
       "slug": "gleanwork",
       "priority": "high",
       "headcount_band": "501-2000",
-      "reason": "Enterprise search AI \u2014 strong technical CSM/TAM pipeline, AI bonus"
+      "reason": "Enterprise search AI — strong technical CSM/TAM pipeline, AI bonus"
     },
     {
       "name": "Intercom",
@@ -1227,7 +1229,7 @@
       "slug": "intercom",
       "priority": "medium",
       "headcount_band": "501-2000",
-      "reason": "Customer messaging/support platform \u2014 historically strong CSM track. ~1,200-1,800 employees, sources vary (verified 2026-08-03)."
+      "reason": "Customer messaging/support platform — historically strong CSM track. ~1,200-1,800 employees, sources vary (verified 2026-08-03)."
     },
     {
       "name": "Observe.ai",
@@ -1235,14 +1237,14 @@
       "slug": "observeai",
       "priority": "medium",
       "headcount_band": "201-500",
-      "reason": "Contact center AI \u2014 similar profile to NICE/Level AI"
+      "reason": "Contact center AI — similar profile to NICE/Level AI"
     },
     {
       "name": "Cohere",
       "ats": "ashby",
       "slug": "cohere",
       "priority": "medium",
-      "reason": "LLM API platform \u2014 enterprise AI with TAM/CSM pipeline",
+      "reason": "LLM API platform — enterprise AI with TAM/CSM pipeline",
       "headcount_band": "501-2000"
     },
     {
@@ -1250,7 +1252,7 @@
       "ats": "greenhouse",
       "slug": "coreweave",
       "priority": "medium",
-      "reason": "MLOps/experiment tracking \u2014 technical CSM roles, developer-facing. W&B acquired by CoreWeave 2025; filter jobs for 'W&B' or 'Weights & Biases' in title",
+      "reason": "MLOps/experiment tracking — technical CSM roles, developer-facing. W&B acquired by CoreWeave 2025; filter jobs for 'W&B' or 'Weights & Biases' in title",
       "headcount_band": "201-500"
     },
     {
@@ -1259,7 +1261,7 @@
       "slug": "writer",
       "priority": "high",
       "headcount_band": "501-2000",
-      "reason": "Enterprise AI writing platform \u2014 strong CSM/implementation pipeline, AI bonus",
+      "reason": "Enterprise AI writing platform — strong CSM/implementation pipeline, AI bonus",
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) - enterprise generative AI writing/agent platform"
     },
@@ -1268,9 +1270,9 @@
       "ats": "greenhouse",
       "slug": "moveworks",
       "priority": "high",
-      "reason": "AI for IT service management \u2014 CSM/TAM and implementation heavy",
+      "reason": "AI for IT service management — CSM/TAM and implementation heavy",
       "board_status": "404_confirmed",
-      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). ROOT CAUSE FOUND 2026-07-15: Moveworks was acquired by ServiceNow \u2014 it never migrated ATS, it stopped existing as an independent hiring entity. Moveworks-branded roles (CSM, TAM, ML/Agentic Systems engineering) now post on ServiceNow's SmartRecruiters board with a '- Moveworks' title suffix. ServiceNow added to the watchlist 2026-07-15 to catch these going forward. Stop rechecking this Greenhouse slug \u2014 it's permanently dead, not a recheck candidate.",
+      "board_status_note": "Greenhouse board returning 404 as of 2026-06-18 (multiple consecutive runs). ROOT CAUSE FOUND 2026-07-15: Moveworks was acquired by ServiceNow — it never migrated ATS, it stopped existing as an independent hiring entity. Moveworks-branded roles (CSM, TAM, ML/Agentic Systems engineering) now post on ServiceNow's SmartRecruiters board with a '- Moveworks' title suffix. ServiceNow added to the watchlist 2026-07-15 to catch these going forward. Stop rechecking this Greenhouse slug — it's permanently dead, not a recheck candidate.",
       "board_status_permanent": true
     },
     {
@@ -1278,17 +1280,17 @@
       "ats": "ashby",
       "slug": "assembledhq",
       "priority": "medium",
-      "reason": "Workforce management for CS/support teams \u2014 niche startup, direct ops relevance. Company's own positioning (AI Agents, AI Copilot, AI-powered workforce management) is unambiguously AI-native, same gap class previously fixed for Writer/OpenAI/Anthropic/Maven AGI \u2014 was missing score_bonus despite the AI-native reason text.",
+      "reason": "Workforce management for CS/support teams — niche startup, direct ops relevance. Company's own positioning (AI Agents, AI Copilot, AI-powered workforce management) is unambiguously AI-native, same gap class previously fixed for Writer/OpenAI/Anthropic/Maven AGI — was missing score_bonus despite the AI-native reason text.",
       "headcount_band": "51-200",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI+human support orchestration platform (AI Agents, AI Copilot, AI-powered workforce management)"
+      "bonus_reason": "AI/ML platform (+20) — AI+human support orchestration platform (AI Agents, AI Copilot, AI-powered workforce management)"
     },
     {
       "name": "Arize AI",
       "ats": "greenhouse",
       "slug": "arizeai",
       "priority": "medium",
-      "reason": "ML observability startup \u2014 technical CSM track",
+      "reason": "ML observability startup — technical CSM track",
       "score_bonus": 30,
       "bonus_reason": "AI/ML platform + developer/infra tooling (+30, pre-clamped at the +30 company-bonus cap; do NOT add more on top)",
       "headcount_band": "51-200"
@@ -1298,9 +1300,9 @@
       "ats": "greenhouse",
       "slug": "cresta",
       "priority": "high",
-      "reason": "Contact center AI \u2014 real-time agent coaching + AI assist for support teams. Maven-type company (AI to simplify support). Remote US confirmed active: AI Value Partner, Enterprise SE, Senior FDE AI Agent, FDE Manager. Strong title fit for Aneesh's background.",
+      "reason": "Contact center AI — real-time agent coaching + AI assist for support teams. Maven-type company (AI to simplify support). Remote US confirmed active: AI Value Partner, Enterprise SE, Senior FDE AI Agent, FDE Manager. Strong title fit for Aneesh's background.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 contact center AI squarely in Maven-type category",
+      "bonus_reason": "AI/ML platform (+20) — contact center AI squarely in Maven-type category",
       "headcount_band": "501-2000"
     },
     {
@@ -1308,9 +1310,9 @@
       "ats": "ashby",
       "slug": "decagon",
       "priority": "medium",
-      "reason": "AI customer support agents (Series B, top-tier). Maven-type company. NOTE: historically SF on-site dominant \u2014 monitor for remote roles opening up.",
+      "reason": "AI customer support agents (Series B, top-tier). Maven-type company. NOTE: historically SF on-site dominant — monitor for remote roles opening up.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI support agents. Offset: apply -10 location penalty if role is SF on-site only",
+      "bonus_reason": "AI/ML platform (+20) — AI support agents. Offset: apply -10 location penalty if role is SF on-site only",
       "headcount_band": "201-500"
     },
     {
@@ -1318,9 +1320,9 @@
       "ats": "greenhouse",
       "slug": "ada18",
       "priority": "medium",
-      "reason": "AI customer service automation platform. Maven-type company. Toronto HQ, distributed team model. Mostly engineering roles historically \u2014 monitor for CS/implementation openings.",
+      "reason": "AI customer service automation platform. Maven-type company. Toronto HQ, distributed team model. Mostly engineering roles historically — monitor for CS/implementation openings.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI customer service automation",
+      "bonus_reason": "AI/ML platform (+20) — AI customer service automation",
       "headcount_band": "201-500"
     },
     {
@@ -1330,7 +1332,7 @@
       "priority": "medium",
       "reason": "AI support triage and deflection. Maven-type company. ROOT CAUSE FOUND 2026-07-27: Zendesk announced a definitive agreement to acquire Forethought on 2026-03-11 and completed the acquisition on 2026-03-26 (~$200M+ deal, Zendesk's largest in two decades) -- Forethought never migrated ATS because it stopped existing as an independent hiring entity, same pattern as Moveworks/ServiceNow. Forethought's product (self-improving AI agents) is being folded into Zendesk's Resolution Platform; the absorbed team appears to be hiring under a new title convention, 'AI Success Strategist' -- see the new Zendesk watchlist entry below.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI support deflection/triage",
+      "bonus_reason": "AI/ML platform (+20) — AI support deflection/triage",
       "board_status": "404_confirmed",
       "board_status_note": "Greenhouse board returning 404 as of 2026-06-18. Re-verified 404 on 2026-07-02, 2026-07-09, 2026-07-16, and 2026-07-23. ROOT CAUSE CONFIRMED 2026-07-27 (see reason field): Zendesk acquired Forethought, completed 2026-03-26. The board is permanently dead, not a transient outage.",
       "board_status_permanent": true
@@ -1340,9 +1342,9 @@
       "ats": "greenhouse",
       "slug": "talkdesk2",
       "priority": "medium",
-      "reason": "CCaaS platform with embedded AI \u2014 contact center automation. Maven-adjacent (larger company, ~$10B). Solutions Engineer (Remote US) confirmed active. Larger/later-stage than ideal but strong title pipeline.",
+      "reason": "CCaaS platform with embedded AI — contact center automation. Maven-adjacent (larger company, ~$10B). Solutions Engineer (Remote US) confirmed active. Larger/later-stage than ideal but strong title pipeline.",
       "score_bonus": 15,
-      "bonus_reason": "Partial AI/ML bonus (+15, not full +20) \u2014 CCaaS platform with AI features, not a pure AI-native company",
+      "bonus_reason": "Partial AI/ML bonus (+15, not full +20) — CCaaS platform with AI features, not a pure AI-native company",
       "headcount_band": "501-2000"
     },
     {
@@ -1350,12 +1352,12 @@
       "ats": "greenhouse",
       "slug": "aiserajobs",
       "priority": "low",
-      "reason": "AI service management + customer service automation. Maven-type company. Board shows only India/Greece engineering roles as of 2026-05-19 \u2014 monitor for US openings. Had Atlanta AE role historically.",
+      "reason": "AI service management + customer service automation. Maven-type company. Board shows only India/Greece engineering roles as of 2026-05-19 — monitor for US openings. Had Atlanta AE role historically.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI service management. NOTE: apply -15 location penalty if no US remote option on role",
+      "bonus_reason": "AI/ML platform (+20) — AI service management. NOTE: apply -15 location penalty if no US remote option on role",
       "board_status": "404_confirmed",
-      "board_status_note": "Re-verified 2026-07-13, 2026-07-20, 2026-07-27, and 2026-08-03: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404, and this run again confirmed the human-facing job-boards.greenhouse.io/aiserajobs page 404s directly. WebSearch again surfaced apparently-live listings (Enterprise CSM, Sales Engineer, etc.) but these are stale search-cache \u2014 confirmed via direct curl to both endpoints. Don't trust WebSearch snippets alone for this check.",
-      "recheck_after": "2026-08-10"
+      "board_status_note": "Re-verified 2026-07-13, 2026-07-20, 2026-07-27, 2026-08-03, and 2026-08-10: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404. WebSearch again surfaced apparently-live listings (Product Marketing Manager, Enterprise CSM, Sales Engineer, etc.) but these are stale search-cache — confirmed via direct curl to the API endpoint. Don't trust WebSearch snippets alone for this check.",
+      "recheck_after": "2026-08-17"
     },
     {
       "name": "Sierra",
@@ -1364,7 +1366,8 @@
       "priority": "high",
       "reason": "AI agents for customer experience - direct Maven AGI competitor (conversational AI for support/CX). Exactly Aneesh's deployment background. Added 2026-06-25 (verified live: 136 jobs). Roles currently skew Forward Deployed infra, but hires Deployment/Solutions/CSM roles - high-value when one opens.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) - conversational AI for customer experience, Maven-type"
+      "bonus_reason": "AI/ML platform (+20) - conversational AI for customer experience, Maven-type",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Lorikeet",
@@ -1383,7 +1386,8 @@
       "priority": "medium",
       "reason": "Voice AI platform. Has Technical Account Manager + Solutions Engineer pipeline (some roles stale/India as of 2026-06-25). Added 2026-06-25 (verified live: 30 jobs). Voice AI parallels Aneesh's deployment work.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) - voice AI"
+      "bonus_reason": "AI/ML platform (+20) - voice AI",
+      "headcount_band": "51-200"
     },
     {
       "name": "Harvey",
@@ -1412,7 +1416,8 @@
       "priority": "medium",
       "reason": "AI infra / GPU cloud. Has TAM (GPU Cluster) role. Added 2026-06-25 (verified live: 58 jobs). AI infra - technical TAM fit.",
       "score_bonus": 30,
-      "bonus_reason": "AI/ML platform + developer/infra tooling (+30, pre-clamped at the +30 company-bonus cap; do NOT add more on top)"
+      "bonus_reason": "AI/ML platform + developer/infra tooling (+30, pre-clamped at the +30 company-bonus cap; do NOT add more on top)",
+      "headcount_band": "201-500"
     },
     {
       "name": "Dialpad",
@@ -1511,7 +1516,7 @@
       "priority": "medium",
       "reason": "AI-native agentic cybersecurity platform (7AI), Boston HQ, 51-100 employees, backed by Greylock/CRV/Spark. Customer Engagement Manager (AI outcomes) is a strong title fit. Added 2026-07-21.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI-native agentic security",
+      "bonus_reason": "AI/ML platform (+20) — AI-native agentic security",
       "headcount_band": "51-200"
     },
     {
@@ -1521,7 +1526,7 @@
       "priority": "medium",
       "reason": "Pre-Series A AI/data platform for private markets (NYC HQ, $5.5M seed). Implementation Specialist (remote-eligible) is the surfacing role. Added 2026-07-21.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 Generative AI private-markets analytics",
+      "bonus_reason": "AI/ML platform (+20) — Generative AI private-markets analytics",
       "headcount_band": "1-50"
     },
     {
@@ -2192,8 +2197,8 @@
       "enrolled_date": "2026-07-13",
       "enrolled_via": "Greenhouse board dork 2026-07-13",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI SOC analyst / autonomous security agents",
-      "reason": "AI-native security startup (Seattle, ~56 employees, autonomous SOC investigation agents). Verified live board (boards-api.greenhouse.io/v1/boards/dropzoneai/jobs, 200): Forward Deployed Engineer \u2014 flagged jd_verification_required (FDE title), read full JD before tailoring."
+      "bonus_reason": "AI/ML platform (+20) — AI SOC analyst / autonomous security agents",
+      "reason": "AI-native security startup (Seattle, ~56 employees, autonomous SOC investigation agents). Verified live board (boards-api.greenhouse.io/v1/boards/dropzoneai/jobs, 200): Forward Deployed Engineer — flagged jd_verification_required (FDE title), read full JD before tailoring."
     },
     {
       "name": "Harness",
@@ -2202,7 +2207,7 @@
       "priority": "medium",
       "headcount_band": "501-2000",
       "enrolled_date": "2026-07-13",
-      "enrolled_via": "enrollment_candidates.json pending queue (first seen BuiltIn Atlanta 2026-07-07, real slug resolved 2026-07-13 \u2014 prior 'harness'/'harnessio' guesses had 404'd across 4 runs)",
+      "enrolled_via": "enrollment_candidates.json pending queue (first seen BuiltIn Atlanta 2026-07-07, real slug resolved 2026-07-13 — prior 'harness'/'harnessio' guesses had 404'd across 4 runs)",
       "reason": "AI-native software delivery / CI-CD platform, SF HQ, ~1,200-1,700 employees. Verified live board: Senior Customer Success Engineer, Technical Program Manager (Customer Success Manager). Atlanta listed among offices for at least one role.",
       "score_bonus": 20,
       "bonus_reason": "Developer/infra tooling (+20)"
@@ -2226,8 +2231,8 @@
       "enrolled_date": "2026-07-13",
       "enrolled_via": "User-surfaced (LinkedIn, Partner Technical Enablement Manager) 2026-07-13",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 AI productivity suite (Grammarly writing assistance + Coda workspaces + Mail + Go agent)",
-      "reason": "Grammarly rebranded to Superhuman Platform Inc. 2025-10 after acquiring Coda and the Superhuman email client; ~900-1,400 employees. NOTE the unusual Ashby slug: 'superhuman%20platform%20inc' (URL-encoded spaces, stored pre-encoded) \u2014 the bare 'superhuman' board exists but returns 0 jobs. Verified live 2026-07-13: 72 jobs incl. Manager Strategic Customer Success (Remote US), Partner Technical Enablement Manager (Remote US, $154K-$200K by zone), Alliances Partner Engineer, Senior CSM Education."
+      "bonus_reason": "AI/ML platform (+20) — AI productivity suite (Grammarly writing assistance + Coda workspaces + Mail + Go agent)",
+      "reason": "Grammarly rebranded to Superhuman Platform Inc. 2025-10 after acquiring Coda and the Superhuman email client; ~900-1,400 employees. NOTE the unusual Ashby slug: 'superhuman%20platform%20inc' (URL-encoded spaces, stored pre-encoded) — the bare 'superhuman' board exists but returns 0 jobs. Verified live 2026-07-13: 72 jobs incl. Manager Strategic Customer Success (Remote US), Partner Technical Enablement Manager (Remote US, $154K-$200K by zone), Alliances Partner Engineer, Senior CSM Education."
     },
     {
       "name": "Acceldata",
@@ -2270,7 +2275,7 @@
       "ats": "greenhouse",
       "slug": "lumimeds",
       "priority": "medium",
-      "reason": "Telehealth/weight-loss platform, health-tech passion domain. Verified live board: Operations Manager \u2014 AI-First, Customer Support & Systems (Remote) \u2014 close positioning match to Aneesh's actual AI-first support-ops role. Headcount unverified (LinkedIn page returned no size data 2026-07-17) \u2014 do not guess, leave headcount_band unset until confirmed."
+      "reason": "Telehealth/weight-loss platform, health-tech passion domain. Verified live board: Operations Manager — AI-First, Customer Support & Systems (Remote) — close positioning match to Aneesh's actual AI-first support-ops role. Headcount unverified (LinkedIn page returned no size data 2026-07-17) — do not guess, leave headcount_band unset until confirmed."
     },
     {
       "name": "Passes",
@@ -2280,7 +2285,7 @@
       "headcount_band": "1-50",
       "enrolled_date": "2026-07-17",
       "enrolled_via": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
-      "reason": "Creator-economy subscription platform (Miami HQ, founded 2022, ~11-50 employees). Verified live board: Support Operations Manager, exact Tier-1 title match, but Los Angeles on-site (not remote) \u2014 location bonus will score as 'other' unless a remote option appears."
+      "reason": "Creator-economy subscription platform (Miami HQ, founded 2022, ~11-50 employees). Verified live board: Support Operations Manager, exact Tier-1 title match, but Los Angeles on-site (not remote) — location bonus will score as 'other' unless a remote option appears."
     },
     {
       "name": "AssetWatch",
@@ -2924,7 +2929,7 @@
       "priority": "low",
       "headcount_band": "501-2000",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) \u2014 'the only complete agentic AI platform for revenue teams'; the Manager, Customer Operations req explicitly asks for hands-on Claude-based agentic workflow design. Added 2026-08-01 after JD read at tailoring time (auto-enrollment left this unset, curated bonus fields don't get set automatically).",
+      "bonus_reason": "AI/ML platform (+20) — 'the only complete agentic AI platform for revenue teams'; the Manager, Customer Operations req explicitly asks for hands-on Claude-based agentic workflow design. Added 2026-08-01 after JD read at tailoring time (auto-enrollment left this unset, curated bonus fields don't get set automatically).",
       "enrolled_date": "2026-07-31",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (33 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Manager, Customer Operations (Revenue Operations)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
@@ -3075,6 +3080,24 @@
       "reason": "Global health technology company (Netherlands HQ, public, 2000+ employees). Verified live via direct CXS probe 2026-08-06: 'Support Process Excellence Manager', posted 1 day ago, U.S. Remote (field role, explicitly #LI-Remote), $117K-$186K in the GA salary band (highest tier $131K-$208K for CA/CT/DC/MA/NJ/NY/WA). Owns ITIL discipline, workflow controls in ServiceNow, and 'practical AI adoption in support workflows' -- strong functional overlap with Aneesh's Salesforce Service Cloud + Maven AGI ownership at iApartments, though the JD's platform is ServiceNow (not Salesforce) and it names ITIL specifically, both real gaps to disclose rather than paper over.",
       "score_bonus": 10,
       "bonus_reason": "Passion domain (+10) -- health technology, per _scoring_config.passion_domains"
+    },
+    {
+      "name": "Mercury",
+      "ats": "greenhouse",
+      "slug": "mercury",
+      "priority": "low",
+      "enrolled_date": "2026-08-10",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (55 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager - Product Partner Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "AlphaSense",
+      "ats": "greenhouse",
+      "slug": "alphasense",
+      "priority": "low",
+      "enrolled_date": "2026-08-10",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (228 jobs) with 6 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'AI Deployment Lead, Hedge Funds'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
