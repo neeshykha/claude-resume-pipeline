@@ -825,6 +825,55 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST
    pipeline_notes, near_misses array, email draft ID).
 5. Update `pipeline/SESSION_STATE.md`: today's output, near-misses, housekeeping, action
    queue. Session state never goes in `CLAUDE.md`.
+6. Add a `channel_stats` block to `run_[date].json` (schema added 2026-08-10, see any run
+   from that date onward for the shape). Four sub-objects: `ats_poll` (companies_polled,
+   jobs_scanned, title_matched, shortlisted), `websearch` (sources_run, new_companies_found,
+   enrolled), `linkedin_harvest` (threads_found, companies_extracted, enrolled,
+   blind_spot_real_hits), `feeders` (poll_remotive_status, poll_remotive_leads,
+   poll_80k_leads, harvest_hn_hiring_status, harvest_hn_hiring_leads), plus a top-level
+   `tailored_count`. This is the ONLY thing `pipeline/weekly_channel_report.py` reads —
+   every run must write it, in this exact shape, or that day silently drops out of the
+   weekly rollup. Do not backfill historical runs by guessing; the source data isn't
+   consistently structured that far back (checked 2026-08-10: zero of ~45 prior run files
+   had usable per-channel data in a common shape).
+
+## Step 6.5: Weekly channel-effectiveness rollup (gated, separate Gmail draft)
+
+**Added 2026-08-10, from Aneesh asking for a rundown of which discovery channel (ATS poll,
+LinkedIn forwards, WebSearch, discovery feeders) actually produces value.** A per-day answer
+is noisy — one day's "4/4 tailored picks came from the ATS poll" doesn't mean LinkedIn/WebSearch
+failed, it means ATS-poll is the execution layer that benefits from everything those channels
+enrolled over the preceding weeks. This is a weekly-cadence report, sent as its own Gmail draft,
+not folded into the daily digest.
+
+1. Use the **Read tool** on `pipeline/jobs/weekly_channel_report_state.json` (gitignored, lives
+   in `pipeline/jobs/` alongside the other run-state files). If it errors because the file
+   doesn't exist, the report is due. If it returns `{"last_sent": "YYYY-MM-DD"}`, the report is
+   due only if that date is 7 or more days before today. Otherwise skip this step entirely —
+   do not mention it in the digest, this is silent housekeeping like the monthly-source gating.
+2. If due, run:
+   ```bash
+   .venv/bin/python pipeline/weekly_channel_report.py
+   ```
+   It aggregates the trailing 7 days of `channel_stats` blocks and prints a per-channel
+   breakdown (ATS poll, WebSearch, LinkedIn harvest, feeders) plus how many days in the window
+   actually had data. Early on, most of the window will be missing (schema only exists from
+   2026-08-10 forward) — the report says so explicitly; don't treat that as an error.
+3. Create a **separate** Gmail draft (`create_draft`, not `update_draft` on the daily digest):
+   - To: `{{DIGEST_RECIPIENT}}`
+   - Subject: `Weekly Channel Report — [window start] to [window end]`
+   - Body: the script's output, lightly formatted as HTML (same raw-HTML rule as Step 5 —
+     never HTML-escape the markup). Add one interpretive line per channel using the actual
+     numbers, not template filler — e.g. if `poll_remotive` was degraded every tracked day,
+     say that plainly; if a channel enrolled zero companies for two straight weeks, say that
+     too. The point of this report is catching a channel that's quietly gone dead (this is
+     exactly how `poll_remotive`'s degradation was first noticed) or over-invested (14
+     WebSearch calls a day for a handful of already-known companies).
+4. Write today's date to `pipeline/jobs/weekly_channel_report_state.json` as
+   `{"last_sent": "YYYY-MM-DD"}` (Write tool, overwrite whatever was there).
+5. Note the draft ID in `run_[date].json → weekly_channel_report_draft_id` and one line in
+   `SESSION_STATE.md`. Do not mention this step in the main digest email at all — it has its
+   own draft and its own send decision.
 
 ## Step 7: Sync the public repo
 
