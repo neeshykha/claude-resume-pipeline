@@ -1060,6 +1060,27 @@
       "slug": "alphasense",
       "enrolled_date": "2026-08-10",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Cyara",
+      "ats": "lever",
+      "slug": "cyara",
+      "enrolled_date": "2026-08-11",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "GitLab",
+      "ats": "greenhouse",
+      "slug": "gitlab",
+      "enrolled_date": "2026-08-11",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Zoox",
+      "ats": "lever",
+      "slug": "zoox",
+      "enrolled_date": "2026-08-11",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -2607,6 +2628,62 @@
       "manual_review": true,
       "manual_review_why": "Manager Technical Operations (Implementation and Support), fully remote US per WebSearch confirmation — exact tier1 'Technical Operations Manager' title match. Alert repeated twice (2026-08-09).",
       "manual_review_surfaced": true
+    },
+    {
+      "name": "TensorWave",
+      "ats": "ashby",
+      "slug": "tensorwave",
+      "rejected_date": "2026-08-11",
+      "reason": "Board resolves and is live (42 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Tread",
+      "ats": "ashby",
+      "slug": "tread",
+      "rejected_date": "2026-08-11",
+      "reason": "Board resolves and is live (6 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Ripple Property Management",
+      "ats": "workable",
+      "slug": "ripple-property-management",
+      "rejected_date": "2026-08-11",
+      "reason": "Board resolves and is live (2 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "APTLY",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-11",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Steel Partners",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-11",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Samsung Healthcare USA",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-11",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Aprio",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-11",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
     }
   ]
 }

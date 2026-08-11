@@ -227,20 +227,22 @@
         "name": "Electrify America",
         "why": "EV charging, a stated passion domain. Confirmed 2026-07-06 to have no Greenhouse/Ashby/Lever/Workday board.",
         "query": "\"Electrify America\" careers (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation\")",
-        "last_checked": "2026-08-01"
+        "last_checked": "2026-08-11",
+        "last_hit": "2026-08-11: only generic customer-support/field-support category pages found (EV.Careers, ZipRecruiter aggregators), no individual CSM/TAM/implementation posting surfaced. No fit-space hit."
       },
       {
         "name": "Arrive / ParkMobile",
         "why": "Atlanta-based parking and mobility platform (ParkMobile, EasyPark, Flowbird). Surfaced a Technical Account Manager, Atlanta on 2026-07-27 via a job-alert email; careers.arrive.com is a custom site with no pollable board found.",
         "query": "site:careers.arrive.com OR \"ParkMobile\" careers (\"technical account manager\" OR \"customer success\" OR \"implementation\") Atlanta",
-        "last_checked": "2026-08-01"
+        "last_checked": "2026-08-11",
+        "last_hit": "2026-08-11: only sales/account-exec roles found (B2B Corporate Account Executive Atlanta, Key Account Manager, Senior Account Manager OnStreet Parking, Payment Implementation Specialist) -- no CSM/TAM support-ops title. No fit-space hit."
       },
       {
         "name": "Alston Construction",
         "why": "Surfaced an AI Program Manager (Atlanta, $99K-$135K) on 2026-07-20 that was a real substance match. Custom careers site, no pollable board.",
         "query": "\"Alston Construction\" careers (\"AI program manager\" OR \"technology manager\" OR \"operations manager\")",
-        "last_checked": "2026-08-03",
-        "last_hit": "2026-08-03: same AI Program Manager (Atlanta, $99K-$135K) posting already applied 2026-07-20. No new roles."
+        "last_checked": "2026-08-11",
+        "last_hit": "2026-08-11: same AI Program Manager (Atlanta, $100K-$130K) posting still live, already applied 2026-07-20. No new roles."
       },
       {
         "name": "InComm Payments",
@@ -1429,7 +1431,8 @@
       "priority": "high",
       "reason": "AI-powered cloud communications / contact center (CCaaS). Strong CSM pipeline (Enterprise, Key, Premier Accounts) + Manager Technical Accounts. Added 2026-06-25 (verified live: 73 jobs, 9 hits). Maven-adjacent contact center.",
       "score_bonus": 15,
-      "bonus_reason": "Partial AI/ML bonus (+15) - CCaaS platform with AI features, not pure AI-native"
+      "bonus_reason": "Partial AI/ML bonus (+15) - CCaaS platform with AI features, not pure AI-native",
+      "headcount_band": "501-2000"
     },
     {
       "name": "LivePerson",
@@ -1438,7 +1441,8 @@
       "priority": "medium",
       "reason": "Conversational AI / digital customer engagement (contact center). Added 2026-06-25 (verified live: 17 jobs, no CS hits today but core space is a fit). Monitor for CSM/deployment roles.",
       "score_bonus": 15,
-      "bonus_reason": "Partial AI/ML bonus (+15) - conversational AI / contact center"
+      "bonus_reason": "Partial AI/ML bonus (+15) - conversational AI / contact center",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Gorgias",
@@ -1455,7 +1459,8 @@
       "ats": "greenhouse",
       "slug": "braze",
       "priority": "high",
-      "reason": "Customer engagement / marketing automation. Very deep CSM + implementation pipeline (43 target hits as of 2026-06-25). Added 2026-06-25 (verified live: 221 jobs). Implementation-heavy SaaS - strong fit."
+      "reason": "Customer engagement / marketing automation. Very deep CSM + implementation pipeline (43 target hits as of 2026-06-25). Added 2026-06-25 (verified live: 221 jobs). Implementation-heavy SaaS - strong fit.",
+      "headcount_band": "2000+"
     },
     {
       "name": "Zip",
@@ -3101,6 +3106,36 @@
       "enrolled_date": "2026-08-10",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (228 jobs) with 6 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'AI Deployment Lead, Hedge Funds'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Cyara",
+      "ats": "lever",
+      "slug": "cyara",
+      "priority": "low",
+      "enrolled_date": "2026-08-11",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager, GTM Technology & Deal Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "GitLab",
+      "ats": "greenhouse",
+      "slug": "gitlab",
+      "priority": "low",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-08-11",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20) — DevOps platform (Git repo management, CI/CD) is the core product, curated tooling classification added by hand at enrollment time per CLAUDE.md guardrails",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (190 jobs) with 5 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director, Customer Experience Strategy'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Zoox",
+      "ats": "lever",
+      "slug": "zoox",
+      "priority": "low",
+      "enrolled_date": "2026-08-11",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (238 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Embedded Software Engineer - Battery Management Systems'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
