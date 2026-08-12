@@ -81,7 +81,13 @@ def slug_variants(name: str):
     hyphen = "-".join(words)
     stripped = re.sub(r"(inc|llc|ltd|corp|co|company|labs|technologies|technology)$", "", base)
     cands = [base, nospace, hyphen, stripped, base + "io", base + "hq",
-             base + "inc", base + "industries", base + "ai"]
+             base + "inc", base + "industries", base + "ai",
+             # Rippling-hosted boards commonly append one of these to the bare
+             # name rather than using it plain (seen live 2026-08-12:
+             # routeware-careers, gaiias-open-positions, nerdio-careers,
+             # alongside bare rippling/supper/tixr/kion) -- harmless no-ops
+             # against every other ATS, which just 404 on them.
+             hyphen + "-careers", hyphen + "-open-positions", hyphen + "-jobs"]
     out, seen = [], set()
     for c in cands:
         if c and len(c) > 1 and c not in seen:
@@ -126,6 +132,48 @@ def probe(ats: str, slug: str):
             return None
         return [(j.get("title", ""), j.get("location", "") or j.get("city", ""))
                 for j in r.json().get("jobs", [])]
+    if ats == "pinpoint":
+        r = _get(f"https://{slug}.pinpointhq.com/postings.json")
+        if not r:
+            return None
+        out = []
+        for j in r.json().get("data", []):
+            loc = j.get("location") or {}
+            parts = [p.strip() for p in [loc.get("city"), loc.get("province")] if p and p.strip()]
+            label = ", ".join(parts) if parts else (loc.get("name") or "")
+            out.append((j.get("title", ""), label))
+        return out
+    if ats == "rippling":
+        # First page only (20 postings) -- enough to judge fit-space; the real
+        # daily poll (fetch_rippling in poll_ats.py) paginates fully once a
+        # company is actually enrolled.
+        r = _get(f"https://ats.rippling.com/{slug}/jobs")
+        if not r:
+            return None
+        m = re.search(
+            r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
+            r.text, re.DOTALL)
+        if not m:
+            return None
+        try:
+            next_data = json.loads(m.group(1))
+        except (json.JSONDecodeError, ValueError):
+            return None
+        queries = (next_data.get("props", {}).get("pageProps", {})
+                   .get("dehydratedState", {}).get("queries", []))
+        job_query = next(
+            (qy for qy in queries
+             if isinstance(qy.get("queryKey"), list) and "job-posts" in qy["queryKey"]),
+            None)
+        if not job_query:
+            return None
+        items = job_query.get("state", {}).get("data", {}).get("items", []) or []
+        out = []
+        for j in items:
+            locs = j.get("locations") or []
+            names = [l.get("name") for l in locs if l.get("name")]
+            out.append((j.get("name", ""), ", ".join(names)))
+        return out
     return None
 
 
@@ -154,7 +202,7 @@ def load_known():
 def assess(name, matcher, hard_excluded, known_pairs):
     """Resolve a company to (ats, slug, strong_hits, total_jobs) or a reason."""
     for slug in slug_variants(name):
-        for ats in ("greenhouse", "ashby", "lever", "workable"):
+        for ats in ("greenhouse", "ashby", "lever", "workable", "pinpoint", "rippling"):
             if (ats, slug) in known_pairs:
                 continue
             jobs = probe(ats, slug)
