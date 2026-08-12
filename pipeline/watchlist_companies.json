@@ -1491,6 +1491,7 @@
       "ats": "ashby",
       "slug": "sentry",
       "priority": "medium",
+      "headcount_band": "201-500",
       "reason": "Developer error-monitoring platform. Senior Technical CSM + Solutions Engineer roles live. Added 2026-06-25 (verified live: 45 jobs, 8 hits). Technical CSM fit.",
       "score_bonus": 20,
       "bonus_reason": "Developer/infra tooling (+20)"
@@ -1550,6 +1551,7 @@
       "ats": "greenhouse",
       "slug": "attentive",
       "priority": "medium",
+      "headcount_band": "501-2000",
       "reason": "SMS/email marketing platform. Senior CSM + Senior Implementation Consultant roles. Added 2026-06-25 (verified live: 46 jobs)."
     },
     {
@@ -1557,6 +1559,7 @@
       "ats": "ashby",
       "slug": "ramp",
       "priority": "medium",
+      "headcount_band": "2000+",
       "reason": "Fintech / spend management. Engagement Manager + AI Solutions Strategist roles. Added 2026-06-25 (verified live: 116 jobs). No AI platform bonus (fintech, not AI-native)."
     },
     {
@@ -3136,6 +3139,42 @@
       "enrolled_date": "2026-08-11",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (238 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Embedded Software Engineer - Battery Management Systems'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Skydio",
+      "ats": "ashby",
+      "slug": "skydio",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (114 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Revenue Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "EnergyHub",
+      "ats": "greenhouse",
+      "slug": "energyhub",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (17 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager, Revenue Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Sprout Social",
+      "ats": "greenhouse",
+      "slug": "sproutsocial",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'FP&A Systems and AI Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Appian",
+      "ats": "greenhouse",
+      "slug": "appian",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (188 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Career Manager (Public Sector, Professional Services)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }

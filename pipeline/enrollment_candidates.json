@@ -1081,6 +1081,34 @@
       "slug": "zoox",
       "enrolled_date": "2026-08-11",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Skydio",
+      "ats": "ashby",
+      "slug": "skydio",
+      "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "EnergyHub",
+      "ats": "greenhouse",
+      "slug": "energyhub",
+      "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Sprout Social",
+      "ats": "greenhouse",
+      "slug": "sproutsocial",
+      "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Appian",
+      "ats": "greenhouse",
+      "slug": "appian",
+      "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -2682,6 +2710,78 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-11",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Church's Texas Chicken",
+      "ats": "workday",
+      "slug": "churchs",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (churchs.wd1.myworkdayjobs.com/Corporate, 9 jobs, direct CXS POST verified since harvest_ats.py's deterministic slug guesses missed the tenant). All 9 postings are on-site Atlanta HQ (980 Hammond Drive), mostly Director/Senior-Director IT titles. Only loosely-relevant title is 'Director, AI Enablement' -- Director-level, above Aneesh's current scope (same standing judgment as the Tier-1 Manager Sweep's Director exclusion), and not a genuine tier1/tier2/tier2c match. No fit-space role.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Wpromote",
+      "ats": "lever",
+      "slug": "wpromote",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (39 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Aurora Solar",
+      "ats": "ashby",
+      "slug": "aurorasolar",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (8 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Johnny Grow",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "FlowCandy",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "ChargeAfter",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "SageNet",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "ketteQ",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Truly Good Foods",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true
     }
