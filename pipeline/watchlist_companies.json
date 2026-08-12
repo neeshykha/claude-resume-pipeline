@@ -3269,6 +3269,24 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — infrastructure for enterprises to build/orchestrate autonomous 'AI workforces' (Y Combinator S23, $150M+ raised incl. a16z/Base10)",
       "reason": "Found via the new Recent Funding discovery source (2026-08-12 seed run), not a name-guessable slug -- Ashby board is literally 'happyrobot.ai' (dot included), which slug_variants() does not generate; resolved by hand. Verified live 2026-08-12: 70+ jobs, real tier2 fit via repeated 'Deployment Strategist' postings (SF, NY, and several international cities) plus numerous 'Forward Deployed Engineer' reqs (jd_verification_required -- FDE roles here look coding-heavy per the JD, read carefully before tailoring: 'Software Engineer - Full-Stack' and 'Machine Learning Engineer' sit on the same board, suggesting FDE may share that bar). No bare 'Remote US' location seen at harvest time -- SF/NY postings score 0 on location per the Atlanta/remote-only scoping unless that changes."
+    },
+    {
+      "name": "Prime Intellect",
+      "ats": "ashby",
+      "slug": "primeintellect",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (26 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager - AI Infrastructure'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Base Power",
+      "ats": "ashby",
+      "slug": "base-power",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer, but flag before trusting the auto-pick: the harvester's 1 'fit-title' hit ('Global Supply Manager - Tooling & Shop Supplies (MRO)', Austin TX) is a FALSE POSITIVE -- MRO tooling is physical shop/warehouse supply procurement, not the software/business tooling the tier2c_tooling_systems tier is meant to catch. Verified by reading the role itself 2026-08-12. Kept enrolled anyway (172-job board, home-battery/grid-tech company, real climate-tech vertical fit for daily monitoring) but do NOT tailor for that specific role, and don't trust future tier2c matches here without reading the JD first."
     }
   ]
 }
