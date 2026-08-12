@@ -3190,7 +3190,7 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'FP&A Systems and AI Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'FP&A Systems and AI Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. CORRECTION 2026-08-12 (full JD read): the surfacing role is genuinely a Finance-department FP&A systems role requiring deep hands-on Pigment (enterprise planning software) experience -- not a support/CS-AI role despite the 'AI Manager' title-match. Do not tailor for it; the title-tier match was real but the substance is a hard mismatch. Keep the company enrolled in case a real support/CS-titled role posts later."
     },
     {
       "name": "Appian",
