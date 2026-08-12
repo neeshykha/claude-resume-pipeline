@@ -2,7 +2,8 @@
 """
 ATS Board Poller — runs as a standalone Python script BEFORE Claude's pipeline.
 
-Polls all watchlist companies' ATS endpoints (Greenhouse, Ashby, Lever),
+Polls all watchlist companies' ATS endpoints (Greenhouse, Ashby, Lever, Workday,
+SmartRecruiters, Workable, Pinpoint, Rippling),
 filters by target titles, deduplicates against seen_jobs.json, applies
 company cap and basic filters, and outputs a small JSON file that Claude
 reads instead of fetching/processing raw API data in-context.
@@ -565,6 +566,13 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             raw = job_data.get("published_on") or job_data.get("created_at")
             if raw:
                 return datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
+        elif ats in ("pinpoint", "rippling"):
+            # Neither public endpoint exposes a posting-creation date in the
+            # list response (Pinpoint: only deadline_at, the application
+            # cutoff, not when it opened; Rippling: the SSR job-list payload
+            # carries id/name/url/department/locations only). Always neutral,
+            # same "no data -> don't filter" treatment as a missing salary.
+            return None
         elif ats == "workday":
             # Workday's CXS list response has no ISO date, only a relative
             # "postedOn" string ("Posted Today" / "Posted Yesterday" /
@@ -645,6 +653,22 @@ def parse_location(job_data: dict, ats: str) -> str:
         if loc.get("remote"):
             full = f"Remote {full}".strip()
         return full or "Unknown"
+    elif ats == "pinpoint":
+        # Pinpoint's location object is inconsistent: sometimes city+province
+        # are populated (Wilmington/Virginia), sometimes only a coarse `name`
+        # is (bare "USA", or a city standing in for name like "Belfast").
+        # Build from city+province when present, fall back to name.
+        loc = job_data.get("location") or {}
+        parts = [p.strip() for p in [loc.get("city"), loc.get("province")] if p and p.strip()]
+        base = ", ".join(parts) if parts else (loc.get("name") or "Unknown")
+        wtype = job_data.get("workplace_type_text") or ""
+        if wtype and base != "Unknown" and wtype.lower() not in base.lower():
+            base = f"{base} ({wtype})"
+        return base or "Unknown"
+    elif ats == "rippling":
+        locs = job_data.get("locations") or []
+        names = [l.get("name") for l in locs if l.get("name")]
+        return ", ".join(names) if names else "Unknown"
     return "Unknown"
 
 
@@ -666,6 +690,8 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
     elif ats == "smartrecruiters":
         jid = job_data.get("id", "")
         return f"https://jobs.smartrecruiters.com/{slug}/{jid}"
+    elif ats in ("pinpoint", "rippling"):
+        return job_data.get("url", "")
     return ""
 
 
@@ -843,6 +869,98 @@ def fetch_workday(company: dict) -> list[dict]:
     return out
 
 
+def fetch_pinpoint(slug: str) -> list[dict]:
+    """Fetch jobs from a Pinpoint ATS board's public postings.json endpoint.
+
+    Added 2026-08-12 after Napier AI was user-surfaced (LinkedIn alert) and
+    turned out to have a clean, unauthenticated JSON API the whole time — the
+    prior "unsupported ATS" verdict was a discovery gap, not a real technical
+    one. No pagination wrapper observed (single `data` array holds every
+    posting); if a very large Pinpoint board turns up pagination later, this
+    will need revisiting, but it's untested as of this writing. Normalizes
+    `compensation` into the {"min": ...} shape extract_salary_min already
+    understands, so the generic salary path in poll_all works unchanged.
+    """
+    url = ATS_ENDPOINTS["pinpoint"].format(slug=slug)
+    try:
+        resp = requests.get(url, timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+        data = resp.json()
+        jobs = data.get("data", [])
+        for j in jobs:
+            if j.get("compensation_visible") and j.get("compensation_minimum"):
+                j["compensation"] = {"min": j["compensation_minimum"]}
+        return jobs
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
+def fetch_rippling(slug: str) -> list[dict]:
+    """Fetch jobs from a Rippling ATS board.
+
+    Added 2026-08-12 after Nerdio was user-surfaced (LinkedIn/Indeed alert).
+    The board page (ats.rippling.com/{slug}/jobs) looks JS-rendered but is
+    actually server-side rendered: a plain GET with a browser User-Agent
+    returns full HTML with a `__NEXT_DATA__` script tag containing the job
+    list pre-embedded as a dehydrated TanStack Query cache. No headless
+    browser needed — a naive request WITHOUT a User-Agent can trip Cloudflare,
+    so one is always sent.
+
+    Paginated server-side at 20/page. Requests additional pages via `?page=N`
+    up to RIPPLING_MAX_PAGES, mirroring fetch_smartrecruiters' pagination-cap
+    pattern — unverified against a board with more than one page as of this
+    writing, so multi-page Rippling boards are lower-confidence until one is
+    seen live. Normalizes each item's `name` into `title` (Rippling's own key
+    is "name", same normalization fetch_smartrecruiters does for "name").
+    """
+    url = ATS_ENDPOINTS["rippling"].format(slug=slug)
+    headers = {
+        "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"),
+        "Accept": "text/html,application/xhtml+xml",
+    }
+    RIPPLING_MAX_PAGES = 10  # 20/page -> up to 200 postings; see docstring
+    jobs: list[dict] = []
+    try:
+        page = 0
+        while page < RIPPLING_MAX_PAGES:
+            resp = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT,
+                                 params={"page": page} if page else None)
+            resp.raise_for_status()
+            m = re.search(
+                r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
+                resp.text, re.DOTALL)
+            if not m:
+                if page == 0:
+                    return [{"_error": "Rippling: __NEXT_DATA__ not found in page HTML"}]
+                break
+            next_data = json.loads(m.group(1))
+            queries = (next_data.get("props", {}).get("pageProps", {})
+                       .get("dehydratedState", {}).get("queries", []))
+            job_query = next(
+                (q for q in queries
+                 if isinstance(q.get("queryKey"), list) and "job-posts" in q["queryKey"]),
+                None)
+            if not job_query:
+                if page == 0:
+                    return [{"_error": "Rippling: job-posts query not found in __NEXT_DATA__"}]
+                break
+            page_data = job_query.get("state", {}).get("data", {}) or {}
+            items = page_data.get("items", [])
+            if not items:
+                break
+            for j in items:
+                j["title"] = j.get("name", "")
+            jobs.extend(items)
+            total_pages = page_data.get("totalPages", 1)
+            page += 1
+            if page >= total_pages:
+                break
+        return jobs
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
 def load_seen_jobs() -> dict:
     """Load existing seen_jobs for dedup."""
     if not os.path.exists(SEEN_JOBS_PATH):
@@ -1003,6 +1121,10 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_workable(slug)
         elif ats == "workday":
             jobs = fetch_workday(company)
+        elif ats == "pinpoint":
+            jobs = fetch_pinpoint(slug)
+        elif ats == "rippling":
+            jobs = fetch_rippling(slug)
         else:
             errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
             continue
@@ -1171,6 +1293,8 @@ def poll_all(run_date: date) -> dict:
                 provenance.append("geo_free_location_was_dropped")
             if ats == "workable":
                 provenance.append("workable_ats_newly_supported")
+            if ats in ("pinpoint", "rippling"):
+                provenance.append(f"{ats}_ats_newly_supported")
             if (title_excluded(title)
                     and not title_excluded_for_company(
                         title, company.get("headcount_band"))):

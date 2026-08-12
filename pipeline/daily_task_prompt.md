@@ -370,7 +370,13 @@ company should not sit in `pending` for weeks. Only Gainsight resisted, and that
 block rather than a wrong site name (rejected 2026-07-29 after 8 rechecks).
 
 ATS providers the poller speaks: Greenhouse, Ashby, Lever, Workday, SmartRecruiters
-(case-sensitive slug). Workable is unsupported — note Workable-only companies in the digest.
+(case-sensitive slug), Workable, Pinpoint, and Rippling. (This line previously claimed Workable
+was unsupported — stale since 2026-07-27, when `fetch_workable` was added; corrected 2026-08-12
+alongside adding Pinpoint and Rippling support, prompted by two user-surfaced misses — Napier AI
+and Nerdio — that turned out to have real public/scrapeable job data the poller just didn't know
+how to read. See `_pinpoint_notes` / `_rippling_notes` in `watchlist_companies.json` for the
+specific access patterns and known limits (no posting-date field on either; Rippling pagination
+past page 1 is unverified against a live multi-page board).
 
 ### 1d-2. LinkedIn lead harvest (COMPANY discovery only, added 2026-07-28)
 
