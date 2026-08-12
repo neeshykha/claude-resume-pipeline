@@ -3175,6 +3175,16 @@
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (188 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Career Manager (Public Sector, Professional Services)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Precisely",
+      "ats": "greenhouse",
+      "slug": "preciselyusjobs",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "user-surfaced (LinkedIn alert screenshot) -- WitnessAI-class miss, board was live and pollable the whole time",
+      "reason": "Data-integrity software (data integration/quality/location intelligence), Burlington MA HQ, ~3,000 employees, 12,000+ customers incl. 95 of Fortune 100. Verified live 2026-08-12: 27 jobs, exact tier1 fit-title 'Technical Support Manager' (US) plus 'Customer Success Manager' and 'Senior Support Engineer (B2Bi)'. The Technical Support Manager JD requires Pacific-timezone location specifically (APAC coverage overlap) -- not fully remote-anywhere-US; flag this before tailoring. AI-forward company (JD: 'AI-first organization', GenAI/support-automation focus) but not added to the curated tooling/AI score_bonus list without deliberate classification."
     }
   ]
 }
