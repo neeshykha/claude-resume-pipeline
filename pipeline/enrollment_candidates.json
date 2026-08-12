@@ -1109,6 +1109,27 @@
       "slug": "appian",
       "enrolled_date": "2026-08-12",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Supper",
+      "ats": "rippling",
+      "slug": "supper",
+      "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Routeware",
+      "ats": "rippling",
+      "slug": "routeware-careers",
+      "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Kion",
+      "ats": "rippling",
+      "slug": "kion",
+      "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -2779,6 +2800,38 @@
     },
     {
       "name": "Truly Good Foods",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Tixr",
+      "ats": "rippling",
+      "slug": "tixr",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (15 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Portnox",
+      "ats": "pinpoint",
+      "slug": "portnox",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (10 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Rippling",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "gaiia",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-12",

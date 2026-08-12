@@ -140,6 +140,20 @@
         "notes": "Added 2026-07-14 after a test run found this ATS type had zero discovery coverage despite poll_ats.py supporting it (see _smartrecruiters_notes). Surfaced Nexthink (multiple live CSM/Senior CSM reqs across US cities) on the first run. Same enroll guidance as the Ashby/Greenhouse/Lever dorks: surface unfamiliar companies, verify the board via the SmartRecruiters postings API, add to watchlist.",
         "status": "active",
         "frequency": "daily"
+      },
+      {
+        "name": "Pinpoint Boards - Target Roles",
+        "query": "site:pinpointhq.com (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\" OR \"customer operations\" OR \"technical support manager\")",
+        "notes": "Added 2026-08-12, same day fetch_pinpoint() shipped in poll_ats.py (see _pinpoint_notes). Prompted by Napier AI, a user-surfaced miss that turned out to be a clean public JSON API the whole time -- pure discovery gap, not a structural one. First run surfaced Portnox (network-access-control security vendor). Same enroll guidance as the other board dorks: surface unfamiliar companies, verify the board via harvest_ats.py (now covers pinpoint), add to watchlist. Note in the query results: pinpointhq.com's own marketing pages (comparison pages, their own careers/customer-support content) show up as noise -- filter to actual {company}.pinpointhq.com subdomains.",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
+        "name": "Rippling Boards - Target Roles",
+        "query": "site:ats.rippling.com (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\" OR \"customer operations\" OR \"technical support manager\")",
+        "notes": "Added 2026-08-12, same day fetch_rippling() shipped in poll_ats.py (see _rippling_notes). Prompted by Nerdio, a user-surfaced miss on the same pattern as Napier AI/Pinpoint above. First run surfaced Rippling itself (the ATS vendor -- ironic, but its own careers board runs on its own product), Supper, gaiia, Tixr, Routeware, and Kion; 3 enrolled with real tier2 fit (Supper, Routeware, Kion), 2 rejected no-fit (Tixr, and Portnox from the Pinpoint dork above), 2 unresolved by slug guessing (Rippling itself -- its board's __NEXT_DATA__ payload has an EMPTY dehydratedState.queries for reasons not yet understood, possibly a board-size-dependent rendering path on Rippling's platform; and gaiia, whose real slug is 'gaiias-open-positions' -- note the extra 's', a name/slug mismatch no variant list would catch). Same enroll guidance as the other board dorks.",
+        "status": "active",
+        "frequency": "daily"
       }
     ]
   },
@@ -3207,6 +3221,33 @@
       "enrolled_date": "2026-08-12",
       "enrolled_via": "user-surfaced (LinkedIn/Indeed alert) -- prompted the rippling ATS fetcher build",
       "reason": "Nerdio Manager for Azure Virtual Desktop / Microsoft-cloud IT management platform. Verified live 2026-08-12 via ats.rippling.com/nerdio-careers/jobs: 16 postings. The surfacing role ('Team Lead, Internal Support', Remote US) is INTERNAL employee IT helpdesk (Entra ID, on-prem AD, Intune, M365 admin, DNS/DHCP/VPN), not customer support -- a genuine function mismatch, do not tailor for it. Board also carries real customer-facing support-titled reqs (Escalation Engineer Tier 3, Support Solutions Engineer AMER-MSP) not yet individually vetted for fit."
+    },
+    {
+      "name": "Supper",
+      "ats": "rippling",
+      "slug": "supper",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Routeware",
+      "ats": "rippling",
+      "slug": "routeware-careers",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 4 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Product Manager – Business Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Kion",
+      "ats": "rippling",
+      "slug": "kion",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (3 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
