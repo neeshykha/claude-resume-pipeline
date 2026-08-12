@@ -1145,6 +1145,20 @@
       "slug": "kion",
       "enrolled_date": "2026-08-12",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Prime Intellect",
+      "ats": "ashby",
+      "slug": "primeintellect",
+      "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Base Power",
+      "ats": "ashby",
+      "slug": "base-power",
+      "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -2859,6 +2873,166 @@
       "slug": "neko-health",
       "rejected_date": "2026-08-12",
       "reason": "Board resolves and is live (102 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "CopilotKit",
+      "ats": "lever",
+      "slug": "copilotkit",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (1 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Parasail",
+      "ats": "ashby",
+      "slug": "parasail",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (8 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Zeno",
+      "ats": "ashby",
+      "slug": "zeno",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (2 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Form Energy",
+      "ats": "ashby",
+      "slug": "formenergy",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (185 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "OpenEvidence",
+      "ats": "ashby",
+      "slug": "openevidence",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "New Limit",
+      "ats": "greenhouse",
+      "slug": "newlimit",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (17 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Halter",
+      "ats": "ashby",
+      "slug": "halter",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (238 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "AgZen",
+      "ats": "ashby",
+      "slug": "agzen",
+      "rejected_date": "2026-08-12",
+      "reason": "Board resolves and is live (6 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Lyzr",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Exaforce",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Einride",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Evotrex",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Focused Energy",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Function Health",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "701x",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "humans&",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Patientory",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "EnviroSpark",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "ProcessMiner",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Assiduus Global",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true
     }
   ]
