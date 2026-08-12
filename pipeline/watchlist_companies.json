@@ -274,8 +274,12 @@
     "ashby": "https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true",
     "workday": "POST https://{wd_host}/wday/cxs/{wd_tenant}/{wd_site}/jobs",
     "smartrecruiters": "https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100",
-    "workable": "https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true"
+    "workable": "https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true",
+    "pinpoint": "https://{slug}.pinpointhq.com/postings.json",
+    "rippling": "https://ats.rippling.com/{slug}/jobs"
   },
+  "_pinpoint_notes": "ats='pinpoint'. slug is the company's Pinpoint subdomain (e.g. 'napier' from napier.pinpointhq.com) -- find it from the company's careers-page URL. Public JSON API, no auth, no pagination wrapper observed (returns the full board in one `data` array). Added 2026-08-12 after Napier AI was user-surfaced (LinkedIn alert) and turned out to have a clean public API the whole time -- this was a pure discovery gap, not a structural one. No posting-date field is exposed by this endpoint, so freshness is always neutral for Pinpoint hits (same 'no data -> don't filter' treatment as Workday). Salary only appears when `compensation_visible` is true.",
+  "_rippling_notes": "ats='rippling'. slug is the path segment after ats.rippling.com/ (e.g. 'nerdio-careers' from ats.rippling.com/nerdio-careers/jobs) -- find it from the company's careers-page URL. The page LOOKS JS-rendered (Next.js) but is actually server-side rendered: a plain GET with a browser User-Agent returns full HTML containing a `__NEXT_DATA__` script tag with the job list pre-embedded as a dehydrated TanStack Query cache (`props.pageProps.dehydratedState.queries[0].state.data.items`), so no headless browser is needed. Added 2026-08-12 after Nerdio was user-surfaced (LinkedIn/Indeed alert); confirmed a naive `requests.get` without a User-Agent can trip Cloudflare, so fetch_rippling always sends one. Paginated at pageSize=20 server-side; fetch_rippling requests additional pages via `?page=N` up to a cap, mirroring fetch_smartrecruiters' pagination-cap pattern -- unverified against a board with more than one page as of the 2026-08-12 add, so treat multi-page Rippling boards as lower-confidence until one is seen live. No posting-date or salary field is exposed in the list view (only on each job's own detail page, not fetched), so both are always neutral for Rippling hits.",
   "_smartrecruiters_notes": "ats='smartrecruiters'. slug is the case-sensitive company identifier (e.g. 'BoschGroup', not 'bosch') — find it from a careers.smartrecruiters.com/{slug} or jobs.smartrecruiters.com/{slug} URL. Public postings API, no auth. Added 2026-06-30 to widen enrollable boards beyond GH/Ashby/Lever/Workday. FIXED 2026-08-06: fetch_smartrecruiters was single-page (limit=100), which silently hid postings past position 100 on large boards -- caught the hard way when a live, 6-day-old, Atlanta-based 'Manager, Customer Success Management' role at ServiceNow (416+ total postings) never appeared anywhere in poller output, only surfacing via a LinkedIn alert Aneesh spotted by hand. Now paginates up to SMARTRECRUITERS_MAX_POSTINGS (500). Note: offset-based pagination against a live-mutating board isn't perfectly race-safe -- a posting can still theoretically shift across a page boundary mid-fetch -- but this closes the vast majority of the gap (100 -> ~465 postings scanned for ServiceNow).",
   "_workday_notes": "Workday entries use ats='workday' and carry wd_host (incl. wdN datacenter), wd_tenant, and wd_site instead of relying on slug for the endpoint (slug is still set = tenant, for dedup-key prefixing). The public careers page is JS-rendered; poll_ats.py POSTs to the internal CXS JSON API instead. Salary is NOT in the list response (it's on each job's detail page), so the poller treats it as neutral and Claude pulls exact salary + posting date from the JD at tailoring time, where the salary-floor and 21-day freshness gates are applied. wd_host/wd_tenant/wd_site are NOT guessable per company - verify new tenants with pipeline/verify_workday.py before adding (find the exact careers URL first, e.g. via 'site:myworkdayjobs.com [company]').",
   "_scoring_config": {
@@ -3185,6 +3189,24 @@
       "enrolled_date": "2026-08-12",
       "enrolled_via": "user-surfaced (LinkedIn alert screenshot) -- WitnessAI-class miss, board was live and pollable the whole time",
       "reason": "Data-integrity software (data integration/quality/location intelligence), Burlington MA HQ, ~3,000 employees, 12,000+ customers incl. 95 of Fortune 100. Verified live 2026-08-12: 27 jobs, exact tier1 fit-title 'Technical Support Manager' (US) plus 'Customer Success Manager' and 'Senior Support Engineer (B2Bi)'. The Technical Support Manager JD requires Pacific-timezone location specifically (APAC coverage overlap) -- not fully remote-anywhere-US; flag this before tailoring. AI-forward company (JD: 'AI-first organization', GenAI/support-automation focus) but not added to the curated tooling/AI score_bonus list without deliberate classification."
+    },
+    {
+      "name": "Napier AI",
+      "ats": "pinpoint",
+      "slug": "napier",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "user-surfaced (LinkedIn alert) -- prompted the pinpoint ATS fetcher build",
+      "reason": "UK-based AI-powered AML/financial-crime-compliance platform. Verified live 2026-08-12 via napier.pinpointhq.com/postings.json: 4 postings, 2 US-relevant Technical Account Manager reqs (Wilmington DE/VA and Belfast NI -- neither is Atlanta despite a LinkedIn alert tagging one as such; LinkedIn's geo-inference was simply wrong). The TAM JD skews unusually technical for the title (SQL/PostgreSQL, Elastic Search, Python script debugging, Apache NiFi, basic Kubernetes) -- treat as a real stretch, not a clean TAM match, before tailoring."
+    },
+    {
+      "name": "Nerdio",
+      "ats": "rippling",
+      "slug": "nerdio-careers",
+      "priority": "low",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "user-surfaced (LinkedIn/Indeed alert) -- prompted the rippling ATS fetcher build",
+      "reason": "Nerdio Manager for Azure Virtual Desktop / Microsoft-cloud IT management platform. Verified live 2026-08-12 via ats.rippling.com/nerdio-careers/jobs: 16 postings. The surfacing role ('Team Lead, Internal Support', Remote US) is INTERNAL employee IT helpdesk (Entra ID, on-prem AD, Intune, M365 admin, DNS/DHCP/VPN), not customer support -- a genuine function mismatch, do not tailor for it. Board also carries real customer-facing support-titled reqs (Escalation Engineer Tier 3, Support Solutions Engineer AMER-MSP) not yet individually vetted for fit."
     }
   ]
 }
