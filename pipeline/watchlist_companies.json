@@ -3172,7 +3172,9 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (114 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Revenue Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- leading US drone company, autonomous flight (computer vision/AI) is the core product, not an add-on",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (114 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Revenue Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. UPGRADE 2026-08-12 (full JD read on 'Manager, Technical Support', US Remote): exceptionally strong fit -- Salesforce Service Cloud, IoT telemetry/log analysis, applied AI in customer support all direct matches to Aneesh's actual background; classified AI-native at this point given the company's own positioning leads with AI/autonomy."
     },
     {
       "name": "EnergyHub",
