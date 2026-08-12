@@ -2997,10 +2997,10 @@
     },
     {
       "name": "humans&",
-      "ats": null,
-      "slug": null,
+      "ats": "ashby",
+      "slug": "humans-and",
       "rejected_date": "2026-08-12",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "CORRECTED same day: deterministic slug guessing missed this (the '&' in the name isn't handled by slug_variants()), but the real board resolves fine at jobs.ashbyhq.com/humans-and -- found via manual WebSearch. AI research lab, $480M seed (Jan 2026, Nvidia/Bezos-backed, ex-OpenAI/xAI/Google researchers), San Francisco. Only 2 open roles at harvest time (both 'Member of Technical Staff'), zero fit-space titles -- genuinely too early-stage (3 months post-raise) to have support/CS/ops hiring yet. Recheck in a few months as it scales.",
       "recheck_if_resurfaced": true
     },
     {
