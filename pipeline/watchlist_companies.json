@@ -149,6 +149,13 @@
         "frequency": "daily"
       },
       {
+        "name": "Recent Funding (Passion/Tooling Verticals)",
+        "query": "(\"raises $\" OR \"raised $\" OR \"Series A\" OR \"Series B\" OR \"seed funding\" OR \"seed round\") (\"AI\" OR \"artificial intelligence\" OR \"developer tools\" OR \"developer infrastructure\" OR \"EV charging\" OR \"electric vehicle\" OR \"climate tech\" OR \"clean energy\" OR \"digital health\" OR healthtech OR agtech OR \"sports technology\" OR \"sports analytics\") 2026",
+        "notes": "Added 2026-08-12, from Aneesh asking whether the pipeline scans funding news before enrolling companies -- it didn't; funding stage only ever appeared as backward-looking context on companies found some OTHER way. This is an EVENT query, same idea as the monthly AI Support Vendor Consolidation M&A watch, just for raises instead of acquisitions: a company that just closed a round is likely to be hiring into support/CS/ops soon, especially past founder-led-everything scale, which is exactly the sub-500-headcount profile the small-company bonus already favors. Deliberately scoped to Aneesh's stated interest areas rather than run broad+unscoped (his call, 2026-08-12): AI-native + developer/infra tooling (his stated primary interest) plus the four passion_domains (electrification_ev, health_tech, agriculture, sports_technology). A funding hit is a COMPANY signal, not a role signal -- surface the company, verify the board is live via harvest_ats.py, and apply the normal AI/tooling or passion-domain scoring bonus (never both, per the Scoring Guardrails company-bonus cap) once actually enrolled and scored. Do not tailor or score off the funding article itself.",
+        "status": "active",
+        "frequency": "daily"
+      },
+      {
         "name": "Rippling Boards - Target Roles",
         "query": "site:ats.rippling.com (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\" OR \"customer operations\" OR \"technical support manager\")",
         "notes": "Added 2026-08-12, same day fetch_rippling() shipped in poll_ats.py (see _rippling_notes). Prompted by Nerdio, a user-surfaced miss on the same pattern as Napier AI/Pinpoint above. First run surfaced Rippling itself (the ATS vendor -- ironic, but its own careers board runs on its own product), Supper, gaiia, Tixr, Routeware, and Kion; 3 enrolled with real tier2 fit (Supper, Routeware, Kion), 2 rejected no-fit (Tixr, and Portnox from the Pinpoint dork above), 2 unresolved by slug guessing (Rippling itself -- its board's __NEXT_DATA__ payload has an EMPTY dehydratedState.queries for reasons not yet understood, possibly a board-size-dependent rendering path on Rippling's platform; and gaiia, whose real slug is 'gaiias-open-positions' -- note the extra 's', a name/slug mismatch no variant list would catch). Same enroll guidance as the other board dorks.",
@@ -3248,6 +3255,18 @@
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (3 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "HappyRobot",
+      "ats": "ashby",
+      "slug": "happyrobot.ai",
+      "priority": "low",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-08-12",
+      "enrolled_via": "Recent Funding (Passion/Tooling Verticals) WebSearch dork, first run",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) — infrastructure for enterprises to build/orchestrate autonomous 'AI workforces' (Y Combinator S23, $150M+ raised incl. a16z/Base10)",
+      "reason": "Found via the new Recent Funding discovery source (2026-08-12 seed run), not a name-guessable slug -- Ashby board is literally 'happyrobot.ai' (dot included), which slug_variants() does not generate; resolved by hand. Verified live 2026-08-12: 70+ jobs, real tier2 fit via repeated 'Deployment Strategist' postings (SF, NY, and several international cities) plus numerous 'Forward Deployed Engineer' reqs (jd_verification_required -- FDE roles here look coding-heavy per the JD, read carefully before tailoring: 'Software Engineer - Full-Stack' and 'Machine Learning Engineer' sit on the same board, suggesting FDE may share that bar). No bare 'Remote US' location seen at harvest time -- SF/NY postings score 0 on location per the Atlanta/remote-only scoping unless that changes."
     }
   ]
 }
