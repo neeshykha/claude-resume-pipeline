@@ -174,8 +174,8 @@
         "name": "Google",
         "why": "Atlanta office. Its gUP org runs a whole family of support roles (Product Support Manager gUP Search, gUP Platforms and Devices, gUP Shopping Support Ops, Product Solutions Manager Home). Confirmed unpollable 2026-07-27. Proven vein: the Home role was tailored that day.",
         "query": "site:google.com/about/careers (\"product support manager\" OR \"product solutions manager\" OR \"support strategy\" OR \"customer support\") Atlanta OR remote",
-        "last_checked": "2026-08-04",
-        "last_hit": "2026-08-04: 6 new Product Support Manager reqs surfaced beyond the two already tracked (Health, Play Monetization) and the applied Product Solutions Manager Home -- Google Fi, Pixel Differentiated Care, gUP Platforms and Devices (Boulder/Atlanta), gUP Android Ecosystem (Boulder/Atlanta), gUP Shopping Support Operations (Atlanta/NY/SF/Sunnyvale/Boulder), Play. Best Atlanta-optioned new req is gUP Shopping Support Operations -- carried into today's scoring pool as a blind-spot candidate; the rest are also-live FYI (diversity cap)."
+        "last_checked": "2026-08-13",
+        "last_hit": "2026-08-13: same family of Product Support Manager reqs still live (Google Fi, gUP Platforms and Devices/Google Store and Fi, gUP Android Ecosystem, Play, Pixel Differentiated Care) -- still only Shopping Support Operations and the applied Home role logged in seen_jobs.json; the rest remain un-JD-verified. Surfaced again in the 2026-08-13 digest under Manual channel."
       },
       {
         "name": "Microsoft",
@@ -269,15 +269,15 @@
         "name": "InComm Payments",
         "why": "Atlanta HQ payments technology, mid-tier operating company. No pollable board identified.",
         "query": "\"InComm Payments\" careers (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\") Atlanta",
-        "last_checked": "2026-08-03",
-        "last_hit": "2026-08-03: only generic Account Manager roles (gift-card/incentives channel management), no CSM/TAM/support-ops fit-space title found."
+        "last_checked": "2026-08-13",
+        "last_hit": "2026-08-13: same pattern -- only generic Account Manager roles and a Director-level Customer Success Management title, no CSM/TAM/support-ops fit-space title at the Manager level."
       },
       {
         "name": "Netflix",
         "why": "No supported ATS: custom careers site (jobs.netflix.com), confirmed unpollable 2026-07-30 after Greenhouse, Lever, and Workday probes all failed. Surfaced by a LinkedIn alert for 'N-Tech Manager, Technology Systems and Operations (Creative)' -- a tier2c-shaped systems/ops role, so the fit-space is real rather than incidental. Added to the rotation rather than rejected for the same reason Google was: a large employer whose fitting roles are structurally invisible to the poller.",
         "query": "site:jobs.netflix.com (\"technology systems\" OR \"systems and operations\" OR \"technical support\" OR \"support operations\" OR \"customer operations\") remote OR Atlanta",
-        "last_checked": "2026-08-03",
-        "last_hit": "2026-08-03: only category overview pages returned (Enterprise Operations, Customer Service), no individual fit-space posting surfaced."
+        "last_checked": "2026-08-13",
+        "last_hit": "2026-08-13: same pattern -- only category overview pages returned (Enterprise Operations, Customer Service), no individual fit-space posting surfaced."
       },
       {
         "name": "Docusign",
@@ -1600,7 +1600,8 @@
       "ats": "ashby",
       "slug": "revenuecat",
       "priority": "low",
-      "reason": "Mobile subscription infra. Senior CSM role live. Added 2026-06-25 (verified live: 21 jobs). Smaller pipeline."
+      "headcount_band": "51-200",
+      "reason": "Mobile subscription infra. Senior CSM role live. Added 2026-06-25 (verified live: 21 jobs). Smaller pipeline. headcount_band backfilled 2026-08-13 (~163-169 employees per Tracxn/LinkedIn)."
     },
     {
       "name": "Vitally",
@@ -2408,10 +2409,10 @@
       "ats": "lever",
       "slug": "happyco",
       "priority": "high",
-      "headcount_band": null,
+      "headcount_band": "201-500",
       "enrolled_date": "2026-07-27",
       "enrolled_via": "PropTech / Resident Experience discovery source, first run 2026-07-27",
-      "reason": "Multifamily property operations + maintenance platform (Carlsbad CA, remote-first across US/Canada/Australia; 6M+ units, 3.5M rental homes). Direct adjacency to iApartments. Source of the 2026-07-27 top pick, Senior Manager of Customer Support (Remote US): a Tier-1 title whose required-quals list reads like the master resume (BPO/outsourced vendor ownership, Zendesk/Jira/Intercom, scaling a support org from the ground up, hands-on AI tooling). headcount_band left null deliberately -- multiple searches returned no reliable figure, and the rule is never guess."
+      "reason": "Multifamily property operations + maintenance platform (Carlsbad CA, remote-first across US/Canada/Australia; 6M+ units, 3.5M rental homes). Direct adjacency to iApartments. Source of the 2026-07-27 top pick, Senior Manager of Customer Support (Remote US): a Tier-1 title whose required-quals list reads like the master resume (BPO/outsourced vendor ownership, Zendesk/Jira/Intercom, scaling a support org from the ground up, hands-on AI tooling). headcount_band backfilled 2026-08-13 (~211-241 employees, converging across LinkedIn/Dealroom)."
     },
     {
       "name": "Cambium Learning Group",
@@ -2486,7 +2487,7 @@
       "ats": "ashby",
       "slug": "uniti",
       "priority": "medium",
-      "headcount_band": null,
+      "headcount_band": "1-50",
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) -- AI leasing/engagement agents for real estate operators",
       "enrolled_date": "2026-07-27",
