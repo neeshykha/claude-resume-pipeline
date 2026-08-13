@@ -16,6 +16,34 @@
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry — for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards — their fit roles aren't US-reachable.",
   "pending": [
     {
+      "name": "Morgan Stanley",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-13",
+      "why": "LinkedIn job alert: \"SRE/Production Support Lead at Morgan Stanley\", 2026-08-13.",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "RK&K",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-13",
+      "why": "LinkedIn job alert: \"Procore Implementation Manager at RK&K\" (construction management firm), 2026-08-13.",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Recharge",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-13",
+      "why": "LinkedIn job alert: \"Customer Success Manager at Recharge\" (subscription commerce platform), 2026-08-13.",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Veeam Software",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-13",
+      "why": "LinkedIn job alert: \"Revenue Intelligence Operations Manager, Renewals at Veeam Software\", 2026-08-13.",
+      "needs_ats_resolution": true
+    },
+    {
       "name": "Dili",
       "source": "Recent Funding (Passion/Tooling Verticals)",
       "first_seen": "2026-08-12",
