@@ -3034,6 +3034,54 @@
       "rejected_date": "2026-08-12",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true
+    },
+    {
+      "name": "West Physics",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "Atlanta-based medical imaging accreditation/radiation-physics consulting firm, recapitalized by Incline Equity Partners (PE, June 2026, not growth VC). Careers page is a custom site (westphysics.com/about/careers/), not on any poll_ats.py-supported ATS. Wrong role-type regardless of pollability: they hire medical physicists and residency-program clinicians exclusively, no support/CS/ops function exists at this company.",
+      "recheck_if_resurfaced": false
+    },
+    {
+      "name": "The Doux",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "Atlanta-based Black-owned haircare/CPG brand, PE investment from VMG Partners (April 2026). Wrong industry entirely -- consumer packaged goods, no SaaS-style support/CS/ops function to speak of. Not worth an ATS check.",
+      "recheck_if_resurfaced": false
+    },
+    {
+      "name": "BIP Wealth",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "Atlanta-based registered investment advisory (RIA) firm, $5.5B AUM, minority-stake PE investment from Constellation Wealth Capital (March 2026). Wrong industry -- wealth management, not a fit for support/CS/ops functions. Not worth an ATS check.",
+      "recheck_if_resurfaced": false
+    },
+    {
+      "name": "Assiduus Global",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "Atlanta-based AI-powered middleware platform for cross-border e-commerce distribution, $25M pre-Series B led by Bajaj Finserv (March 2026) -- genuinely tech, genuinely AI-native, and their own site mentions active Operations hiring. Careers page (assiduusglobal.com/careers, /job-openings) is custom and renders no visible listings via WebFetch -- not on any poll_ats.py-supported ATS. Worth a recheck later if a specific role surfaces some other way (LinkedIn alert, etc.) since the company itself is a real vertical fit.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Gridline",
+      "ats": "lever",
+      "slug": "gridline",
+      "rejected_date": "2026-08-12",
+      "reason": "Atlanta-based AI-powered private-markets/alternatives investment platform for RIAs, $18.5M Series A (Jan 2026). Board resolves and is live (4 jobs) but zero fit-space titles: Director of Marketing, Director/Sr. Director RIA Partnerships (x2, channel sales not CS/TAM), Software Engineer (Backend). Genuinely too small (4 open roles) to have a dedicated support/ops function yet.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Bluff",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-12",
+      "reason": "Atlanta-founded sports betting / iGaming / crypto-backed prediction-market platform, $21M strategic investment (Feb 2026). HARD-EXCLUDED per the standing crypto/web3/blockchain filter -- not evaluated further regardless of funding size or Atlanta HQ.",
+      "recheck_if_resurfaced": false
     }
   ]
 }
