@@ -330,7 +330,11 @@ letting the queue grow unobserved.
 For each entry processed:
 1. `needs_ats_resolution: true` → resolve the ATS
    (`site:greenhouse.io OR site:jobs.ashbyhq.com OR site:jobs.lever.co <company>`); no
-   board found → reject with reason.
+   board found → reject with reason, and set `unpollable: true` on the rejected entry (added
+   2026-08-14). This is the tag `weekly_channel_report.py`'s weekly punch-list section reads —
+   only set it when the reason is genuinely "no ATS board was ever found," never when a board
+   WAS found and the company was rejected for a fit/geo/category reason instead (those don't
+   need a manual workaround, so they shouldn't clutter that list).
 
    **Before rejecting, check `manual_review`.** If the entry carries `manual_review: true`,
    still reject it (no board means the poller can never watch it), but surface it ONCE in the
@@ -908,6 +912,17 @@ not folded into the daily digest.
    breakdown (ATS poll, WebSearch, LinkedIn harvest, feeders) plus how many days in the window
    actually had data. Early on, most of the window will be missing (schema only exists from
    2026-08-10 forward) — the report says so explicitly; don't treat that as an error.
+
+   It also prints an **"Unpollable companies"** section (added 2026-08-14, from Aneesh asking
+   for a weekly punch list of companies the automated layer structurally can't reach): a capped
+   batch (`UNPOLLABLE_WEEKLY_CAP` = 20, oldest `rejected_date` first) of
+   `enrollment_candidates.json → rejected` entries tagged `unpollable: true` — meaning no ATS
+   board was ever found for them, as opposed to a board being found and the company rejected
+   for fit/geo/category reasons — that haven't been surfaced in a prior weekly report yet. This
+   runs regardless of whether the channel-stats window has data, so it fires even on an early
+   week. Aneesh reviews the batch by hand (find the real slug/Workday tenant, or let it drop);
+   this is a **standing backlog**, not a trailing-week window, so don't be surprised if the
+   first several weeks each show a full 20-entry batch with "N more carry over."
 3. Create a **separate** Gmail draft (`create_draft`, not `update_draft` on the daily digest):
    - To: `{{DIGEST_RECIPIENT}}`
    - Subject: `Weekly Channel Report — [window start] to [window end]`
@@ -917,10 +932,21 @@ not folded into the daily digest.
      say that plainly; if a channel enrolled zero companies for two straight weeks, say that
      too. The point of this report is catching a channel that's quietly gone dead (this is
      exactly how `poll_remotive`'s degradation was first noticed) or over-invested (14
-     WebSearch calls a day for a handful of already-known companies).
-4. Write today's date to `pipeline/jobs/weekly_channel_report_state.json` as
+     WebSearch calls a day for a handful of already-known companies). Include the full
+     unpollable-companies batch as its own section, one line per company (name, rejected date,
+     reason) — this is the part Aneesh actually acts on, don't compress it away.
+4. **Only after the draft is confirmed created**, re-run with `--apply` to mark the printed
+   unpollable batch as surfaced so it doesn't repeat next week:
+   ```bash
+   .venv/bin/python pipeline/weekly_channel_report.py --apply
+   ```
+   Do this as a genuinely separate second call, not folded into step 2 — running `--apply`
+   before the draft exists would consume the batch on a preview that never got sent. If step 3
+   fails (draft creation errors out), skip this step entirely so the same batch is retried next
+   run rather than silently lost.
+5. Write today's date to `pipeline/jobs/weekly_channel_report_state.json` as
    `{"last_sent": "YYYY-MM-DD"}` (Write tool, overwrite whatever was there).
-5. Note the draft ID in `run_[date].json → weekly_channel_report_draft_id` and one line in
+6. Note the draft ID in `run_[date].json → weekly_channel_report_draft_id` and one line in
    `SESSION_STATE.md`. Do not mention this step in the main digest email at all — it has its
    own draft and its own send decision.
 
