@@ -311,7 +311,8 @@ def main():
                         "Greenhouse/Ashby/Lever/Workable. May still be pollable under a "
                         "non-obvious slug or on Workday: worth one manual "
                         "site:myworkdayjobs.com search if the company matters."),
-             "recheck_if_resurfaced": True})
+             "recheck_if_resurfaced": True,
+             "unpollable": True})
 
     handled = {n.lower() for n, _ in enrollable} | {n.lower() for n, _ in no_fit} | {n.lower() for n in no_board}
     q["pending"] = [e for e in q.get("pending", [])
