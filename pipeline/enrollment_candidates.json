@@ -14,50 +14,7 @@
     "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced}] — don't re-evaluate unless it resurfaces with new roles."
   },
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry — for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards — their fit roles aren't US-reachable.",
-  "pending": [
-    {
-      "name": "Morgan Stanley",
-      "source": "LinkedIn alert",
-      "first_seen": "2026-08-13",
-      "why": "LinkedIn job alert: \"SRE/Production Support Lead at Morgan Stanley\", 2026-08-13.",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "RK&K",
-      "source": "LinkedIn alert",
-      "first_seen": "2026-08-13",
-      "why": "LinkedIn job alert: \"Procore Implementation Manager at RK&K\" (construction management firm), 2026-08-13.",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Recharge",
-      "source": "LinkedIn alert",
-      "first_seen": "2026-08-13",
-      "why": "LinkedIn job alert: \"Customer Success Manager at Recharge\" (subscription commerce platform), 2026-08-13.",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Veeam Software",
-      "source": "LinkedIn alert",
-      "first_seen": "2026-08-13",
-      "why": "LinkedIn job alert: \"Revenue Intelligence Operations Manager, Renewals at Veeam Software\", 2026-08-13.",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Dili",
-      "source": "Recent Funding (Passion/Tooling Verticals)",
-      "first_seen": "2026-08-12",
-      "why": "AI compliance startup, $21.7M total raised (Series A + seed), TechCrunch 2026-07-30. Search-engine ambiguity: 'Dili' collides with the unrelated 'DiliTrust' (different company, Lever board) and didn't surface a distinct board of its own on the first pass -- worth a more targeted search (try the TechCrunch article's exact company URL) rather than guessing.",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Ore Energy",
-      "source": "Recent Funding (Passion/Tooling Verticals)",
-      "first_seen": "2026-08-12",
-      "why": "Long-duration battery storage startup, $43M raised, climate-tech/electrification_ev passion domain. No board found on first pass -- search returned similarly-named but unrelated battery-storage companies (Orennia, ANS, Plus Power, Aypa Power). Likely too early-stage to have a public careers page yet at $43M raised; recheck in a few weeks rather than guessing a slug.",
-      "needs_ats_resolution": true
-    }
-  ],
+  "pending": [],
   "enrolled": [
     {
       "name": "NVIDIA",
@@ -1186,6 +1143,20 @@
       "ats": "ashby",
       "slug": "base-power",
       "enrolled_date": "2026-08-12",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Veeam Software",
+      "ats": "greenhouse",
+      "slug": "veeamsoftware",
+      "enrolled_date": "2026-08-14",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "StubHub",
+      "ats": "greenhouse",
+      "slug": "stubhubinc",
+      "enrolled_date": "2026-08-14",
       "via": "harvest_ats.py"
     }
   ],
@@ -3110,6 +3081,102 @@
       "rejected_date": "2026-08-12",
       "reason": "Atlanta-founded sports betting / iGaming / crypto-backed prediction-market platform, $21M strategic investment (Feb 2026). HARD-EXCLUDED per the standing crypto/web3/blockchain filter -- not evaluated further regardless of funding size or Atlanta HQ.",
       "recheck_if_resurfaced": false
+    },
+    {
+      "name": "Recharge",
+      "ats": "ashby",
+      "slug": "recharge",
+      "rejected_date": "2026-08-14",
+      "reason": "Board resolves and is live (4 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Britive",
+      "ats": "greenhouse",
+      "slug": "britive",
+      "rejected_date": "2026-08-14",
+      "reason": "Board resolves and is live (15 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Sonatype",
+      "ats": "lever",
+      "slug": "sonatype",
+      "rejected_date": "2026-08-14",
+      "reason": "Board resolves and is live (33 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Venn",
+      "ats": "ashby",
+      "slug": "venn",
+      "rejected_date": "2026-08-14",
+      "reason": "Board resolves and is live (12 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Nametag",
+      "ats": "greenhouse",
+      "slug": "nametag",
+      "rejected_date": "2026-08-14",
+      "reason": "Board resolves and is live (6 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Morgan Stanley",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-14",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "RK&K",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-14",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Dili",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-14",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Ore Energy",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-14",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Rentable",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-14",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Optum",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-14",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Symbotic",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-14",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
     }
   ]
 }
