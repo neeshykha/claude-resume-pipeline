@@ -1391,11 +1391,13 @@ def poll_all(run_date: date) -> dict:
         # FDE now inherits tier4's +8 automatically).
         score += job.get("title_prescore") or default_title_prescore
 
-        # Seniority match (senior = ok, principal/staff = excluded already, manager II = ok)
+        # Seniority match (senior = ok, principal/staff = excluded already, manager II = ok).
+        # A flat -5 for "associate"/"junior" was removed 2026-08-15: it contradicted the
+        # tier config (Associate-prefixed titles can be tier-1) and on a 526-match day it
+        # sank Ramp's Associate Manager, Premier Support below the top-40 cutoff despite a
+        # clean tier-1 match — the full rubric, not the pre-score, owns seniority judgment.
         if "senior" in t or "sr " in t or "sr." in t:
             score += 5
-        if "associate" in t or "junior" in t:
-            score -= 5
 
         # Location
         loc = job["location"].lower()
