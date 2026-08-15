@@ -7,6 +7,7 @@ audits/
 
 # Pipeline runtime data — personal job tracking
 pipeline/SESSION_STATE.md
+pipeline/PIPELINE_REVIEW.md
 pipeline/jobs/
 pipeline/logs/
 pipeline/outcomes.csv
