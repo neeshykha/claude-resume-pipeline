@@ -788,7 +788,10 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST
   arrives as an unreadable wall of angle brackets (happened 2026-07-27). If a draft has
   already been SENT, `update_draft` fails with "Message not a draft" — create a corrected
   replacement draft rather than trying to patch it.
-- HTML table: title, company, location, salary, score, JD coverage %, apply link
+- HTML table: title, company, location, salary, score, unmet hard reqs, apply link.
+  (JD coverage % was dropped from the table 2026-08-15 — it's a pass/fail build gate with
+  no variance (94.6% mean across applied rows), so showing it invited ranking by it.
+  `unmet_hard_reqs` is the readiness signal.)
 - **Provenance column/notes (added 2026-07-27).** Every `matched` entry carries a
   `provenance` array from `poll_ats.py`. A non-empty array means the role is visible ONLY
   because of the 2026-07-27 filter widening (`age_*_over_old_21d_limit`,
