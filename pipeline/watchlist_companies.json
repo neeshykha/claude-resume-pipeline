@@ -3309,6 +3309,16 @@
       "enrolled_date": "2026-08-14",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (20 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director, Global Customer Success'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Podium",
+      "ats": "greenhouse",
+      "slug": "podium81",
+      "priority": "high",
+      "headcount_band": "501-2000",
+      "reason": "AI employee/AI agent platform for local businesses (auto dealerships, home services, aesthetics). Runs a whole CSM title family (AI Customer Success Manager - SMB/Mid-Market/Enterprise/Automotive, Senior Manager Customer Success/Dealership Success - Automotive AI). User-surfaced 2026-08-14 via a LinkedIn card ('AI Customer Success Manager (Automotive), Atlanta, GA'); the exact req shown didn't match anything current on the board (the two 'AI Customer Success Manager (Automotive)' Greenhouse reqs are Remote US, first published 2026-04-09, ~4 months stale), but a genuinely fresher, better-titled role confirmed Atlanta as one of 4 eligible hub cities: 'Senior Manager, Customer Success - Automotive AI' (job 8074470, posted 2026-07-20, Chicago/NYC/DC/Atlanta, 50% travel). Tailored that one.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- AI agent/AI employee platform, explicitly AI-native positioning (OpenAI-highlighted, G2 #1 AI Agent for Business Operations)."
     }
   ]
 }
