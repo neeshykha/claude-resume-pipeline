@@ -3401,6 +3401,18 @@
       "enrolled_date": "2026-08-15",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Operations Senior Manager, AI'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Wiz",
+      "ats": "greenhouse",
+      "slug": "wizinc",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-08-16",
+      "enrolled_via": "User-surfaced (LinkedIn card screenshot) 2026-08-16 -- 'Manager, Solutions Support Engineering - East'",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20) -- cloud security posture management (CSPM) platform.",
+      "reason": "Cloud/AI security platform (CSPM), NY HQ, ~3,148 employees, acquired by Google Cloud March 2026. Verified live board 2026-08-16: 116 jobs, multiple US-reachable tier2 fit-titles -- Sr. Technical Account Manager (Northeast), Technical Account Manager (Central/Mid-Atlantic/West), all Remote-USA, plus Senior Solutions Engineer Public Sector in Atlanta, GA. The specific role that surfaced it (Manager, Solutions Support Engineering - East, job 4678144006) carries HARD requirements Aneesh does not meet: 5+ years hands-on AWS/Azure/GCP infrastructure deployment and direct Kubernetes cluster experience -- both 'Minimum qualifications', not preferred. Not tailored for that req; the TAM roles are the real fit-space here."
     }
   ]
 }
