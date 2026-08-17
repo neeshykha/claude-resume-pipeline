@@ -34,7 +34,11 @@
       "Edit",
       "Glob",
       "Grep",
-      "mcp__8d597ae8-3c99-43f5-8eb1-7dba02b3dec7__create_draft"
+      "mcp__8d597ae8-3c99-43f5-8eb1-7dba02b3dec7__create_draft",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude-in-chrome__navigate",
+      "mcp__claude-in-chrome__get_page_text",
+      "mcp__claude-in-chrome__javascript_tool"
     ]
   },
   "hooks": {
