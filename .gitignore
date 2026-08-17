@@ -23,6 +23,11 @@ pipeline/outcomes.csv
 # staged, same close call as the original .bak gap.
 pipeline/*.bak*
 pipeline/*.tmp
+# LinkedIn browser-sweep procedure + state: references Aneesh's live LinkedIn
+# account and names specific surfaced companies/roles (outcomes.csv-class info).
+pipeline/linkedin_browser_harvest.md
+pipeline/linkedin_sweep_state.json
+
 # Mail-routing details referenced as {{PLACEHOLDER}} tokens by daily_task_prompt.md.
 # Kept local because that spec is published and these values map two of Aneesh's
 # identities to each other.

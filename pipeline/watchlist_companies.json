@@ -216,20 +216,22 @@
         "name": "Cox Automotive",
         "why": "Atlanta HQ (Cox Enterprises). Automotive software/marketplace tech. Workday site name unresolved (404 on the guess).",
         "query": "site:myworkdayjobs.com cox (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\")",
-        "last_checked": "2026-08-07"
+        "last_checked": "2026-08-17",
+        "last_hit": "2026-08-17: zero Cox results returned at all -- search surfaced only other companies' Workday postings (Bluehost, Milwaukee Tool, Genesys, Adobe, CrowdStrike, etc.). No fit-space hit."
       },
       {
         "name": "Equifax",
         "why": "Atlanta HQ. Data/analytics platform with enterprise clients. Workday site name unresolved (404 on the guess).",
         "query": "site:myworkdayjobs.com equifax (\"customer success\" OR \"technical account manager\" OR \"implementation manager\")",
-        "last_checked": "2026-08-07"
+        "last_checked": "2026-08-17",
+        "last_hit": "2026-08-17: zero Equifax results returned at all -- same pattern as Cox, only other companies' postings surfaced (FIS, Mastercard, Salesforce, CrowdStrike). No fit-space hit."
       },
       {
         "name": "Global Payments",
         "why": "Atlanta HQ fintech. Workday site name unresolved (422 on the guess).",
         "query": "site:myworkdayjobs.com \"global payments\" (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\")",
-        "last_checked": "2026-08-10",
-        "last_hit": "2026-08-10: TSYS (Global Payments' payment-tech subsidiary) Implementation Analyst I (entry-level, Tempe AZ) plus CSM/TAM listings via BuiltIn (Dubai CSM, UK&I Enterprise CSM, TAM Global Partnerships — no confirmed US-remote fit-space location). No fit-space hit."
+        "last_checked": "2026-08-17",
+        "last_hit": "2026-08-17: same conclusion as 2026-08-10 -- TSYS Implementation Analyst I (entry-level, Tempe AZ) plus CSM/TAM listings via BuiltIn (Dubai CSM, POS Retention Oklahoma City, TAM Global Partnerships) -- no confirmed US-remote fit-space location. No fit-space hit."
       },
       {
         "name": "Intuit / Mailchimp",
@@ -714,8 +716,8 @@
       "bonus_reason": "AI/ML platform (+20) — generative AI inference platform",
       "reason": "AI inference platform. Verified live board 2026-07-30: Technical Account Manager, Enterprise (job 4335490009) is the fit-space role.",
       "board_status": "404_confirmed",
-      "board_status_note": "First seen 404 on 2026-08-01, re-confirmed 2026-08-03 and 2026-08-10 via direct curl to boards-api.greenhouse.io/v1/boards/fireworksai/jobs (404). WebSearch snippets keep showing apparently-live listings (AI Researcher, Forward Deployed PM, TAM Enterprise, etc.) but these are stale search-cache, same failure mode documented on the Aisera entry below — don't trust WebSearch alone for this board.",
-      "recheck_after": "2026-08-17"
+      "board_status_note": "First seen 404 on 2026-08-01, re-confirmed 2026-08-03, 2026-08-10, and 2026-08-17 (poll_ats.py live 404 same run; recovery WebSearch again returned the same stale-cache listings — identical job IDs to prior checks, including TAM Enterprise 4335490009 — don't trust WebSearch alone for this board).",
+      "recheck_after": "2026-08-24"
     },
     {
       "name": "NVIDIA",
@@ -1389,8 +1391,8 @@
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) — AI service management. NOTE: apply -15 location penalty if no US remote option on role",
       "board_status": "404_confirmed",
-      "board_status_note": "Re-verified 2026-07-13, 2026-07-20, 2026-07-27, 2026-08-03, and 2026-08-10: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404. WebSearch again surfaced apparently-live listings (Product Marketing Manager, Enterprise CSM, Sales Engineer, etc.) but these are stale search-cache — confirmed via direct curl to the API endpoint. Don't trust WebSearch snippets alone for this check.",
-      "recheck_after": "2026-08-17"
+      "board_status_note": "Re-verified 2026-07-13, 2026-07-20, 2026-07-27, 2026-08-03, 2026-08-10, and 2026-08-17: boards-api.greenhouse.io/v1/boards/aiserajobs/jobs still 404 (poll_ats.py live check). WebSearch again surfaced the same stale-cache listings as prior checks (identical job IDs, e.g. Enterprise CSM 4984596004). Don't trust WebSearch snippets alone for this check.",
+      "recheck_after": "2026-08-24"
     },
     {
       "name": "Sierra",
@@ -3413,6 +3415,42 @@
       "score_bonus": 20,
       "bonus_reason": "Developer/infra tooling (+20) -- cloud security posture management (CSPM) platform.",
       "reason": "Cloud/AI security platform (CSPM), NY HQ, ~3,148 employees, acquired by Google Cloud March 2026. Verified live board 2026-08-16: 116 jobs, multiple US-reachable tier2 fit-titles -- Sr. Technical Account Manager (Northeast), Technical Account Manager (Central/Mid-Atlantic/West), all Remote-USA, plus Senior Solutions Engineer Public Sector in Atlanta, GA. The specific role that surfaced it (Manager, Solutions Support Engineering - East, job 4678144006) carries HARD requirements Aneesh does not meet: 5+ years hands-on AWS/Azure/GCP infrastructure deployment and direct Kubernetes cluster experience -- both 'Minimum qualifications', not preferred. Not tailored for that req; the TAM roles are the real fit-space here."
+    },
+    {
+      "name": "Lessen",
+      "ats": "lever",
+      "slug": "lessen",
+      "priority": "low",
+      "enrolled_date": "2026-08-17",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Salesforce Administrator - Contract'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Integrate",
+      "ats": "lever",
+      "slug": "integrate",
+      "priority": "low",
+      "enrolled_date": "2026-08-17",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director of Customer Success'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Ashby",
+      "ats": "ashby",
+      "slug": "ashby",
+      "priority": "low",
+      "enrolled_date": "2026-08-17",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (61 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Manager of Dedicated Implementations - EMEA'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Cribl",
+      "ats": "greenhouse",
+      "slug": "cribl",
+      "priority": "low",
+      "enrolled_date": "2026-08-17",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (67 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Customer Support Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }

@@ -242,6 +242,8 @@ def main():
     if args.prune:
         return prune(wl, matcher, P.title_hard_excluded)
 
+    pending_by_name = {e["name"].lower(): e for e in q.get("pending", []) if e.get("name")}
+
     targets = list(args.names)
     if args.from_pending:
         targets += [e["name"] for e in q.get("pending", []) if e.get("name")]
@@ -305,14 +307,18 @@ def main():
                         f"company resurfaces."),
              "recheck_if_resurfaced": True})
     for name in no_board:
-        q.setdefault("rejected", []).append(
-            {"name": name, "ats": None, "slug": None, "rejected_date": today,
-             "reason": ("No board resolved from deterministic name-variant slugs across "
-                        "Greenhouse/Ashby/Lever/Workable. May still be pollable under a "
-                        "non-obvious slug or on Workday: worth one manual "
-                        "site:myworkdayjobs.com search if the company matters."),
-             "recheck_if_resurfaced": True,
-             "unpollable": True})
+        entry = {"name": name, "ats": None, "slug": None, "rejected_date": today,
+                  "reason": ("No board resolved from deterministic name-variant slugs across "
+                             "Greenhouse/Ashby/Lever/Workable. May still be pollable under a "
+                             "non-obvious slug or on Workday: worth one manual "
+                             "site:myworkdayjobs.com search if the company matters."),
+                  "recheck_if_resurfaced": True,
+                  "unpollable": True}
+        pending_entry = pending_by_name.get(name.lower(), {})
+        for field in ("manual_review", "manual_review_why", "manual_review_surfaced"):
+            if field in pending_entry:
+                entry[field] = pending_entry[field]
+        q.setdefault("rejected", []).append(entry)
 
     handled = {n.lower() for n, _ in enrollable} | {n.lower() for n, _ in no_fit} | {n.lower() for n in no_board}
     q["pending"] = [e for e in q.get("pending", [])
