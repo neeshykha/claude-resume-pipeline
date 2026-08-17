@@ -421,6 +421,20 @@ When Aneesh mentions a job or company he found outside the pipeline, do all four
    automatic dead-board pruning. Daily poll cost stays flat (poller pre-filters to a fixed
    top-25); the build is an engineering session, not a heavier daily process.
 
+## LinkedIn Browser Sweep (on-demand skill)
+
+`linkedin-sweep` (`.claude/skills/linkedin-sweep/SKILL.md`, local-only) drives a logged-in
+Claude-in-Chrome session to resolve LinkedIn job-alert emails to real roles, sweep the Jobs
+recommendation feed, and run a small tier-title search pack. Tested procedure + constraints:
+`pipeline/linkedin_browser_harvest.md` (gitignored). Deliberately NOT part of the scheduled
+daily run — it needs Chrome open and connected, so Aneesh triggers it by name ("linkedin
+sweep"). It feeds `enrollment_candidates.json` through the same pending-queue rules as Step
+1d-2 and never scores, tailors, or clicks anything on LinkedIn. Separately (2026-08-16,
+explicitly approved), the LinkedIn alert subscriptions themselves were tier-aligned — 18 daily
+email alerts mirroring the scoring tiers — so the email channel Step 1d-2 consumes is now
+tuned to the same title set; the live alert list and write mechanics are in the harvest doc.
+Open to Work visibility stays recruiters-only; never change it without Aneesh's direct ask.
+
 ## Quick Commands
 - "Tailor for [JD]" — Full tailoring workflow above
 - "Compare [company]" — Show diff between tailored version and master
