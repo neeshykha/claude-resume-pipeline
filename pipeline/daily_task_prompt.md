@@ -251,6 +251,31 @@ the Workday-tenant entries specifically, a `site:myworkdayjobs.com <company>` hi
 reveals the real site name is a promotion opportunity, not just a job listing — same
 pattern that unstuck Availity, NCR Voyix, and Cengage (see Step 1d).
 
+### 1c-3. Unpollable-backlog monthly check (confirmed-role companies with NO pollable ATS)
+
+Read `watchlist_companies.json → _unpollable_backlog_companies`. **Monthly frequency**: run
+only on/after the 1st of the month, same self-gating pattern as the AI Support Vendor
+Consolidation M&A watch in `_websearch_sources` — check whether it already ran this month
+(recent `run_*.json` mentioning this step) before spending the calls.
+
+Added 2026-08-18 after a review of the 128-company unpollable backlog in
+`enrollment_candidates.json → rejected`. That review split three ways: ~24 large companies
+with zero confirmed role signal got a one-time Workday-resolution sweep instead (2 converted
+to permanent watchlist enrollments — Coca-Cola, Ascensus — 22 confirmed genuinely dead and
+annotated so they're not re-swept); ~86 companies with zero role signal were left alone as
+low-value discovery noise; these 18 have a CONFIRMED real fit-space role already on record
+and no supported ATS, which is exactly the shape `_blind_spot_companies` already handles for
+large employers — this block is the same mechanism for smaller/niche ones.
+
+When due, run every company's `query` in this list (not a rotating subset — 18 WebSearches
+once a month is cheap) and check for a currently-open fit-space role. Update `last_checked`
+to today and `last_hit` with the result for each. Do NOT score, tailor, or apply from a
+hit here — this is visibility only, same treatment as the daily blind-spot rotation. If a
+hit is worth surfacing (role still live, or a new one appeared), add a line to that day's
+digest under "Manual channel — no pollable board." If a company turns out to have gained a
+supported ATS after all, follow the standard enrollment procedure (verify live, add
+headcount_band, move to the main watchlist) and remove it from this list.
+
 ### 1d. Discovery feeders + enrollment queue
 
 `pipeline/enrollment_candidates.json` is the standing queue that stops off-watchlist
@@ -824,6 +849,8 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST
     what surfaced (mostly-known vs. genuinely new)
   - Discovery feeders: poll_remotive/poll_80k/harvest_hn_hiring status (including DEGRADED/skipped)
   - Blind-spot rotation: which named employers were checked this run
+  - Unpollable-backlog monthly check: due/not-due, and if due, what was found (skip this line
+    entirely on a not-due day — silent housekeeping, same as monthly WebSearch sources)
   - LinkedIn email-alert harvest: threads found, companies extracted, what happened to each
   - Any user-surfaced companies processed this run, and explicitly which channel (if any) would
     have caught them on its own — if none would have, say so plainly, the way this entry does

@@ -291,6 +291,140 @@
       }
     ]
   },
+  "_unpollable_backlog_companies": {
+    "description": "Companies with a CONFIRMED real fit-space role (not just a name-only lead) that harvest_ats.py verified has no supported ATS -- Jobvite, BambooHR, JazzHR, a custom form, Gem, or a fiscal-sponsor career site. Different from _blind_spot_companies: those are large, structurally unpollable-forever employers (Google, Apple, Amazon) checked as a standing rotation; this list is curated FROM the enrollment_candidates.json unpollable-rejected backlog specifically because each entry already has real evidence of a matching role, not just 'no board found.' Added 2026-08-18 after a 128-company unpollable backlog review (see the same day's weekly_channel_report) split three ways: ~24 large companies with zero role signal (handled by a one-time Workday-resolution sweep instead -- see SESSION_STATE 2026-08-18), ~86 companies with zero confirmed role signal (left alone, low expected value), and these 18 with genuine evidence worth periodic re-checking.",
+    "rationale": "A one-off browser sweep of the whole backlog is a point-in-time snapshot with no ongoing value once done. These companies stay genuinely unpollable, so the only durable answer is a low-cost recurring check, same shape as the AI Support Vendor Consolidation M&A watch in _websearch_sources: monthly, not daily -- these are slow-moving small/niche employers, not high-churn boards.",
+    "run_instructions": "Run on/after the 1st of each month (same self-gating pattern as the monthly _websearch_sources entries: check whether it already ran this month via recent run_*.json before spending the call). For EVERY company in this list (not a rotating subset -- 18 WebSearches once a month is cheap), run its query and check for a currently-open fit-space role. Update last_checked to today and last_hit with the result. If a company's site turns out to have gained a supported ATS after all, or if a role is found that's worth surfacing, add a line to that day's digest under 'Manual channel -- no pollable board' (same treatment as the daily blind-spot rotation). Do NOT score, tailor, or apply from a hit here -- this is visibility only, same as _blind_spot_companies. If a company gets a real ATS board, follow the standard enrollment procedure and remove it from this list.",
+    "frequency": "monthly",
+    "companies": [
+      {
+        "name": "Barracuda",
+        "why": "'Manager, Technical Support' role confirmed via LinkedIn job 4446133973, Alpharetta GA (Hybrid), tier-1 word-order variant. Apply resolves to app.jobvite.com, an ATS the poller doesn't speak.",
+        "query": "\"Barracuda\" careers \"Technical Support\" Alpharetta OR Atlanta",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Mission Communications LLC",
+        "why": "'Customer Experience and Technical Support Manager' confirmed via LinkedIn job 4423044898, Norcross GA (Hybrid), tier-1 loose match. No ATS board found under any deterministic slug guess.",
+        "query": "\"Mission Communications\" careers \"Technical Support Manager\" Norcross OR Atlanta",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Institute for AI Policy and Strategy",
+        "why": "80,000 Hours lead: 'People Operations Manager', Remote US/UK, $105K-$115K -- real title, real salary, tier fit. Apply link is careers.rethinkpriorities.org (fiscal-sponsor custom career site), not a supported ATS.",
+        "query": "\"Institute for AI Policy and Strategy\" OR \"IAPS\" careers site:careers.rethinkpriorities.org",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "CSI (Computer Services, Inc.)",
+        "why": "'AI Adoption Manager' listing (remote), surfaced via AI-Titled Roles discovery. 1,477 employees. No Greenhouse/Ashby/Lever/SmartRecruiters board found.",
+        "query": "\"Computer Services Inc\" OR \"CSI\" fintech careers \"AI Adoption Manager\" OR \"Customer Success\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "EV Connect",
+        "why": "'Customer Success Manager' role, EV charging passion domain, surfaced via Passion Verticals discovery. No Greenhouse/Ashby/Lever board found.",
+        "query": "\"EV Connect\" careers \"Customer Success Manager\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Assiduus Global",
+        "why": "Atlanta-based AI-powered middleware platform for cross-border e-commerce, $25M pre-Series B (Bajaj Finserv, March 2026). Genuinely AI-native and Atlanta -- double passion/geo fit. Own site mentions active Operations roles but no supported ATS found.",
+        "query": "\"Assiduus Global\" careers Atlanta \"Operations\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Argyle",
+        "why": "'Customer Success Engineer' role, surfaced via BuiltIn Atlanta. No Greenhouse/Ashby/Lever board found.",
+        "query": "\"Argyle\" careers Atlanta \"Customer Success Engineer\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Fusion Risk Management",
+        "why": "'Customer Success Manager' role, surfaced via BuiltIn Remote. No Greenhouse/Ashby/Lever board found (WebSearch keeps surfacing an unrelated company, Commonwealth Fusion Systems).",
+        "query": "\"Fusion Risk Management\" careers \"Customer Success Manager\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "ModelOp",
+        "why": "'Customer Success' role helping enterprises implement AI governance workflows -- AI-governance vertical discovery hit. Greenhouse slug guess 'modelop' 404'd.",
+        "query": "\"ModelOp\" careers \"Customer Success\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Gladly",
+        "why": "Customer service platform -- 'would be a fit' per the original discovery note. Greenhouse slug 'gladly' 404'd.",
+        "query": "\"Gladly\" customer service platform careers \"Customer Success\" OR \"Support\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Kustomer",
+        "why": "CRM/support platform -- 'would be a fit' per the original discovery note. Greenhouse slug 'kustomer' 404'd.",
+        "query": "\"Kustomer\" careers \"Customer Success\" OR \"Support\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Espressive",
+        "why": "AI service desk platform -- 'would be a fit' per the original discovery note. Greenhouse slug 'espressive' 404'd.",
+        "query": "\"Espressive\" careers \"Customer Success\" OR \"Support\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "InVue",
+        "why": "'Customer Support Manager-Americas' confirmed role, Charlotte NC. Uses Jobvite (jobs.jobvite.com/invue), unsupported ATS.",
+        "query": "\"InVue\" careers \"Customer Support Manager\" Charlotte",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Stampli",
+        "why": "Fintech AP automation company. 'Customer Success Manager'/'Implementation Consultant' role surfaced on BuiltIn. Direct slug guesses 404'd on Greenhouse, Ashby, and Lever; no careers-page link found via WebSearch.",
+        "query": "\"Stampli\" careers \"Customer Success Manager\" OR \"Implementation Consultant\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "Transluce",
+        "why": "'Operations Generalist' role, SF Bay Area, AI-safety org. Hosts on jobs.gem.com, an ATS the poller doesn't speak.",
+        "query": "\"Transluce\" AI safety careers \"Operations\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "RealPage",
+        "why": "Named target company in the PropTech discovery source notes. Re-confirmed 2026-08-18 (targeted site:myworkdayjobs.com search) still has no resolvable board -- likely a custom or unresolved Workday tenant.",
+        "query": "\"RealPage\" careers \"Customer Success\" OR \"Implementation Manager\" OR \"Support Operations\"",
+        "last_checked": "2026-08-18",
+        "last_hit": "2026-08-18: targeted site:myworkdayjobs.com search found no RealPage tenant. Still unpollable."
+      },
+      {
+        "name": "Avanos Medical",
+        "why": "Health-tech passion domain. Confirmed custom career site (careers.avanos.com), not on Greenhouse/Ashby/Lever/Workday -- a genuine no-board case, not a slug-guessing miss. A fit-space Systems-shaped role was seen at discovery time.",
+        "query": "site:careers.avanos.com \"Customer Success\" OR \"Support Operations\" OR \"Implementation\"",
+        "last_checked": null,
+        "last_hit": null
+      },
+      {
+        "name": "West Physics",
+        "why": "Atlanta-based medical imaging accreditation/radiation-physics consulting firm, recapitalized by Incline Equity Partners (PE, June 2026). Custom career site (westphysics.com/about/careers/), Atlanta-geo relevance even without a strong confirmed role yet.",
+        "query": "\"West Physics\" Atlanta careers \"Operations\" OR \"Support\"",
+        "last_checked": null,
+        "last_hit": null
+      }
+    ]
+  },
   "_endpoints": {
     "greenhouse": "https://boards-api.greenhouse.io/v1/boards/{slug}/jobs",
     "greenhouse_eu": "https://boards-api.eu.greenhouse.io/v1/boards/{slug}/jobs",
@@ -691,6 +825,32 @@
     }
   },
   "companies": [
+    {
+      "name": "The Coca-Cola Company",
+      "ats": "workday",
+      "slug": "coke",
+      "wd_host": "coke.wd1.myworkdayjobs.com",
+      "wd_tenant": "coke",
+      "wd_site": "coca-cola-careers",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-08-18",
+      "enrolled_via": "Unpollable-backlog Workday resolution sweep 2026-08-18 (site:myworkdayjobs.com follow-up on a harvest_ats.py deterministic-slug miss)",
+      "reason": "Atlanta HQ, board verified live via direct CXS query (hundreds of open roles). No exact tier1/tier2/tier2c title in the initial scan (skews sales/marketing/supply chain), but Atlanta-enterprise bonus alone justifies daily coverage on a board this size -- a fit-space role is plausible to appear over time and the daily poller will catch it automatically rather than needing another one-off check."
+    },
+    {
+      "name": "Ascensus",
+      "ats": "workday",
+      "slug": "ascensushr",
+      "wd_host": "ascensushr.wd1.myworkdayjobs.com",
+      "wd_tenant": "ascensushr",
+      "wd_site": "ascensuscareers",
+      "priority": "low",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-08-18",
+      "enrolled_via": "Unpollable-backlog Workday resolution sweep 2026-08-18",
+      "reason": "Retirement/benefits administration platform (~16M savers served). Board verified live via direct CXS query. Modest but real fit-space signal: 'Manager, Client Services' (2 locations) and 'MEP/PEP Client Service Manager' (7 locations) -- tier2-adjacent CS titles, not a strong match, enrolled at low priority rather than skipped given the confirmed live signal."
+    },
     {
       "name": "Zoom",
       "ats": "workday",

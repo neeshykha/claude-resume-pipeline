@@ -1235,6 +1235,20 @@
       "slug": "cribl",
       "enrolled_date": "2026-08-17",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "The Coca-Cola Company",
+      "ats": "workday",
+      "slug": "coke",
+      "enrolled_date": "2026-08-18",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Ascensus",
+      "ats": "workday",
+      "slug": "ascensushr",
+      "enrolled_date": "2026-08-18",
+      "headcount_band": "2000+"
     }
   ],
   "rejected": [
@@ -1275,7 +1289,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-03",
-      "reason": "No pollable board found -- probed Greenhouse/Ashby/Lever/Workday name variants, no match. Likely a custom or unresolved Workday tenant. Named target company in PropTech source notes; revisit if a myworkdayjobs.com tenant surfaces via a targeted site: search.",
+      "reason": "No pollable board found -- probed Greenhouse/Ashby/Lever/Workday name variants, no match. Likely a custom or unresolved Workday tenant. Named target company in PropTech source notes; revisit if a myworkdayjobs.com tenant surfaces via a targeted site: search. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2293,7 +2307,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2302,7 +2316,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2311,7 +2325,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2320,7 +2334,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2329,7 +2343,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2371,7 +2385,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-01",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2389,7 +2403,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-01",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2424,7 +2438,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-01",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2433,7 +2447,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-03",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2698,7 +2712,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-06",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): real Workday tenant found and queried directly via CXS API (customer success manager / technical account manager / support operations manager / implementation manager searches) -- zero tier1/tier2/tier2c fit-space titles. Genuine no-fit, not a slug-guessing miss.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2713,15 +2727,6 @@
     },
     {
       "name": "Nodes & Links",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-06",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
-      "name": "Philips",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-06",
@@ -2775,7 +2780,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-07",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2792,7 +2797,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-10",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2821,7 +2826,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-10",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -2852,15 +2857,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "Ascensus",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-10",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
       "name": "GitHub",
       "ats": null,
       "slug": null,
@@ -2882,20 +2878,11 @@
       "unpollable": true
     },
     {
-      "name": "The Coca-Cola Company",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-10",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
       "name": "Oracle",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-10",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -3357,7 +3344,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-14",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): real Workday tenant found and queried directly via CXS API (customer success manager / technical account manager / support operations manager / implementation manager searches) -- zero tier1/tier2/tier2c fit-space titles. Genuine no-fit, not a slug-guessing miss.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -3402,7 +3389,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-14",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -3411,7 +3398,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-14",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): real Workday tenant found and queried directly via CXS API (customer success manager / technical account manager / support operations manager / implementation manager searches) -- zero tier1/tier2/tier2c fit-space titles. Genuine no-fit, not a slug-guessing miss.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -3604,7 +3591,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-17",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -3613,7 +3600,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-17",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -3622,7 +3609,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-17",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -3640,7 +3627,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-17",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     }
