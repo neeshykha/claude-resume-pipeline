@@ -9,13 +9,27 @@
     "websearch board dorks": "Daily, run by Claude. site:jobs.ashbyhq.com / job-boards.greenhouse.io / jobs.lever.co target-role dorks. Surface unfamiliar companies -> append to pending."
   },
   "_schema": {
-    "pending": "[{name, ats, slug, source, first_seen, why, [needs_ats_resolution], [manual_review], [manual_review_why]}] \u2014 verify board live + has US-reachable fit-space roles, then enroll or reject. If needs_ats_resolution=true, name-only: resolve the ATS first (site:greenhouse.io OR ashby OR lever <company>). manual_review=true (set by Step 1d-2 when a LinkedIn card carried a tier1/tier2/tier2c title in Atlanta or Remote US) means: if this entry is rejected for having no pollable board, surface it once in the digest under 'Manual channel \u2014 no pollable board' before it disappears, then set manual_review_surfaced=true.",
-    "enrolled": "[{name, ats, slug, enrolled_date, headcount_band}] \u2014 audit log; the live entry lives in watchlist_companies.json.",
-    "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced, [unpollable], [weekly_report_surfaced], [weekly_report_surfaced_date]}] \u2014 don't re-evaluate unless it resurfaces with new roles. unpollable=true (added 2026-08-14) means the reason is specifically 'no ATS board was ever found' (a genuine automation gap Aneesh could work around by hand), as opposed to a board being found and the company rejected for fit/geo/category reasons. Set this directly when rejecting for no-board (harvest_ats.py does; do the same by hand in Step 1d). weekly_channel_report.py surfaces unpollable=true entries once a week for manual review; weekly_report_surfaced=true (set by that script's --apply pass) stops an entry from repeating in future weekly reports once Aneesh has seen it."
+    "pending": "[{name, ats, slug, source, first_seen, why, [needs_ats_resolution], [manual_review], [manual_review_why]}] — verify board live + has US-reachable fit-space roles, then enroll or reject. If needs_ats_resolution=true, name-only: resolve the ATS first (site:greenhouse.io OR ashby OR lever <company>). manual_review=true (set by Step 1d-2 when a LinkedIn card carried a tier1/tier2/tier2c title in Atlanta or Remote US) means: if this entry is rejected for having no pollable board, surface it once in the digest under 'Manual channel — no pollable board' before it disappears, then set manual_review_surfaced=true.",
+    "enrolled": "[{name, ats, slug, enrolled_date, headcount_band}] — audit log; the live entry lives in watchlist_companies.json.",
+    "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced, [unpollable], [weekly_report_surfaced], [weekly_report_surfaced_date]}] — don't re-evaluate unless it resurfaces with new roles. unpollable=true (added 2026-08-14) means the reason is specifically 'no ATS board was ever found' (a genuine automation gap Aneesh could work around by hand), as opposed to a board being found and the company rejected for fit/geo/category reasons. Set this directly when rejecting for no-board (harvest_ats.py does; do the same by hand in Step 1d). weekly_channel_report.py surfaces unpollable=true entries once a week for manual review; weekly_report_surfaced=true (set by that script's --apply pass) stops an entry from repeating in future weekly reports once Aneesh has seen it."
   },
-  "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
+  "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry — for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards — their fit roles aren't US-reachable.",
   "pending": [],
   "enrolled": [
+    {
+      "name": "US Bank",
+      "ats": "workday",
+      "slug": "usbank",
+      "enrolled_date": "2026-08-18",
+      "headcount_band": "2000+"
+    },
+    {
+      "name": "Zillow",
+      "ats": "workday",
+      "slug": "zillow",
+      "enrolled_date": "2026-08-18",
+      "headcount_band": "2000+"
+    },
     {
       "name": "NVIDIA",
       "ats": "workday",
@@ -362,7 +376,7 @@
       "enrolled_date": "2026-07-02",
       "headcount_band": "1-50",
       "enrolled_via": "AI-Native & AI-Safety Orgs discovery source 2026-07-02",
-      "notes": "AI safety research nonprofit, Berkeley. Current roles are ops-adjacent (Business Operations Associate, Senior Programs & Strategy Manager, both Remote US) but not strong title matches \u2014 mostly research/eng heavy. Enrolled per the explicit 'FAR.AI-type org' callout in _websearch_sources; watch for better title fits as new reqs post."
+      "notes": "AI safety research nonprofit, Berkeley. Current roles are ops-adjacent (Business Operations Associate, Senior Programs & Strategy Manager, both Remote US) but not strong title matches — mostly research/eng heavy. Enrolled per the explicit 'FAR.AI-type org' callout in _websearch_sources; watch for better title fits as new reqs post."
     },
     {
       "name": "Nimble Gravity",
@@ -1249,6 +1263,34 @@
       "slug": "ascensushr",
       "enrolled_date": "2026-08-18",
       "headcount_band": "2000+"
+    },
+    {
+      "name": "Saviynt",
+      "ats": "lever",
+      "slug": "saviynt",
+      "enrolled_date": "2026-08-18",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "3E",
+      "ats": "ashby",
+      "slug": "3e",
+      "enrolled_date": "2026-08-18",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Clariti Cloud",
+      "ats": "greenhouse",
+      "slug": "clariticloudinc",
+      "enrolled_date": "2026-08-18",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Snorkel AI",
+      "ats": "greenhouse",
+      "slug": "snorkelai",
+      "enrolled_date": "2026-08-18",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -1757,7 +1799,7 @@
       "ats": "ashby",
       "slug": "teambridge",
       "rejected_date": "2026-06-30",
-      "reason": "Board live but 0 open jobs on 2026-06-30 \u2014 nothing to monitor.",
+      "reason": "Board live but 0 open jobs on 2026-06-30 — nothing to monitor.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1813,7 +1855,7 @@
       "ats": "greenhouse",
       "slug": "gladly",
       "rejected_date": "2026-06-30",
-      "reason": "Greenhouse slug 'gladly' 404 \u2014 find real ATS/slug if resurfaced (customer service platform, would be a fit).",
+      "reason": "Greenhouse slug 'gladly' 404 — find real ATS/slug if resurfaced (customer service platform, would be a fit).",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
@@ -1824,7 +1866,7 @@
       "ats": "greenhouse",
       "slug": "kustomer",
       "rejected_date": "2026-06-30",
-      "reason": "Greenhouse slug 'kustomer' 404 \u2014 find real ATS/slug if resurfaced (CRM/support, would be a fit).",
+      "reason": "Greenhouse slug 'kustomer' 404 — find real ATS/slug if resurfaced (CRM/support, would be a fit).",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
@@ -1835,7 +1877,7 @@
       "ats": "greenhouse",
       "slug": "espressive",
       "rejected_date": "2026-06-30",
-      "reason": "Greenhouse slug 'espressive' 404 \u2014 find real ATS/slug if resurfaced (AI service desk, would be a fit).",
+      "reason": "Greenhouse slug 'espressive' 404 — find real ATS/slug if resurfaced (AI service desk, would be a fit).",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
@@ -1846,7 +1888,7 @@
       "ats": "ashby",
       "slug": "lago",
       "rejected_date": "2026-06-30",
-      "reason": "Live (open-source billing, Paris HQ); fit roles (FDE, Customer Support Engineer, Technical Account Executive, Solutions Engineer) are ALL Europe-remote / France \u2014 not US-reachable. Re-check if a US-remote role opens.",
+      "reason": "Live (open-source billing, Paris HQ); fit roles (FDE, Customer Support Engineer, Technical Account Executive, Solutions Engineer) are ALL Europe-remote / France — not US-reachable. Re-check if a US-remote role opens.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1862,7 +1904,7 @@
       "ats": "ashby",
       "slug": "clerky",
       "rejected_date": "2026-07-01",
-      "reason": "Resurfaced via Remotive again (same listing as 2026-06-30 rejection): resolved to ashby/clerky, still only 1 job (worldwide 'Customer Operations & Writing Specialist' blend) \u2014 too thin/marginal to monitor. Re-check if more CS/ops roles appear.",
+      "reason": "Resurfaced via Remotive again (same listing as 2026-06-30 rejection): resolved to ashby/clerky, still only 1 job (worldwide 'Customer Operations & Writing Specialist' blend) — too thin/marginal to monitor. Re-check if more CS/ops roles appear.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1870,7 +1912,7 @@
       "ats": "ashby",
       "slug": "aureliussystems",
       "rejected_date": "2026-07-01",
-      "reason": "Live (20 jobs) but defense-tech/directed-energy cUAS company \u2014 all roles are engineering/robotics/hardware. The one keyword match, 'Lead, Forward Deployed Engineer', is onsite SF at a defense contractor: not a CS/support-ops fit, and the domain implies clearance requirements Aneesh doesn't have. Re-check only if a clearly non-defense support/CS role appears.",
+      "reason": "Live (20 jobs) but defense-tech/directed-energy cUAS company — all roles are engineering/robotics/hardware. The one keyword match, 'Lead, Forward Deployed Engineer', is onsite SF at a defense contractor: not a CS/support-ops fit, and the domain implies clearance requirements Aneesh doesn't have. Re-check only if a clearly non-defense support/CS role appears.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1878,7 +1920,7 @@
       "ats": "ashby",
       "slug": "close",
       "rejected_date": "2026-07-01",
-      "reason": "Surfaced via WebSearch Ashby board dork (listing showed a Customer Success Associate role). Verified live board 2026-07-01: only 5 jobs, all eng/marketing (Backend SWE, SRE, Support SWE, Frontend SWE, Agentic Growth Marketing Lead) \u2014 the CS Associate listing had already closed. Re-check if a CS/support role reopens.",
+      "reason": "Surfaced via WebSearch Ashby board dork (listing showed a Customer Success Associate role). Verified live board 2026-07-01: only 5 jobs, all eng/marketing (Backend SWE, SRE, Support SWE, Frontend SWE, Agentic Growth Marketing Lead) — the CS Associate listing had already closed. Re-check if a CS/support role reopens.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1886,7 +1928,7 @@
       "ats": "greenhouse",
       "slug": "emergentlabsinc",
       "rejected_date": "2026-07-02",
-      "reason": "Live (37 jobs) but the only fit-space role, Manager - Technical Account Management, is based in Bangalore \u2014 not US-reachable. Rest of board is Enterprise AE and eng roles.",
+      "reason": "Live (37 jobs) but the only fit-space role, Manager - Technical Account Management, is based in Bangalore — not US-reachable. Rest of board is Enterprise AE and eng roles.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1964,7 +2006,7 @@
       "ats": "greenhouse",
       "slug": "talonone",
       "rejected_date": "2026-07-07",
-      "reason": "Board live (resolved via greenhouse.io/talonone) but every posting is Australia/Berlin/London/Singapore-based, including the Customer Success Manager and Technical Account Manager Lead roles \u2014 no US-reachable role.",
+      "reason": "Board live (resolved via greenhouse.io/talonone) but every posting is Australia/Berlin/London/Singapore-based, including the Customer Success Manager and Technical Account Manager Lead roles — no US-reachable role.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1972,7 +2014,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-07",
-      "reason": "No standard ATS (Greenhouse/Ashby/Lever/Workday) \u2014 GovAI runs an 'expression of interest' form at governance.ai/opportunities, not pollable by poll_ats.py.",
+      "reason": "No standard ATS (Greenhouse/Ashby/Lever/Workday) — GovAI runs an 'expression of interest' form at governance.ai/opportunities, not pollable by poll_ats.py.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
@@ -2864,7 +2906,7 @@
       "reason": "No board resolved from deterministic name-variant slugs; confirmed via WebSearch to run on a custom site (github.careers), not a poll_ats.py-supported ATS.",
       "recheck_if_resurfaced": true,
       "manual_review": true,
-      "manual_review_why": "Senior Product Operations Manager, Remote US, $124K-$329K \u2014 tier1-adjacent 'Operations Manager' title, genuinely remote per WebSearch confirmation.",
+      "manual_review_why": "Senior Product Operations Manager, Remote US, $124K-$329K — tier1-adjacent 'Operations Manager' title, genuinely remote per WebSearch confirmation.",
       "manual_review_surfaced": true,
       "unpollable": true
     },
@@ -2894,7 +2936,7 @@
       "reason": "No board resolved from deterministic name-variant slugs; site:myworkdayjobs.com follow-up found no Paylocity tenant either. Custom career site, not pollable.",
       "recheck_if_resurfaced": true,
       "manual_review": true,
-      "manual_review_why": "Manager Technical Operations (Implementation and Support), fully remote US per WebSearch confirmation \u2014 exact tier1 'Technical Operations Manager' title match. Alert repeated twice (2026-08-09).",
+      "manual_review_why": "Manager Technical Operations (Implementation and Support), fully remote US per WebSearch confirmation — exact tier1 'Technical Operations Manager' title match. Alert repeated twice (2026-08-09).",
       "manual_review_surfaced": true,
       "unpollable": true
     },
@@ -3537,7 +3579,7 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "'Manager, Technical Support' \u2014 Alpharetta GA (Hybrid), tier-1 word-order variant; LinkedIn job 4446133973; apply resolves to app.jobvite.com (ATS unsupported by poller). NOTE: harvest_ats.py's auto-rejection path dropped this flag from the pending entry on rejection -- restored by hand 2026-08-17, flagged as a real script gap worth fixing."
+      "manual_review_why": "'Manager, Technical Support' — Alpharetta GA (Hybrid), tier-1 word-order variant; LinkedIn job 4446133973; apply resolves to app.jobvite.com (ATS unsupported by poller). NOTE: harvest_ats.py's auto-rejection path dropped this flag from the pending entry on rejection -- restored by hand 2026-08-17, flagged as a real script gap worth fixing."
     },
     {
       "name": "Mission Communications LLC",
@@ -3548,7 +3590,7 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "'Customer Experience and Technical Support Manager' \u2014 Norcross GA (Hybrid), tier-1 loose match; LinkedIn job 4423044898. NOTE: harvest_ats.py's auto-rejection path dropped this flag from the pending entry on rejection -- restored by hand 2026-08-17, flagged as a real script gap worth fixing."
+      "manual_review_why": "'Customer Experience and Technical Support Manager' — Norcross GA (Hybrid), tier-1 loose match; LinkedIn job 4423044898. NOTE: harvest_ats.py's auto-rejection path dropped this flag from the pending entry on rejection -- restored by hand 2026-08-17, flagged as a real script gap worth fixing."
     },
     {
       "name": "Global-e",
@@ -3628,6 +3670,142 @@
       "slug": null,
       "rejected_date": "2026-08-17",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Fundamental",
+      "ats": "ashby",
+      "slug": "fundamental",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (19 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Mitti Labs",
+      "ats": "ashby",
+      "slug": "mitti",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (32 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Armis Security",
+      "ats": "greenhouse",
+      "slug": "armissecurity",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (21 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Buildkite",
+      "ats": "greenhouse",
+      "slug": "buildkite",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (10 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Akuity",
+      "ats": "greenhouse",
+      "slug": "akuity",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Edmentum",
+      "ats": "greenhouse",
+      "slug": "edmentum",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (25 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Evident ID",
+      "ats": "lever",
+      "slug": "evidentid",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Connexure",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-18",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "GiveWell",
+      "ats": "greenhouse",
+      "slug": "givewell",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (20 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Sage",
+      "ats": "pinpoint",
+      "slug": "sage",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (5 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Pronghorn",
+      "ats": "rippling",
+      "slug": "pronghorn-careers",
+      "rejected_date": "2026-08-18",
+      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "CliftonLarsonAllen",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-18",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Devoted Health",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-18",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Senior Manager, AI Performance & Operations -- United States (likely remote-eligible)"
+    },
+    {
+      "name": "IDEXX",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-18",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "CNA Insurance",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-18",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Stryker",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-18",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     }
