@@ -578,10 +578,14 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             # Use it as an approximation, same precedent as greenhouse's
             # updated_at fallback: a recently-touched old req can wrongly earn
             # the small freshness bonus, but the alternative (always neutral)
-            # filters nothing at all.
+            # filters nothing at all. Guard added 2026-08-20: a future-dated
+            # time_updated (clock skew or a scheduled-refresh artifact on
+            # Comeet's side) is treated as no-data rather than ultra-fresh,
+            # so bogus timestamps can't earn the freshness bonus.
             raw = job_data.get("time_updated")
             if raw:
-                return datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
+                parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
+                return parsed if parsed <= date.today() else None
         elif ats == "workday":
             # Workday's CXS list response has no ISO date, only a relative
             # "postedOn" string ("Posted Today" / "Posted Yesterday" /
