@@ -204,6 +204,21 @@ The last three landed 2026-08-01 from the conversion audit (SESSION_STATE 2026-0
 **Stage vocabulary:** `surfaced` (tailored, not confirmed sent), `applied`, `rejected`, `closed`,
 `expired` (retired by `age_report.py` after 45 days with no confirmation), `tailored` (legacy).
 
+**2026-07-28 is the outcome-data epoch. Do not audit, reconcile, or reason about `applied` rows
+that predate it.** The Gmail `+jobs` forwarding filter (Step 0.5) went live 2026-07-28; before
+that date nothing could confirm a send, so `stage=applied` on an older row is self-reported and
+often just means "tailored." Established the hard way 2026-08-20: Alston Construction sat at
+`stage=applied` since 07-20 with `applied_date == first_seen_date == the tailoring date`, and
+Aneesh confirmed he had never submitted it. Other pre-epoch rows are likely wrong the same way.
+
+**Standing decision (2026-08-20, Aneesh's call): those historical gaps are out of scope. Do not
+spend a run trying to reconcile them, do not surface them in digests, and do not propose bulk
+audits of them.** The data is unfalsifiable, so the work has no terminal state. Treat 2026-07-28
+as the start of trustworthy outcome data instead: conversion rates, send rates, channel
+effectiveness, and any claim about what happened to an application should be computed from
+`surfaced_date >= 2026-07-28` and say so. A pre-epoch row is fine to leave sitting in whatever
+state it is in; correct one only when Aneesh raises that specific role.
+
 `source_channel` is `pipeline`, `user_surfaced`, `referral`, or `linkedin`. It exists because a
 CodeRabbit application submitted through an employee referral was indistinguishable from a cold
 ATS apply, and those convert at very different rates. Vocabulary lives in `KNOWN_CHANNELS`
