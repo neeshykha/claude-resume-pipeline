@@ -58,8 +58,8 @@
       },
       {
         "name": "Lever Boards - Target Roles",
-        "query": "site:jobs.lever.co (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"enablement\" OR \"solutions consultant\" OR \"deployment\") 2026",
-        "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss). 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
+        "query": "site:jobs.lever.co (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"enablement\" OR \"solutions consultant\" OR \"deployment\" OR \"professional services\") 2026",
+        "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss). 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term. 'professional services' added 2026-08-18 after FinQuery's 'Manager, Professional Services' (Lever-hosted, Atlanta, exact tier-2 title variant) was user-surfaced and turned out to be invisible only to this query -- the Greenhouse and Ashby dorks already carried the term.",
         "status": "active",
         "frequency": "daily"
       },
@@ -347,20 +347,6 @@
         "last_hit": "2026-08-18: VP Customer Success is filled/existing staff, no open individual-contributor or manager posting confirmed this check. No fit-space hit."
       },
       {
-        "name": "Gladly",
-        "why": "Customer service platform -- 'would be a fit' per the original discovery note. Greenhouse slug 'gladly' 404'd.",
-        "query": "\"Gladly\" customer service platform careers \"Customer Success\" OR \"Support\"",
-        "last_checked": "2026-08-18",
-        "last_hit": "2026-08-18: CS/support roles referenced generally (career page gladly.ai/careers) but no specific posting confirmed or ATS host identified this check."
-      },
-      {
-        "name": "Kustomer",
-        "why": "CRM/support platform -- 'would be a fit' per the original discovery note. Greenhouse slug 'kustomer' 404'd.",
-        "query": "\"Kustomer\" careers \"Customer Success\" OR \"Support\"",
-        "last_checked": "2026-08-18",
-        "last_hit": "2026-08-18: 'Strategic Customer Success Manager' referenced via a Redpoint (investor) job board mirror -- underlying ATS host not resolved from snippets. No board found this check."
-      },
-      {
         "name": "Espressive",
         "why": "AI service desk platform -- 'would be a fit' per the original discovery note. Greenhouse slug 'espressive' 404'd.",
         "query": "\"Espressive\" careers \"Customer Success\" OR \"Support\"",
@@ -376,10 +362,11 @@
       },
       {
         "name": "Stampli",
-        "why": "Fintech AP automation company. 'Customer Success Manager'/'Implementation Consultant' role surfaced on BuiltIn. Direct slug guesses 404'd on Greenhouse, Ashby, and Lever; no careers-page link found via WebSearch.",
+        "why": "Fintech AP automation company. NOT actually unpollable -- runs on Comeet, an ATS the poller doesn't speak yet, with a fully public JSON API whose credentials are embedded in stampli.com/careers page source. Same class as the Napier AI (Pinpoint) and Nerdio (Rippling) misses that each led to adding ATS support on 2026-08-12.",
+        "comeet_api": "GET https://www.comeet.co/careers-api/2.0/company/F6.007/positions?token=6F729CADEE3EAF06F71BDC29CA22D314E5&details=true -- verified working 2026-08-18. Returns name, location (with is_remote flag), employment_type, url_comeet_hosted_page per position. No posting-date field observed in list view.",
         "query": "\"Stampli\" careers \"Customer Success Manager\" OR \"Implementation Consultant\"",
         "last_checked": "2026-08-18",
-        "last_hit": "2026-08-18: CONFIRMED STILL LIVE -- 'Customer Success Manager/Implementation Consultant', Nashville TN (Remote referenced). Own-site posting (stampli.com/careers), no ATS host identified."
+        "last_hit": "2026-08-18: API verified live -- 3 US fit-space roles, all flagged remote: 'CX Manager - ERP Integration Solution & AI Operations' (Mountain View), 'Implementation Consultant/Onboarding Specialist' (Austin, Nashville, Mountain View). The AI Operations CX Manager title is tier-1/2-shaped. Remove from this list if/when fetch_comeet ships in poll_ats.py."
       },
       {
         "name": "Transluce",
@@ -833,6 +820,43 @@
       "enrolled_date": "2026-08-18",
       "enrolled_via": "Unpollable-backlog monthly check 2026-08-18 -- gained a resolvable Rippling board since original discovery.",
       "reason": "Payroll/income connectivity platform (consumer-permissioned income & employment data API), ~137 employees. Board verified live via ats.rippling.com/argyle/jobs (Customer Success Engineer, Customer Success Manager - Mortgage confirmed present). Dev/infra tooling adjacent (API platform)."
+    },
+    {
+      "name": "FinQuery",
+      "ats": "lever",
+      "slug": "finquery",
+      "priority": "high",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-08-18",
+      "enrolled_via": "User-surfaced (pasted Lever link from the Atlanta manual-research list); diagnosed as a Lever board-dork query gap ('professional services' term missing), patched same day.",
+      "reason": "Atlanta-HQ accounting automation SaaS (formerly LeaseQuery), ~229 employees, AI-enabled lease/prepaid/accrual subledger platform. Verified live Lever board 2026-08-18: 'Manager, Professional Services' (Atlanta, tier-2 exact variant, posted 2026-07-15, reqs 3+ yrs implementation/PS + 1+ yr team management -- both easily met) is the fit-space role. Atlanta small-company bonus territory.",
+      "headcount_source": "LinkedIn ~229 employees (Jul 2026)"
+    },
+    {
+      "name": "Kustomer",
+      "ats": "ashby",
+      "slug": "Kustomer",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "enrolled_date": "2026-08-18",
+      "enrolled_via": "Unpollable-backlog alert-signup scan 2026-08-18 -- migrated from a dead Greenhouse slug to Ashby (slug 'Kustomer', capital K, found in careers-page source) since the original no-board rejection.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- AI-native CRM/support platform (2025 $30M Series B led by Norwest for AI-native expansion). Maven-type company.",
+      "reason": "CRM/support platform, ex-Meta (acquired 2022, later spun out). Board verified live 2026-08-18: 8 jobs. Current CSM req is UK-only; no US fit-space title today, but the function clearly exists here -- poller watches daily for US reqs."
+    },
+    {
+      "name": "Gladly",
+      "ats": "greenhouse",
+      "slug": "sagansystems",
+      "priority": "medium",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-08-18",
+      "enrolled_via": "Unpollable-backlog alert-signup scan 2026-08-18 -- real Greenhouse slug is 'sagansystems' (legal entity name, embedded in gladly.ai/careers iframe), which is why every 'gladly' slug variant 404'd.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- AI-native customer service platform (Sidekick AI agent). Maven-type company.",
+      "board_status": "empty_seen_2026-08-18",
+      "board_status_note": "Board resolves via boards-api (sagansystems) but returned 0 published jobs on 2026-08-18 -- the careers-page embed may show reqs the public API doesn't. Not dead; poller picks up reqs when they publish to the API.",
+      "reason": "Customer service platform ('radically personal' agent desktop + Sidekick AI), SF HQ, fully distributed US. Customers: Nordstrom, REI, Warby Parker, Ulta, Crate & Barrel. Exactly the AI-support vertical Aneesh targets."
     },
     {
       "name": "US Bank",
