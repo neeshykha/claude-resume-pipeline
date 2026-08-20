@@ -573,6 +573,15 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             # carries id/name/url/department/locations only). Always neutral,
             # same "no data -> don't filter" treatment as a missing salary.
             return None
+        elif ats == "comeet":
+            # Comeet exposes time_updated but no creation/publication date.
+            # Use it as an approximation, same precedent as greenhouse's
+            # updated_at fallback: a recently-touched old req can wrongly earn
+            # the small freshness bonus, but the alternative (always neutral)
+            # filters nothing at all.
+            raw = job_data.get("time_updated")
+            if raw:
+                return datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
         elif ats == "workday":
             # Workday's CXS list response has no ISO date, only a relative
             # "postedOn" string ("Posted Today" / "Posted Yesterday" /
@@ -669,6 +678,16 @@ def parse_location(job_data: dict, ats: str) -> str:
         locs = job_data.get("locations") or []
         names = [l.get("name") for l in locs if l.get("name")]
         return ", ".join(names) if names else "Unknown"
+    elif ats == "comeet":
+        # Comeet location: {"name": "Austin, TX", "city": ..., "state": ...,
+        # "is_remote": bool}. Build city+state, fall back to name, prefix
+        # "Remote" when flagged (mirrors the workable branch).
+        loc = job_data.get("location") or {}
+        parts = [p.strip() for p in [loc.get("city"), loc.get("state")] if p and p.strip()]
+        full = ", ".join(parts) if parts else (loc.get("name") or "")
+        if loc.get("is_remote"):
+            full = f"Remote {full}".strip()
+        return full or "Unknown"
     return "Unknown"
 
 
@@ -692,6 +711,10 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
         return f"https://jobs.smartrecruiters.com/{slug}/{jid}"
     elif ats in ("pinpoint", "rippling"):
         return job_data.get("url", "")
+    elif ats == "comeet":
+        return (job_data.get("url_comeet_hosted_page")
+                or job_data.get("url_active_page")
+                or job_data.get("position_url", ""))
     return ""
 
 
@@ -867,6 +890,54 @@ def fetch_workday(company: dict) -> list[dict]:
     except Exception as e:
         return [{"_error": f"{type(e).__name__}: {e}"}]
     return out
+
+
+def fetch_comeet(company: dict) -> list[dict]:
+    """Fetch jobs from a Comeet ATS board's public careers API.
+
+    Added 2026-08-18 after Stampli — sitting in the unpollable backlog since
+    2026-08-04 as "no ATS host identified" — turned out to run on Comeet with a
+    fully public JSON API whose credentials (company uid + widget token) are
+    embedded in the careers page source. Third instance of the same class of
+    miss (Napier AI/Pinpoint and Nerdio/Rippling, both fixed 2026-08-12): an
+    unsupported ATS being indistinguishable from no ATS at all.
+
+    Comeet has no slug-style identifier: the API needs a per-company `uid`
+    (e.g. "F6.007") and public `token`, both scraped once from the company's
+    careers page at enrollment time and stored on the watchlist entry as
+    `comeet_uid` / `comeet_token` (validate_config.py enforces both, same
+    pattern as workday's wd_* fields). Takes the company dict like
+    fetch_workday for the same reason.
+
+    Normalizations for the generic poll loop: `name` -> `title` (same as
+    Rippling/SmartRecruiters); the `details` sections (Description /
+    Requirements HTML) are flattened into `description` so the industry
+    exclusion works; internal-only postings (`is_internal`) are dropped.
+    No salary field is exposed, so comp is always neutral.
+    """
+    uid = company.get("comeet_uid")
+    token = company.get("comeet_token")
+    if not uid or not token:
+        return [{"_error": "Comeet entry missing comeet_uid/comeet_token"}]
+    url = ATS_ENDPOINTS["comeet"].format(comeet_uid=uid, comeet_token=token)
+    try:
+        resp = requests.get(url, timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+        jobs = resp.json()
+        if not isinstance(jobs, list):
+            return [{"_error": f"Comeet: unexpected response shape {type(jobs).__name__}"}]
+        out = []
+        for j in jobs:
+            if j.get("is_internal"):
+                continue
+            j["title"] = j.get("name", "")
+            j["description"] = " ".join(
+                str(d.get("value", "")) for d in (j.get("details") or [])
+                if isinstance(d, dict))
+            out.append(j)
+        return out
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
 
 
 def fetch_pinpoint(slug: str) -> list[dict]:
@@ -1125,6 +1196,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_pinpoint(slug)
         elif ats == "rippling":
             jobs = fetch_rippling(slug)
+        elif ats == "comeet":
+            jobs = fetch_comeet(company)
         else:
             errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
             continue
@@ -1293,7 +1366,7 @@ def poll_all(run_date: date) -> dict:
                 provenance.append("geo_free_location_was_dropped")
             if ats == "workable":
                 provenance.append("workable_ats_newly_supported")
-            if ats in ("pinpoint", "rippling"):
+            if ats in ("pinpoint", "rippling", "comeet"):
                 provenance.append(f"{ats}_ats_newly_supported")
             if (title_excluded(title)
                     and not title_excluded_for_company(

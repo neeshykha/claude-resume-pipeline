@@ -361,14 +361,6 @@
         "last_hit": "2026-08-18: CONFIRMED STILL LIVE -- 'Customer Support Manager (B2B)', Charlotte NC. Still Jobvite, still unsupported."
       },
       {
-        "name": "Stampli",
-        "why": "Fintech AP automation company. NOT actually unpollable -- runs on Comeet, an ATS the poller doesn't speak yet, with a fully public JSON API whose credentials are embedded in stampli.com/careers page source. Same class as the Napier AI (Pinpoint) and Nerdio (Rippling) misses that each led to adding ATS support on 2026-08-12.",
-        "comeet_api": "GET https://www.comeet.co/careers-api/2.0/company/F6.007/positions?token=6F729CADEE3EAF06F71BDC29CA22D314E5&details=true -- verified working 2026-08-18. Returns name, location (with is_remote flag), employment_type, url_comeet_hosted_page per position. No posting-date field observed in list view.",
-        "query": "\"Stampli\" careers \"Customer Success Manager\" OR \"Implementation Consultant\"",
-        "last_checked": "2026-08-18",
-        "last_hit": "2026-08-18: API verified live -- 3 US fit-space roles, all flagged remote: 'CX Manager - ERP Integration Solution & AI Operations' (Mountain View), 'Implementation Consultant/Onboarding Specialist' (Austin, Nashville, Mountain View). The AI Operations CX Manager title is tier-1/2-shaped. Remove from this list if/when fetch_comeet ships in poll_ats.py."
-      },
-      {
         "name": "Transluce",
         "why": "'Operations Generalist' role, SF Bay Area, AI-safety org. Hosts on jobs.gem.com, an ATS the poller doesn't speak.",
         "query": "\"Transluce\" AI safety careers \"Operations\"",
@@ -407,8 +399,10 @@
     "smartrecruiters": "https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100",
     "workable": "https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true",
     "pinpoint": "https://{slug}.pinpointhq.com/postings.json",
-    "rippling": "https://ats.rippling.com/{slug}/jobs"
+    "rippling": "https://ats.rippling.com/{slug}/jobs",
+    "comeet": "https://www.comeet.co/careers-api/2.0/company/{comeet_uid}/positions?token={comeet_token}&details=true"
   },
+  "_comeet_notes": "ats='comeet'. Comeet has no slug-style identifier: the API needs a per-company `comeet_uid` (e.g. 'F6.007') and a public widget `comeet_token`, both embedded in the company's own careers page source (grep the page for 'uid' and 'token') -- scrape them once at enrollment and store on the watchlist entry; validate_config.py enforces both, same pattern as workday's wd_* fields. `slug` is still required as a human-readable identifier for dedup keys (use the company name, e.g. 'stampli'). Added 2026-08-18 after Stampli -- rejected as unpollable on 2026-08-04 -- turned out to have this API live the whole time: third instance of the unsupported-ATS-looks-like-no-ATS miss class (Napier AI/Pinpoint, Nerdio/Rippling, both fixed 2026-08-12). API verified live 2026-08-18. Known limits: no posting-creation date (only time_updated -- used as a freshness approximation, can overstate freshness on recently-touched old reqs); no salary data (always neutral); `details=true` returns Description/Requirements HTML (flattened into `description` for the industry exclusion); internal-only postings carry is_internal=true and are dropped by fetch_comeet.",
   "_pinpoint_notes": "ats='pinpoint'. slug is the company's Pinpoint subdomain (e.g. 'napier' from napier.pinpointhq.com) -- find it from the company's careers-page URL. Public JSON API, no auth, no pagination wrapper observed (returns the full board in one `data` array). Added 2026-08-12 after Napier AI was user-surfaced (LinkedIn alert) and turned out to have a clean public API the whole time -- this was a pure discovery gap, not a structural one. No posting-date field is exposed by this endpoint, so freshness is always neutral for Pinpoint hits (same 'no data -> don't filter' treatment as Workday). Salary only appears when `compensation_visible` is true.",
   "_rippling_notes": "ats='rippling'. slug is the path segment after ats.rippling.com/ (e.g. 'nerdio-careers' from ats.rippling.com/nerdio-careers/jobs) -- find it from the company's careers-page URL. The page LOOKS JS-rendered (Next.js) but is actually server-side rendered: a plain GET with a browser User-Agent returns full HTML containing a `__NEXT_DATA__` script tag with the job list pre-embedded as a dehydrated TanStack Query cache (`props.pageProps.dehydratedState.queries[0].state.data.items`), so no headless browser is needed. Added 2026-08-12 after Nerdio was user-surfaced (LinkedIn/Indeed alert); confirmed a naive `requests.get` without a User-Agent can trip Cloudflare, so fetch_rippling always sends one. Paginated at pageSize=20 server-side; fetch_rippling requests additional pages via `?page=N` up to a cap, mirroring fetch_smartrecruiters' pagination-cap pattern -- unverified against a board with more than one page as of the 2026-08-12 add, so treat multi-page Rippling boards as lower-confidence until one is seen live. No posting-date or salary field is exposed in the list view (only on each job's own detail page, not fetched), so both are always neutral for Rippling hits.",
   "_smartrecruiters_notes": "ats='smartrecruiters'. slug is the case-sensitive company identifier (e.g. 'BoschGroup', not 'bosch') — find it from a careers.smartrecruiters.com/{slug} or jobs.smartrecruiters.com/{slug} URL. Public postings API, no auth. Added 2026-06-30 to widen enrollable boards beyond GH/Ashby/Lever/Workday. FIXED 2026-08-06: fetch_smartrecruiters was single-page (limit=100), which silently hid postings past position 100 on large boards -- caught the hard way when a live, 6-day-old, Atlanta-based 'Manager, Customer Success Management' role at ServiceNow (416+ total postings) never appeared anywhere in poller output, only surfacing via a LinkedIn alert Aneesh spotted by hand. Now paginates up to SMARTRECRUITERS_MAX_POSTINGS (500). Note: offset-based pagination against a live-mutating board isn't perfectly race-safe -- a posting can still theoretically shift across a page boundary mid-fetch -- but this closes the vast majority of the gap (100 -> ~465 postings scanned for ServiceNow).",
@@ -820,6 +814,20 @@
       "enrolled_date": "2026-08-18",
       "enrolled_via": "Unpollable-backlog monthly check 2026-08-18 -- gained a resolvable Rippling board since original discovery.",
       "reason": "Payroll/income connectivity platform (consumer-permissioned income & employment data API), ~137 employees. Board verified live via ats.rippling.com/argyle/jobs (Customer Success Engineer, Customer Success Manager - Mortgage confirmed present). Dev/infra tooling adjacent (API platform)."
+    },
+    {
+      "name": "Stampli",
+      "ats": "comeet",
+      "slug": "stampli",
+      "comeet_uid": "F6.007",
+      "comeet_token": "6F729CADEE3EAF06F71BDC29CA22D314E5",
+      "priority": "high",
+      "headcount_band": "201-500",
+      "enrolled_date": "2026-08-18",
+      "enrolled_via": "Unpollable-backlog alert-signup scan 2026-08-18: found the Comeet public API embedded in stampli.com/careers page source, then built fetch_comeet in poll_ats.py the same day (third unsupported-ATS miss after Napier AI and Nerdio).",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- AI-driven procure-to-pay/AP automation ('Billy the Bot' AI at the product core), $120B+ invoices processed yearly.",
+      "reason": "Fintech AP/procure-to-pay automation, ~309 employees, $148M raised. Verified live 2026-08-18 via Comeet API: 3 US-remote fit-space roles -- 'CX Manager - ERP Integration Solution & AI Operations' (Mountain View, remote-flagged, tier-1/2-shaped title) and 'Implementation Consultant/Onboarding Specialist' (Austin/Nashville/Mountain View, all remote-flagged)."
     },
     {
       "name": "FinQuery",
