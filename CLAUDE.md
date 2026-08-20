@@ -151,6 +151,15 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 
 **Honesty moments — keep them.** When there's a real technical gap, acknowledge it directly and without apology ("Python is a growing area for me," "I am not a software developer"). This is a distinctive voice feature that makes letters feel real. Don't suppress it.
 
+**Always pair a named gap with a concrete ramp commitment (added 2026-08-20, Aneesh's direct ask).** Naming the gap is half the move; the other half is showing he intends to close it and can. A bare admission leaves the reader to decide how much it costs them. Do NOT write generic filler — "I'm a fast learner," "I pick things up quickly," "eager to grow" are exactly the vague fluff the style guide bans, and they read as padding. The commitment has to be specific enough to be checkable, and ideally starts before he's asked:
+
+- **Name when he'll start, and make it early.** "I'll start on your stack now, before any interview rather than after an offer" is stronger than any adjective about learning speed, because it's a verifiable claim about behavior.
+- **Re-read what the requirement actually demands, then aim at that.** Requirements are often looser than they look. Framer's bar was "enough to read our code and dig in from day one," which is a *reading* bar, not a writing one; naming that distinction turned the weakest paragraph in the letter into an argument. Check for this before conceding a requirement wholesale.
+- **Cite evidence he ramps fast rather than asserting it.** Real precedents from `master_resume.md`: sole integration partner on the Maven AGI deployment with no prior AI-vendor experience at the company; trained 24 Resideo agents to absorb an entire support function in six months; scaled a support org from 1 to 18; taught himself the Claude Agent SDK well enough to run 17+ production automations. One concrete precedent beats three claims.
+- **Keep it to two or three sentences, in or beside the gap paragraph.** This is a beat inside the honesty moment, not its own section, and it must never turn into a plea.
+
+Worked example (Framer, Engineering Support Lead, 2026-08-20): "I'd rather close that gap than explain it, so I'll start on your stack now, before any interview rather than after an offer. Your stated bar is 'enough to read our code and dig in from day one,' which is a reading bar rather than a writing one, and reading a codebase well enough to reproduce an issue and route it correctly is a bar I can clear."
+
 **Three positive framings to use when relevant (from direct voice interview):**
 - *Maven story:* The real achievement isn't the 85% deflection number — it's the feedback loop: customer data flowing back in to auto-audit the knowledge base and feed T1 training. Lead with the loop, land on the number. Most companies skip the spec work and get swept up in vendor promises; Aneesh did the spec work. That's the differentiator.
 - *People management:* Don't just say "I lead a team of 8." The stronger claim is: he hires well enough that people management becomes the simplest part of his job — which means his attention goes to the harder operational work. Frame it as an outcome, not a credential.
@@ -323,6 +332,24 @@ run surfaced four roles from a single company because structural bonuses were st
    (`MAX_PER_COMPANY_PER_RUN`); apply the same rule to anything added via WebSearch. Rationale:
    applying to 3–4 roles at one company in one day reads as scattershot to that company's
    recruiting team and dilutes the strongest application.
+
+4. **Unpollable companies can never earn the watchlist +10, so their scores read ~10 points
+   low. That is a rubric artifact, not a fit signal.** The watchlist bonus requires enrollment,
+   and enrollment requires a supported ATS board. A company with a self-hosted careers site
+   (Framer, Alston Construction) or an unresolved Workday tenant is structurally barred from it
+   no matter how good the role is. The penalty usually compounds: these companies also tend not
+   to publish salary (+5 instead of +8/+10) and score lower on source quality (+8 vs. +10 for
+   Greenhouse/Lever), so the same role can land 5–12 points below an identical one at an
+   enrolled company.
+
+   Do **not** invent a compensating bonus, and do not enroll a company just to unlock it. Handle
+   it in the read instead: when a role sourced from `_blind_spot_companies`,
+   `_unpollable_backlog_companies`, or a rejected-as-unpollable entry lands near a tier
+   threshold, say so in the digest ("scored 94; ~10 of that gap is the unearnable watchlist
+   bonus, not fit") and use judgment on the tier rather than deferring to the number. Documented
+   2026-08-20 after Framer's Engineering Support Lead scored 94 against GitLab's 98 while
+   matching its JD responsibilities more closely; 7 of those points were watchlist, salary
+   disclosure, and source quality rather than anything about the work.
 
 ## Target Roles for Reference
 
