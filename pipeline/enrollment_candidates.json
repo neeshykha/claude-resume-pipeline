@@ -85,6 +85,24 @@
       "first_seen": "2026-08-20",
       "why": "LinkedIn 'is hiring for a Remote role' alert 2026-08-20. Digital heart-health company; health-tech passion domain, remote-first.",
       "needs_ats_resolution": true
+    },
+    {
+      "name": "Robots and Pencils",
+      "ats": null,
+      "slug": null,
+      "source": "user_surfaced",
+      "first_seen": "2026-08-20",
+      "why": "Aneesh named it 2026-08-20 as an AI-space company he encounters often in the wild. Digital product consultancy with a known Atlanta presence; consultancies run delivery/engagement-manager functions that map to tier2. Resolve ATS.",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Blitzy",
+      "ats": null,
+      "slug": null,
+      "source": "user_surfaced",
+      "first_seen": "2026-08-20",
+      "why": "Aneesh named it 2026-08-20 as an AI-space company he encounters often in the wild. Autonomous software-development AI company (Boston); AI-native, so would carry the +20 vertical bonus if enrolled. Resolve ATS.",
+      "needs_ats_resolution": true
     }
   ],
   "enrolled": [
@@ -3985,6 +4003,15 @@
       "slug": null,
       "rejected_date": "2026-08-18",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Framer",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-20",
+      "reason": "Self-hosted careers site (framer.com/careers, internal job detail pages, no Greenhouse/Ashby/Lever/Workday/Workable/Pinpoint/Rippling/Comeet). Verified 2026-08-20: 9 open roles, all Remote, and only ONE sits in fit space ('Engineering Support Lead') which is engineer-track despite the title: requires '5+ years of engineering experience' and 'Working knowledge of TypeScript, React, Go, and AWS. Enough to read our code and dig in from day one.' Aneesh is not a software developer, so that is a hard disqualifier; his profile matches only the posting's BONUS line ('run developer or technical support at a SaaS company'). Other 8 roles are SRE/backend/tech lead/analytics/design/GTM engineering. Low fit-space surface area even if it were pollable.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     }
