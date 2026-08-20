@@ -39,7 +39,7 @@ SEEN_JOBS_PATH = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
 # and poll_ats.py refuses to run against a malformed watchlist, enrolling one
 # would have blocked the whole daily run. Caught 2026-07-30 enrolling Hawk-Eye.
 SUPPORTED_ATS = {"greenhouse", "greenhouse_eu", "ashby", "lever", "workday",
-                 "smartrecruiters", "workable", "pinpoint", "rippling"}
+                 "smartrecruiters", "workable", "pinpoint", "rippling", "comeet"}
 VALID_BANDS = {"1-50", "51-200", "201-500", "501-2000", "2000+"}
 QUEUE_BUCKETS = ("pending", "enrolled", "rejected")
 
@@ -149,6 +149,10 @@ def validate_watchlist(data) -> tuple[list, list]:
             for key in ("wd_host", "wd_tenant", "wd_site"):
                 if not c.get(key):
                     errors.append(f"watchlist: {label}: workday entry missing '{key}'")
+        if ats == "comeet":
+            for key in ("comeet_uid", "comeet_token"):
+                if not c.get(key):
+                    errors.append(f"watchlist: {label}: comeet entry missing '{key}'")
         band = c.get("headcount_band")
         if band is not None and band not in VALID_BANDS:
             errors.append(f"watchlist: {label}: headcount_band '{band}' not in {sorted(VALID_BANDS)} (or null)")
