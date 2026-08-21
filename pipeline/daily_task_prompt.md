@@ -328,7 +328,24 @@ re-surface regularly too.)
 Dry-run by default; re-run with `--apply` to enroll. For each pending name it generates
 deterministic slug variants, probes Greenhouse/Ashby/Lever/Workable directly, and scores the
 resulting board with the **same `TitleMatcher` the poller uses**, so a company is judged on real
-tier1/tier2/tier2c US-reachable fit-titles rather than keyword guessing. Auto-enrolls at LOW
+US-reachable fit-titles rather than keyword guessing.
+
+**Qualifying tiers (changed 2026-08-21, Aneesh's call):** tier1/tier2/tier2c anywhere
+US-reachable, **plus tier3 in Atlanta or remote-US only**. tier4 and supplemental remain
+excluded outright. tier3 used to be lumped in with tier4, which conflated two different
+things: the rubric gives `tier3_reasonable_stretch` +15 and CLAUDE.md says "full tailoring if
+score >= 88", whereas tier4 really is weak. That cost five companies in three weeks (Evident
+ID, Britive, Sonatype, Nylas, Placemakr), each rejected as "no fit-space" while running a live
+tier3 role. The proof tier3 is not weak: the Vanta "Sr. Manager, Commercial Customer Success"
+role surfaced 2026-08-21 is a tier3 title that scored **96**.
+
+The gate is LOCATION, not tier, because location is what makes a stretch title worth taking:
+Atlanta carries +20 in-office and a further +20 Atlanta-startup, remote-US carries +16, and
+that swing is the difference between a tier3 role scoring ~80 and ~105. A CSM in Boston is the
+stretch title without the premium, so it still does not qualify. `tier3_location_ok()` is
+deliberately much narrower than `us_reachable()`; do not "simplify" them into one predicate.
+On the first live run it flipped Britive and Sonatype (real remote-US tier3 roles) while
+correctly leaving Nylas and Placemakr rejected. Auto-enrolls at LOW
 priority (auto-enrollment must never outrank hand-vetted companies), rejects with a specific
 reason, and empties the queue as it goes.
 

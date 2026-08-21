@@ -58,10 +58,56 @@ US_HINTS = (
     "san francisco", "los angeles", "san diego", "miami", "philadelphia",
 )
 
-# Tiers that count as real fit-space for auto-enrollment. tier3/tier4/supplemental
-# are deliberately excluded: a company whose only "match" is a weak stretch title
-# is not worth a permanent daily poll slot.
+# Tiers that count as real fit-space for auto-enrollment ANYWHERE US-reachable.
+# tier4/supplemental stay excluded outright: a company whose only match is a weak
+# stretch title is not worth a permanent daily poll slot.
 STRONG_TIERS = ("tier1_true_match", "tier2_strong_overlap", "tier2c_tooling_systems")
+
+# tier3 counts too, but ONLY in Atlanta or remote-US (see tier3_location_ok).
+#
+# Added 2026-08-21, Aneesh's call. tier3 used to be lumped in with tier4 and
+# supplemental, which conflated two different things: the rubric gives
+# tier3_reasonable_stretch +15 title match and CLAUDE.md says "full tailoring if
+# score >= 88", whereas tier4 is the genuinely weak one. The cost was concrete --
+# five companies were rejected for "ZERO US-reachable tier1/tier2/tier2c titles"
+# in three weeks while each had a live tier3 role: Evident ID (Atlanta CSM),
+# Britive, Sonatype, Nylas, Placemakr. Evident ID had to be hand-enrolled.
+#
+# The proof that tier3 is not weak: the Vanta "Sr. Manager, Commercial Customer
+# Success" role surfaced 2026-08-21 is a tier3 title and scored 96, one of the two
+# best picks of that day. Discovered by this layer with only that role live, it
+# would have been thrown away.
+#
+# Gated on location rather than admitted outright because tier3 is a broad family
+# (CSM, Technical CSM, Customer Success Engineer, Solutions Engineer) and an
+# ungated rule would widen auto-enrollment sharply against an already 291-company
+# watchlist where every entry costs poll time. Location is the right gate because
+# it is exactly what makes a stretch title worth taking: Atlanta carries +20
+# in-office / +18 hybrid and a further +20 Atlanta-startup, and remote-US carries
+# +16, which is the difference between a tier3 role scoring ~80 and scoring ~105.
+TIER3_TIER = "tier3_reasonable_stretch"
+
+ATLANTA_HINTS = ("atlanta", "georgia", ", ga", " ga)", "(ga)")
+REMOTE_HINTS = ("remote", "anywhere", "distributed", "work from home")
+
+# Country markers that disqualify a "Remote" string from meaning remote-US.
+# "Remote CAN" and "Remote - EMEA" both contain "remote"; neither is US-reachable.
+# Long names are matched as substrings; short codes MUST be matched as whole
+# tokens, because a bare "can" substring also fires on "Duncan" and "Vatican",
+# and "de"/"es"/"se" fire on half the dictionary. Caught by the unit cases.
+NON_US_MARKERS = (
+    "canada", "united kingdom", "great britain", "emea", "apac", "latam",
+    "latin america", "australia", "new zealand", "india", "ireland", "germany",
+    "france", "poland", "netherlands", "singapore", "japan", "brazil", "mexico",
+    "spain", "sweden", "israel", "philippines", "colombia", "argentina",
+    "portugal", "romania", "indonesia", "thailand", "vietnam", "south africa",
+    "london", "dublin", "berlin", "paris", "amsterdam", "sydney", "toronto",
+    "vancouver", "bangalore", "tel aviv",
+)
+NON_US_CODES = frozenset((
+    "can", "uk", "gb", "eu", "ca-on", "ca-bc", "mex", "bra", "deu", "fra",
+    "nld", "esp", "swe", "isr", "ind", "aus", "nzl", "sgp", "jpn", "irl", "pol",
+))
 
 
 def slug_variants(name: str):
@@ -181,6 +227,41 @@ def us_reachable(loc: str) -> bool:
     return any(h in (loc or "").lower() for h in US_HINTS)
 
 
+def tier3_location_ok(loc: str) -> bool:
+    """Narrower than us_reachable(): Atlanta or remote-US only.
+
+    us_reachable() is deliberately broad (any US state or major city), which is
+    right for tier1/tier2 but wrong for tier3 -- a Customer Success Manager in
+    Boston is the stretch title WITHOUT the location premium that justifies
+    taking it. This predicate is what makes the tier3 gate meaningful, so keep it
+    strict; loosening it to any US city silently restores the ungated behaviour.
+    """
+    loc = (loc or "").lower()
+    if any(m in loc for m in NON_US_MARKERS):
+        return False
+    if NON_US_CODES & set(re.split(r"[^a-z0-9-]+", loc)):
+        return False
+    if any(h in loc for h in ATLANTA_HINTS):
+        return True
+    # A bare "Remote" with no country marker is read as remote-US. Slight
+    # over-admission risk on non-US boards, accepted because auto-enrollment is
+    # LOW priority and every enrollment is reported in the run digest.
+    return any(h in loc for h in REMOTE_HINTS)
+
+
+def tier_breakdown(strong):
+    """'2 tier2, 1 tier3(location-gated)' -- so an enrollment reason records WHICH
+    tiers carried it, not just a count. Without this a tier3-only enrollment is
+    indistinguishable from a tier1 one when reviewing the watchlist later."""
+    counts = {}
+    for _, _, tier in strong:
+        label = tier.split("_")[0]
+        if tier == TIER3_TIER:
+            label += "(location-gated)"
+        counts[label] = counts.get(label, 0) + 1
+    return ", ".join(f"{n} {t}" for t, n in sorted(counts.items()))
+
+
 def load_known():
     wl = json.load(open(WATCHLIST, encoding="utf-8"))
     q = json.load(open(QUEUE, encoding="utf-8"))
@@ -218,8 +299,13 @@ def assess(name, matcher, hard_excluded, known_pairs):
                 if hard_excluded(title):
                     continue
                 m = matcher.match_exact(title)
-                if m and m[0] in STRONG_TIERS and us_reachable(loc):
-                    strong.append((title, loc, m[0]))
+                if not m:
+                    continue
+                tier = m[0]
+                if tier in STRONG_TIERS and us_reachable(loc):
+                    strong.append((title, loc, tier))
+                elif tier == TIER3_TIER and tier3_location_ok(loc):
+                    strong.append((title, loc, tier))
             return {"ats": ats, "slug": slug, "total": len(jobs), "strong": strong}
     return None
 
@@ -268,9 +354,17 @@ def main():
             continue
         enrollable.append((name, res))
         print(f"  [OK] {name:24s} {res['ats']}/{res['slug']:20s} "
-              f"{res['total']:>4} jobs, {len(res['strong'])} US fit-titles")
+              f"{res['total']:>4} jobs, {len(res['strong'])} fit-titles "
+              f"({tier_breakdown(res['strong'])})")
         for t, l, tier in res["strong"][:3]:
-            print(f"         [{tier[:5]}] {t[:46]:46s} | {str(l)[:24]}")
+            # tier2c_tooling_systems and tier2_strong_overlap both truncate to
+            # "tier2" at 5 chars, so label from the full tier name instead.
+            label = {"tier1_true_match": "tier1", "tier2_strong_overlap": "tier2",
+                     "tier2c_tooling_systems": "tier2c",
+                     TIER3_TIER: "tier3*"}.get(tier, tier[:6])
+            print(f"         [{label:6s}] {t[:44]:44s} | {str(l)[:24]}")
+        if any(tier == TIER3_TIER for _, _, tier in res["strong"]):
+            print("         * tier3 counted only because the role is Atlanta or remote-US")
 
     print(f"\nenrollable={len(enrollable)} no_fit={len(no_fit)} "
           f"no_board={len(no_board)} already_known_skipped={len(skipped)}")
@@ -298,12 +392,14 @@ def main():
             # carrying the handicap.
             "needs_vertical_classification": True,
             "reason": (f"Auto-enrolled by the ATS harvest layer. Board verified live "
-                       f"({res['total']} jobs) with {len(res['strong'])} US-reachable "
-                       f"tier1/tier2/tier2c fit-titles at harvest time, e.g. "
-                       f"{res['strong'][0][0][:60]!r}. Enrolled at LOW priority by "
-                       f"design: auto-enrollment should not outrank hand-vetted "
-                       f"companies. Prune via --prune if the board goes dead or "
-                       f"fit-space-empty."),
+                       f"({res['total']} jobs) with {len(res['strong'])} fit-titles at "
+                       f"harvest time ({tier_breakdown(res['strong'])}), e.g. "
+                       f"{res['strong'][0][0][:60]!r} [{res['strong'][0][1][:40]}]. "
+                       f"Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, "
+                       f"plus tier3 in Atlanta or remote-US only. Enrolled at LOW "
+                       f"priority by design: auto-enrollment should not outrank "
+                       f"hand-vetted companies. Prune via --prune if the board goes "
+                       f"dead or fit-space-empty."),
         })
         q.setdefault("enrolled", []).append(
             {"name": name, "ats": res["ats"], "slug": res["slug"],
@@ -313,9 +409,12 @@ def main():
             {"name": name, "ats": res["ats"], "slug": res["slug"],
              "rejected_date": today,
              "reason": (f"Board resolves and is live ({res['total']} jobs) but ZERO "
-                        f"US-reachable tier1/tier2/tier2c titles at harvest time. "
+                        f"qualifying fit-titles at harvest time: no tier1/tier2/tier2c "
+                        f"anywhere US-reachable, and no tier3 in Atlanta or remote-US. "
                         f"Rejected on fit-space, not pollability -- recheck if the "
-                        f"company resurfaces."),
+                        f"company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US "
+                        f"does NOT qualify, so this company may still have a Boston or SF "
+                        f"CSM open; that is intended."),
              "recheck_if_resurfaced": True})
     for name in no_board:
         entry = {"name": name, "ats": None, "slug": None, "rejected_date": today,

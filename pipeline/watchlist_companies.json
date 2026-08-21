@@ -3851,6 +3851,28 @@
       "enrolled_date": "2026-08-21",
       "enrolled_via": "Step 1c Atlanta Board Sweep, hand-enrolled after harvest_ats rejection review",
       "reason": "ATLANTA HQ. Live 'Customer Success Manager | Atlanta, GA' that owns solution design and configuration during implementation, plus two Atlanta operations-manager titles. PREVIOUSLY REJECTED 2026-08-18 by harvest_ats with 'ZERO US-reachable tier1/tier2/tier2c titles' -- which was accurate but misleading: its fit role is tier3_reasonable_stretch, and harvest_ats.STRONG_TIERS excludes tier3 by design. Enrolled by hand at MEDIUM priority because Atlanta in-office (+20 location) plus Atlanta-startup (+20) is the single most valuable location profile in the rubric, and a tier3 CSM there can clear the full-tailoring threshold easily -- today's Vanta pick was a tier3 title that scored 96. headcount_band left null deliberately; backfill via Step 1e."
+    },
+    {
+      "name": "Britive",
+      "ats": "greenhouse",
+      "slug": "britive",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (15 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Customer Success Engineer' [Remote, US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20) -- classified 2026-08-21. Cloud privileged access management (PAM) and just-in-time access for multi-cloud and SaaS. Security tooling, same category as Wiz, Saviynt, and 1Password. Re-enrolled 2026-08-21 on 'Senior Customer Success Engineer | Remote, US' after tier3 was location-gated; previously rejected 2026-08-14 for having no tier1/tier2/tier2c title."
+    },
+    {
+      "name": "Sonatype",
+      "ats": "lever",
+      "slug": "sonatype",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (33 jobs) with 2 fit-titles at harvest time (2 tier3(location-gated)), e.g. 'Federal Customer Success Manager - DevOps' [US - Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20) -- classified 2026-08-21. Software supply chain security and the Nexus artifact repository: dependency scanning, SBOM, open-source governance. Developer tooling in the most literal sense, since Nexus is infrastructure developers build against daily. Re-enrolled 2026-08-21 on two remote-US tier3 roles (Federal CSM - DevOps, Senior Solutions Delivery Engineer - DevOps) after tier3 was location-gated; previously rejected 2026-08-14."
     }
   ]
 }
