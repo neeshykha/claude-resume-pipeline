@@ -14,7 +14,24 @@
     "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced, [unpollable], [weekly_report_surfaced], [weekly_report_surfaced_date]}] — don't re-evaluate unless it resurfaces with new roles. unpollable=true (added 2026-08-14) means the reason is specifically 'no ATS board was ever found' (a genuine automation gap Aneesh could work around by hand), as opposed to a board being found and the company rejected for fit/geo/category reasons. Set this directly when rejecting for no-board (harvest_ats.py does; do the same by hand in Step 1d). weekly_channel_report.py surfaces unpollable=true entries once a week for manual review; weekly_report_surfaced=true (set by that script's --apply pass) stops an entry from repeating in future weekly reports once Aneesh has seen it."
   },
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry — for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards — their fit roles aren't US-reachable.",
-  "pending": [],
+  "pending": [
+    {
+      "name": "Bonterra",
+      "source": "LinkedIn jobs-noreply digest BODY (Step 1d-2 subject-only bug, found 2026-08-21)",
+      "first_seen": "2026-08-21",
+      "needs_ats_resolution": true,
+      "manual_review": true,
+      "manual_review_why": "Manager, Advanced Support Consulting, United States (remote-US). Tier-adjacent support-consulting management title; surface it if no pollable board is found.",
+      "why": "Recovered from the body of a digest whose subject named only Skydio. Social-good and nonprofit software (the EveryAction / Social Solutions / CyberGrants merger), heavily Salesforce-ecosystem, which is direct overlap with Aneesh's Service Cloud admin work."
+    },
+    {
+      "name": "JLL",
+      "source": "LinkedIn jobs-noreply digest BODY (Step 1d-2 subject-only bug, found 2026-08-21)",
+      "first_seen": "2026-08-21",
+      "needs_ats_resolution": true,
+      "why": "Recovered from the same digest body. Jones Lang LaSalle, commercial real estate services; real-estate technology adjacency to iApartments. Known to run Workday (jll.wd1.myworkdayjobs.com appeared in an unrelated site:myworkdayjobs.com search on 2026-08-21), so try that tenant directly if the deterministic slugs miss. The role that surfaced it was Product Implementation Team Manager, Denver, which is tier2 by function but scores 0 on location."
+    }
+  ],
   "enrolled": [
     {
       "name": "US Bank",
