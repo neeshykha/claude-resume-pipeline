@@ -1389,6 +1389,13 @@
       "slug": "akuity",
       "enrolled_date": "2026-08-21",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Voltus",
+      "ats": "lever",
+      "slug": "voltus",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -3928,6 +3935,14 @@
       "slug": "cloudbeds",
       "rejected_date": "2026-08-21",
       "reason": "Board resolves and is live (46 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Xplor Technologies",
+      "ats": "rippling",
+      "slug": "xplor",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     }
   ]
