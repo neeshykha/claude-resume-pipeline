@@ -3991,6 +3991,17 @@
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Technical Customer Success Manager, AMER West' [Remote - North America - West]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 20,
       "bonus_reason": "Developer/infra tooling (+20) -- classified 2026-08-21. Enterprise Argo CD / GitOps continuous delivery for Kubernetes, founded by the Argo project creators. Unambiguous dev infra."
+    },
+    {
+      "name": "Voltus",
+      "ats": "lever",
+      "slug": "voltus",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (19 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier2c), e.g. 'Director of Product, Customer Experience' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product). Voltus is a distributed energy resource aggregator and virtual power plant operator: it enrolls commercial and industrial sites into demand-response and grid-services markets and pays them for load flexibility. That is an energy marketplace, not an AI/ML platform and not developer or infra tooling, so neither +20 applies. It DOES sit in the electrification/clean-energy passion domain, which is worth +10 at scoring time from _scoring_config.passion_domains; that is computed per role, not stored here."
     }
   ]
 }
