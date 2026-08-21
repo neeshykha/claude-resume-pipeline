@@ -514,7 +514,9 @@
         "Support Engineering Manager",
         "Head of Support",
         "Director of Support Operations",
-        "Customer Support Manager"
+        "Customer Support Manager",
+        "Product Support Manager",
+        "CS Operations Manager"
       ]
     },
     "tier2_strong_overlap": {
@@ -563,7 +565,10 @@
         "Technical Services Manager",
         "AI Enablement Lead",
         "AI Operations Lead",
-        "AI Operations Manager"
+        "AI Operations Manager",
+        "Support Process Excellence Manager",
+        "Engagement Director",
+        "AI Program Manager"
       ]
     },
     "tier3_reasonable_stretch": {
@@ -589,7 +594,11 @@
         "Conversation Designer",
         "Knowledge Manager",
         "Customer Experience Manager",
-        "CX Manager"
+        "CX Manager",
+        "Client Success Manager",
+        "CSM",
+        "Customer Strategy Director",
+        "Product Solutions Manager"
       ]
     },
     "tier4_weak_stretch": {
@@ -601,9 +610,11 @@
         "Customer Onboarding",
         "Partner Success Manager",
         "Product Customer Success",
-        "Forward Deployed Engineer"
+        "Forward Deployed Engineer",
+        "FDE"
       ],
-      "forward_deployed_engineer_note": "Demoted from Tier 2 (+22) to Tier 4 (+8) on 2026-07-09 after a near-100% miss rate across 7+ runs (2026-06-25 through 2026-07-09) covering dozens of postings at Parloa, Modal, Baseten, Antithesis, PermitFlow, Roboflow, Komodo Health, and Confido. In the 2026 AI-infra hiring market this title has drifted to mean 'customer-facing software engineer who ships production code' (Kubernetes, Terraform, sometimes a CS-degree requirement), not deployment strategy or ops — a real skill mismatch with the master resume, not a scoring artifact. ALWAYS read the actual JD before tailoring an FDE role, regardless of score — do not trust title-tier alone for this specific title. Titles that tested well and stayed at Tier 2: Deployment Strategist, AI Deployment Manager, AI Deployment Lead."
+      "forward_deployed_engineer_note": "Demoted from Tier 2 (+22) to Tier 4 (+8) on 2026-07-09 after a near-100% miss rate across 7+ runs (2026-06-25 through 2026-07-09) covering dozens of postings at Parloa, Modal, Baseten, Antithesis, PermitFlow, Roboflow, Komodo Health, and Confido. In the 2026 AI-infra hiring market this title has drifted to mean 'customer-facing software engineer who ships production code' (Kubernetes, Terraform, sometimes a CS-degree requirement), not deployment strategy or ops — a real skill mismatch with the master resume, not a scoring artifact. ALWAYS read the actual JD before tailoring an FDE role, regardless of score — do not trust title-tier alone for this specific title. Titles that tested well and stayed at Tier 2: Deployment Strategist, AI Deployment Manager, AI Deployment Lead.",
+      "fde_acronym_note": "'FDE' was added 2026-08-21 so the acronym form is caught at the same +8 as 'Forward Deployed Engineer'. It belongs HERE and not in tier2 even though the titles carrying it read like deployment leadership (OpenAI's 'Technical Deployment Lead, FDE - NYC', score 99). TitleMatcher.match_exact returns the highest-scoring match, so adding a tier2 entry like 'Technical Deployment Lead' would silently reverse the 2026-07-09 demotion for exactly the roles that demotion was measured on. If a genuine non-FDE 'Technical Deployment Lead' shows up and is missed, add that title to tier2 -- it does not collide, because these postings all carry the FDE token."
     },
     "tier2b_ai_wildcard": {
       "title_match_score": 18,
@@ -628,7 +639,8 @@
         "enablement",
         "knowledge",
         "copilot",
-        "conversation"
+        "conversation",
+        "program"
       ],
       "exclude_if_contains": [
         "engineer",
