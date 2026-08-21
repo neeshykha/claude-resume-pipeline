@@ -3931,7 +3931,8 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-21",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "known_live_fit_roles_2026_08_21": "Business Systems Analyst - AI Automation (Remote US, careers.avalara.com/careers-home/jobs/16932) and AI GTM Systems Engineer (US). Surfaced by a LinkedIn push notification to Aneesh, not by any pipeline channel.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. RESOLVED SAME DAY (2026-08-21), do not re-run the suggested search: the site:myworkdayjobs.com fallback WAS run and failed in the platform-vendor pattern, returning only Avalara's CUSTOMERS hiring for Avalara tax-software skills (Logicalis, Global Partners, Zillow, Inmar) rather than an Avalara tenant. Third confirmation of that pattern in one day, after AppFolio and Yardi. Avalara's real board is careers.avalara.com, served by CareerPuck (app.careerpuck.com/job-board/avalara). Five candidate CareerPuck JSON endpoints were probed and all returned a ~2KB HTML SPA shell with no job data, so this is not a quick new ATS integration. Avalara is genuinely unpollable for now. Revisit only if CareerPuck's internal API is identified, which would unlock every company on that platform at once rather than just this one.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
