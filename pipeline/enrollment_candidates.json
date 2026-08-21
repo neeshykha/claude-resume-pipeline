@@ -3977,6 +3977,67 @@
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
+    },
+    {
+      "name": "Entrata",
+      "ats": "lever",
+      "slug": "entrata",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (11 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Latch",
+      "ats": "lever",
+      "slug": "latch",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (2 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "AppFolio",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Yardi",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Buildium",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Propertyware",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Funnel",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
     }
   ]
 }
