@@ -255,13 +255,6 @@
         "last_hit": "2026-08-18: same pattern -- only generic aggregator category pages (EV.Careers, ZipRecruiter, Built In), no individual CSM/TAM/implementation posting surfaced. No fit-space hit."
       },
       {
-        "name": "Arrive / ParkMobile",
-        "why": "Atlanta-based parking and mobility platform (ParkMobile, EasyPark, Flowbird). Surfaced a Technical Account Manager, Atlanta on 2026-07-27 via a job-alert email; careers.arrive.com is a custom site with no pollable board found.",
-        "query": "site:careers.arrive.com OR \"ParkMobile\" careers (\"technical account manager\" OR \"customer success\" OR \"implementation\") Atlanta",
-        "last_checked": "2026-08-21",
-        "last_hit": "2026-08-11: only sales/account-exec roles found (B2B Corporate Account Executive Atlanta, Key Account Manager, Senior Account Manager OnStreet Parking, Payment Implementation Specialist) -- no CSM/TAM support-ops title. No fit-space hit."
-      },
-      {
         "name": "Alston Construction",
         "why": "Surfaced an AI Program Manager (Atlanta, $99K-$135K) on 2026-07-20 that was a real substance match. Custom careers site, no pollable board.",
         "query": "\"Alston Construction\" careers (\"AI program manager\" OR \"technology manager\" OR \"operations manager\")",
@@ -3873,6 +3866,116 @@
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (33 jobs) with 2 fit-titles at harvest time (2 tier3(location-gated)), e.g. 'Federal Customer Success Manager - DevOps' [US - Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 20,
       "bonus_reason": "Developer/infra tooling (+20) -- classified 2026-08-21. Software supply chain security and the Nexus artifact repository: dependency scanning, SBOM, open-source governance. Developer tooling in the most literal sense, since Nexus is infrastructure developers build against daily. Re-enrolled 2026-08-21 on two remote-US tier3 roles (Federal CSM - DevOps, Senior Solutions Delivery Engineer - DevOps) after tier3 was location-gated; previously rejected 2026-08-14."
+    },
+    {
+      "name": "Dexory",
+      "ats": "greenhouse",
+      "slug": "dexory",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (31 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Customer Success Manager- US (Mid West and West Coast - Span' [US Remote & Travel]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Warehouse robotics and inventory intelligence (autonomous scanning robots plus a digital-twin view). Robotics/logistics hardware rather than an AI platform or dev tooling; same reasoning applied to Zoox. Arguable, flagged."
+    },
+    {
+      "name": "Quora",
+      "ats": "ashby",
+      "slug": "quora",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (6 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Customer Success Manager - Quora (Remote)' [Remote - United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Consumer Q&A platform. Note its Poe product is an AI chat interface, but the company itself is a consumer content platform rather than an AI/ML platform sold to customers."
+    },
+    {
+      "name": "Cordance",
+      "ats": "greenhouse",
+      "slug": "cordance",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (17 jobs) with 2 fit-titles at harvest time (1 tier2c, 1 tier3(location-gated)), e.g. 'Customer Success Manager' [United States - Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Operator/holding company acquiring and scaling vertical B2B SaaS businesses. Not itself an AI or tooling product. Carries a tier2c 'Systems Enablement Manager | US Remote' plus a remote CSM, both genuine fits on ordinary keyword overlap."
+    },
+    {
+      "name": "Postscript",
+      "ats": "greenhouse",
+      "slug": "postscript",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 3 fit-titles at harvest time (3 tier3(location-gated)), e.g. 'Principal Customer Success Manager, Email ' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). SMS marketing platform for Shopify e-commerce brands. Martech vertical SaaS."
+    },
+    {
+      "name": "TensorWave",
+      "ats": "ashby",
+      "slug": "tensorwave",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (40 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Solutions Engineer' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- classified 2026-08-21. AMD-GPU cloud for AI training and inference; an AI compute provider, so AI-native and infrastructure at once. Held at 20 rather than 30 because the offering is capacity rather than a developer toolchain."
+    },
+    {
+      "name": "Tread",
+      "ats": "ashby",
+      "slug": "tread",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'AI Finance Operations Manager' [San Francisco]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- classified 2026-08-21. AI-native vertical SaaS for construction-materials logistics: AI-powered truck routing, loaded-mile delivery, and project planning, with AI agents in the customer-service path. Series A. WARNING on the surfacing title: 'AI Finance Operations Manager | San Francisco' matched tier2 through the {operation, manage} stem subset, but it is a FINANCE function built on their internal decision-making 'company brain', not support or CX operations. Same false-positive class as the Anthropic 'Finance Systems' hits that produced the finance-systems/treasury hard-excludes. The company is worth polling; that specific role is not a fit."
+    },
+    {
+      "name": "Recharge",
+      "ats": "ashby",
+      "slug": "recharge",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Customer Success Manager' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Subscription and recurring-billing management for e-commerce. Commerce vertical SaaS."
+    },
+    {
+      "name": "Arrive",
+      "ats": "ashby",
+      "slug": "arrive",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (55 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Account Manager' [Atlanta]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Urban mobility: parking, transportation, and automotive/data services; parent of ParkMobile. Not AI-native and not developer tooling. The value is LOCATION -- Atlanta -- not vertical. PROMOTED OUT OF _blind_spot_companies 2026-08-21: it was listed there as having no pollable ATS, but ashby/arrive is live (55 jobs) and carries a tier2 'Technical Account Manager | Atlanta' reporting to the Head of Customer Success. Per the routine, polling beats searching, so the blind-spot entry was deleted."
+    },
+    {
+      "name": "Metropolis Technologies",
+      "ats": "greenhouse",
+      "slug": "metropolis",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (76 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Customer Success Manager' [Remote USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Computer-vision checkout for parking and mobility facilities. The CV is real but the product is parking payment infrastructure, not an AI platform sold to customers. Same category as Arrive; arguable, flagged."
+    },
+    {
+      "name": "Akuity",
+      "ats": "greenhouse",
+      "slug": "akuity",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Technical Customer Success Manager, AMER West' [Remote - North America - West]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20) -- classified 2026-08-21. Enterprise Argo CD / GitOps continuous delivery for Kubernetes, founded by the Argo project creators. Unambiguous dev infra."
     }
   ]
 }

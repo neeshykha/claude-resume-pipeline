@@ -313,10 +313,24 @@ def assess(name, matcher, hard_excluded, known_pairs):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--names", nargs="*", default=[])
+    ap.add_argument("--names-file",
+                    help="JSON file holding a list of company names. Same effect as "
+                         "--names (the already-known check is bypassed), but usable "
+                         "with far more names than fit sanely on a command line. "
+                         "Added 2026-08-21 to re-check the 66 fit-space rejections "
+                         "against the newly location-gated tier3 rule.")
     ap.add_argument("--from-pending", action="store_true")
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--prune", action="store_true")
     args = ap.parse_args()
+
+    if args.names_file:
+        with open(args.names_file, encoding="utf-8") as f:
+            loaded = json.load(f)
+        if not isinstance(loaded, list):
+            print("--names-file must contain a JSON list of names", file=sys.stderr)
+            return 2
+        args.names = list(args.names) + [str(n) for n in loaded]
 
     sys.path.insert(0, SCRIPT_DIR)
     import poll_ats as P
