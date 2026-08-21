@@ -3234,7 +3234,8 @@
       "enrolled_date": "2026-07-31",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Implementation Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
-      "needs_vertical_classification": true
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product). Biology-first R&D cloud for biotech: ELN + LIMS, scientific data modeling for biomolecules, cell lines, reagents. NOT AI-native -- AI is a feature inside the product ('use AI tools to work more efficiently'), not the product itself. NOT developer/infra tooling: it does ship first-class REST/GraphQL/Event APIs and markets itself as 'the hub of your connected R&D ecosystem', which is the strongest tooling argument of any company in this batch, but the audience is SCIENTISTS, not developers building software. The curated tooling list is horizontal devtools/dev-infra/observability/security (LaunchDarkly, Vanta, Wiz, Chainguard, Cribl, vCluster); admitting vertical SaaS on the strength of having an API would make the bonus meaningless, since nearly every B2B SaaS qualifies on that test. Also NOT health_tech for passion-domain purposes: that domain is 'digital health, health devices, patient-facing platforms, healthcare interoperability', and Benchling is pharma/biotech R&D infrastructure, nothing patient-facing. Real fit lives in ordinary keyword overlap (Implementation Manager, TAM), not a bonus. Do not re-open without new information."
     },
     {
       "name": "Everbridge",
@@ -3245,7 +3246,8 @@
       "enrolled_date": "2026-08-01",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager (xMatters)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
-      "needs_vertical_classification": true
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product). Critical Event Management: mass notification, incident management, risk intelligence, geofencing for emergency response and business continuity. NOT AI-native -- 'Powered by Purpose-built AI' is positioning on a communications/incident platform, not an AI/ML product. NOT tooling: the closest category is security tooling, but the curated entries there (Wiz, Expel, Chainguard, 1Password, Vanta) are all INFOSEC, whereas Everbridge is physical-safety and operational resilience. Worth noting for scoring though: incident management, escalation paths, and notification workflows overlap genuinely with Aneesh's support-ops background, so its tier1/tier2 titles should score well on keyword overlap on their own merits."
     },
     {
       "name": "Connecteam",
@@ -3256,7 +3258,8 @@
       "enrolled_date": "2026-08-01",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (72 jobs) with 8 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Professional Service Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
-      "needs_vertical_classification": true
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product). Deskless/frontline workforce management: shift scheduling, GPS time tracking, task management, team comms, training, mobile-first, for construction/retail/field crews. NOT AI-native. NOT developer/infra tooling -- it is an HR/operations app for hourly workforces. Worth noting for scoring: this is WORKFORCE MANAGEMENT software, the same domain as the Headway Scheduling Lead role surfaced 2026-08-21, so its 8 US-reachable tier1/tier2/tier2c fit-titles are likely genuine domain matches for Aneesh rather than title-matcher noise. No bonus, but do not dismiss its roles."
     },
     {
       "name": "Later",
