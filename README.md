@@ -57,11 +57,46 @@ pipeline/
   scrapers/                  # Per-source scrapers (Wellfound, YC, Builtin, etc.)
   watchlist_companies.json   # Target companies with ATS slugs + scoring config
   daily_task_prompt.md       # Prompt template for scheduled daily runs
+  audit_scores.py            # Re-derives recorded scores from the rubric (see below)
 ```
 
 Not in this repo (gitignored): the master resume, tailored outputs, job tracking data, and pipeline logs — those stay local.
 
 ---
+
+## Score Calibration Audit
+
+The scoring rubric decides how much work each job gets: a cover letter at 88, a
+summary rewrite at 78, nothing below that. Scores are assigned during a run and
+then never checked. `pipeline/audit_scores.py` re-derives them.
+
+```bash
+.venv/bin/python pipeline/audit_scores.py
+.venv/bin/python pipeline/audit_scores.py --since 2026-08-01
+.venv/bin/python pipeline/audit_scores.py --validate
+```
+
+It writes a static HTML report to `pipeline/logs/` (gitignored — it carries
+company names and scores).
+
+**It does not try to produce "the right score."** Half the rubric is mechanical
+— title tier, source quality, company bonuses, salary band, freshness — and is
+recomputed exactly from config plus the recorded URL and title. The other half
+is judgment: keyword overlap (0–30) and two reach penalties (−10–0), neither
+recoverable from stored data. So each row gets a **legal envelope** instead of a
+verdict. A score outside its envelope is provably wrong. A score inside it is
+reported with the judgment it would require — "this needs keyword overlap of
+30/30 with every other component maxed" — and left for a human to weigh.
+
+Alongside the envelope are exact structural checks: the tailoring thresholds,
+the skip floor, the hard-requirement tier cap, and **rubric drift** — rows scored
+under a retired version of the rubric, whose recorded tier the current rules
+would not grant.
+
+`--validate` scores the auditor against cases already adjudicated by hand before
+any of its output is trusted. Two of those cases are reconstructions of the same
+historical mis-score, differing only in whether the JD's requirements block had
+been captured; together they mark the boundary of what the audit can prove.
 
 ## Setup
 
