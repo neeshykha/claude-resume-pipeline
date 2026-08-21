@@ -3944,6 +3944,39 @@
       "rejected_date": "2026-08-21",
       "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
+    },
+    {
+      "name": "ZeroFox",
+      "ats": "workable",
+      "slug": "zerofox",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (18 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Burq",
+      "ats": "workable",
+      "slug": "burq",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (20 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "SchooLinks",
+      "ats": "workable",
+      "slug": "schoolinks",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (9 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Cargill",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
     }
   ]
 }

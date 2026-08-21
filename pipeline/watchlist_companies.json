@@ -161,6 +161,13 @@
         "notes": "Added 2026-08-12, same day fetch_rippling() shipped in poll_ats.py (see _rippling_notes). Prompted by Nerdio, a user-surfaced miss on the same pattern as Napier AI/Pinpoint above. First run surfaced Rippling itself (the ATS vendor -- ironic, but its own careers board runs on its own product), Supper, gaiia, Tixr, Routeware, and Kion; 3 enrolled with real tier2 fit (Supper, Routeware, Kion), 2 rejected no-fit (Tixr, and Portnox from the Pinpoint dork above), 2 unresolved by slug guessing (Rippling itself -- its board's __NEXT_DATA__ payload has an EMPTY dehydratedState.queries for reasons not yet understood, possibly a board-size-dependent rendering path on Rippling's platform; and gaiia, whose real slug is 'gaiias-open-positions' -- note the extra 's', a name/slug mismatch no variant list would catch). Same enroll guidance as the other board dorks.",
         "status": "active",
         "frequency": "daily"
+      },
+      {
+        "name": "Workable Boards - Target Roles",
+        "query": "site:apply.workable.com (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\" OR \"customer operations\" OR \"technical support manager\")",
+        "notes": "Added 2026-08-21. Closes a straightforward coverage hole: poll_ats.py has spoken Workable since 2026-07-27 (fetch_workable), and every other supported ATS had a board dork here (Ashby, Greenhouse, Lever, SmartRecruiters, Workday, Pinpoint, Rippling) EXCEPT Workable. So the poller could read those boards but discovery never looked for them, and a Workable-hosted company could only ever arrive by some other channel naming it first. First run returned 6 live boards, all previously unknown: ZeroFox, Burq, SchooLinks, Prosci, Passion.io, Hireframe. Worth noting the first-run yield was 0 enrollments, not because the boards were dead but because the fit-titles were all tier3 outside Atlanta/remote-US (ZeroFox Baltimore, SchooLinks Austin), which is the tier3 location gate behaving correctly. Judge this source over a few weeks, not on day one. Same enroll guidance as the other board dorks. NOTE: the daily source list is now 18 entries and a single run has repeatedly failed to get through them all -- if budget forces a choice, this one is newer evidence than the Tier-1 Manager-Title Sweep, which returned 8 results and 0 new companies on 2026-08-21.",
+        "status": "active",
+        "frequency": "daily"
       }
     ]
   },
@@ -170,6 +177,12 @@
     "run_instructions": "Each daily run, take the `rotation_per_run` companies with the OLDEST `last_checked` (nulls first), run each one's `query` via WebSearch, and assess any fit-space hit against the normal rubric. Then write today's date back to `last_checked` for those companies. At 3/run over 15 companies each company gets checked about every 5 days, for 3 WebSearch calls per run. If a company turns out to have a pollable board after all, ENROLL it on the watchlist and delete it from this list -- polling always beats searching.",
     "rotation_per_run": 3,
     "companies": [
+      {
+        "name": "Cargill",
+        "why": "Opening an Atlanta office hub and hiring up to 400 tech and engineering roles. This is the rare company where two of the biggest scoring levers stack: Atlanta location, and agriculture/food, which is an explicit passion domain in _scoring_config. Added 2026-08-21 from an exploratory hub-expansion search. Confirmed unpollable the same day: harvest_ats resolved no board from name variants, and the documented site:myworkdayjobs.com fallback returned only OTHER companies' Cargill-adjacent reqs (Marmon, Goddard, Cushman & Wakefield). Cargill runs its own site at careers.cargill.com, so a targeted search is the only way it surfaces. Re-check for a Workday tenant occasionally; a real one would make it enrollable.",
+        "query": "site:careers.cargill.com OR \"careers.cargill.com\" (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation manager\" OR \"technical operations\") Atlanta OR remote",
+        "last_checked": null
+      },
       {
         "name": "Google",
         "why": "Atlanta office. Its gUP org runs a whole family of support roles (Product Support Manager gUP Search, gUP Platforms and Devices, gUP Shopping Support Ops, Product Solutions Manager Home). Confirmed unpollable 2026-07-27. Proven vein: the Home role was tailored that day.",
