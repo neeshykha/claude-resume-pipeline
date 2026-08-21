@@ -472,6 +472,33 @@ zero is verifiable; an absent section is indistinguishable from a skipped step.
    subject line alone carries the company and title (`<Title> at <Company>`), which is all this
    step needs.
 
+   **CRITICAL EXCEPTION, added 2026-08-21 — the rule above is true for only ONE of the two job
+   senders, and applying it blindly discards about five companies per digest email.**
+
+   - `jobalerts-noreply@linkedin.com` — single-role saved-search alerts. The subject really is
+     `<Title> at <Company>`, one role per email. Subject-only reading is correct here.
+   - `jobs-noreply@linkedin.com` — "Jobs You Might Be Interested In" **digests**. The subject
+     names ONE company ("Skydio is hiring for a Remote role") while the BODY carries roughly
+     **six roles at six different companies**, grouped into themed sections. Subject-only
+     reading captures 1 of 6 and silently drops the rest.
+
+   **For `jobs-noreply@` messages you MUST open the body** (`messageFormat: PLAIN_TEXT`). Each
+   card is a clean three-line block: title, company, location. That is strictly MORE structured
+   than a subject line, and it also resolves the location problem in the 2026-07-30 correction
+   below: digest bodies state the location, so no second per-message fetch is needed to decide
+   `manual_review`. Ignore the tracking URLs, which are most of the byte count.
+
+   The cost is bounded: digests are a minority of volume (1 of 14 job-alert threads on
+   2026-08-21), so this is a couple of body reads per run, not one per thread.
+
+   Proven on 2026-08-21, when Aneesh asked directly whether the pipeline was seeing what he saw
+   in these emails. It was not. One digest subject-lined "Skydio" contained Skydio, Precisely,
+   OpenAI, Drata, Bonterra, and JLL, every title tier1 or tier2, and the harvest had extracted
+   only Skydio. **Bonterra and JLL were both UNKNOWN to the watchlist and to all three enrollment
+   buckets**, so that single email cost two genuinely new companies on a day this step
+   self-reported as having run correctly. Same class of silent failure as the 2026-07-30
+   omission: the step logs a plausible non-zero result, so nothing looks broken.
+
    **Expect non-job LinkedIn mail in the results and skip it silently.** The filter forwards all
    of `from:linkedin.com` by design, so messaging digests (`messaging-digest-noreply@`), Premium
    promotions (`linkedin@em.linkedin.com`), and LinkedIn News (`editors-noreply@`) arrive too:
