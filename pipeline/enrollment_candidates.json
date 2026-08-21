@@ -1305,6 +1305,20 @@
       "slug": "aspire",
       "enrolled_date": "2026-08-21",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Britive",
+      "ats": "greenhouse",
+      "slug": "britive",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Sonatype",
+      "ats": "lever",
+      "slug": "sonatype",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -3361,22 +3375,6 @@
       "slug": "recharge",
       "rejected_date": "2026-08-14",
       "reason": "Board resolves and is live (4 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Britive",
-      "ats": "greenhouse",
-      "slug": "britive",
-      "rejected_date": "2026-08-14",
-      "reason": "Board resolves and is live (15 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Sonatype",
-      "ats": "lever",
-      "slug": "sonatype",
-      "rejected_date": "2026-08-14",
-      "reason": "Board resolves and is live (33 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
       "recheck_if_resurfaced": true
     },
     {
