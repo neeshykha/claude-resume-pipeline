@@ -3839,6 +3839,18 @@
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (5 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Implementation Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
       "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Creator and influencer marketing platform (Aspire.io): campaign management, creator discovery, affiliate workflows. Marketing SaaS. Enrolled 2026-08-21 off a LinkedIn alert; its live tier2 'Implementation Manager, Remote US' stands on ordinary keyword overlap, not a bonus."
+    },
+    {
+      "name": "Evident ID",
+      "ats": "lever",
+      "slug": "evidentid",
+      "priority": "medium",
+      "headcount_band": null,
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Business identity, credential, and insurance-certificate verification. Not AI-native, not developer tooling. The value here is LOCATION, not vertical: Atlanta-HQ VC-backed startup, so the Atlanta bonuses apply at scoring time.",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "Step 1c Atlanta Board Sweep, hand-enrolled after harvest_ats rejection review",
+      "reason": "ATLANTA HQ. Live 'Customer Success Manager | Atlanta, GA' that owns solution design and configuration during implementation, plus two Atlanta operations-manager titles. PREVIOUSLY REJECTED 2026-08-18 by harvest_ats with 'ZERO US-reachable tier1/tier2/tier2c titles' -- which was accurate but misleading: its fit role is tier3_reasonable_stretch, and harvest_ats.STRONG_TIERS excludes tier3 by design. Enrolled by hand at MEDIUM priority because Atlanta in-office (+20 location) plus Atlanta-startup (+20) is the single most valuable location profile in the rubric, and a tier3 CSM there can clear the full-tailoring threshold easily -- today's Vanta pick was a tier3 title that scored 96. headcount_band left null deliberately; backfill via Step 1e."
     }
   ]
 }
