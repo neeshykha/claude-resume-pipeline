@@ -288,6 +288,13 @@ scored lower due to title distance. Volume over perfection at that tier.
 These prevent company-level attributes from drowning out role fit. Added 2026-06-23 after a
 run surfaced four roles from a single company because structural bonuses were stacking.
 
+**These guardrails are checked mechanically after the fact.** `pipeline/audit_scores.py`
+re-derives every recorded score from this rubric and flags ones the rubric could not have
+produced, plus rows still carrying a bonus a later rule change retired. It runs report-only
+at `daily_task_prompt.md` Step 6 item 4 — the spec for it lives there, not here. Relevant when
+editing anything below: **changing a rule does not rescore the rows already recorded under
+it**, so a guardrail edit strands the existing queue until `--sweep-drift` reconciles it.
+
 1. **Count the vertical bonus ONCE.** A watchlist company's `score_bonus` in
    `watchlist_companies.json` IS that company's complete vertical bonus — do **not** add a
    separate generic "+20 AI/ML" or "+20 tooling" on top. Read `bonus_reason` to see which

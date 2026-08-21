@@ -987,12 +987,46 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST
    and it is the single largest measured loss in the system: the 2026-08-01 audit found a
    24% send rate in July and a 22-day median age on surfaced rows. Do NOT run `--apply`
    during an autonomous run; retiring rows is Aneesh's call.
-4. Write `pipeline/jobs/jobs_[date].json` (full structured records) and
+4. **Score calibration audit (added 2026-08-21, report-only):** run this AFTER step 2, so
+   today's rows are already in `outcomes.csv` and get audited on the same run that scored
+   them.
+   ```bash
+   .venv/bin/python pipeline/audit_scores.py
+   ```
+   ```bash
+   .venv/bin/python pipeline/audit_scores.py --sweep-drift
+   ```
+   The first re-derives every recorded score from this file's own Step 2c rubric and writes
+   `pipeline/logs/score_audit.html`. It does **not** produce "the right score" — half the
+   rubric (keyword overlap 0-30, the two reach penalties) is judgment and isn't recoverable
+   from stored data — so it reports a legal envelope per row and flags scores that fall
+   outside it. Console output lists flagged rows with dates.
+
+   **Carry into the digest only:**
+   - Any flagged row dated **today**. That is the whole point of running it here: the
+     Chainguard mis-score (2026-08-10, scored 104 and fully tailored against a "5+ years"
+     bar it didn't meet) was caught by hand hours later, and catching that class of error
+     the same run is cheaper than correcting a sent application.
+   - Anything from `--sweep-drift` other than the single line `no queued rows carry a
+     retired-rule score.` That line is the normal case and means nothing to report. A table
+     instead means a scoring rule changed and left already-recorded scores stranded under
+     it, so the queue now disagrees with the rubric: report the row count, the tier changes,
+     and that `--apply` is waiting on him.
+
+   **Do not** carry the standing backlog into the digest — `REVIEW` findings and undated
+   rows are a known set, not news, and repeating them daily trains you to ignore the step.
+
+   **Never run `--sweep-drift --apply` during an autonomous run.** It rewrites `fit_score`,
+   flips rows to `stage=expired`, and edits notes. Same rule as `age_report.py --apply`:
+   mutating the tracking file is Aneesh's call, and the preview is what tells him it's
+   needed. (The sweep is idempotent and backs up first, but that is a safety net, not a
+   licence to run it unattended.)
+5. Write `pipeline/jobs/jobs_[date].json` (full structured records) and
    `pipeline/jobs/run_[date].json` (run metadata: searches run, stats, capped companies,
    pipeline_notes, near_misses array, email draft ID).
-5. Update `pipeline/SESSION_STATE.md`: today's output, near-misses, housekeeping, action
+6. Update `pipeline/SESSION_STATE.md`: today's output, near-misses, housekeeping, action
    queue. Session state never goes in `CLAUDE.md`.
-6. Add a `channel_stats` block to `run_[date].json` (schema added 2026-08-10, see any run
+7. Add a `channel_stats` block to `run_[date].json` (schema added 2026-08-10, see any run
    from that date onward for the shape). Four sub-objects: `ats_poll` (companies_polled,
    jobs_scanned, title_matched, shortlisted), `websearch` (sources_run, new_companies_found,
    enrolled), `linkedin_harvest` (threads_found, companies_extracted, enrolled,
