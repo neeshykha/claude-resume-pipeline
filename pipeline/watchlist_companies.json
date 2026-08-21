@@ -174,7 +174,7 @@
         "name": "Google",
         "why": "Atlanta office. Its gUP org runs a whole family of support roles (Product Support Manager gUP Search, gUP Platforms and Devices, gUP Shopping Support Ops, Product Solutions Manager Home). Confirmed unpollable 2026-07-27. Proven vein: the Home role was tailored that day.",
         "query": "site:google.com/about/careers (\"product support manager\" OR \"product solutions manager\" OR \"support strategy\" OR \"customer support\") Atlanta OR remote",
-        "last_checked": "2026-08-13",
+        "last_checked": "2026-08-21",
         "last_hit": "2026-08-13: same family of Product Support Manager reqs still live (Google Fi, gUP Platforms and Devices/Google Store and Fi, gUP Android Ecosystem, Play, Pixel Differentiated Care) -- still only Shopping Support Operations and the applied Home role logged in seen_jobs.json; the rest remain un-JD-verified. Surfaced again in the 2026-08-13 digest under Manual channel."
       },
       {
@@ -258,14 +258,14 @@
         "name": "Arrive / ParkMobile",
         "why": "Atlanta-based parking and mobility platform (ParkMobile, EasyPark, Flowbird). Surfaced a Technical Account Manager, Atlanta on 2026-07-27 via a job-alert email; careers.arrive.com is a custom site with no pollable board found.",
         "query": "site:careers.arrive.com OR \"ParkMobile\" careers (\"technical account manager\" OR \"customer success\" OR \"implementation\") Atlanta",
-        "last_checked": "2026-08-11",
+        "last_checked": "2026-08-21",
         "last_hit": "2026-08-11: only sales/account-exec roles found (B2B Corporate Account Executive Atlanta, Key Account Manager, Senior Account Manager OnStreet Parking, Payment Implementation Specialist) -- no CSM/TAM support-ops title. No fit-space hit."
       },
       {
         "name": "Alston Construction",
         "why": "Surfaced an AI Program Manager (Atlanta, $99K-$135K) on 2026-07-20 that was a real substance match. Custom careers site, no pollable board.",
         "query": "\"Alston Construction\" careers (\"AI program manager\" OR \"technology manager\" OR \"operations manager\")",
-        "last_checked": "2026-08-11",
+        "last_checked": "2026-08-21",
         "last_hit": "2026-08-11: same AI Program Manager (Atlanta, $100K-$130K) posting still live, already applied 2026-07-20. No new roles."
       },
       {
@@ -2723,10 +2723,11 @@
       "ats": "greenhouse",
       "slug": "apartmentiq",
       "priority": "medium",
-      "headcount_band": null,
+      "headcount_band": "51-200",
       "enrolled_date": "2026-07-27",
       "enrolled_via": "PropTech / Resident Experience discovery source, first run 2026-07-27",
-      "reason": "Multifamily competitive-data platform (claims coverage of 40M units). Senior Enterprise Customer Success Manager, Remote, posted 2026-07-22 -- fresh and fit-space, listed as an also-live FYI on 2026-07-27 behind the higher-scoring HappyCo pick. headcount_band unverified, left null."
+      "reason": "Multifamily competitive-data platform (claims coverage of 40M units). Senior Enterprise Customer Success Manager, Remote, posted 2026-07-22 -- fresh and fit-space, listed as an also-live FYI on 2026-07-27 behind the higher-scoring HappyCo pick. headcount_band unverified, left null.",
+      "headcount_source": "Tracxn 81 employees (verified 2026-08-21)"
     },
     {
       "name": "Uniti AI",
@@ -3728,6 +3729,15 @@
       "enrolled_date": "2026-08-18",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (39 jobs) with 6 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Accounting Manager, Technical Accounting & Financial Reporti'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Hello Heart",
+      "ats": "greenhouse",
+      "slug": "helloheart",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (10 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Client Implementation & Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
