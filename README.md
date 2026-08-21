@@ -74,6 +74,8 @@ then never checked. `pipeline/audit_scores.py` re-derives them.
 .venv/bin/python pipeline/audit_scores.py
 .venv/bin/python pipeline/audit_scores.py --since 2026-08-01
 .venv/bin/python pipeline/audit_scores.py --validate
+.venv/bin/python pipeline/audit_scores.py --sweep-drift          # preview re-tier
+.venv/bin/python pipeline/audit_scores.py --sweep-drift --apply  # write it
 ```
 
 It writes a static HTML report to `pipeline/logs/` (gitignored — it carries
@@ -92,6 +94,15 @@ Alongside the envelope are exact structural checks: the tailoring thresholds,
 the skip floor, the hard-requirement tier cap, and **rubric drift** — rows scored
 under a retired version of the rubric, whose recorded tier the current rules
 would not grant.
+
+**Rubric drift is the one worth knowing about.** Editing a scoring rule does not
+touch the scores already recorded under it, and nothing in the pipeline
+reconciles the queue afterward, so rows silently keep the tier the old rule
+bought them. The first run over 205 rows found 10 queued roles still carrying a
+location bonus a rule change had retired weeks earlier — three of them no longer
+clearing the skip floor at all. `--sweep-drift` previews the correction and
+`--apply` writes it, backing up first and stamping each row so a second pass
+can't deduct the same bonus twice.
 
 `--validate` scores the auditor against cases already adjudicated by hand before
 any of its output is trusted. Two of those cases are reconstructions of the same

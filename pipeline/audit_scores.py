@@ -20,10 +20,17 @@ catch the class of error that has actually happened.
 Output is a static HTML report in pipeline/logs/ (gitignored — it carries
 company names and scores, which CLAUDE.md forbids committing to this public repo).
 
+A rubric edit strands every score already recorded under it, so the audit also
+detects RUBRIC DRIFT: queued rows still carrying a bonus a later rule change
+retired. `--sweep-drift` re-tiers those and retires the ones that no longer
+clear the skip floor.
+
 Usage:
     .venv/bin/python pipeline/audit_scores.py
     .venv/bin/python pipeline/audit_scores.py --since 2026-08-01
-    .venv/bin/python pipeline/audit_scores.py --validate    # self-check only
+    .venv/bin/python pipeline/audit_scores.py --validate            # self-check only
+    .venv/bin/python pipeline/audit_scores.py --sweep-drift         # preview re-tier
+    .venv/bin/python pipeline/audit_scores.py --sweep-drift --apply # write it
 """
 
 import argparse
@@ -32,6 +39,7 @@ import html
 import json
 import os
 import re
+import shutil
 import sys
 from collections import Counter
 from datetime import date, datetime
@@ -308,6 +316,12 @@ def documented_override(notes):
     thinking. LaunchDarkly 2026-07-08 ('Below normal light-tier score floor but
     surfaced anyway for exceptional salary') is a deliberate, argued exception;
     reporting it back as a finding is noise."""
+    # A drift-swept row records the tailoring actually performed under the OLD
+    # rubric alongside a score corrected to the new one, so the two disagree by
+    # construction. That is the sweep working, not a finding -- and the row's
+    # own note already states the tier change.
+    if SWEPT.search(notes or ""):
+        return True
     return bool(re.search(r"below (the )?(normal )?(light[- ]tier )?score floor|"
                           r"surfaced anyway|demoted to light|hard[- ]?cap|"
                           r"caps? base score|tier cap does not fire|"
@@ -334,6 +348,9 @@ CAP_DECLINED = re.compile(
 # comparable to scores recorded under the new one, and any still-surfaced row
 # carries a tier that today's rubric would not grant.
 LOCATION_RULE_CHANGE = "2026-08-02"
+# Written into a row's notes by --sweep-drift --apply, and read back by
+# rubric_drift() so the sweep is idempotent. Keep the two in sync.
+SWEPT = re.compile(r"drift sweep\]", re.I)
 NON_ATL_ONSITE = re.compile(
     r"hybrid|on-?site|in-?office|in-?person|\bNYC\b|new york|\bNJ\b|\bSF\b|"
     r"san francisco|san jose|bellevue|seattle|boston|austin|chicago|sunnyvale",
@@ -343,19 +360,38 @@ NON_ATL_ONSITE = re.compile(
 def rubric_drift(notes, row_date, stage):
     """Does this row's score depend on the retired location rule?
 
-    Returns (applies, lost_points_range, still_actionable).
+    The two retired cases are disjoint and each pins an exact value, so this
+    returns a number rather than a range:
+
+      non-Atlanta "hybrid"  old +18 (bare "hybrid" scored +18 regardless of
+                            city), new 0  ->  -18
+      NYC/NJ, not hybrid    old +12 (the removed NYC-NJ band), new 0  ->  -12
+
+    Anything else is unaffected. A non-Atlanta ONSITE role in a city that isn't
+    NYC/NJ scored 0 under both rules and has no drift at all -- an earlier
+    version of this flagged those too, which put Weights & Biases ("5 named hub
+    cities, no remote option stated") on the list for a bonus it never received.
+
+    Returns (applies, points_lost, still_actionable).
     """
     n = notes or ""
+    # A swept row still has its old surfaced_date and still says "hybrid", so
+    # nothing about the row itself stops a second pass from deducting the same
+    # bonus twice. Re-running would have taken Harvey 99 -> 87 -> 75 and retired
+    # six rows that had already been correctly re-tiered. The sweep stamps this
+    # marker; honoring it is what makes the operation idempotent.
+    if SWEPT.search(n):
+        return False, 0, False
     if not row_date or row_date >= LOCATION_RULE_CHANGE:
-        return False, (0, 0), False
+        return False, 0, False
     if re.search(r"\batlanta\b|\bATL\b", n, re.I):
-        return False, (0, 0), False
-    if not NON_ATL_ONSITE.search(n):
-        return False, (0, 0), False
-    # Old rule: bare "hybrid" +18, NYC-NJ +12. Both are 0 today.
-    lo = 12 if re.search(r"\bNYC\b|new york|\bNJ\b", n, re.I) else 0
-    hi = 18 if re.search(r"hybrid", n, re.I) else max(lo, 12)
-    return True, (max(lo, 0), hi), (stage or "").strip() == "surfaced"
+        return False, 0, False
+    live = (stage or "").strip() == "surfaced"
+    if re.search(r"hybrid", n, re.I):
+        return True, 18, live
+    if re.search(r"\bNYC\b|new york|\bNJ\b", n, re.I):
+        return True, 12, live
+    return False, 0, False
 
 
 def hardreq_signal(notes, unmet_n):
@@ -470,28 +506,28 @@ def audit_row(row, matcher, idx, cfg):
                          f"Title matches no configured tier, so its +8..+30 was a "
                          f"judgment call on a role that reached {want} tier."))
 
-    drift, (dlo, dhi), live = rubric_drift(notes, row.get("surfaced_date")
-                                           or row.get("applied_date"), row.get("stage"))
+    drift, lost, live = rubric_drift(notes, row.get("surfaced_date")
+                                     or row.get("applied_date"), row.get("stage"))
+    corrected = score - lost if drift else score
     if drift:
-        now_lo, now_hi = score - dhi, score - dlo
-        new_tier = expected_tier(now_hi, cfg)
+        new_tier = expected_tier(corrected, cfg)
         changed = klass(new_tier) != klass(want)
+        kind = "non-Atlanta hybrid (+18)" if lost == 18 else "NYC/NJ band (+12)"
         if live:
             findings.append((
                 "RUBRIC_DRIFT", "high" if changed else "medium",
                 f"Scored {score:.0f} before the {LOCATION_RULE_CHANGE} location rule "
-                f"change, on a non-Atlanta hybrid/onsite role. That location bonus "
-                f"(+{dlo}–{dhi}) is worth 0 today, so the current-rubric score is "
-                f"~{now_lo:.0f}–{now_hi:.0f}"
-                + (f", which moves it from {want} to {new_tier} tier. Still in "
-                   f"'surfaced' stage, so this tier is live." if changed
-                   else ". Still in 'surfaced' stage.")))
+                f"change. The {kind} it was given is worth 0 today, so the "
+                f"current-rubric score is {corrected:.0f}"
+                + (f", moving it from {want} to {new_tier} tier. Still in "
+                   f"'surfaced' stage, so that tier is live." if changed
+                   else ". Tier is unchanged.")))
         elif changed:
             findings.append((
                 "RUBRIC_DRIFT", "low",
                 f"Historical only ({(row.get('stage') or '').strip()}): scored "
-                f"{score:.0f} under the retired location rule; would be "
-                f"~{now_lo:.0f}–{now_hi:.0f} today."))
+                f"{score:.0f} under the retired {kind}; would be "
+                f"{corrected:.0f} today."))
 
     return {
         "company": row.get("company", ""),
@@ -796,11 +832,84 @@ def render(results, val_rows, meta):
     return "".join(p)
 
 
+def sweep_drift(cfg, apply=False):
+    """Re-tier still-queued rows whose score came from a retired rubric rule.
+
+    A rubric edit silently strands every score already recorded under it. The
+    2026-08-02 location change is the case in hand, and nothing in the pipeline
+    reconciles the queue afterward, so rows keep the tier the old rule bought
+    them. This recomputes those scores and retires anything that no longer
+    clears the skip floor.
+
+    Only touches stage=surfaced rows with an exactly-pinned drift. Follows
+    age_report.py's conventions: backup first, write via tmp + atomic replace,
+    and never touch applied/rejected/closed rows. The original score is written
+    into the note, so the correction is reversible by reading the row.
+    """
+    with open(OUTCOMES, newline="", encoding="utf-8") as f:
+        raw = list(csv.reader(f))
+    header, rows = raw[0], raw[1:]
+    ci = {n: header.index(n) for n in
+          ("company", "title", "fit_score", "stage", "surfaced_date",
+           "applied_date", "notes")}
+
+    planned = []
+    for r in rows:
+        if len(r) != len(header) or r[ci["stage"]].strip() != "surfaced":
+            continue
+        drift, lost, live = rubric_drift(
+            r[ci["notes"]], r[ci["surfaced_date"]] or r[ci["applied_date"]],
+            r[ci["stage"]])
+        if not (drift and live):
+            continue
+        try:
+            score = float(r[ci["fit_score"]])
+        except ValueError:
+            continue
+        corrected = score - lost
+        old_tier, new_tier = expected_tier(score, cfg), expected_tier(corrected, cfg)
+        retire = new_tier == "skip"
+        planned.append({"company": r[ci["company"]], "title": r[ci["title"]],
+                        "score": score, "lost": lost, "corrected": corrected,
+                        "old_tier": old_tier, "new_tier": new_tier, "retire": retire,
+                        "row": r})
+
+    if not apply:
+        return planned, False
+
+    stamp = date.today().isoformat()
+    for p in planned:
+        r = p["row"]
+        r[ci["fit_score"]] = f"{p['corrected']:.0f}"
+        if p["retire"]:
+            r[ci["stage"]] = "expired"
+        note = (f"[{stamp} drift sweep] score {p['score']:.0f} -> "
+                f"{p['corrected']:.0f}: recorded before the {LOCATION_RULE_CHANGE} "
+                f"location rule change and carried a +{p['lost']} bonus that rule "
+                f"retired. Tier {p['old_tier']} -> {p['new_tier']}."
+                + (" Retired to expired: no longer clears the skip floor."
+                   if p["retire"] else ""))
+        r[ci["notes"]] = (r[ci["notes"]] + "; " + note) if r[ci["notes"]].strip() else note
+
+    shutil.copy2(OUTCOMES, OUTCOMES + ".predrift.bak")
+    tmp = OUTCOMES + ".tmp"
+    with open(tmp, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(header)
+        w.writerows(rows)
+    os.replace(tmp, OUTCOMES)
+    return planned, True
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--since", help="only audit rows surfaced on/after YYYY-MM-DD")
     ap.add_argument("--validate", action="store_true",
                     help="print the self-check against known cases and exit")
+    ap.add_argument("--sweep-drift", action="store_true",
+                    help="preview re-tiering of queued rows scored under a retired rule")
+    ap.add_argument("--apply", action="store_true",
+                    help="with --sweep-drift, write the corrections to outcomes.csv")
     args = ap.parse_args()
 
     watchlist = load_watchlist()
@@ -821,6 +930,27 @@ def main():
     results = [x for x in (audit_row(r, matcher, idx, cfg) for r in scoped) if x]
     val_rows = validate([x for x in (audit_row(r, matcher, idx, cfg) for r in rows) if x],
                         matcher, idx, cfg)
+
+    if args.sweep_drift:
+        planned, written = sweep_drift(cfg, apply=args.apply)
+        if not planned:
+            print("no queued rows carry a retired-rule score.")
+            return 0
+        print(f"{'was':>4} {'-':>3} {'now':>4}  {'tier':<16} {'company':<18} title")
+        print("-" * 92)
+        for p in sorted(planned, key=lambda x: -x["score"]):
+            ch = (f"{p['old_tier']} -> {p['new_tier']}"
+                  if p["old_tier"] != p["new_tier"] else f"{p['old_tier']} (same)")
+            print(f"{p['score']:>4.0f} {p['lost']:>3} {p['corrected']:>4.0f}  {ch:<16} "
+                  f"{p['company'][:18]:<18} {p['title'][:36]}"
+                  + ("   [RETIRE]" if p["retire"] else ""))
+        n_ret = sum(1 for p in planned if p["retire"])
+        print(f"\n{len(planned)} rows re-tiered, {n_ret} retired to expired.")
+        if written:
+            print(f"written; backup at {os.path.basename(OUTCOMES)}.predrift.bak")
+        else:
+            print("preview only; re-run with --apply to write")
+        return 0
 
     if args.validate:
         print(f"Auditor self-check ({sum(1 for v in val_rows if v['ok'])}/"
