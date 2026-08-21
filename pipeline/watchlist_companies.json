@@ -692,7 +692,7 @@
     "tier2c_tooling_systems": {
       "title_match_score": 22,
       "description": "Tool-building and systems-ownership roles. Added 2026-07-28 after Aneesh identified tool creation and maintenance as his PRIMARY interest, with AI as a co-equal secondary one. Grounded in real master_resume.md experience: 25+ Salesforce Flow automations, Service Cloud admin, the Maven AGI deployment, and the CES/QA tooling he built. Scored at tier2 weight (+22, strong overlap) rather than tier1 because pure-systems roles often want deeper integration/config depth than a support-ops role exercises.",
-      "notes": "The salary floor filters the junior end of this family on its own: bare 'Salesforce Administrator' reqs frequently land under the floor and drop out, so listing them here is safe and costs nothing.",
+      "notes": "The salary floor filters the junior end of this family on its own: bare 'Salesforce Administrator' reqs frequently land under the floor and drop out, so listing them here is safe and costs nothing. The 'Applications Manager' family was added 2026-08-21 from a user-surfaced miss: Fisher Construction Group's 'Construction Applications Manager | REMOTE' ($98.5K-$151.5K, remote US) is a textbook tier2c function -- administer SaaS platforms, configure accounts and permissions, provide technical support, lead implementations and upgrades, build reports and dashboards, run training programs, manage vendors -- but it shares only the token 'manager' with every title then in this tier, so the stemmed matcher could never have hit it. 'Applications Manager' is a very common title for this exact function outside of tech companies, which is precisely where the watchlist is thinnest. Accepted false-positive risk: the word 'applications' also appears in unrelated ops titles (e.g. 'Loan Applications Manager'), which the JD read filters out at Step 3.",
       "titles": [
         "Business Systems Manager",
         "Business Systems Analyst",
@@ -711,7 +711,12 @@
         "CRM Administrator",
         "Salesforce Administrator",
         "Senior Salesforce Administrator",
-        "Salesforce Business Analyst"
+        "Salesforce Business Analyst",
+        "Applications Manager",
+        "Business Applications Manager",
+        "Enterprise Applications Manager",
+        "IT Applications Manager",
+        "Applications Administrator"
       ]
     }
   },

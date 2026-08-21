@@ -993,6 +993,24 @@ def main():
     print(f"Audited {len(results)} scored rows; {len(flagged)} flagged.")
     for k, v in kinds.most_common():
         print(f"    {k:<14} {v}")
+
+    # Per-row lines with dates, so a daily run can separate today's findings from
+    # the standing backlog without opening the HTML. Counts alone can't do that.
+    act = [r for r in flagged
+           if any(s == "high" for _, s, _ in r["findings"])]
+    look = [r for r in flagged if r not in act
+            and any(s == "medium" for _, s, _ in r["findings"])]
+    for label, group in (("act on", act), ("worth a look", look)):
+        if not group:
+            continue
+        print(f"\n  {label}:")
+        for r in sorted(group, key=lambda x: x["date"], reverse=True)[:12]:
+            ks = ",".join(sorted({k for k, s, _ in r["findings"]
+                                  if s in ("high", "medium")}))
+            print(f"    {r['date'] or '(undated)':<11} {r['score']:>4.0f}  "
+                  f"{r['company'][:22]:<22} {ks}")
+        if len(group) > 12:
+            print(f"    ... and {len(group) - 12} more, see the report")
     print(f"\nSelf-check: {sum(1 for v in val_rows if v['ok'])}/"
           f"{sum(1 for v in val_rows if v['ok'] is not None)} known cases called correctly.")
     print(f"Report: {REPORT}")
