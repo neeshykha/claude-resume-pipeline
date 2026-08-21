@@ -14,33 +14,7 @@
     "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced, [unpollable], [weekly_report_surfaced], [weekly_report_surfaced_date]}] — don't re-evaluate unless it resurfaces with new roles. unpollable=true (added 2026-08-14) means the reason is specifically 'no ATS board was ever found' (a genuine automation gap Aneesh could work around by hand), as opposed to a board being found and the company rejected for fit/geo/category reasons. Set this directly when rejecting for no-board (harvest_ats.py does; do the same by hand in Step 1d). weekly_channel_report.py surfaces unpollable=true entries once a week for manual review; weekly_report_surfaced=true (set by that script's --apply pass) stops an entry from repeating in future weekly reports once Aneesh has seen it."
   },
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry — for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards — their fit roles aren't US-reachable.",
-  "pending": [
-    {
-      "source": "LinkedIn alert",
-      "first_seen": "2026-08-21",
-      "needs_ats_resolution": true,
-      "why": "LinkedIn job alert 2026-08-21: 'Revenue Operations Lead at Aspire' (Aspire.io, creator/influencer marketing platform). Title loose-matches tier2c_tooling_systems (Revenue Operations Manager).",
-      "manual_review": true,
-      "manual_review_why": "Revenue Operations Lead (tier2c loose match); location not read from the alert body this run (budget-capped), verify at resolution.",
-      "name": "Aspire"
-    },
-    {
-      "source": "LinkedIn alert",
-      "first_seen": "2026-08-21",
-      "needs_ats_resolution": true,
-      "why": "LinkedIn job alert 2026-08-21: 'Staff Technical Account Manager at Avalara' (tax compliance automation). Title matches tier2_strong_overlap, though the 'Staff' grade would itself be hard-filtered; enrolling the COMPANY for full-roster polling.",
-      "name": "Avalara"
-    },
-    {
-      "source": "LinkedIn alert",
-      "first_seen": "2026-08-21",
-      "needs_ats_resolution": true,
-      "why": "LinkedIn job alert 2026-08-21: 'Operations Support Manager at EthosEnergy' (rotating-equipment services for power generation). Title loose-matches tier1_true_match.",
-      "manual_review": true,
-      "manual_review_why": "Operations Support Manager (tier1 loose match); location not read from the alert body this run (budget-capped), verify at resolution.",
-      "name": "EthosEnergy"
-    }
-  ],
+  "pending": [],
   "enrolled": [
     {
       "name": "US Bank",
@@ -1322,6 +1296,13 @@
       "name": "Hello Heart",
       "ats": "greenhouse",
       "slug": "helloheart",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Aspire",
+      "ats": "rippling",
+      "slug": "aspire",
       "enrolled_date": "2026-08-21",
       "via": "harvest_ats.py"
     }
@@ -4039,6 +4020,26 @@
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
+    },
+    {
+      "name": "Avalara",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "EthosEnergy",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Operations Support Manager (tier1 loose match); location not read from the alert body this run (budget-capped), verify at resolution."
     }
   ]
 }

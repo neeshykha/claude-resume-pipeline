@@ -286,6 +286,17 @@ def main():
             "priority": "low",
             "enrolled_date": today,
             "enrolled_via": "harvest_ats.py automated slug resolution",
+            # This layer CANNOT assign a vertical bonus. score_bonus/bonus_reason
+            # are hand-curated on purpose (a keyword pass was ~40% wrong in both
+            # directions -- see CLAUDE.md Scoring Guardrails), so auto-enrolled
+            # companies land with none at all and are under-scored by up to 20-30
+            # points until a human classifies them. Flag it so the gap is visible
+            # and drainable (daily_task_prompt.md Step 1e-2) rather than silent.
+            # Found 2026-08-21: 45 auto-enrolled companies had accumulated this
+            # way since 2026-07-31, including Snorkel AI (AI/ML), Cribl and Drata
+            # (tooling) -- Cribl and Doppel were both fully tailored while
+            # carrying the handicap.
+            "needs_vertical_classification": True,
             "reason": (f"Auto-enrolled by the ATS harvest layer. Board verified live "
                        f"({res['total']} jobs) with {len(res['strong'])} US-reachable "
                        f"tier1/tier2/tier2c fit-titles at harvest time, e.g. "

@@ -12,7 +12,9 @@ outcomes.csv rows that are still stage=surfaced. Schema:
 
 {
   "confirmations": [
-    {"url": "https://...", "company": "...", "applied_date": "2026-07-24"}
+    {"url": "https://...", "company": "...", "applied_date": "2026-07-24",
+     "title": "Customer Implementation Manager",   # optional, substring match
+     "title_exact": false}                         # optional, see below
   ]
 }
 
@@ -23,6 +25,15 @@ URL was given to disambiguate, the row is SKIPPED and reported as ambiguous
 -- never guessed. Always include the URL from the confirmation email body
 when you can find it; only fall back to company-name-only matching when the
 email genuinely doesn't state which requisition it's confirming.
+
+A supplied "title" is a REQUIREMENT on the company fallback, not a hint (same
+rule mark_outcome.py enforces). It is applied even when the company matched
+exactly one surfaced row, because the failure mode is a confirmation landing
+on the wrong req at a company that happens to have only one row open. Use
+"title_exact": true when one req's title is a prefix of another's at the same
+company. Title does NOT constrain a URL match -- a URL identifies the
+requisition on its own. Confirmations whose title matches no surfaced row are
+reported as not-found rather than promoted; re-check the row by hand.
 
 Behavior:
 - Rewrites outcomes.csv atomically (tmp + rename, keeps a .bak).
@@ -88,10 +99,12 @@ def main() -> int:
 
     promoted, ambiguous, not_found = [], [], []
     promoted_urls = []
+    unverified = []
 
     for c in confirmations:
         target_url = norm_url(c.get("url"))
         company = (c.get("company") or "").strip().lower()
+        title = (c.get("title") or "").strip()
         applied_date = c.get("applied_date", "")
 
         candidates = [r for r in data_rows if well_formed(r) and r[col["stage"]] == "surfaced"]
@@ -100,6 +113,22 @@ def main() -> int:
             matches = [r for r in candidates if norm_url(r[col["url"]]) == target_url]
         if not matches and company:
             matches = [r for r in candidates if r[col["company"]].strip().lower() == company]
+            # A supplied title is a REQUIREMENT, not a tie-breaker -- same rule
+            # mark_outcome.py already enforces. Filtering only when several rows
+            # matched would let a company with exactly one surfaced row absorb a
+            # confirmation meant for a different req there. That is exactly what
+            # happened 2026-08-20: receipts whose real rows were already applied
+            # fell through to the company fallback and promoted two UNRELATED
+            # surfaced rows (Relay Payments "Enterprise Solutions Engineer",
+            # Maven AGI "Technical Project Manager"). Caught by hand and reverted
+            # from the .bak; this is the code fix for that incident.
+            if title:
+                if c.get("title_exact"):
+                    matches = [r for r in matches
+                               if r[col["title"]].strip().lower() == title.lower()]
+                else:
+                    matches = [r for r in matches
+                               if title.lower() in r[col["title"]].lower()]
 
         if len(matches) == 1:
             row = matches[0]
@@ -107,6 +136,13 @@ def main() -> int:
             row[col["stage"]] = "applied"
             promoted.append((row[col["company"]], row[col["title"]]))
             promoted_urls.append(norm_url(row[col["url"]]))
+            # Loudest remaining hole: a company-fallback promotion with neither a
+            # URL nor a title is matching on company alone, so it lands on
+            # whichever single row happens to still be surfaced there. That is
+            # correct only if the company genuinely has one open req. Flag it so
+            # a wrong promotion is visible in the run log instead of silent.
+            if not target_url and not title:
+                unverified.append((row[col["company"]], row[col["title"]]))
         elif len(matches) > 1:
             ambiguous.append(c)
         else:
@@ -146,6 +182,11 @@ def main() -> int:
     for company, title in promoted:
         print(f"  {company} — {title}")
     print(f"seen_jobs.json: {seen_touched} entries flipped to applied=true")
+    if unverified:
+        print(f"UNVERIFIED MATCH (promoted on company name alone, no URL and no "
+              f"title given): {len(unverified)}")
+        for company, title in unverified:
+            print(f"  {company} — {title}   <-- confirm this is the right req")
     if ambiguous:
         print(f"AMBIGUOUS (skipped, multiple surfaced rows, no URL to disambiguate): {len(ambiguous)}")
         for c in ambiguous:

@@ -11,6 +11,8 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 - ATS polling is Python (`poll_ats.py`) — read its small output, never WebFetch boards inline
 - PDFs via `render_pdf.py` + JSON data files — never copy/edit `generate_pdf.py`
 - Coverage checks via `check_coverage.py` — never hand-rolled bash loops
+- Full JDs via `fetch_jd.py` (Step 3) — never WebFetch an Ashby/Workday/Comeet posting, they
+  are JS-rendered or templated and return the title only, which costs retries and search budget
 - Tracking updates via `update_tracking.py` — never hand-edit `seen_jobs.json`
 - Application-confirmation promotions via `mark_applied.py` (Step 0.5) — never hand-edit
   `outcomes.csv`'s `stage`/`applied_date` columns
@@ -123,10 +125,26 @@ Deleting the subject filters would silently drop that class of confirmation.
    doesn't say which requisition it confirms.
 3. Write a small `pipeline/jobs/confirmations_[date].json`:
    ```json
-   {"confirmations": [{"url": "https://...", "company": "...", "applied_date": "2026-MM-DD"}]}
+   {"confirmations": [{"url": "https://...", "company": "...", "title": "...",
+                       "applied_date": "2026-MM-DD"}]}
    ```
    (`url` optional if truly not stated; `applied_date` = the date the confirmation email was
    received, not today's date, if they differ.)
+
+   **ALWAYS include `title` when the email states one, even if you also have the URL.**
+   Since 2026-08-21 `mark_applied.py` treats a supplied title as a REQUIREMENT on the
+   company-name fallback (matching `mark_outcome.py`), so a title is what stops a
+   confirmation from landing on the wrong requisition. Add `"title_exact": true` when one
+   req's title is a prefix of another's at the same company.
+
+   Why this is not optional: on 2026-08-20 four receipts arrived whose real rows were
+   already `applied`. Every one fell through to the company fallback, which matched on
+   company alone and promoted two UNRELATED still-surfaced rows (Relay Payments
+   "Enterprise Solutions Engineer", Maven AGI "Technical Project Manager"). That was caught
+   by hand and reverted from the `.bak`. The code now refuses those matches when a title is
+   given, and prints an **UNVERIFIED MATCH** warning when a promotion happens on company
+   name alone with no URL and no title. Read that warning if it appears; it means the row
+   was chosen only because it was the one still open at that company.
 4. Run `.venv/bin/python pipeline/mark_applied.py pipeline/jobs/confirmations_[date].json`.
    It matches by URL first, falls back to company name only among still-`surfaced` rows, and
    **skips and reports (never guesses) any company name that matches more than one surfaced
@@ -546,6 +564,33 @@ watchlist companies without a band, verify headcount via one WebSearch each (Lin
 `501-2000`, `2000+`). Note them in `run_[date].json → pipeline_notes`. Stop once all
 companies have bands.
 
+### 1e-2. Housekeeping: vertical-bonus classification (max 3/run, added 2026-08-21)
+
+`harvest_ats.py` auto-enrolls companies but **cannot assign a vertical bonus** — `score_bonus`
+and `bonus_reason` are hand-curated on purpose, because an automated keyword pass was ~40% wrong
+in both directions (CLAUDE.md Scoring Guardrails). So every auto-enrolled company arrives with
+no vertical bonus at all and is under-scored by up to 20-30 points until someone classifies it.
+
+Found 2026-08-21: **45 companies had accumulated this way since 2026-07-31**, including Snorkel
+AI (AI/ML, fixed that day), Cribl, Drata, and Render (tooling). Cribl and Doppel were both fully
+tailored while carrying the handicap, so this was silently suppressing real roles — the same
+class of loss as the missing `headcount_band`, and it drains the same way.
+
+Each run, pick up to 3 watchlist companies carrying `needs_vertical_classification: true`,
+oldest `enrolled_date` first. For each, decide from the company's actual product:
+
+- AI-native (the product IS an AI/ML system) → `score_bonus: 20`, reason "AI/ML platform (+20)"
+- Tooling (devtools, dev infra, observability, security tooling, data/API platforms) →
+  `score_bonus: 20`, reason "Developer/infra tooling (+20)"
+- Genuinely both → `score_bonus: 30` (already at the cap)
+- Neither → `score_bonus: 0` with a reason saying why, so it is not re-examined every run
+
+Then remove the `needs_vertical_classification` flag and note it in
+`run_[date].json → pipeline_notes`. **Verify from the company's product, not its name** —
+"AI" in a company name is not evidence, and the false-positive rate is exactly why this is a
+human-judgment step and not a script. Passion-domain and small-company bonuses are computed at
+scoring time from `passion_domains` / `headcount_band` and are NOT set here.
+
 ## Step 2: Filter and score
 
 Combine ATS hits + promoted borderline titles + WebSearch finds.
@@ -711,9 +756,31 @@ with the identical conclusion in every digest from 07-15 through 07-19.)
 
 ## Step 3: Fetch full JDs
 
-WebFetch each top job's apply URL. On failure (403/JS), WebSearch for a cached or mirrored
-copy (BuiltIn, ZipRecruiter, Greenhouse cache). If the JD is unreachable two runs in a
-row, drop it to the near-miss list with a note rather than stalling.
+**Use `fetch_jd.py` FIRST, not WebFetch (changed 2026-08-21).**
+
+```bash
+.venv/bin/python pipeline/fetch_jd.py --from-hits pipeline/jobs/ats_hits_[date].json --match "<title fragment>"
+```
+
+It hits the ATS's own JSON API (Ashby, Workday, Greenhouse, Lever, SmartRecruiters) and prints
+title, location, remote flag, posting date, compensation, and the **full description text** for
+you to read directly. Accepts bare URLs as positional args too, and `--match` is repeatable.
+Only fall back to WebFetch for an ATS it does not cover (Comeet, Pinpoint, and Rippling have no
+per-posting JSON endpoint), then to WebSearch for a cached or mirrored copy. If the JD is
+unreachable two runs in a row, drop it to the near-miss list with a note rather than stalling.
+
+Why this replaced WebFetch as the default: **WebFetch does not work on three of the five ATSes
+that actually reach the shortlist.** Ashby and Workday are JS-rendered and return a page
+containing only the job title; Comeet serves a Spark Hire template full of `{{position.name}}`
+placeholders and the words "no open positions"; `job-boards.greenhouse.io` 302s to company
+domains (Wiz does this). The summarizer then reports "the content appears to be empty," which
+reads like a transient error rather than a structural one, so the natural response is to retry
+and burn more budget. On 2026-08-21 recovering five JDs by hand consumed the run's entire
+WebSearch allowance and **Step 1c's ~14 daily board dorks were skipped outright.** This helper
+takes JD retrieval off the search budget so discovery and JD-reading stop competing.
+
+It also fixes the summarization problem below at the root: it returns raw JD text, so there is
+no small model in the loop deciding which requirements matter.
 
 **Ask for the requirements section VERBATIM, not a summary (added 2026-08-10, from a real
 mis-score).** WebFetch answers your prompt with a small summarizing model, so a generic
