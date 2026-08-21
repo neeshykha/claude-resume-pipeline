@@ -905,7 +905,8 @@
       "headcount_band": "2000+",
       "enrolled_date": "2026-08-18",
       "enrolled_via": "Unpollable-backlog Workday resolution sweep 2026-08-18 (site:myworkdayjobs.com follow-up on a harvest_ats.py deterministic-slug miss)",
-      "reason": "Atlanta HQ, board verified live via direct CXS query (hundreds of open roles). No exact tier1/tier2/tier2c title in the initial scan (skews sales/marketing/supply chain), but Atlanta-enterprise bonus alone justifies daily coverage on a board this size -- a fit-space role is plausible to appear over time and the daily poller will catch it automatically rather than needing another one-off check."
+      "reason": "Atlanta HQ, board verified live via direct CXS query (hundreds of open roles). No exact tier1/tier2/tier2c title in the initial scan (skews sales/marketing/supply chain), but Atlanta-enterprise bonus alone justifies daily coverage on a board this size -- a fit-space role is plausible to appear over time and the daily poller will catch it automatically rather than needing another one-off check.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Ascensus",
@@ -971,7 +972,8 @@
       "headcount_band": "501-2000",
       "enrolled_date": "2026-08-03",
       "enrolled_via": "harvest_ats.py --from-pending (Greenhouse Boards - Target Roles WebSearch dork 2026-08-03)",
-      "reason": "Employee safety and business continuity/emergency communication platform, Austin TX HQ (~516 employees). Verified live 2026-08-03: 19 jobs, 3 US-reachable fit-titles -- AI & Automation Lead, Customer Operations (Austin, tier2c); Implementation Manager (Remote US, tier2); Technical Account Manager NEU (Remote/Dublin, tier2). No AI/ML or tooling score_bonus -- core product is safety/incident communication, not AI-native or dev infra."
+      "reason": "Employee safety and business continuity/emergency communication platform, Austin TX HQ (~516 employees). Verified live 2026-08-03: 19 jobs, 3 US-reachable fit-titles -- AI & Automation Lead, Customer Operations (Austin, tier2c); Implementation Manager (Remote US, tier2); Technical Account Manager NEU (Remote/Dublin, tier2). No AI/ML or tooling score_bonus -- core product is safety/incident communication, not AI-native or dev infra.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Harris Computer",
@@ -3231,7 +3233,8 @@
       "priority": "low",
       "enrolled_date": "2026-07-31",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Implementation Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Implementation Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Everbridge",
@@ -3241,7 +3244,8 @@
       "headcount_band": "501-2000",
       "enrolled_date": "2026-08-01",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager (xMatters)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager (xMatters)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Connecteam",
@@ -3251,7 +3255,8 @@
       "headcount_band": "501-2000",
       "enrolled_date": "2026-08-01",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (72 jobs) with 8 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Professional Service Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (72 jobs) with 8 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Professional Service Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Later",
@@ -3260,7 +3265,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-03",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (44 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. ' Revenue Operations Manager - Customer Operations '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (44 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. ' Revenue Operations Manager - Customer Operations '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Horizon3.ai",
@@ -3269,7 +3275,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-03",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (97 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Staff Revenue Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (97 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Staff Revenue Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Drata",
@@ -3279,7 +3286,8 @@
       "enrolled_date": "2026-08-03",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (54 jobs) with 5 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Manager, Technical Support - Mexico'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
-      "headcount_band": "501-2000"
+      "headcount_band": "501-2000",
+      "needs_vertical_classification": true
     },
     {
       "name": "Axon",
@@ -3289,7 +3297,8 @@
       "enrolled_date": "2026-08-03",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (482 jobs) with 41 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Certinia Implementation Consultant'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "needs_vertical_classification": true
     },
     {
       "name": "People Culture Talent",
@@ -3298,7 +3307,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-04",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (19 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Deployment Strategist'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (19 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Deployment Strategist'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Orbital",
@@ -3307,7 +3317,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-04",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (28 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager (Sales)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (28 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager (Sales)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "WorkWave",
@@ -3316,7 +3327,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-04",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Salesforce Administrator'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Salesforce Administrator'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Render",
@@ -3325,7 +3337,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-04",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (35 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (35 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Instacart",
@@ -3334,7 +3347,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-06",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (117 jobs) with 8 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'AI Engagement Manager '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (117 jobs) with 8 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'AI Engagement Manager '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Hercules",
@@ -3354,7 +3368,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-06",
       "enrolled_via": "User-surfaced (Aneesh spotted 'Applied AI Lead, Rev Ops', $121K-$190K, in the LinkedIn app Jobs feed) + harvest_ats.py auto-enrollment same run",
-      "reason": "Mental health care marketplace/EHR platform. Auto-enrolled by the ATS harvest layer: board verified live (69 jobs) with 1 US-reachable tier1/tier2/tier2c fit-title at harvest time ('Program Manager, Talent & AI Enablement'). NOTE: the specific req Aneesh saw ('Applied AI Lead, Rev Ops') is NOT present on the live board as of 2026-08-06 -- either already closed, or a stale/duplicate LinkedIn listing. Not tailored; flagged as a discrepancy rather than silently dropped. Enrolled at LOW priority so the poller watches for it (or its replacement) going forward."
+      "reason": "Mental health care marketplace/EHR platform. Auto-enrolled by the ATS harvest layer: board verified live (69 jobs) with 1 US-reachable tier1/tier2/tier2c fit-title at harvest time ('Program Manager, Talent & AI Enablement'). NOTE: the specific req Aneesh saw ('Applied AI Lead, Rev Ops') is NOT present on the live board as of 2026-08-06 -- either already closed, or a stale/duplicate LinkedIn listing. Not tailored; flagged as a discrepancy rather than silently dropped. Enrolled at LOW priority so the poller watches for it (or its replacement) going forward.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Philips",
@@ -3378,7 +3393,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-10",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (55 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager - Product Partner Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (55 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager - Product Partner Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "AlphaSense",
@@ -3387,7 +3403,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-10",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (228 jobs) with 6 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'AI Deployment Lead, Hedge Funds'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (228 jobs) with 6 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'AI Deployment Lead, Hedge Funds'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Cyara",
@@ -3396,7 +3413,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-11",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager, GTM Technology & Deal Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Revenue Operations Manager, GTM Technology & Deal Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "GitLab",
@@ -3417,7 +3435,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-11",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (238 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Embedded Software Engineer - Battery Management Systems'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (238 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Embedded Software Engineer - Battery Management Systems'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Skydio",
@@ -3437,7 +3456,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (17 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager, Revenue Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (17 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager, Revenue Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Sprout Social",
@@ -3446,7 +3466,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'FP&A Systems and AI Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. CORRECTION 2026-08-12 (full JD read): the surfacing role is genuinely a Finance-department FP&A systems role requiring deep hands-on Pigment (enterprise planning software) experience -- not a support/CS-AI role despite the 'AI Manager' title-match. Do not tailor for it; the title-tier match was real but the substance is a hard mismatch. Keep the company enrolled in case a real support/CS-titled role posts later."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'FP&A Systems and AI Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. CORRECTION 2026-08-12 (full JD read): the surfacing role is genuinely a Finance-department FP&A systems role requiring deep hands-on Pigment (enterprise planning software) experience -- not a support/CS-AI role despite the 'AI Manager' title-match. Do not tailor for it; the title-tier match was real but the substance is a hard mismatch. Keep the company enrolled in case a real support/CS-titled role posts later.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Appian",
@@ -3455,7 +3476,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (188 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Career Manager (Public Sector, Professional Services)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (188 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Career Manager (Public Sector, Professional Services)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Precisely",
@@ -3492,7 +3514,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Routeware",
@@ -3501,7 +3524,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 4 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Product Manager – Business Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 4 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Product Manager – Business Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Kion",
@@ -3510,7 +3534,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (3 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (3 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "HappyRobot",
@@ -3531,7 +3556,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (26 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager - AI Infrastructure'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (26 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager - AI Infrastructure'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Base Power",
@@ -3540,7 +3566,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-12",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer, but flag before trusting the auto-pick: the harvester's 1 'fit-title' hit ('Global Supply Manager - Tooling & Shop Supplies (MRO)', Austin TX) is a FALSE POSITIVE -- MRO tooling is physical shop/warehouse supply procurement, not the software/business tooling the tier2c_tooling_systems tier is meant to catch. Verified by reading the role itself 2026-08-12. Kept enrolled anyway (172-job board, home-battery/grid-tech company, real climate-tech vertical fit for daily monitoring) but do NOT tailor for that specific role, and don't trust future tier2c matches here without reading the JD first."
+      "reason": "Auto-enrolled by the ATS harvest layer, but flag before trusting the auto-pick: the harvester's 1 'fit-title' hit ('Global Supply Manager - Tooling & Shop Supplies (MRO)', Austin TX) is a FALSE POSITIVE -- MRO tooling is physical shop/warehouse supply procurement, not the software/business tooling the tier2c_tooling_systems tier is meant to catch. Verified by reading the role itself 2026-08-12. Kept enrolled anyway (172-job board, home-battery/grid-tech company, real climate-tech vertical fit for daily monitoring) but do NOT tailor for that specific role, and don't trust future tier2c matches here without reading the JD first.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Veeam Software",
@@ -3549,7 +3576,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-14",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (228 jobs) with 5 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager, Customer Success Engineering'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (228 jobs) with 5 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager, Customer Success Engineering'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "StubHub",
@@ -3558,7 +3586,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-14",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (20 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director, Global Customer Success'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (20 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director, Global Customer Success'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Podium",
@@ -3590,7 +3619,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-15",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Support Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Support Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Amira Learning",
@@ -3599,7 +3629,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-15",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (3 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager, Support Operations (AI & BPO)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (3 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager, Support Operations (AI & BPO)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Doppel",
@@ -3608,7 +3639,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-15",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (23 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'RevOps Systems & Tools Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (23 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'RevOps Systems & Tools Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Follett Software",
@@ -3617,7 +3649,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-15",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Product Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Product Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Directive",
@@ -3626,7 +3659,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-15",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (72 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Revenue Operations Manager (Remote Canada)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (72 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Revenue Operations Manager (Remote Canada)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Optro",
@@ -3635,7 +3669,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-15",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (28 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Revenue Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (28 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Revenue Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Mission Lane",
@@ -3644,7 +3679,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-15",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Operations Senior Manager, AI'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Operations Senior Manager, AI'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Wiz",
@@ -3665,7 +3701,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-17",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Salesforce Administrator - Contract'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Salesforce Administrator - Contract'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Integrate",
@@ -3674,7 +3711,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-17",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director of Customer Success'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director of Customer Success'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Ashby",
@@ -3683,7 +3721,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-17",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (61 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Manager of Dedicated Implementations - EMEA'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (61 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Manager of Dedicated Implementations - EMEA'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Cribl",
@@ -3692,7 +3731,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-17",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (67 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Customer Support Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (67 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Customer Support Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Saviynt",
@@ -3701,7 +3741,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-18",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (110 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Identity Security - Technical Account Manager - Germany / Ne'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (110 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Identity Security - Technical Account Manager - Germany / Ne'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "3E",
@@ -3710,7 +3751,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-18",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director, Customer Implementations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director, Customer Implementations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Clariti Cloud",
@@ -3719,7 +3761,8 @@
       "priority": "low",
       "enrolled_date": "2026-08-18",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 5 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Engagement Manager II'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 5 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Engagement Manager II'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
     },
     {
       "name": "Snorkel AI",
@@ -3728,7 +3771,9 @@
       "priority": "low",
       "enrolled_date": "2026-08-18",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (39 jobs) with 6 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Accounting Manager, Technical Accounting & Financial Reporti'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (39 jobs) with 6 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Accounting Manager, Technical Accounting & Financial Reporti'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- data-centric AI platform (Snorkel Flow, programmatic data labeling), Stanford AI Lab spinout. Added 2026-08-21 after its Engagement Manager role scored 80 instead of ~100 for want of this field; auto-enrolled 2026-08-18 by harvest_ats.py, which cannot assign vertical bonuses."
     },
     {
       "name": "Hello Heart",
@@ -3737,7 +3782,18 @@
       "priority": "low",
       "enrolled_date": "2026-08-21",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (10 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Client Implementation & Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (10 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Client Implementation & Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "needs_vertical_classification": true
+    },
+    {
+      "name": "Aspire",
+      "ats": "rippling",
+      "slug": "aspire",
+      "priority": "low",
+      "enrolled_date": "2026-08-21",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (5 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Implementation Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
