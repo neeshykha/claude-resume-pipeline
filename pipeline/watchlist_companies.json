@@ -973,7 +973,8 @@
       "enrolled_date": "2026-08-03",
       "enrolled_via": "harvest_ats.py --from-pending (Greenhouse Boards - Target Roles WebSearch dork 2026-08-03)",
       "reason": "Employee safety and business continuity/emergency communication platform, Austin TX HQ (~516 employees). Verified live 2026-08-03: 19 jobs, 3 US-reachable fit-titles -- AI & Automation Lead, Customer Operations (Austin, tier2c); Implementation Manager (Remote US, tier2); Technical Account Manager NEU (Remote/Dublin, tier2). No AI/ML or tooling score_bonus -- core product is safety/incident communication, not AI-native or dev infra.",
-      "needs_vertical_classification": true
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Employee safety, emergency communication, and business continuity platform (Austin TX). Direct competitor to Everbridge and classified identically and for the same reasons: not AI-native, and the nearest tooling category is security, but the curated tooling entries there are all INFOSEC while this is physical safety and operational resilience. Same scoring note as Everbridge: notification, escalation, and incident workflows overlap genuinely with Aneesh's support-ops background, so its fit-titles should score on keyword overlap without needing a bonus."
     },
     {
       "name": "Harris Computer",
@@ -3269,7 +3270,8 @@
       "enrolled_date": "2026-08-03",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (44 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. ' Revenue Operations Manager - Customer Operations '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
-      "needs_vertical_classification": true
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Social media management and creator/influencer marketing platform: scheduling, publishing, analytics, link-in-bio. Not AI-native (AI features assist captions/scheduling; the product is a marketing workflow tool). Not developer/infra tooling -- the audience is marketers. Note only 1 US-reachable fit-title on the board at harvest time, so low expected yield regardless."
     },
     {
       "name": "Horizon3.ai",
@@ -3279,7 +3281,8 @@
       "enrolled_date": "2026-08-03",
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (97 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Staff Revenue Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
-      "needs_vertical_classification": true
+      "score_bonus": 30,
+      "bonus_reason": "BOTH AI/ML platform and security tooling (+30, already at the company-bonus cap). Classified 2026-08-21, verified from product. NodeZero is an autonomous penetration testing platform Horizon3 markets as an 'AI Hacker': an AI-driven engine that discovers and chains real attacks (lateral movement, credential attacks, privilege escalation) across internal, external, cloud, Kubernetes, and web-app surfaces, then re-tests to confirm fixes. Security tooling is unambiguous (same category as Wiz, Expel, Chainguard). AI-native is also unambiguous here because the AUTONOMY IS THE PRODUCT THESIS, not a feature bolted onto a scanner -- the whole pitch is that it replaces a human pentester rather than listing CVEs. Was carrying NO bonus at all, so this is a 30-point correction on a 97-job board."
     },
     {
       "name": "Drata",
