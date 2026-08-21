@@ -3736,14 +3736,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "Evident ID",
-      "ats": "lever",
-      "slug": "evidentid",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
       "name": "Connexure",
       "ats": null,
       "slug": null,
@@ -4040,6 +4032,14 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Operations Support Manager (tier1 loose match); location not read from the alert body this run (budget-capped), verify at resolution."
+    },
+    {
+      "name": "Cloudbeds",
+      "ats": "greenhouse",
+      "slug": "cloudbeds",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (46 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "recheck_if_resurfaced": true
     }
   ]
 }
