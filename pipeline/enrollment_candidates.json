@@ -1319,16 +1319,87 @@
       "slug": "sonatype",
       "enrolled_date": "2026-08-21",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Dexory",
+      "ats": "greenhouse",
+      "slug": "dexory",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Quora",
+      "ats": "ashby",
+      "slug": "quora",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Cordance",
+      "ats": "greenhouse",
+      "slug": "cordance",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Postscript",
+      "ats": "greenhouse",
+      "slug": "postscript",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "TensorWave",
+      "ats": "ashby",
+      "slug": "tensorwave",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Tread",
+      "ats": "ashby",
+      "slug": "tread",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Recharge",
+      "ats": "ashby",
+      "slug": "recharge",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Arrive",
+      "ats": "ashby",
+      "slug": "arrive",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Metropolis Technologies",
+      "ats": "greenhouse",
+      "slug": "metropolis",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Akuity",
+      "ats": "greenhouse",
+      "slug": "akuity",
+      "enrolled_date": "2026-08-21",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
     {
       "name": "Neuron7.ai",
-      "ats": "lever",
-      "slug": "neuron7",
+      "ats": null,
+      "slug": null,
       "rejected_date": "2026-08-17",
-      "reason": "harvest_ats.py's name-variant guesser missed the slug (real slug 'neuron7', not a variant of 'neuron7ai' or similar) -- resolved by hand via WebSearch. Board live (9 jobs) but zero US-reachable tier1/tier2/tier2c fit-titles at verification time: DevOps Engineer, Product Management Apprentice, Staff Data Scientist (Bangalore), Senior/regular AI Solutions Engineer, Lead PM (Bangalore), Senior Software Engineer, Customer Implementation Engineer (Python/AI/ML, requires Python). The 'Technical Manager - Customer Success (AI Field Services)' USA-Remote title that surfaced this company via a jobgether.com aggregator mirror is not currently live on the actual Lever board -- likely closed or a stale aggregator listing. Recheck if it resurfaces.",
-      "recheck_if_resurfaced": true
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
     },
     {
       "name": "Lucid Software",
@@ -1609,15 +1680,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "Argyle",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-07-22",
-      "reason": "BuiltIn Atlanta hit ('Customer Success Engineer'). No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
       "name": "Chainalysis",
       "ats": null,
       "slug": null,
@@ -1681,17 +1743,6 @@
       "rejected_date": "2026-07-18",
       "reason": "Industrial maintenance services company (Peoria, IL HQ, 1,001-5,000 employees) surfaced by the Industrial IoT discovery source via Condition Monitoring Expert listings -- board live (102 jobs) but the only support/CS-adjacent roles currently open are onsite Illinois (Facilities Support Manager, Sales and Support Representative), not remote, not TAM/CSM-shaped.",
       "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Stampli",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-07-17",
-      "reason": "No standard ATS board found -- direct slug guesses 404'd on Greenhouse, Ashby, and Lever, and WebSearch surfaced no careers-page link. Fintech AP automation company; the Customer Success Manager/Implementation Consultant listing that surfaced it on BuiltIn has no traceable apply board.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
     },
     {
       "name": "Revenue Analytics",
@@ -1879,28 +1930,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "Gladly",
-      "ats": "greenhouse",
-      "slug": "gladly",
-      "rejected_date": "2026-06-30",
-      "reason": "Greenhouse slug 'gladly' 404 — find real ATS/slug if resurfaced (customer service platform, would be a fit).",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
-    },
-    {
-      "name": "Kustomer",
-      "ats": "greenhouse",
-      "slug": "kustomer",
-      "rejected_date": "2026-06-30",
-      "reason": "Greenhouse slug 'kustomer' 404 — find real ATS/slug if resurfaced (CRM/support, would be a fit).",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
-    },
-    {
       "name": "Espressive",
       "ats": "greenhouse",
       "slug": "espressive",
@@ -1925,14 +1954,6 @@
       "slug": "eagle",
       "rejected_date": "2026-06-30",
       "reason": "Live (9 jobs) but only fit role is a single coding-heavy Forward Deployed Engineer (NYC) at an unclear-domain engineering co; not a clear support-ops/CS fit. Re-check if CS/implementation roles appear.",
-      "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Clerky",
-      "ats": "ashby",
-      "slug": "clerky",
-      "rejected_date": "2026-07-01",
-      "reason": "Resurfaced via Remotive again (same listing as 2026-06-30 rejection): resolved to ashby/clerky, still only 1 job (worldwide 'Customer Operations & Writing Specialist' blend) — too thin/marginal to monitor. Re-check if more CS/ops roles appear.",
       "recheck_if_resurfaced": true
     },
     {
@@ -1987,14 +2008,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "Revenue Analytics",
-      "ats": "lever",
-      "slug": "revenueanalytics",
-      "rejected_date": "2026-07-06",
-      "reason": "Board live (Atlanta HQ pricing analytics SaaS) but current roles are Data Scientist/Senior Software Engineer only - the Customer Strategy & Success Analyst role that surfaced it via BuiltIn appears filled/closed as of 2026-07-06.",
-      "recheck_if_resurfaced": true
-    },
-    {
       "name": "Health Gorilla",
       "ats": "greenhouse",
       "slug": "healthgorilla",
@@ -2019,14 +2032,6 @@
       "slug": null,
       "rejected_date": "2026-07-06",
       "reason": "Workday tenant found (changehealthcare.wd5.myworkdayjobs.com) but CXS jobs API returned 422 on direct probing; Optum/UnitedHealth-scale shared instance, uncertain single-role fit not worth further automated probing effort.",
-      "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Conversica",
-      "ats": "lever",
-      "slug": "conversica",
-      "rejected_date": "2026-07-07",
-      "reason": "The Technical Account Manager role that surfaced it has closed; remaining live roles (Content Marketing Manager, Senior/Staff Backend Platform Engineer, Senior Revenue Operations Analyst) are not fit-space.",
       "recheck_if_resurfaced": true
     },
     {
@@ -2239,15 +2244,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "CSI (Computer Services, Inc.)",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-07-23",
-      "reason": "AI Adoption Manager listing (remote) surfaced via AI-Titled Roles discovery. No Greenhouse/Ashby/Lever/SmartRecruiters board found -- likely an unsupported ATS or direct careers-page-only posting. Also 1,477 employees (Paducah, KY core-banking processor), well above the sub-500 discovery-layer bias, so not worth further pursuit even if a board surfaces later.",
-      "recheck_if_resurfaced": false,
-      "unpollable": true
-    },
-    {
       "name": "Simpplr",
       "ats": "greenhouse",
       "slug": "simpplr",
@@ -2367,7 +2363,7 @@
       "name": "Rippling",
       "ats": null,
       "slug": null,
-      "rejected_date": "2026-07-31",
+      "rejected_date": "2026-08-12",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
@@ -2418,27 +2414,19 @@
       "unpollable": true
     },
     {
-      "name": "Dexory",
-      "ats": "greenhouse",
-      "slug": "dexory",
-      "rejected_date": "2026-08-01",
-      "reason": "Board resolves and is live (24 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
       "name": "Knock",
       "ats": "greenhouse",
       "slug": "knock",
-      "rejected_date": "2026-08-01",
-      "reason": "Board resolves and is live (1 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (2 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Butlr",
       "ats": "greenhouse",
       "slug": "butlr",
-      "rejected_date": "2026-08-01",
-      "reason": "Board resolves and is live (3 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (2 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -2476,14 +2464,6 @@
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
       "unpollable": true
-    },
-    {
-      "name": "Quora",
-      "ats": "ashby",
-      "slug": "quora",
-      "rejected_date": "2026-08-01",
-      "reason": "Board resolves and is live (6 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
     },
     {
       "name": "Undaunted",
@@ -2543,112 +2523,104 @@
       "name": "Age of Learning",
       "ats": "greenhouse",
       "slug": "ageoflearninginc",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (7 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Ethena",
       "ats": "lever",
       "slug": "ethena",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (8 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Nylas",
       "ats": "ashby",
       "slug": "nylas",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (9 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (7 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Reply",
       "ats": "lever",
       "slug": "reply",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (39 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (39 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Better Mortgage",
       "ats": "ashby",
       "slug": "better-mortgage",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (8 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (11 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Prophetic Technologies",
       "ats": "ashby",
       "slug": "prophetic-technologies",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (8 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (7 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Sweep",
       "ats": "ashby",
       "slug": "sweep",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Cordance",
-      "ats": "greenhouse",
-      "slug": "cordance",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (12 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (7 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Sorcero",
       "ats": "greenhouse",
       "slug": "sorcero",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (3 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (2 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "PadSplit",
       "ats": "lever",
       "slug": "padsplit",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (19 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (16 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Foxen",
       "ats": "greenhouse",
       "slug": "foxen",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (9 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (5 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "SmartRent",
       "ats": "greenhouse",
       "slug": "smartrent",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (10 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (7 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "VTS",
       "ats": "greenhouse",
       "slug": "vts",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (19 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (16 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Checkly",
       "ats": "ashby",
       "slug": "checkly",
-      "rejected_date": "2026-08-04",
-      "reason": "Board resolves and is live (3 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (3 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -2806,34 +2778,35 @@
     },
     {
       "name": "Oleria Security",
-      "ats": "lever",
-      "slug": "oleria-security",
-      "rejected_date": "2026-08-07",
-      "reason": "Board resolves and is live (2 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
     },
     {
       "name": "Tutor Intelligence",
       "ats": "lever",
       "slug": "tutorintelligence",
-      "rejected_date": "2026-08-07",
-      "reason": "Board resolves and is live (33 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (36 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Canonical",
       "ats": "greenhouse",
       "slug": "canonical",
-      "rejected_date": "2026-08-07",
-      "reason": "Board resolves and is live (304 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (303 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Prior Labs",
       "ats": "ashby",
       "slug": "prior-labs",
-      "rejected_date": "2026-08-07",
-      "reason": "Board resolves and is live (17 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (20 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -2858,8 +2831,8 @@
       "name": "Luxury Presence",
       "ats": "lever",
       "slug": "luxurypresence",
-      "rejected_date": "2026-08-10",
-      "reason": "Board resolves and is live (23 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (24 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -2919,14 +2892,6 @@
       "unpollable": true
     },
     {
-      "name": "Postscript",
-      "ats": "greenhouse",
-      "slug": "postscript",
-      "rejected_date": "2026-08-10",
-      "reason": "Board resolves and is live (6 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
       "name": "GitHub",
       "ats": null,
       "slug": null,
@@ -2969,28 +2934,13 @@
       "unpollable": true
     },
     {
-      "name": "TensorWave",
-      "ats": "ashby",
-      "slug": "tensorwave",
-      "rejected_date": "2026-08-11",
-      "reason": "Board resolves and is live (42 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Tread",
-      "ats": "ashby",
-      "slug": "tread",
-      "rejected_date": "2026-08-11",
-      "reason": "Board resolves and is live (6 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
       "name": "Ripple Property Management",
-      "ats": "workable",
-      "slug": "ripple-property-management",
-      "rejected_date": "2026-08-11",
-      "reason": "Board resolves and is live (2 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-21",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
     },
     {
       "name": "APTLY",
@@ -3040,16 +2990,16 @@
       "name": "Wpromote",
       "ats": "lever",
       "slug": "wpromote",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (39 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (38 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Aurora Solar",
       "ats": "ashby",
       "slug": "aurorasolar",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (8 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (10 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3110,26 +3060,17 @@
       "name": "Tixr",
       "ats": "rippling",
       "slug": "tixr",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (15 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (15 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Portnox",
       "ats": "pinpoint",
       "slug": "portnox",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (10 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Rippling",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-12",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
     },
     {
       "name": "gaiia",
@@ -3144,72 +3085,72 @@
       "name": "Neko Health",
       "ats": "ashby",
       "slug": "neko-health",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (102 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (106 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "CopilotKit",
       "ats": "lever",
       "slug": "copilotkit",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (1 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (1 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Parasail",
       "ats": "ashby",
       "slug": "parasail",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (8 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (8 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Zeno",
       "ats": "ashby",
       "slug": "zeno",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (2 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (2 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Form Energy",
       "ats": "ashby",
       "slug": "formenergy",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (185 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (182 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "OpenEvidence",
       "ats": "ashby",
       "slug": "openevidence",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (7 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "New Limit",
       "ats": "greenhouse",
       "slug": "newlimit",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (17 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (16 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Halter",
       "ats": "ashby",
       "slug": "halter",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (238 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (232 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "AgZen",
       "ats": "ashby",
       "slug": "agzen",
-      "rejected_date": "2026-08-12",
-      "reason": "Board resolves and is live (6 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3315,7 +3256,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-12",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "Atlanta-based AI-powered middleware platform for cross-border e-commerce distribution, $25M pre-Series B led by Bajaj Finserv (March 2026) -- genuinely tech, genuinely AI-native, and their own site mentions active Operations hiring. Careers page (assiduusglobal.com/careers, /job-openings) is custom and renders no visible listings via WebFetch -- not on any poll_ats.py-supported ATS. Worth a recheck later if a specific role surfaces some other way (LinkedIn alert, etc.) since the company itself is a real vertical fit.",
       "recheck_if_resurfaced": true,
       "unpollable": true
     },
@@ -3345,15 +3286,6 @@
       "recheck_if_resurfaced": false
     },
     {
-      "name": "Assiduus Global",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-12",
-      "reason": "Atlanta-based AI-powered middleware platform for cross-border e-commerce distribution, $25M pre-Series B led by Bajaj Finserv (March 2026) -- genuinely tech, genuinely AI-native, and their own site mentions active Operations hiring. Careers page (assiduusglobal.com/careers, /job-openings) is custom and renders no visible listings via WebFetch -- not on any poll_ats.py-supported ATS. Worth a recheck later if a specific role surfaces some other way (LinkedIn alert, etc.) since the company itself is a real vertical fit.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
       "name": "Gridline",
       "ats": "lever",
       "slug": "gridline",
@@ -3370,27 +3302,19 @@
       "recheck_if_resurfaced": false
     },
     {
-      "name": "Recharge",
-      "ats": "ashby",
-      "slug": "recharge",
-      "rejected_date": "2026-08-14",
-      "reason": "Board resolves and is live (4 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
       "name": "Venn",
       "ats": "ashby",
       "slug": "venn",
-      "rejected_date": "2026-08-14",
-      "reason": "Board resolves and is live (12 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (11 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Nametag",
       "ats": "greenhouse",
       "slug": "nametag",
-      "rejected_date": "2026-08-14",
-      "reason": "Board resolves and is live (6 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3460,8 +3384,8 @@
       "name": "The Mortgage Office",
       "ats": "rippling",
       "slug": "the-mortgage-office",
-      "rejected_date": "2026-08-15",
-      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3477,8 +3401,8 @@
       "name": "Interra Health",
       "ats": "ashby",
       "slug": "interrahealth",
-      "rejected_date": "2026-08-15",
-      "reason": "Board resolves and is live (15 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (16 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3503,66 +3427,41 @@
       "name": "Placemakr",
       "ats": "lever",
       "slug": "placemakr",
-      "rejected_date": "2026-08-17",
-      "reason": "Board resolves and is live (22 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (21 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Fetch",
       "ats": "greenhouse",
       "slug": "fetch",
-      "rejected_date": "2026-08-17",
-      "reason": "Board resolves and is live (54 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (55 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Firework",
       "ats": "lever",
       "slug": "fireworkhq",
-      "rejected_date": "2026-08-17",
-      "reason": "Board resolves and is live (21 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Arrive",
-      "ats": "ashby",
-      "slug": "arrive",
-      "rejected_date": "2026-08-17",
-      "reason": "Board resolves and is live (59 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (21 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Geotab",
       "ats": "greenhouse",
       "slug": "geotab",
-      "rejected_date": "2026-08-17",
-      "reason": "Board resolves and is live (105 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Metropolis Technologies",
-      "ats": "pinpoint",
-      "slug": "metropolis",
-      "rejected_date": "2026-08-17",
-      "reason": "Board resolves and is live (5 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (106 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Lumos Fiber",
       "ats": "greenhouse",
       "slug": "lumosfiber",
-      "rejected_date": "2026-08-17",
-      "reason": "Board resolves and is live (20 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (20 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Neuron7.ai",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-17",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
     },
     {
       "name": "Montra Technologies",
@@ -3689,48 +3588,40 @@
       "name": "Fundamental",
       "ats": "ashby",
       "slug": "fundamental",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (19 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (18 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Mitti Labs",
       "ats": "ashby",
       "slug": "mitti",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (32 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (31 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Armis Security",
       "ats": "greenhouse",
       "slug": "armissecurity",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (21 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (18 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Buildkite",
       "ats": "greenhouse",
       "slug": "buildkite",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (10 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
-      "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Akuity",
-      "ats": "greenhouse",
-      "slug": "akuity",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (8 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Edmentum",
       "ats": "greenhouse",
       "slug": "edmentum",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (25 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (26 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3746,24 +3637,24 @@
       "name": "GiveWell",
       "ats": "greenhouse",
       "slug": "givewell",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (20 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (20 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Sage",
       "ats": "pinpoint",
       "slug": "sage",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (5 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (5 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
       "name": "Pronghorn",
       "ats": "rippling",
       "slug": "pronghorn-careers",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (7 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (11 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3817,8 +3708,8 @@
       "name": "Voxie",
       "ats": "greenhouse",
       "slug": "voxieinc",
-      "rejected_date": "2026-08-18",
-      "reason": "Board resolves and is live (3 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "rejected_date": "2026-08-21",
+      "reason": "Board resolves and is live (3 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3934,7 +3825,7 @@
       "ats": "pinpoint",
       "slug": "founderspledge",
       "rejected_date": "2026-08-21",
-      "reason": "Board resolves and is live (4 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3942,7 +3833,7 @@
       "ats": "greenhouse",
       "slug": "robotsandpencils",
       "rejected_date": "2026-08-21",
-      "reason": "Board resolves and is live (36 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "reason": "Board resolves and is live (36 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -3950,7 +3841,7 @@
       "ats": "ashby",
       "slug": "blitzy",
       "rejected_date": "2026-08-21",
-      "reason": "Board resolves and is live (46 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "reason": "Board resolves and is live (46 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     },
     {
@@ -4036,7 +3927,7 @@
       "ats": "greenhouse",
       "slug": "cloudbeds",
       "rejected_date": "2026-08-21",
-      "reason": "Board resolves and is live (46 jobs) but ZERO US-reachable tier1/tier2/tier2c titles at harvest time. Rejected on fit-space, not pollability -- recheck if the company resurfaces.",
+      "reason": "Board resolves and is live (46 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
       "recheck_if_resurfaced": true
     }
   ]
