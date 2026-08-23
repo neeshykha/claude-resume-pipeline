@@ -782,6 +782,12 @@ not the individual call, is what this rule fixes. Judgment still applies to what
 "the same function": Service Cloud admin work is not GTM Systems experience, but a Support
 Operations Manager req asking for "5+ years in support operations" is squarely met.
 
+**Record the outcome of this judgment every time, in `hard_req_cap_trigger` (Step 6).** Quote
+the triggering requirement verbatim when the cap fires; write the literal `none` when you
+checked and it does not. Leaving it blank discards the one signal that separates a correctly
+capped role from a missed one — which is the state the tracker was in before 2026-08-21, when
+`unmet_hard_reqs` was all there was and could not tell those apart.
+
 **Diversity cap:** surface ≤2 roles per company per run; fully tailor only the single
 best-scoring one — additional same-company roles are "also live (FYI)" digest lines.
 
@@ -987,9 +993,19 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST
    ```
    (surfaced top 3-4 only, not near-misses)
 
-   **`unmet_hard_reqs` and `vendor_tool_named_in_jd` are required, added 2026-08-01.**
-   You already identify both during tailoring; these fields just stop them from being
-   trapped in prose where nothing can count them.
+   **`unmet_hard_reqs`, `vendor_tool_named_in_jd`, and `hard_req_cap_trigger` are all
+   required.** You already identify each during tailoring; these fields just stop them
+   from being trapped in prose where nothing can count them.
+   - `hard_req_cap_trigger` (added 2026-08-21): the requirement that fires the
+     HARD-REQUIREMENT TIER CAP, quoted verbatim from the JD — or the literal string
+     `none` when nothing does. **Write `none`; do not leave it blank.** Blank means "never
+     recorded" and is reserved for the 219 rows that predate the field. This is a
+     *different question* from `unmet_hard_reqs`: that counts every disclosed gap, most of
+     which are soft, while this one names only a stated years-minimum in a function with
+     zero years, or something the JD calls non-negotiable. A role can honestly carry 2
+     unmet hard reqs and still take full tailoring — Vanta on 2026-08-21 did, because its
+     JD states no years minimum. Recording both is what lets `audit_scores.py` tell a
+     correct call from a missed cap instead of flagging every gap for manual review.
    - `unmet_hard_reqs`: integer count of the JD's HARD requirements that cannot be
      honestly claimed from `master_resume.md`. Count the same gaps you disclose in the
      cover letter and report at Step 4. Nice-to-haves don't count; only requirements a

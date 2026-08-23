@@ -394,24 +394,37 @@ def rubric_drift(notes, row_date, stage):
     return False, 0, False
 
 
-def hardreq_signal(notes, unmet_n):
+def hardreq_signal(notes, unmet_n, cap_field=""):
     """Does the hard-requirement tier cap apply?
 
-    `unmet_hard_reqs` alone cannot answer this, and that is the single biggest
-    limit on this audit. The field counts every disclosed gap -- most of them
-    soft ("no fintech domain", "no Stripe billing experience") -- while the cap
-    fires only on a stated years-minimum in a function with zero years, or a
-    requirement the JD marks non-negotiable. Nothing in the schema separates
-    the two, so this reads the notes and returns "unknown" when they don't say.
+    `unmet_hard_reqs` cannot answer this: it counts every disclosed gap, most
+    of them soft ("no fintech domain"), while the cap fires only on a stated
+    years-minimum in a function with zero years, or a requirement the JD marks
+    non-negotiable. That ambiguity was this audit's biggest limitation and is
+    why 10 rows could only be reported as an unresolved REVIEW queue.
+
+    `hard_req_cap_trigger` (added 2026-08-21) resolves it directly, with three
+    states so that empty never has to mean two things at once:
+        "none"   checked, nothing triggers the cap
+        <text>   the triggering requirement, verbatim
+        ""       not recorded -- every row before the field existed
+    Empty falls back to reading the notes, which is a guess and is labelled as
+    one; the returned reason says which source was used.
+
+    Returns (verdict, source) where source is "recorded" or "inferred".
     """
+    field = (cap_field or "").strip()
+    if field:
+        return ("declined" if field.lower() == "none" else "fires"), "recorded"
+
     n = notes or ""
     if CAP_DECLINED.search(n):
-        return "declined"
+        return "declined", "inferred"
     if unmet_n < 1:
-        return "none"
+        return "none", "inferred"
     if CAP_FIRES.search(n):
-        return "fires"
-    return "unknown"
+        return "fires", "inferred"
+    return "unknown", "inferred"
 
 
 # -------------------------------------------------------------------- audit
@@ -477,19 +490,28 @@ def audit_row(row, matcher, idx, cfg):
         return "full" if t in ("full", "priority") else t
 
     if applied:
-        cap = hardreq_signal(notes, unmet_n)
+        cap, src = hardreq_signal(notes, unmet_n, row.get("hard_req_cap_trigger"))
         if cap == "fires" and klass(applied) == "full" and not override:
-            findings.append(("HARDREQ_CAP", "high",
-                             f"The notes describe an explicit years-minimum or a "
-                             f"JD-stated non-negotiable, but {applied} tailoring was "
-                             f"applied. The hard-requirement cap should have demoted "
-                             f"this to light."))
+            if src == "recorded":
+                trigger = (row.get("hard_req_cap_trigger") or "").strip()
+                findings.append(("HARDREQ_CAP", "high",
+                                 f"hard_req_cap_trigger records \"{trigger}\", but "
+                                 f"{applied} tailoring was applied. The cap should "
+                                 f"have demoted this to light."))
+            else:
+                findings.append(("HARDREQ_CAP", "high",
+                                 f"The notes describe an explicit years-minimum or a "
+                                 f"JD-stated non-negotiable, but {applied} tailoring was "
+                                 f"applied. The hard-requirement cap should have demoted "
+                                 f"this to light. (Inferred from notes — this row predates "
+                                 f"hard_req_cap_trigger.)"))
         elif cap == "unknown" and klass(applied) == "full" and not override:
             findings.append(("REVIEW", "low",
                              f"{unmet_n} unmet hard requirement(s) recorded alongside "
-                             f"{applied} tailoring. Whether the cap should fire depends "
-                             f"on a years-minimum the recorded data doesn't capture — "
-                             f"eyeball, not an error."))
+                             f"{applied} tailoring, and `hard_req_cap_trigger` is empty, "
+                             f"so whether the cap should fire can't be resolved from the "
+                             f"row. Predates the field (added 2026-08-21); rows written "
+                             f"after it record this directly."))
         if klass(applied) != klass(want) and not override and not documented:
             if not (unmet_n >= 1 and applied == "light"):
                 findings.append(("TIER", "medium",
@@ -614,6 +636,31 @@ FIXTURES = [
      "retrieved the requirements block, so the surfacing note had no years language "
      "to read. This audit downgrades it to REVIEW and cannot prove the error. Fixing "
      "that belongs upstream in what Step 3 captures, not here."),
+    ({
+        "company": "Chainguard (same row, hard_req_cap_trigger recorded)",
+        "title": "Senior Data Governance and Tooling Manager",
+        "url": "https://job-boards.greenhouse.io/chainguard/jobs/4701660006",
+        "fit_score": "104", "jd_coverage_pct": "73",
+        "surfaced_date": "2026-08-10", "applied_date": "2026-08-10",
+        "unmet_hard_reqs": "4",
+        "notes": "Full tailoring + cover letter. Remote US, $174K-$205K.",
+        "hard_req_cap_trigger": "5+ years of experience in Data Governance or GTM Systems roles",
+    }, "HARDREQ_CAP", True,
+     "What the field buys. The SAME note that could only reach REVIEW above now proves "
+     "the error, because the trigger is recorded as data instead of left in prose."),
+    ({
+        "company": "Vanta (2 unmet reqs, cap correctly does not fire)",
+        "title": "Sr. Manager, Commercial Customer Success (East Region)",
+        "url": "https://jobs.ashbyhq.com/vanta/a0090ea4-5e19-439c-91e3-eb8a3f117eee",
+        "fit_score": "96", "jd_coverage_pct": "87",
+        "surfaced_date": "2026-08-21", "applied_date": "2026-08-21",
+        "unmet_hard_reqs": "2",
+        "notes": "Full tailoring + cover letter. Remote U.S.",
+        "hard_req_cap_trigger": "none",
+    }, "HARDREQ_CAP", False,
+     "The other half, and why the field is three-state: 2 unmet hard reqs WITH full "
+     "tailoring is CORRECT here, because that JD states no years minimum. Counting gaps "
+     "alone flags it; 'none' records that it was checked."),
 ]
 
 

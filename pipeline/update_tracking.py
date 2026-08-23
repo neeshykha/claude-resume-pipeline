@@ -56,7 +56,7 @@ OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
 OUTCOMES_HEADER = ["applied_date", "company", "title", "url", "fit_score",
                    "jd_coverage_pct", "stage", "outcome", "notes",
                    "source_channel", "surfaced_date", "unmet_hard_reqs",
-                   "vendor_tool_named_in_jd"]
+                   "vendor_tool_named_in_jd", "hard_req_cap_trigger"]
 
 
 def load_json(path, default):
@@ -168,7 +168,8 @@ def main() -> int:
                         j.get("source_channel", "pipeline"),
                         run_date,
                         j.get("unmet_hard_reqs", ""),
-                        j.get("vendor_tool_named_in_jd", "")])
+                        j.get("vendor_tool_named_in_jd", ""),
+                        j.get("hard_req_cap_trigger", "")])
             appended += 1
 
     print(f"seen_jobs: +{len(added)} new, {len(touched)} re-touched, "
