@@ -69,6 +69,15 @@ brief digest saying so rather than guessing an address.
    Precedence: the style guide (item 3) + CLAUDE.md voice rules govern FORM; the career
    narrative governs SUBSTANCE; `master_resume.md` remains the only source of factual
    claims. Step 4 says how to apply it per document.
+5. **Record the working-tree baseline (added 2026-08-21).** Run this before changing
+   anything, so Step 7 can tell your edits from ones that were already sitting there:
+   ```bash
+   .venv/bin/python pipeline/repo_sync.py --snapshot
+   ```
+   It writes `pipeline/jobs/repo_baseline.json` (gitignored) listing every already-dirty
+   path, and Step 7 consumes and deletes it. If it reports pre-existing dirty paths, that
+   means Aneesh has edits in progress right now: leave them alone all run, and carry one
+   line into the digest naming them.
 
 ## Step 0.5: Application confirmation sync (Gmail `+jobs` alias)
 
@@ -1132,10 +1141,32 @@ Framework lives in the public repo `neeshykha/claude-resume-pipeline`. Personal 
 gitignored — never `git add -f`, never restore run state into `CLAUDE.md`.
 
 ```bash
-git add -A
+.venv/bin/python pipeline/repo_sync.py --stage
+```
+```bash
 git diff --cached --quiet || git commit -m "pipeline: daily run $(date +%F)"
+```
+```bash
 git push
 ```
+
+**`repo_sync.py --stage` replaced a bare `git add -A` on 2026-08-21, and the reason is a
+real incident, not tidiness.** `git add -A` stages the whole working tree, so an unattended
+run commits whatever a human happened to have open. That day a run swept an uncommitted
+edit to `audit_scores.py` into a commit titled "add Applications Manager family to tier2c",
+where it is now permanently mislabeled — and then did it a *second* time during the fix,
+committing a scratch line into `check_coverage.py` under a commit about Avalara.
+
+`--stage` diffs the working tree against the Step 0 baseline and stages only paths that
+changed **during this run**, so the rule is temporal rather than a path allowlist. A
+frozen list of paths would be wrong: runs legitimately commit across
+`watchlist_companies.json`, `enrollment_candidates.json`, this file, `harvest_ats.py`,
+`README.md`, and `CLAUDE.md`, including same-run fixes to the pipeline's own code.
+
+Read its output. Anything under "left alone" is Aneesh's in-progress work: **do not stage
+it, do not `git add -f`, and name it in the digest** so it isn't silently stranded. If it
+warns that no baseline was found, Step 0 item 5 was skipped — it falls back to old
+`git add -A` behaviour, so say so in the digest rather than letting it pass.
 
 If push is rejected: `git pull --rebase` once, push again; still failing → note in digest
 and move on. Never force-push.

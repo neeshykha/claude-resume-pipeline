@@ -34,8 +34,13 @@ BASELINE = os.path.join(BASE, "jobs", "repo_baseline.json")
 
 
 def git(*args):
-    return subprocess.run(("git",) + args, cwd=REPO, capture_output=True,
-                          text=True, check=True).stdout
+    p = subprocess.run(("git",) + args, cwd=REPO, capture_output=True, text=True)
+    if p.returncode != 0:
+        # An unattended run should get a readable reason and a nonzero exit, not
+        # a traceback buried in the log.
+        raise RuntimeError(f"git {' '.join(args)} failed ({p.returncode}): "
+                           f"{p.stderr.strip() or p.stdout.strip()}")
+    return p.stdout
 
 
 def dirty_paths():
@@ -54,12 +59,14 @@ def dirty_paths():
             continue
         status, path = entry[:2], entry[3:]
         paths.add(path)
-        # Renames and copies carry the source path as a second NUL-separated
-        # field; consume it so it isn't parsed as a status entry.
+        # Renames and copies carry the SOURCE path as a second NUL-separated
+        # field. Consume it so it isn't misread as the next status entry, but do
+        # not collect it: for an already-staged rename the source no longer
+        # exists on disk, and `git add -- <gone path>` is a fatal pathspec error
+        # that aborts the whole staging run. An unstaged rename needs nothing
+        # special either — git reports it as a separate ' D old' plus '?? new'.
         if "R" in status or "C" in status:
-            if i < len(fields):
-                paths.add(fields[i])
-                i += 1
+            i += 1
     return paths
 
 
@@ -99,28 +106,36 @@ def main():
         print("WARNING: staging everything, which is the old `git add -A` behaviour. "
               "Report this in the digest.")
 
-    to_stage = sorted(current - baseline)
+    # The baseline is bookkeeping for this mechanism, not a run output. It lives
+    # under the gitignored pipeline/jobs/, but excluding it explicitly means the
+    # script cannot stage its own scratch file even if that ignore rule changes.
+    own = os.path.relpath(BASELINE, REPO)
+    to_stage = sorted(current - baseline - {own})
     skipped = sorted(current & baseline)
 
-    if not to_stage:
-        print("nothing to stage: no paths changed during this run")
-    else:
-        # -A over an explicit pathspec so deletions and renames stage correctly,
-        # while still touching only these paths.
-        git("add", "-A", "--", *to_stage)
-        print(f"staged {len(to_stage)} path(s) changed by this run:")
-        for p in to_stage:
-            print(f"    staged   {p}")
+    try:
+        if not to_stage:
+            print("nothing to stage: no paths changed during this run")
+        else:
+            # -A over an explicit pathspec so deletions stage correctly, while
+            # still touching only these paths.
+            git("add", "-A", "--", *to_stage)
+            print(f"staged {len(to_stage)} path(s) changed by this run:")
+            for p in to_stage:
+                print(f"    staged   {p}")
 
-    if skipped:
-        print(f"\nleft alone — dirty before this run started ({len(skipped)}):")
-        for p in skipped:
-            print(f"    skipped  {p}")
-        print("These are someone else's in-progress edits. Do NOT stage them; "
-              "mention them in the digest so they aren't forgotten.")
-
-    if os.path.exists(BASELINE):
-        os.remove(BASELINE)
+        if skipped:
+            print(f"\nleft alone — dirty before this run started ({len(skipped)}):")
+            for p in skipped:
+                print(f"    skipped  {p}")
+            print("These are someone else's in-progress edits. Do NOT stage them; "
+                  "mention them in the digest so they aren't forgotten.")
+    finally:
+        # Always consume the baseline. Leaving it behind after a failure would
+        # make the NEXT run diff against a stale snapshot and quietly skip its
+        # own changes.
+        if os.path.exists(BASELINE):
+            os.remove(BASELINE)
     return 0
 
 
