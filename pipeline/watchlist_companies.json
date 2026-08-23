@@ -27,7 +27,7 @@
         "notes": "Remote roles from tech companies nationally. No Atlanta bonus \u2014 needs stronger title/keyword fit to clear threshold. Salary floor ($100K) still applies. Query broadened 2026-06-25.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "Wellfound Startups",
@@ -53,7 +53,7 @@
         "notes": "Discovers Ashby-hosted companies NOT on the watchlist. Returns ~10 results; scan for UNFAMILIAR company names (skip ones already on the watchlist). When a new company appears, verify its board (pipeline/verify_workday.py pattern or a direct Ashby API check) and add it to the watchlist so the poller scans its full roster going forward. Added 2026-06-25. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "Greenhouse Boards - Target Roles",
@@ -61,7 +61,7 @@
         "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "Lever Boards - Target Roles",
@@ -69,7 +69,7 @@
         "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss). 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term. 'professional services' added 2026-08-20 after FinQuery's 'Manager, Professional Services' (Lever-hosted, Atlanta, exact tier-2 title variant) was user-surfaced and turned out to be invisible only to this query -- the Greenhouse and Ashby dorks already carried the term.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "Atlanta Board Sweep (all 3 ATSes)",
@@ -85,7 +85,7 @@
         "notes": "Catches AI-native, AI-safety, AI-security, and AI-governance orgs that are off the watchlist and whose fitting roles may be titled differently (e.g. 'Operations Generalist'). Vertical/company discovery, not title-keyed \u2014 surface the COMPANY, then verify board + add to watchlist so the poller scans its full roster. Apply AI bonus (+20) to in-vertical hits. Added 2026-06-25 after a manually-found FAR.AI role exposed that the discovery layer was too title-narrow; 'AI security'/'AI governance'/'technical account' added 2026-07-02 after WitnessAI (AI security, 102 people, Atlanta-hybrid TAM) was invisible to this query for the same reason.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "80,000 Hours Job Board (EA/AI-safety/public-good orgs)",
@@ -117,7 +117,7 @@
         "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config \u2192 passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias. 'sports technology'/'sports analytics'/'player tracking' added 2026-07-22 for the new sports_technology domain -- this targets companies with real CSM/TAM/implementation-shaped roles (e.g. Sportradar, Catapult, Trackman, Zebra Sports), not field-hardware-technician titles like Hawk-Eye Innovations' actual Atlanta postings, which are a genuinely different job function and don't clear the title-tier bar regardless of the passion bonus.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "Industrial IoT / Physical-World Hardware (discovery only, no scoring bonus)",
@@ -125,7 +125,7 @@
         "notes": "Added 2026-07-18 after Aneesh described being drawn to physical-world/industrial-equipment sensing (anchor example: a sensor device on spinning machinery) \u2014 narrower than generic 'hardware' or 'wireless communication' on purpose, to avoid pulling in consumer telecom/carrier noise or double-counting his existing consumer-IoT background (First Alert/Newell/Luma), which already scores normally via keyword overlap. A plain (non-site-scoped) version of this query was tested first and returned mostly generic aggregator category pages (ZipRecruiter/Indeed/SimplyHired), not enrollable individual companies -- switched to the ATS-host-scoped pattern (same shape as the Ashby/Greenhouse/Lever 'Boards - Target Roles' sources) since that's what actually surfaces live individual postings; first live run found AssetWatch (industrial condition-monitoring platform), Advanced Technology Services, and ANYbotics (industrial robotics/predictive maintenance). UNLIKE the Passion Verticals source above, this is discovery/enrollment-only: hits get NO passion-domain scoring bonus (Aneesh explicitly deferred that decision -- see memory user_profile.md 'Open item, deliberately deferred'). Companies surfaced here go through the normal enrollment verification and are scored on the standard rubric like any other company -- no bonus, no special treatment, just a wider discovery net. Do not add a passion_domains entry for this vertical unless Aneesh explicitly asks.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "PropTech / Resident Experience (vertical discovery)",
@@ -157,7 +157,7 @@
         "notes": "Added 2026-07-14 after a test run found this ATS type had zero discovery coverage despite poll_ats.py supporting it (see _smartrecruiters_notes). Surfaced Nexthink (multiple live CSM/Senior CSM reqs across US cities) on the first run. Same enroll guidance as the Ashby/Greenhouse/Lever dorks: surface unfamiliar companies, verify the board via the SmartRecruiters postings API, add to watchlist.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "Pinpoint Boards - Target Roles",
@@ -165,7 +165,7 @@
         "notes": "Added 2026-08-12, same day fetch_pinpoint() shipped in poll_ats.py (see _pinpoint_notes). Prompted by Napier AI, a user-surfaced miss that turned out to be a clean public JSON API the whole time -- pure discovery gap, not a structural one. First run surfaced Portnox (network-access-control security vendor). Same enroll guidance as the other board dorks: surface unfamiliar companies, verify the board via harvest_ats.py (now covers pinpoint), add to watchlist. Note in the query results: pinpointhq.com's own marketing pages (comparison pages, their own careers/customer-support content) show up as noise -- filter to actual {company}.pinpointhq.com subdomains.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "Recent Funding (Passion/Tooling Verticals)",
@@ -173,7 +173,7 @@
         "notes": "Added 2026-08-12, from Aneesh asking whether the pipeline scans funding news before enrolling companies -- it didn't; funding stage only ever appeared as backward-looking context on companies found some OTHER way. This is an EVENT query, same idea as the monthly AI Support Vendor Consolidation M&A watch, just for raises instead of acquisitions: a company that just closed a round is likely to be hiring into support/CS/ops soon, especially past founder-led-everything scale, which is exactly the sub-500-headcount profile the small-company bonus already favors. Deliberately scoped to Aneesh's stated interest areas rather than run broad+unscoped (his call, 2026-08-12): AI-native + developer/infra tooling (his stated primary interest) plus the four passion_domains (electrification_ev, health_tech, agriculture, sports_technology). A funding hit is a COMPANY signal, not a role signal -- surface the company, verify the board is live via harvest_ats.py, and apply the normal AI/tooling or passion-domain scoring bonus (never both, per the Scoring Guardrails company-bonus cap) once actually enrolled and scored. Do not tailor or score off the funding article itself.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "Rippling Boards - Target Roles",
@@ -181,7 +181,7 @@
         "notes": "Added 2026-08-12, same day fetch_rippling() shipped in poll_ats.py (see _rippling_notes). Prompted by Nerdio, a user-surfaced miss on the same pattern as Napier AI/Pinpoint above. First run surfaced Rippling itself (the ATS vendor -- ironic, but its own careers board runs on its own product), Supper, gaiia, Tixr, Routeware, and Kion; 3 enrolled with real tier2 fit (Supper, Routeware, Kion), 2 rejected no-fit (Tixr, and Portnox from the Pinpoint dork above), 2 unresolved by slug guessing (Rippling itself -- its board's __NEXT_DATA__ payload has an EMPTY dehydratedState.queries for reasons not yet understood, possibly a board-size-dependent rendering path on Rippling's platform; and gaiia, whose real slug is 'gaiias-open-positions' -- note the extra 's', a name/slug mismatch no variant list would catch). Same enroll guidance as the other board dorks.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       },
       {
         "name": "Workable Boards - Target Roles",
@@ -189,7 +189,7 @@
         "notes": "Added 2026-08-21. Closes a straightforward coverage hole: poll_ats.py has spoken Workable since 2026-07-27 (fetch_workable), and every other supported ATS had a board dork here (Ashby, Greenhouse, Lever, SmartRecruiters, Workday, Pinpoint, Rippling) EXCEPT Workable. So the poller could read those boards but discovery never looked for them, and a Workable-hosted company could only ever arrive by some other channel naming it first. First run returned 6 live boards, all previously unknown: ZeroFox, Burq, SchooLinks, Prosci, Passion.io, Hireframe. Worth noting the first-run yield was 0 enrollments, not because the boards were dead but because the fit-titles were all tier3 outside Atlanta/remote-US (ZeroFox Baltimore, SchooLinks Austin), which is the tier3 location gate behaving correctly. Judge this source over a few weeks, not on day one. Same enroll guidance as the other board dorks. NOTE: the daily source list is now 18 entries and a single run has repeatedly failed to get through them all -- if budget forces a choice, this one is newer evidence than the Tier-1 Manager-Title Sweep, which returned 8 results and 0 new companies on 2026-08-21.",
         "status": "active",
         "frequency": "daily",
-        "last_run": null
+        "last_run": "2026-08-23"
       }
     ],
     "rotation_per_run": 6,
@@ -4169,6 +4169,26 @@
       "enrolled_date": "2026-08-23",
       "enrolled_via": "Step 1c Workday board dork",
       "reason": "Metro Atlanta HQ (Alpharetta, GA), one of the area's largest private employers. Workday tenant resolved directly from the dork result URL and verified live 2026-08-23 via the CXS endpoint: 40 jobs. Fit-space roles at enrollment: Enterprise AI Enablement Lead (tier2b AI wildcard) and Solutions Engineer. Most of the board is recruiting/staffing roles, so expect a low hit rate; the Atlanta location is the reason to watch it. Headcount band set to 2000+ from public reporting on associate count; the band yields no bonus at that size either way, so a narrower verification would not change scoring."
+    },
+    {
+      "name": "Fieldguide",
+      "ats": "ashby",
+      "slug": "fieldguide",
+      "priority": "low",
+      "enrolled_date": "2026-08-23",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (45 jobs) with 8 fit-titles at harvest time (4 tier2, 4 tier3(location-gated)), e.g. 'Implementation Consultant, Advisory' [San Francisco, CA or Remote (USA)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "DuploCloud",
+      "ats": "rippling",
+      "slug": "duplocloud",
+      "priority": "low",
+      "enrolled_date": "2026-08-23",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (3 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Senior Customer Success Manager, Strategic Technical Account' [San Francisco, CA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
