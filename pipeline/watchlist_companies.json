@@ -1,14 +1,15 @@
 {
   "_description": "Target companies for direct ATS board polling. Primary discovery source \u2014 preferred over WebSearch because ATS JSON endpoints return structured, fresh, deduplicated data with no 403/JS issues.",
   "_websearch_sources": {
-    "description": "Supplemental discovery sources run via WebSearch each daily pipeline run. Use these to find companies NOT on the ATS watchlist, especially Atlanta startups.",
+    "description": "Supplemental discovery sources run via WebSearch to find companies NOT on the ATS watchlist, especially Atlanta startups. These surface COMPANIES to enroll, not today's jobs: once a company is enrolled the poller scans its whole roster daily, forever, which is worth far more than the single role a dork happened to show.",
     "sources": [
       {
         "name": "Hypepotamus Job Board",
         "url": "https://hypepotamus.com/job-board/",
         "status": "disabled",
         "disabled_reason": "Job listings are JavaScript-rendered via nonce-protected AJAX. Direct WebFetch returns empty shell; WP REST API endpoints for listings are not public. Cannot be polled headlessly without a browser dependency. Tested 2026-05-08.",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "BuiltIn Atlanta",
@@ -16,7 +17,8 @@
         "query": "site:builtin.com/job (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions engineer\" OR \"support operations\" OR \"customer operations\" OR \"deployment\") Atlanta",
         "notes": "Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount \u2264200. Query broadened 2026-06-25 to include customer success + solutions engineer terms.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": "2026-08-23"
       },
       {
         "name": "BuiltIn Remote",
@@ -24,7 +26,8 @@
         "query": "site:builtin.com/job (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"solutions engineer\" OR \"support operations\" OR \"customer operations\" OR \"deployment\") remote",
         "notes": "Remote roles from tech companies nationally. No Atlanta bonus \u2014 needs stronger title/keyword fit to clear threshold. Salary floor ($100K) still applies. Query broadened 2026-06-25.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "Wellfound Startups",
@@ -32,7 +35,8 @@
         "query": "site:wellfound.com (\"customer success\" OR \"technical account\" OR implementation OR \"solutions engineer\" OR deployment OR \"support operations\" OR \"customer operations\") startup remote OR Atlanta",
         "status": "disabled",
         "disabled_reason": "Tested 2026-06-30: the site:wellfound.com dork returns SEO role-category pages (wellfound.com/role/r/...) and the homepage, not live individual jobs \u2014 only ~2 of 10 results were real postings, and stale. Wellfound gates job detail behind auth + client-side rendering (same failure mode as Hypepotamus). Dead weight; it burned a daily WebSearch slot for near-zero yield. Reinvest the slot into the Ashby/Greenhouse/Lever board dorks below, which DO surface live sub-500 boards directly. Revisit only if a non-auth Wellfound listing endpoint appears.",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "AI-Titled Roles (Broad Discovery)",
@@ -40,42 +44,48 @@
         "notes": "Catch-all WebSearch for novel AI-prefixed role titles that don't match named tiers. Companies are still coining these. Run every pipeline pass. Apply AI/LLM bonus (+20) to any hits. Check for salary floor before surfacing. Score against tier2b_ai_wildcard (+18) if no higher tier matches. ('AI Enablement Manager' added 2026-07-02 after a Crowe posting with that exact Tier-2 title was missed by every discovery source. 'AI Operations Manager' added 2026-07-24 after Clutch's 'AI Operations Manager, Emma' posting was missed by this query despite the exact phrase already being a poller supplemental_exact_titles entry -- the WebSearch query and the ATS-poller title list had drifted apart.)",
         "status": "active",
         "frequency": "daily",
-        "scoring_notes": "Apply +20 AI bonus + tier2b_ai_wildcard title match (+18) = strong signal. Verify salary floor."
+        "scoring_notes": "Apply +20 AI bonus + tier2b_ai_wildcard title match (+18) = strong signal. Verify salary floor.",
+        "last_run": "2026-08-23"
       },
       {
         "name": "Ashby Boards - Target Roles",
         "query": "site:jobs.ashbyhq.com (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"enablement\" OR \"solutions consultant\" OR \"deployment\" OR \"professional services\" OR \"customer engineer\") 2026",
         "notes": "Discovers Ashby-hosted companies NOT on the watchlist. Returns ~10 results; scan for UNFAMILIAR company names (skip ones already on the watchlist). When a new company appears, verify its board (pipeline/verify_workday.py pattern or a direct Ashby API check) and add it to the watchlist so the poller scans its full roster going forward. Added 2026-06-25. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "Greenhouse Boards - Target Roles",
         "query": "site:job-boards.greenhouse.io (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"enablement\" OR \"solutions engineer\" OR \"deployment\" OR \"professional services\") 2026",
         "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "Lever Boards - Target Roles",
         "query": "site:jobs.lever.co (\"technical account manager\" OR \"customer success\" OR \"implementation\" OR \"enablement\" OR \"solutions consultant\" OR \"deployment\" OR \"professional services\") 2026",
         "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss). 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term. 'professional services' added 2026-08-20 after FinQuery's 'Manager, Professional Services' (Lever-hosted, Atlanta, exact tier-2 title variant) was user-surfaced and turned out to be invisible only to this query -- the Greenhouse and Ashby dorks already carried the term.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "Atlanta Board Sweep (all 3 ATSes)",
         "query": "(site:jobs.ashbyhq.com OR site:job-boards.greenhouse.io OR site:jobs.lever.co) (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"enablement\" OR \"solutions engineer\" OR \"support operations\" OR \"deployment\") (Atlanta OR \"Georgia\")",
         "notes": "Added 2026-07-22 to close an Atlanta discovery gap. Of the board dorks, only BuiltIn Atlanta was location-scoped -- the generic Ashby/Greenhouse/Lever 'Boards - Target Roles' dorks carry NO location term, so an Atlanta role at an off-watchlist company surfaced only if WebSearch happened to rank it, with nothing nudging toward local. This single all-3-ATS query (same shape as the Tier-1 Manager-Title Sweep) targets Atlanta/Georgia directly without adding three separate per-host queries to the daily WebSearch budget. Rationale: Aneesh is Atlanta-based and remote roles draw far more applicants, so local roles are a higher-signal, lower-competition target worth a dedicated discovery pass. Same enroll guidance as the other board dorks: surface unfamiliar companies, verify the board is live, add to the watchlist. Complements the poll_ats.py pre-score change (same date) that gives already-watchlisted Atlanta roles a +4 edge over remote at the shortlist-selection stage -- this source is the discovery-layer half of the same Atlanta-prioritization intent.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": "2026-08-23"
       },
       {
         "name": "AI-Native & AI-Safety Orgs (vertical discovery)",
         "query": "(\"AI safety\" OR \"AI security\" OR \"AI governance\" OR \"frontier model\" OR \"applied AI\" OR \"AI research\" OR \"contact center AI\" OR \"customer support AI\") (\"customer success\" OR \"technical account\" OR operations OR implementation OR deployment OR solutions) jobs 2026",
         "notes": "Catches AI-native, AI-safety, AI-security, and AI-governance orgs that are off the watchlist and whose fitting roles may be titled differently (e.g. 'Operations Generalist'). Vertical/company discovery, not title-keyed \u2014 surface the COMPANY, then verify board + add to watchlist so the poller scans its full roster. Apply AI bonus (+20) to in-vertical hits. Added 2026-06-25 after a manually-found FAR.AI role exposed that the discovery layer was too title-narrow; 'AI security'/'AI governance'/'technical account' added 2026-07-02 after WitnessAI (AI security, 102 people, Atlanta-hybrid TAM) was invisible to this query for the same reason.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "80,000 Hours Job Board (EA/AI-safety/public-good orgs)",
@@ -90,86 +100,103 @@
           "index": "jobs_prod",
           "endpoint": "https://W6KM1UDIB3-dsn.algolia.net/1/indexes/jobs_prod/query"
         },
-        "disabled_reason": "Superseded 2026-07-13 by pipeline/poll_80k.py, which queries the board's public Algolia backend directly (see api_access below and the feeder's docstring). The WebSearch site: dork was a lossy proxy (~5 org pages per run vs 84+ live listings, confirmed 2026-07-06). Re-enable only if the Algolia key rotates and the feeder breaks; the org pages at jobs.80000hours.org/organisations/{slug} remain WebFetch-able for per-org verification either way."
+        "disabled_reason": "Superseded 2026-07-13 by pipeline/poll_80k.py, which queries the board's public Algolia backend directly (see api_access below and the feeder's docstring). The WebSearch site: dork was a lossy proxy (~5 org pages per run vs 84+ live listings, confirmed 2026-07-06). Re-enable only if the Algolia key rotates and the feeder breaks; the org pages at jobs.80000hours.org/organisations/{slug} remain WebFetch-able for per-org verification either way.",
+        "last_run": null
       },
       {
         "name": "Workday Boards - Target Roles",
         "query": "site:myworkdayjobs.com (\"AI Enablement\" OR \"technical account manager\" OR \"customer success manager\" OR \"support operations\" OR \"implementation manager\") Atlanta OR remote",
         "notes": "Closes the Workday blind spot found 2026-07-02: a Crowe 'AI Enablement Manager' (Atlanta, Tier-2 title, salary in range) was invisible to the pipeline because board dorks only covered Ashby/Greenhouse/Lever and Crowe isn't watchlist material. Workday hosts the enterprise segment specifically. Individual myworkdayjobs.com pages are JS-rendered \u2014 do NOT WebFetch them; verify hits via the Workday CXS API instead (POST https://{host}/wday/cxs/{tenant}/{site}/jobs with searchText \u2014 see _workday_notes / verify_workday.py). Enroll recurring-fit companies onto the watchlist with wd_host/wd_tenant/wd_site.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": "2026-08-23"
       },
       {
         "name": "Passion Verticals (EV/Health/Agtech/SportsTech discovery)",
         "query": "(\"EV charging\" OR \"electric vehicle\" OR \"climate tech\" OR \"digital health\" OR healthtech OR agtech OR \"vertical farming\" OR \"sports technology\" OR \"sports analytics\" OR \"player tracking\") (\"customer success manager\" OR \"technical account manager\" OR \"implementation manager\" OR \"support operations\" OR \"solutions engineer\") jobs remote OR Atlanta",
         "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config \u2192 passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias. 'sports technology'/'sports analytics'/'player tracking' added 2026-07-22 for the new sports_technology domain -- this targets companies with real CSM/TAM/implementation-shaped roles (e.g. Sportradar, Catapult, Trackman, Zebra Sports), not field-hardware-technician titles like Hawk-Eye Innovations' actual Atlanta postings, which are a genuinely different job function and don't clear the title-tier bar regardless of the passion bonus.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "Industrial IoT / Physical-World Hardware (discovery only, no scoring bonus)",
         "query": "(site:jobs.ashbyhq.com OR site:job-boards.greenhouse.io OR site:jobs.lever.co) (\"industrial IoT\" OR \"condition monitoring\" OR \"predictive maintenance\" OR \"industrial automation\" OR \"asset tracking\") (\"customer success\" OR \"technical account\" OR \"solutions engineer\" OR \"implementation\" OR deployment)",
         "notes": "Added 2026-07-18 after Aneesh described being drawn to physical-world/industrial-equipment sensing (anchor example: a sensor device on spinning machinery) \u2014 narrower than generic 'hardware' or 'wireless communication' on purpose, to avoid pulling in consumer telecom/carrier noise or double-counting his existing consumer-IoT background (First Alert/Newell/Luma), which already scores normally via keyword overlap. A plain (non-site-scoped) version of this query was tested first and returned mostly generic aggregator category pages (ZipRecruiter/Indeed/SimplyHired), not enrollable individual companies -- switched to the ATS-host-scoped pattern (same shape as the Ashby/Greenhouse/Lever 'Boards - Target Roles' sources) since that's what actually surfaces live individual postings; first live run found AssetWatch (industrial condition-monitoring platform), Advanced Technology Services, and ANYbotics (industrial robotics/predictive maintenance). UNLIKE the Passion Verticals source above, this is discovery/enrollment-only: hits get NO passion-domain scoring bonus (Aneesh explicitly deferred that decision -- see memory user_profile.md 'Open item, deliberately deferred'). Companies surfaced here go through the normal enrollment verification and are scored on the standard rubric like any other company -- no bonus, no special treatment, just a wider discovery net. Do not add a passion_domains entry for this vertical unless Aneesh explicitly asks.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "PropTech / Resident Experience (vertical discovery)",
         "query": "(site:jobs.ashbyhq.com OR site:job-boards.greenhouse.io OR site:jobs.lever.co) (\"property management\" OR \"resident experience\" OR proptech OR multifamily OR \"smart apartment\" OR \"real estate technology\" OR \"leasing platform\") (\"customer success\" OR \"technical account\" OR \"implementation\" OR \"support operations\" OR \"solutions engineer\" OR \"onboarding\")",
         "notes": "Added 2026-07-27. This was the single largest discovery gap in the whole source list: PropTech is Aneesh's OWN CURRENT INDUSTRY (iApartments is smart-apartment technology) and had zero dedicated coverage -- Second Nature surfaced on 2026-07-27 only because a generic Ashby/Greenhouse/Lever dork happened to rank it. Domain expertise transfers directly here in a way it doesn't for most verticals: resident-facing workflows, property-manager stakeholders, and in-unit smart-home hardware are literally his day job, which makes him a credible internal-quality candidate rather than a 'reasonable stretch'. Target companies include AppFolio, Yardi, Entrata, SmartRent, Latch, RealPage, Buildium, Propertyware, Knock, Funnel, HappyCo, Lessen. Same enroll guidance as the other board dorks: surface unfamiliar companies, verify the board is live with US-reachable fit-space roles, add to the watchlist. No passion-domain scoring bonus attached -- this is discovery reach, and his PropTech fit already scores through ordinary keyword overlap. DISABLED 2026-08-21, on Aneesh's approval, after it returned zero job listings and only proptech marketing articles. The diagnosis is structural, not a bad day: the vertical terms it filters on ('property management', 'multifamily', 'resident experience') appear in JD BODIES, not in job titles, and WebSearch does not do full-text search inside JD bodies on ATS domains. So the site: restriction and the vertical filter cannot both be satisfied, and the engine falls back to general web results about proptech. The same wall killed two exploratory queries the same day (finding JDs that name Maven AGI/Decagon/Sierra, and finding 'first support hire' startup roles). Any dork whose filter terms live in JD text rather than titles has this defect. THE INTENT REMAINS VALID AND THE REPLACEMENT IS COMPANY-LEVEL: the named targets below were run through check_company.py on 2026-08-21 and the unknowns queued for enrollment, which converts a broken daily search into permanent daily polling of the actual companies. Re-enable only if rewritten to filter on TITLES.",
         "status": "disabled",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "AI Support Vendor Consolidation (M&A watch)",
         "query": "(acquires OR acquisition OR \"acquired by\" OR merger) (\"AI agent\" OR \"customer support AI\" OR \"contact center AI\" OR \"customer service platform\" OR \"support automation\" OR \"AI deflection\") 2026",
         "notes": "Added 2026-07-27. NOT a title or company query -- an EVENT query, and that's the point. M&A in Aneesh's exact vertical is structurally invisible to a discovery layer keyed on titles and company names, yet it both kills watchlist entries and creates new ones. Two such events have now been found purely by accident: Moveworks -> ServiceNow (found 2026-07-15 while investigating a 404) and Zendesk -> Forethought (found 2026-07-27 the same way, completed 2026-03-26, ~$200M+). In both cases the acquired company's board went 404 and the pipeline burned weekly recovery searches against a permanently dead slug for weeks, while the ACQUIRER -- hiring for the exact same function under a new title convention ('AI Success Strategist' at Zendesk) -- was either absent from the watchlist entirely or not connected to the dead entry. Run on/after the 1st of each month (see frequency); this is quarterly-scale news, not daily. On a hit: (1) mark the acquired company's board_status permanent if its board is dead, (2) verify and enroll the acquirer if it's off-watchlist, (3) check whether the absorbed team hires under a NEW title convention and add that title to _title_scoring_tiers.",
         "status": "active",
-        "frequency": "monthly"
+        "frequency": "monthly",
+        "last_run": null
       },
       {
         "name": "Tier-1 Manager-Title Sweep (all 3 ATSes at once)",
         "query": "(site:jobs.lever.co OR site:job-boards.greenhouse.io OR site:jobs.ashbyhq.com) (\"Technical Support Operations Manager\" OR \"Support Operations Manager\" OR \"Customer Operations Manager\" OR \"Technical Support Manager\" OR \"Customer Support Manager\" OR \"Technical Operations Manager\" OR \"Support Engineering Manager\")",
         "notes": "Added 2026-07-14 after a test run: a rare-exact-title sweep across all three major ATSes at once surfaces companies the broader 'customer success/technical account/implementation' dorks miss (those get crowded out by large, well-known companies). Found Model N (Manager, Support Operations) and Aledade (Director, Application Support Operations \u2014 health-tech passion domain) on the first run. Deliberately scoped to Manager-level Tier-1 titles only \u2014 'Head of Support' and 'Director of Support Operations' excluded per Aneesh: those read as above his current level/purview, not a fit worth surfacing even though they're still scored as tier1_true_match in _title_scoring_tiers for ATS-poller hits (open question whether that config should change too \u2014 see _title_scoring_tiers note). DEMOTED daily -> monthly 2026-08-21, on Aneesh's approval. Unlike the PropTech dork disabled above, this one is structurally sound: it filters on TITLES, which the search index does cover, so it works as designed. The problem is yield. On 2026-08-21 it returned 8 results and produced ZERO new companies: 2 job-board aggregators (Jobgether, Swooped), 1 role already applied to (Customer.io, the same req from 2026-07-28), and 3 confirmed-CLOSED listings at companies already rejected for exactly that reason (Apollo.io, Model N, Cloudbeds). Cloudbeds is the sharpest case: harvest_ats rejected it for zero fit-titles earlier the SAME DAY, this dork then surfaced a 'Senior Support Operations Manager' there, and fetching that req returned a 404. The search index is serving dead reqs, so the dork spends a daily call re-litigating decisions already made. The likely root cause is watchlist saturation: at 300+ enrolled companies, the space of tier1-titled roles this dork can reach is largely already polled, and the poller scans those rosters daily anyway. Monthly keeps it as a periodic check for genuinely new entrants at 1/30th the cost. Re-promote to daily if a monthly run ever produces multiple real enrollments.",
         "status": "active",
-        "frequency": "monthly"
+        "frequency": "monthly",
+        "last_run": null
       },
       {
         "name": "SmartRecruiters Boards - Target Roles",
         "query": "site:jobs.smartrecruiters.com (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\")",
         "notes": "Added 2026-07-14 after a test run found this ATS type had zero discovery coverage despite poll_ats.py supporting it (see _smartrecruiters_notes). Surfaced Nexthink (multiple live CSM/Senior CSM reqs across US cities) on the first run. Same enroll guidance as the Ashby/Greenhouse/Lever dorks: surface unfamiliar companies, verify the board via the SmartRecruiters postings API, add to watchlist.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "Pinpoint Boards - Target Roles",
         "query": "site:pinpointhq.com (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\" OR \"customer operations\" OR \"technical support manager\")",
         "notes": "Added 2026-08-12, same day fetch_pinpoint() shipped in poll_ats.py (see _pinpoint_notes). Prompted by Napier AI, a user-surfaced miss that turned out to be a clean public JSON API the whole time -- pure discovery gap, not a structural one. First run surfaced Portnox (network-access-control security vendor). Same enroll guidance as the other board dorks: surface unfamiliar companies, verify the board via harvest_ats.py (now covers pinpoint), add to watchlist. Note in the query results: pinpointhq.com's own marketing pages (comparison pages, their own careers/customer-support content) show up as noise -- filter to actual {company}.pinpointhq.com subdomains.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "Recent Funding (Passion/Tooling Verticals)",
         "query": "(\"raises $\" OR \"raised $\" OR \"Series A\" OR \"Series B\" OR \"seed funding\" OR \"seed round\") (\"AI\" OR \"artificial intelligence\" OR \"developer tools\" OR \"developer infrastructure\" OR \"EV charging\" OR \"electric vehicle\" OR \"climate tech\" OR \"clean energy\" OR \"digital health\" OR healthtech OR agtech OR \"sports technology\" OR \"sports analytics\") 2026",
         "notes": "Added 2026-08-12, from Aneesh asking whether the pipeline scans funding news before enrolling companies -- it didn't; funding stage only ever appeared as backward-looking context on companies found some OTHER way. This is an EVENT query, same idea as the monthly AI Support Vendor Consolidation M&A watch, just for raises instead of acquisitions: a company that just closed a round is likely to be hiring into support/CS/ops soon, especially past founder-led-everything scale, which is exactly the sub-500-headcount profile the small-company bonus already favors. Deliberately scoped to Aneesh's stated interest areas rather than run broad+unscoped (his call, 2026-08-12): AI-native + developer/infra tooling (his stated primary interest) plus the four passion_domains (electrification_ev, health_tech, agriculture, sports_technology). A funding hit is a COMPANY signal, not a role signal -- surface the company, verify the board is live via harvest_ats.py, and apply the normal AI/tooling or passion-domain scoring bonus (never both, per the Scoring Guardrails company-bonus cap) once actually enrolled and scored. Do not tailor or score off the funding article itself.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "Rippling Boards - Target Roles",
         "query": "site:ats.rippling.com (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\" OR \"customer operations\" OR \"technical support manager\")",
         "notes": "Added 2026-08-12, same day fetch_rippling() shipped in poll_ats.py (see _rippling_notes). Prompted by Nerdio, a user-surfaced miss on the same pattern as Napier AI/Pinpoint above. First run surfaced Rippling itself (the ATS vendor -- ironic, but its own careers board runs on its own product), Supper, gaiia, Tixr, Routeware, and Kion; 3 enrolled with real tier2 fit (Supper, Routeware, Kion), 2 rejected no-fit (Tixr, and Portnox from the Pinpoint dork above), 2 unresolved by slug guessing (Rippling itself -- its board's __NEXT_DATA__ payload has an EMPTY dehydratedState.queries for reasons not yet understood, possibly a board-size-dependent rendering path on Rippling's platform; and gaiia, whose real slug is 'gaiias-open-positions' -- note the extra 's', a name/slug mismatch no variant list would catch). Same enroll guidance as the other board dorks.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       },
       {
         "name": "Workable Boards - Target Roles",
         "query": "site:apply.workable.com (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\" OR \"customer operations\" OR \"technical support manager\")",
         "notes": "Added 2026-08-21. Closes a straightforward coverage hole: poll_ats.py has spoken Workable since 2026-07-27 (fetch_workable), and every other supported ATS had a board dork here (Ashby, Greenhouse, Lever, SmartRecruiters, Workday, Pinpoint, Rippling) EXCEPT Workable. So the poller could read those boards but discovery never looked for them, and a Workable-hosted company could only ever arrive by some other channel naming it first. First run returned 6 live boards, all previously unknown: ZeroFox, Burq, SchooLinks, Prosci, Passion.io, Hireframe. Worth noting the first-run yield was 0 enrollments, not because the boards were dead but because the fit-titles were all tier3 outside Atlanta/remote-US (ZeroFox Baltimore, SchooLinks Austin), which is the tier3 location gate behaving correctly. Judge this source over a few weeks, not on day one. Same enroll guidance as the other board dorks. NOTE: the daily source list is now 18 entries and a single run has repeatedly failed to get through them all -- if budget forces a choice, this one is newer evidence than the Tier-1 Manager-Title Sweep, which returned 8 results and 0 new companies on 2026-08-21.",
         "status": "active",
-        "frequency": "daily"
+        "frequency": "daily",
+        "last_run": null
       }
-    ]
+    ],
+    "rotation_per_run": 6,
+    "run_instructions": "ROTATED as of 2026-08-23; do not go back to 'run every active daily source'. Run `.venv/bin/python pipeline/websearch_rotation.py` at Step 1c: it prints the `rotation_per_run` daily sources with the oldest `last_run` (nulls first) plus their queries, flags anything that has gone more than 7 days without running, and reports which monthly sources are due. After running them, record ONLY the ones that actually ran with `--mark \"<name>\" ...`. Marking a source you skipped is the single way this mechanism can silently lose coverage. Monthly sources are gated by calendar month and never consume a rotation slot. Use `--all` for an interactive full sweep.",
+    "rotation_rationale": "Step 1c used to demand all 16 active daily sources every run, and the way that lost was by being skipped outright: 2026-08-21 ran zero of them, 2026-08-23 ran four. Measured over the 11 runs carrying channel_stats (2026-08-10 onward), WebSearch discovery produced 46 new companies and 13 enrollments across 121 source-runs, about 9 source-runs per company enrolled, against 21 enrollments for the LinkedIn harvest at one Gmail call per run. The channel works; the marginal source is expensive. At 6/run every source is hit roughly every 3 days for ~40% of the cost, and a 3-day gap is nearly free because these sources discover companies rather than perishable reqs. Caveat worth keeping honest: n=11 runs, and the low-source days were also thin days generally, so the yield figure is directional, not settled. Revisit once weekly_channel_report.py has more windows; some of these sources may deserve disabling rather than rotating.",
+    "rotation_seeded": "2026-08-23",
+    "rotation_seeded_note": "Date the rotation state was introduced. websearch_rotation.py uses it to suppress the never-run staleness alarm until the first full cycle has had time to complete (ceil(sources/rotation_per_run) + 1 days); on a freshly seeded config every source is null, so the alarm would fire on all of them and carry no information. After that window a null last_run really does mean a source is falling through. Do not update this field on later runs."
   },
   "_blind_spot_companies": {
     "description": "Named-company rotation for the pipeline's hardest structural gap: companies with NO pollable ATS. The poller speaks Greenhouse, Ashby, Lever, Workday, SmartRecruiters and Workable; these companies use custom career sites (Google, Apple, Amazon, Meta, Microsoft, Delta) or a Workday tenant whose real site name has not been resolved yet. They cannot be enrolled, so the ONLY way they ever surface is a targeted search. Added 2026-07-27 after a user-surfaced Atlanta alert turned up a Google role (Product Solutions Manager, Home) that was a genuinely strong fit and was invisible to every automated source. Verified the same day that Google's careers site has no public JSON API (two candidate endpoints both 404).",

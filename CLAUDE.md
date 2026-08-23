@@ -424,7 +424,15 @@ admin, the Maven AGI deployment, and the CES/QA tooling he built.
 
 The `_websearch_sources` block in `pipeline/watchlist_companies.json` defines additional sources to run each daily pipeline pass. These catch companies NOT on the ATS watchlist — Atlanta startups plus, as of 2026-06-25, broader ATS-host and AI-vertical discovery.
 
-**Run every `status: "active"` source in the `_websearch_sources` block each daily pipeline run**, after ATS board polling. The block is the source of truth — don't hardcode a query count here (it drifts). As of 2026-06-25 the active set is:
+**These sources are ROTATED as of 2026-08-23, not run exhaustively.** Run
+`.venv/bin/python pipeline/websearch_rotation.py` after ATS board polling: it selects the
+`rotation_per_run` daily sources with the oldest `last_run` and prints their queries, then
+`--mark` records the ones that actually ran. Full spec and rationale:
+`pipeline/daily_task_prompt.md` Step 1c. The short version: 16 sources a day competed with JD
+retrieval and kept getting skipped wholesale (zero ran on 2026-08-21, four on 2026-08-23), and
+these sources discover *companies* rather than perishable reqs, so a ~3-day cycle costs almost
+nothing. The JSON block is still the source of truth for the queries themselves — don't
+hardcode a query count here (it drifts). As of 2026-06-25 the active set is:
 1. **BuiltIn Atlanta** / **BuiltIn Remote** — Atlanta + remote mid-size tech (title terms broadened)
 2. **Wellfound** — early-stage startups nationally, filter to Atlanta
 3. **AI-Titled Roles** — novel AI-prefixed titles (tier2b wildcard)
