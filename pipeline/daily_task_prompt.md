@@ -17,7 +17,8 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 - Application-confirmation promotions via `mark_applied.py` (Step 0.5) — never hand-edit
   `outcomes.csv`'s `stage`/`applied_date` columns
 - Read `master_resume.md` ONCE, reuse for all tailorings
-- WebSearch limited to the active `_websearch_sources` entries + recovery searches
+- WebSearch discovery is ROTATED, not exhaustive: `websearch_rotation.py` picks the due
+  sources (Step 1c). Beyond those, only recovery searches and the blind-spot rotation.
 
 **Permission-safety rules (violating these hangs the autonomous run):**
 - NEVER use `python3 -c "..."` inline scripts
@@ -243,16 +244,60 @@ For each company in the `errors` array with a 404:
 
 ### 1c. Supplemental WebSearch (discovery beyond the watchlist)
 
-Read `pipeline/watchlist_companies.json → _websearch_sources.sources` and run every entry
-whose `status` is `"active"` **and whose `frequency` is due**. That block is the single
-source of truth — never hardcode query lists anywhere else. Each entry's `notes` explain
-what it catches and how to score hits.
+**ROTATED as of 2026-08-23. Do not go back to running every active daily source.**
 
-**Frequency gating (added 2026-07-27):** `frequency: "daily"` runs every run.
-`frequency: "monthly"` runs only on/after the 1st of the month, same rule as
-`harvest_hn_hiring.py` — check whether it already ran this month before spending the call.
-Monthly sources exist for signals that change on a quarterly scale (e.g. the AI Support
-Vendor Consolidation M&A watch); running them daily is wasted budget.
+```bash
+.venv/bin/python pipeline/websearch_rotation.py
+```
+
+It reads `pipeline/watchlist_companies.json → _websearch_sources` (still the single source of
+truth for queries; never hardcode a query list anywhere else) and prints the
+`rotation_per_run` daily sources with the oldest `last_run`, nulls first, along with their
+queries. It also reports which monthly sources are due and flags any source that has gone
+more than 7 days without running. Run the sources it prints; each entry's `notes` in the JSON
+explain what it catches and how to score hits.
+
+Then record **only the sources that actually ran**:
+
+```bash
+.venv/bin/python pipeline/websearch_rotation.py --mark "<name>" "<name>" ...
+```
+
+**Marking a source you skipped is the one way this mechanism silently loses coverage.** If the
+run gets through 4 of the 6, mark 4. The next run will pick the other 2 back up automatically
+because they still sort oldest-first.
+
+**Why this replaced "run every active daily source."** That instruction meant 16 WebSearch
+calls whose results all land in the run's context, competing directly with JD retrieval and
+tailoring — and the way it lost was by being skipped wholesale rather than trimmed:
+**2026-08-21 ran zero of them, 2026-08-23 ran four.** A skipped step is invisible in the
+digest; a rotation is not. Measured across the 11 runs carrying `channel_stats` (2026-08-10
+onward), WebSearch discovery produced 46 new companies and 13 enrollments over 121
+source-runs, roughly 9 source-runs per company enrolled, against 21 enrollments for the
+LinkedIn harvest at one Gmail call per run. The channel works; the marginal source is
+expensive.
+
+At `rotation_per_run: 6` every source is hit about every 3 days for ~40% of the cost. **The
+3-day gap is nearly free because these sources discover COMPANIES, not perishable reqs** — an
+unfamiliar company on an Ashby dork today is still there on Thursday, and once enrolled the
+poller scans its entire roster daily, forever. That is the same argument Step 1d-2 already
+makes for harvesting companies rather than roles out of LinkedIn; it simply never got applied
+to the dorks. Contrast the ATS poll in 1a, where a fresh req genuinely decays and daily has to
+mean daily.
+
+Keep the yield figure honest when reasoning about it later: n=11 runs, and the low-source days
+were also thin days generally, so it is directional rather than settled. Revisit once
+`weekly_channel_report.py` has more windows — some of these sources may deserve **disabling**
+rather than rotating, which is a different decision from how often to run them.
+
+**Frequency gating (added 2026-07-27, unchanged):** `frequency: "monthly"` sources run only
+on/after the 1st of the month, same rule as `harvest_hn_hiring.py`, and **never consume a
+rotation slot**; `websearch_rotation.py` reports their due state in its own section so they
+cannot be forgotten. Monthly sources exist for signals that change on a quarterly scale (e.g.
+the AI Support Vendor Consolidation M&A watch); running them daily is wasted budget.
+
+Use `--all` for an interactive full sweep when Aneesh asks for one, and `-n N` to widen the
+rotation for a single run. Neither is the default for a scheduled run.
 
 Known access quirks (do not retry once failed): Wellfound/Glassdoor/Remoterocketship 403
 on WebFetch — snippets only. Ashby/Workday/NICE careers pages are JS-rendered — use API
@@ -971,8 +1016,10 @@ Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST
   bulleted, source-by-source account of what ran and what it found, so a miss like that is
   visible immediately rather than discovered by chance:
   - ATS poll: companies polled, jobs scanned, matches, shortlist size
-  - WebSearch discovery: which of the active `_websearch_sources` ran, and a compressed list of
-    what surfaced (mostly-known vs. genuinely new)
+  - WebSearch discovery: which sources the Step 1c rotation selected and ran, **which ones it
+    deferred to the next run**, and a compressed list of what surfaced (mostly-known vs.
+    genuinely new). Carry `websearch_rotation.py`'s staleness alarm here verbatim when it
+    fires — a rotation is only honest if nothing rots at the back of it.
   - Discovery feeders: poll_remotive/poll_80k/harvest_hn_hiring status (including DEGRADED/skipped)
   - Blind-spot rotation: which named employers were checked this run
   - Unpollable-backlog monthly check: due/not-due, and if due, what was found (skip this line

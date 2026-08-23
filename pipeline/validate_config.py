@@ -131,6 +131,25 @@ def validate_watchlist(data) -> tuple[list, list]:
                 errors.append(f"watchlist: _websearch_sources '{label}': status must be 'active' or 'disabled'")
             if src.get("status") == "active" and not src.get("query"):
                 errors.append(f"watchlist: _websearch_sources '{label}': active source has no query")
+            # last_run drives the Step 1c rotation order (websearch_rotation.py).
+            # A malformed date does not crash that script -- it sorts to the front,
+            # which is the safe direction -- but it would silently pin one source to
+            # the head of the queue forever and starve the rest, so flag it here.
+            lr = src.get("last_run", None)
+            if lr is not None:
+                if not isinstance(lr, str):
+                    errors.append(f"watchlist: _websearch_sources '{label}': "
+                                  "last_run must be a 'YYYY-MM-DD' string or null")
+                else:
+                    try:
+                        date.fromisoformat(lr)
+                    except ValueError:
+                        errors.append(f"watchlist: _websearch_sources '{label}': "
+                                      f"last_run {lr!r} is not a valid YYYY-MM-DD date")
+        rpr = data["_websearch_sources"].get("rotation_per_run")
+        if rpr is not None and (not isinstance(rpr, int) or rpr < 1):
+            errors.append("watchlist: _websearch_sources.rotation_per_run must be a "
+                          "positive integer")
 
     companies = data["companies"]
     if not isinstance(companies, list) or not companies:
