@@ -192,10 +192,10 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | `outcomes.csv` outcome (rejected/interview/offer) | `mark_outcome.py` | infer an outcome from silence |
 | `outcomes.csv` schema migrations | `repair_outcomes.py` | hand-fix drifted rows |
 
-**`outcomes.csv` canonical schema (13 columns as of 2026-08-01):**
-`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd`
+**`outcomes.csv` canonical schema (14 columns as of 2026-08-21):**
+`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger`
 
-The last three landed 2026-08-01 from the conversion audit (SESSION_STATE 2026-08-01):
+Columns 11–13 landed 2026-08-01 from the conversion audit (SESSION_STATE 2026-08-01):
 
 - **`surfaced_date`** — when the pipeline first surfaced the role, written once by
   `update_tracking.py` and never updated. It exists because `applied_date` meant two different
@@ -209,6 +209,28 @@ The last three landed 2026-08-01 from the conversion audit (SESSION_STATE 2026-0
 - **`vendor_tool_named_in_jd`** — the incumbent AI/support tool the JD names, when it names one
   (`Intercom/Fin`, `Forethought AI`, `Zendesk`). Blank when the JD names none. Recorded to test
   whether vendor mismatch is a recurring rejection cause; at n=2 it is a hypothesis, not a finding.
+
+**`hard_req_cap_trigger`** landed 2026-08-21, from a finding by `audit_scores.py`. The
+HARD-REQUIREMENT TIER CAP demotes a role to light tier on a stated years-minimum in a function
+Aneesh has zero years in, or a requirement the JD calls non-negotiable. `unmet_hard_reqs` cannot
+express that — it counts *every* disclosed gap, and most are soft ("no fintech domain") — so
+nothing could tell a correctly-capped row from a missed one, and 10 rows were stuck as an
+unresolved review queue. Vanta (2026-08-21) is the clean case: 2 unmet hard reqs *and* full
+tailoring, entirely correct, because that JD states no years minimum at all.
+
+Three states, and the distinction is load-bearing — `outcome=null` already taught this tracker
+what happens when one value means both "no" and "never recorded":
+
+| Value | Meaning |
+|-------|---------|
+| `""` | not recorded — every row before 2026-08-21, or a run that skipped the check |
+| `none` | checked; nothing triggers the cap |
+| *verbatim text* | the triggering requirement, quoted (`5+ years in Data Governance or GTM Systems`) |
+
+**Empty is not "no cap."** Populate it at Step 6 whenever you set `unmet_hard_reqs`; write `none`
+rather than leaving it blank, because blank is what an unrecorded row looks like. The 219
+pre-existing rows stay empty (backfilling means re-reading 219 JDs) and `audit_scores.py` falls
+back to reading their notes, labelling that inference as a guess.
 
 **Stage vocabulary:** `surfaced` (tailored, not confirmed sent), `applied`, `rejected`, `closed`,
 `expired` (retired by `age_report.py` after 45 days with no confirmation), `tailored` (legacy).

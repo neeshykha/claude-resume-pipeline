@@ -13,9 +13,10 @@ promotion path. An audit on 2026-07-28 found 47 of 149 rows (32%) in this
 state, which meant a third of the tracker could never be promoted no matter
 how well the Gmail confirmation loop worked.
 
-Canonical schema (13 columns as of 2026-08-01):
+Canonical schema (14 columns as of 2026-08-21):
     applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,
-    notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd
+    notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,
+    hard_req_cap_trigger
 
 The last three were added 2026-08-01 after a conversion audit (see
 SESSION_STATE 2026-08-01):
@@ -43,6 +44,31 @@ SESSION_STATE 2026-08-01):
                            test whether vendor mismatch is a real pattern; at
                            n=2 it is a hypothesis, not a finding.
 
+`hard_req_cap_trigger` was added 2026-08-21, from a finding by audit_scores.py.
+The HARD-REQUIREMENT TIER CAP (daily_task_prompt.md Step 2c) demotes a role to
+light tier when the JD states a years-minimum in a function Aneesh has zero
+years in, or marks a requirement non-negotiable in its own words. `unmet_hard_reqs`
+cannot express that: it counts EVERY disclosed gap, and most are soft ("no
+fintech domain", "no Stripe billing experience"). So the audit could not tell a
+correctly-capped row from a missed one and had to report all 10 as an unresolved
+REVIEW queue rather than as findings. Vanta 2026-08-21 is the clean example --
+2 unmet hard reqs AND full tailoring, entirely correct, because that JD states
+no years minimum at all.
+
+  hard_req_cap_trigger     Verbatim text of the requirement that fires the cap.
+                           Three distinct states, deliberately -- `outcome=null`
+                           already taught this tracker what happens when one
+                           value means both "no" and "never recorded":
+                             ""       not recorded (every row before 2026-08-21,
+                                      and any run that skipped the check)
+                             "none"   checked, nothing triggers the cap
+                             <text>   the requirement, quoted from the JD, e.g.
+                                      "5+ years in Data Governance or GTM Systems"
+                           Empty is NOT "no cap". Backfilling the 219 pre-existing
+                           rows would mean re-reading 219 JDs, so they stay empty
+                           and audit_scores.py keeps falling back to reading the
+                           notes for those.
+
 `source_channel` records how the role reached Aneesh: "pipeline" (the daily
 run surfaced it), "user_surfaced" (his own browsing, fed in by hand), "referral"
 (an employee referral), or "linkedin" (a company that entered the watchlist via
@@ -53,6 +79,9 @@ converts at a very different rate from cold ATS applications. The point of the
 column is to make per-channel conversion comparable once enough outcomes land.
 
 Recognized drifted shapes:
+
+  N. LEGACY_V2: the 13-column schema in force 2026-08-01 to 2026-08-21
+     -> widen with one empty trailing column (hard_req_cap_trigger).
 
   M. LEGACY_V1: the 10-column schema in force 2026-07-28 to 2026-08-01
      -> widen with three empty trailing columns. Told apart from the drifted
@@ -92,8 +121,11 @@ CORE = ["applied_date", "company", "title", "url", "fit_score",
 # because it is still a RECOGNIZED input shape, not just history: shape "M"
 # below widens these rows, and the header check accepts a file still on it.
 LEGACY_V1 = CORE + ["source_channel"]
-CANONICAL = LEGACY_V1 + ["surfaced_date", "unmet_hard_reqs",
+# Schema in force 2026-08-01 through 2026-08-21. Also a recognized input shape:
+# shape "N" widens these rows by one column.
+LEGACY_V2 = LEGACY_V1 + ["surfaced_date", "unmet_hard_reqs",
                          "vendor_tool_named_in_jd"]
+CANONICAL = LEGACY_V2 + ["hard_req_cap_trigger"]
 DEFAULT_CHANNEL = "pipeline"
 
 
@@ -145,6 +177,8 @@ def classify(row):
 
     if len(row) == len(CANONICAL) and row[9].strip() in KNOWN_CHANNELS:
         return "ok", row
+    if len(row) == len(LEGACY_V2) and row[9].strip() in KNOWN_CHANNELS:
+        return "N", pad(row)
     if len(row) == len(LEGACY_V1) and row[9].strip() in KNOWN_CHANNELS:
         return "M", pad(row)
     if len(row) == len(CORE):
@@ -180,12 +214,12 @@ def main():
     with open(OUTCOMES, newline="", encoding="utf-8") as f:
         raw = list(csv.reader(f))
     header, rows = raw[0], raw[1:]
-    if header not in (CANONICAL, LEGACY_V1, CORE):
+    if header not in (CANONICAL, LEGACY_V2, LEGACY_V1, CORE):
         print(f"header is not a recognized schema: {header}", file=sys.stderr)
         return 2
 
     out = []
-    counts = {"ok": 0, "A": 0, "B": 0, "C": 0, "L": 0, "M": 0}
+    counts = {"ok": 0, "A": 0, "B": 0, "C": 0, "L": 0, "M": 0, "N": 0}
     unknown = []
     for i, row in enumerate(rows, start=2):
         shape, repaired = classify(row)
@@ -197,12 +231,12 @@ def main():
         out.append(repaired)
 
     total_fixed = (counts["A"] + counts["B"] + counts["C"] + counts["L"]
-                   + counts["M"])
+                   + counts["M"] + counts["N"])
     print(f"rows: {len(rows)} | already canonical: {counts['ok']}")
     print(f"repairable: {total_fixed} "
           f"(A trailing-pdf: {counts['A']}, B transposed: {counts['B']}, "
           f"C shifted: {counts['C']}, L legacy-9col: {counts['L']}, "
-          f"M widen-v1: {counts['M']})")
+          f"M widen-v1: {counts['M']}, N widen-v2: {counts['N']})")
     if unknown:
         print(f"UNRECOGNIZED, left untouched: {len(unknown)}")
         for ln, n, head in unknown:
