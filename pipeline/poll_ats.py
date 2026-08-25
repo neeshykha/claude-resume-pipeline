@@ -533,6 +533,54 @@ def description_excluded(text: str) -> bool:
     return any(term in t for term in EXCLUDED_TERMS)
 
 
+_WORKDAY_START_DATE_CACHE: dict[str, date | None] = {}
+
+
+def _resolve_workday_start_date(detail_url: str | None) -> date | None:
+    """Resolve a Workday posting's true start date from the CXS detail endpoint.
+
+    Only called when the list view reports a FLOOR ("Posted 30+ Days Ago"),
+    which is the one case the list response genuinely cannot answer. The detail
+    payload carries `jobPostingInfo.startDate` as a real ISO date: Jackson
+    Healthcare's Enterprise AI Enablement Lead returns "Posted 30+ Days Ago" in
+    the list and startDate 2026-06-02 (84 days) in the detail.
+
+    Cost is bounded by where this sits in the pipeline: extract_posted_date runs
+    AFTER the title, exclusion, and location gates, so it sees only matched
+    candidates (~650 of ~22,600 scanned), and only the Workday subset of those
+    showing a "+" floor reaches here — a few dozen requests per run at most.
+    Results are cached per URL for the life of the process.
+
+    Returns None on any failure so the caller can fall back; a network blip must
+    degrade the date, never break the poll.
+    """
+    if not detail_url:
+        return None
+    if detail_url in _WORKDAY_START_DATE_CACHE:
+        return _WORKDAY_START_DATE_CACHE[detail_url]
+    result: date | None = None
+    try:
+        resp = requests.get(
+            detail_url,
+            headers={"Accept": "application/json",
+                     "User-Agent": "Mozilla/5.0 (resume-pipeline)"},
+            timeout=REQUEST_TIMEOUT,
+        )
+        if resp.status_code == 200:
+            raw = (resp.json().get("jobPostingInfo") or {}).get("startDate")
+            if raw:
+                parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
+                # Guard against clock skew / bad data the same way the Comeet
+                # branch does: a future start date is treated as no-data rather
+                # than as ultra-fresh.
+                if parsed <= date.today():
+                    result = parsed
+    except Exception:
+        result = None
+    _WORKDAY_START_DATE_CACHE[detail_url] = result
+    return result
+
+
 def extract_posted_date(job_data: dict, ats: str) -> date | None:
     """Extract the posting's first-published date, normalized to a date object.
 
@@ -590,8 +638,25 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             # Workday's CXS list response has no ISO date, only a relative
             # "postedOn" string ("Posted Today" / "Posted Yesterday" /
             # "Posted 19 Days Ago" / "Posted 30+ Days Ago"), stashed by
-            # fetch_workday as _posted. Approximate to a date; "30+" parses
-            # as 31, which correctly trips the 21-day staleness filter.
+            # fetch_workday as _posted. Exact "N Days Ago" values are used
+            # directly. "N+ Days Ago" is a FLOOR, not a value, and is resolved
+            # against the CXS detail endpoint — see _resolve_workday_start_date.
+            #
+            # Why the floor can't just be approximated (fixed 2026-08-25): this
+            # branch used to parse "30+" as 31 days, justified by a comment
+            # saying that "correctly trips the 21-day staleness filter". That
+            # was true when MAX_POSTING_AGE_DAYS was 21. It was raised to 40 on
+            # 2026-07-27 and this approximation was never revisited, so from
+            # that date every Workday req older than 30 days reported as
+            # exactly 31 and sailed through the filter. Caught when Jackson
+            # Healthcare's "Enterprise AI Enablement Lead" reached the
+            # shortlist as 31 days old while its JD said 2026-06-02, i.e. 84
+            # days. Two other options were rejected: returning None makes such
+            # reqs permanently un-ageable (strictly worse), and treating the
+            # floor as over-limit would drop genuinely fresh 30-40 day reqs,
+            # which disproportionately costs Atlanta coverage since most
+            # Atlanta employers on this watchlist are Workday-hosted.
+            #
             # (Added 2026-07-19: Workday hosts the enterprise segment where
             # stale postings are common — Cengage's Sr Manager Customer
             # Support was 19 days old and only discoverable via JD fetch.)
@@ -602,7 +667,15 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
                 return date.today() - timedelta(days=1)
             m = re.search(r"(\d+)(\+?)\s*days?\s+ago", raw)
             if m:
-                days = int(m.group(1)) + (1 if m.group(2) else 0)
+                days = int(m.group(1))
+                if not m.group(2):
+                    return date.today() - timedelta(days=days)
+                resolved = _resolve_workday_start_date(job_data.get("_detail_url"))
+                if resolved:
+                    return resolved
+                # Detail lookup unavailable (no URL, network error, or field
+                # absent). Fall back to the floor itself rather than floor+1:
+                # "30+" means at least 30, so 30 is the only defensible claim.
                 return date.today() - timedelta(days=days)
     except (ValueError, TypeError, OSError):
         return None
@@ -882,6 +955,10 @@ def fetch_workday(company: dict) -> list[dict]:
                 out.append({
                     "title": p.get("title", ""),
                     "_apply_url": f"https://{host}/en-US/{site}{ext}",
+                    # CXS detail endpoint for this posting. Used only when
+                    # _posted is a "N+ Days Ago" floor, to read the real
+                    # startDate — see _resolve_workday_start_date.
+                    "_detail_url": f"https://{host}/wday/cxs/{tenant}/{site}{ext}",
                     "_workday_location": loc,
                     "_posted": p.get("postedOn", ""),
                     "id": ext,

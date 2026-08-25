@@ -906,6 +906,25 @@ comparable hard gap (production coding) that happened to appear in the summarize
 Disclosing a gap honestly in the cover letter is not a substitute for scoring it correctly:
 the tier decision is what allocates Aneesh's limited application effort.
 
+**Do NOT report a poller-vs-JD posting-date difference as drift without checking the field
+(added 2026-08-25, after it was reported as a bug twice in two days).** `fetch_jd.py` and
+`poll_ats.py` now both read Greenhouse's `first_published`, so their dates agree. They did not
+agree before 2026-08-25: `fetch_jd` preferred `updated_at`, and large Greenhouse boards bulk-
+refresh every open req daily, so `updated_at` reads "today" on a req published months ago. That
+produced two phantom findings — Snorkel AI (`first_published` 2026-07-31 vs `updated_at`
+2026-08-24) and Sprout Social (2026-07-23 vs 2026-08-24) — where the poller had been correct all
+along. Both are fixed. If a difference still appears, check which field each side read before
+calling it drift.
+
+Workday is the real exception, and it is now handled. Its CXS *list* response has no ISO date,
+only `postedOn` as a relative string, and `"Posted 30+ Days Ago"` is a **floor, not a value**.
+That floor used to be approximated as 31 days, which passed the 40-day filter and let genuinely
+stale reqs onto the shortlist — Jackson Healthcare's "Enterprise AI Enablement Lead" reached the
+2026-08-25 shortlist as 31 days old when its real `startDate` was 2026-06-02, i.e. 84 days.
+`extract_posted_date` now resolves any `N+` floor against the CXS *detail* endpoint, which does
+carry a real `startDate`, and falls back to the bare floor if that lookup fails. Exact
+`"Posted N Days Ago"` values, `"Today"`, and `"Yesterday"` are unchanged.
+
 **Ambiguous location shorthand: resolve it from the JD body, never the shortlist string.**
 Same run, Automation Anywhere's "Engagement Manager" showed `CO Remote` in the poller
 output; the JD body said "Remote role within **Colombia**." Two-letter codes in Workday
