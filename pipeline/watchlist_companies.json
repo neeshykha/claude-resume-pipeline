@@ -61,7 +61,7 @@
         "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-08-23"
+        "last_run": "2026-08-25"
       },
       {
         "name": "Lever Boards - Target Roles",
@@ -69,7 +69,7 @@
         "notes": "Discovers Lever-hosted companies off the watchlist. Same enroll guidance. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10, same fix as the Greenhouse query (Tailscale miss). 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks \u2014 none carried an enablement term. 'professional services' added 2026-08-20 after FinQuery's 'Manager, Professional Services' (Lever-hosted, Atlanta, exact tier-2 title variant) was user-surfaced and turned out to be invisible only to this query -- the Greenhouse and Ashby dorks already carried the term.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-08-23"
+        "last_run": "2026-08-25"
       },
       {
         "name": "Atlanta Board Sweep (all 3 ATSes)",
@@ -117,7 +117,7 @@
         "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config \u2192 passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias. 'sports technology'/'sports analytics'/'player tracking' added 2026-07-22 for the new sports_technology domain -- this targets companies with real CSM/TAM/implementation-shaped roles (e.g. Sportradar, Catapult, Trackman, Zebra Sports), not field-hardware-technician titles like Hawk-Eye Innovations' actual Atlanta postings, which are a genuinely different job function and don't clear the title-tier bar regardless of the passion bonus.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-08-23"
+        "last_run": "2026-08-25"
       },
       {
         "name": "Industrial IoT / Physical-World Hardware (discovery only, no scoring bonus)",
@@ -125,7 +125,7 @@
         "notes": "Added 2026-07-18 after Aneesh described being drawn to physical-world/industrial-equipment sensing (anchor example: a sensor device on spinning machinery) \u2014 narrower than generic 'hardware' or 'wireless communication' on purpose, to avoid pulling in consumer telecom/carrier noise or double-counting his existing consumer-IoT background (First Alert/Newell/Luma), which already scores normally via keyword overlap. A plain (non-site-scoped) version of this query was tested first and returned mostly generic aggregator category pages (ZipRecruiter/Indeed/SimplyHired), not enrollable individual companies -- switched to the ATS-host-scoped pattern (same shape as the Ashby/Greenhouse/Lever 'Boards - Target Roles' sources) since that's what actually surfaces live individual postings; first live run found AssetWatch (industrial condition-monitoring platform), Advanced Technology Services, and ANYbotics (industrial robotics/predictive maintenance). UNLIKE the Passion Verticals source above, this is discovery/enrollment-only: hits get NO passion-domain scoring bonus (Aneesh explicitly deferred that decision -- see memory user_profile.md 'Open item, deliberately deferred'). Companies surfaced here go through the normal enrollment verification and are scored on the standard rubric like any other company -- no bonus, no special treatment, just a wider discovery net. Do not add a passion_domains entry for this vertical unless Aneesh explicitly asks.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-08-23"
+        "last_run": "2026-08-25"
       },
       {
         "name": "PropTech / Resident Experience (vertical discovery)",
@@ -165,7 +165,7 @@
         "notes": "Added 2026-08-12, same day fetch_pinpoint() shipped in poll_ats.py (see _pinpoint_notes). Prompted by Napier AI, a user-surfaced miss that turned out to be a clean public JSON API the whole time -- pure discovery gap, not a structural one. First run surfaced Portnox (network-access-control security vendor). Same enroll guidance as the other board dorks: surface unfamiliar companies, verify the board via harvest_ats.py (now covers pinpoint), add to watchlist. Note in the query results: pinpointhq.com's own marketing pages (comparison pages, their own careers/customer-support content) show up as noise -- filter to actual {company}.pinpointhq.com subdomains.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-08-23"
+        "last_run": "2026-08-25"
       },
       {
         "name": "Recent Funding (Passion/Tooling Verticals)",
@@ -173,7 +173,7 @@
         "notes": "Added 2026-08-12, from Aneesh asking whether the pipeline scans funding news before enrolling companies -- it didn't; funding stage only ever appeared as backward-looking context on companies found some OTHER way. This is an EVENT query, same idea as the monthly AI Support Vendor Consolidation M&A watch, just for raises instead of acquisitions: a company that just closed a round is likely to be hiring into support/CS/ops soon, especially past founder-led-everything scale, which is exactly the sub-500-headcount profile the small-company bonus already favors. Deliberately scoped to Aneesh's stated interest areas rather than run broad+unscoped (his call, 2026-08-12): AI-native + developer/infra tooling (his stated primary interest) plus the four passion_domains (electrification_ev, health_tech, agriculture, sports_technology). A funding hit is a COMPANY signal, not a role signal -- surface the company, verify the board is live via harvest_ats.py, and apply the normal AI/tooling or passion-domain scoring bonus (never both, per the Scoring Guardrails company-bonus cap) once actually enrolled and scored. Do not tailor or score off the funding article itself.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-08-23"
+        "last_run": "2026-08-25"
       },
       {
         "name": "Rippling Boards - Target Roles",
@@ -3242,7 +3242,8 @@
       "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
       "reason": "Contract lifecycle management with AI. Verified live Ashby board 2026-07-31 (32 jobs) but ZERO US tier1/tier2 open today. Enrolled at low priority because the function exists at this company class; PRUNE if it stays empty.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) - contract lifecycle AI"
+      "bonus_reason": "AI/ML platform (+20) - contract lifecycle AI",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Linear",
@@ -3253,7 +3254,8 @@
       "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
       "reason": "Issue tracking/project tooling for engineering teams. Verified live 2026-07-31 (23 jobs) but ZERO US tier1/tier2 today. Small, selective board; low priority.",
       "score_bonus": 20,
-      "bonus_reason": "Developer/infra tooling (+20) - issue tracking for software teams"
+      "bonus_reason": "Developer/infra tooling (+20) - issue tracking for software teams",
+      "headcount_band": "51-200"
     },
     {
       "name": "Webflow",
@@ -3262,7 +3264,8 @@
       "priority": "low",
       "enrolled_date": "2026-07-31",
       "enrolled_via": "scaleup coverage sweep 2026-07-31 (segment was ~74% untracked)",
-      "reason": "Visual web development platform. Verified live 2026-07-31 (28 jobs), ZERO US tier1/tier2 today. Low priority; prune if persistently empty."
+      "reason": "Visual web development platform. Verified live 2026-07-31 (28 jobs), ZERO US tier1/tier2 today. Low priority; prune if persistently empty.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Discord",
@@ -4105,8 +4108,9 @@
       "priority": "low",
       "enrolled_date": "2026-08-23",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 2 fit-titles at harvest time (2 tier2c), e.g. 'Senior Product Manager, Internal  AI & Automation' [Remote US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 2 fit-titles at harvest time (2 tier2c), e.g. 'Senior Product Manager, Internal  AI & Automation' [Remote US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0). K-12 school/district communications and branding SaaS. The product is a comms platform for schools, not an AI/ML system and not developer/infra tooling. Its 'Internal AI & Automation' PM req describes internal tool use, which is not a product signal. Classified 2026-08-25."
     },
     {
       "name": "Cursor",
@@ -4126,8 +4130,9 @@
       "priority": "low",
       "enrolled_date": "2026-08-23",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (104 jobs) with 4 fit-titles at harvest time (4 tier2c), e.g. 'Senior Business Systems Analyst, Enterprise Planning (Pigmen' [Remote - United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (104 jobs) with 4 fit-titles at harvest time (4 tier2c), e.g. 'Senior Business Systems Analyst, Enterprise Planning (Pigmen' [Remote - United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0). Smart-ring health wearable: hardware plus consumer health analytics. Not an AI/ML platform product and not developer/infra tooling. The health-tech passion domain (+10) still applies at scoring time and is computed there, not here. Classified 2026-08-25."
     },
     {
       "name": "Maven Clinic",
@@ -4136,8 +4141,9 @@
       "priority": "low",
       "enrolled_date": "2026-08-23",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (29 jobs) with 2 fit-titles at harvest time (1 tier2c, 1 tier3(location-gated)), e.g. 'Revenue Operations Manager (Payments and Reconciliation)' [New York, NY; Remote, US (Hub cities)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (29 jobs) with 2 fit-titles at harvest time (1 tier2c, 1 tier3(location-gated)), e.g. 'Revenue Operations Manager (Payments and Reconciliation)' [New York, NY; Remote, US (Hub cities)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0). Virtual clinic and care-navigation platform for women's and family health. Healthcare services delivery, not an AI/ML product and not developer/infra tooling. The health-tech passion domain (+10) still applies at scoring time. Classified 2026-08-25."
     },
     {
       "name": "Pantheon",
@@ -4226,6 +4232,36 @@
       "reason": "IT / managed-services provider (ex-Cincinnati Bell Technology Solutions) with an AI-solutions delivery practice. Board verified live at rippling/cbts (20 jobs). harvest_ats.py rejected it for '0 US fit-titles' because its qualifying tiers are tier1/tier2/tier2c plus location-gated tier3 and do NOT include tier2b_ai_wildcard -- so a company whose only fit-space role is an AI-prefixed title is auto-rejected even though poll_ats.py's ai_wildcard path is built to catch exactly that. Enrolled by hand on the strength of the alert; the poller now scans the full roster daily.",
       "score_bonus": 0,
       "bonus_reason": "No vertical bonus (classified 2026-08-24). IT managed services and network/infrastructure integration reselling: not an AI-native product company and not a developer/infra tooling product, even though it staffs an AI-solutions practice."
+    },
+    {
+      "name": "Incode Technologies",
+      "ats": "greenhouse",
+      "slug": "incode",
+      "priority": "low",
+      "enrolled_date": "2026-08-25",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Senior Technical Account Manager' [United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Twelve Labs",
+      "ats": "ashby",
+      "slug": "twelve-labs",
+      "priority": "low",
+      "enrolled_date": "2026-08-25",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Director of Engineering, Customer Deployments and Partner In' [Remote US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Higharc",
+      "ats": "ashby",
+      "slug": "higharc",
+      "priority": "low",
+      "enrolled_date": "2026-08-25",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 3 fit-titles at harvest time (2 tier2, 1 tier3(location-gated)), e.g. 'Solutions Engineer' [Remote (Atlanta, Austin, Chicago, Dallas]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
