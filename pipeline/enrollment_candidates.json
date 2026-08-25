@@ -4377,6 +4377,19 @@
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
+    },
+    {
+      "name": "Engagifii",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-25",
+      "reason": "User-surfaced 2026-08-25 via a LinkedIn message from an Insperity recruiter. Real Atlanta company: association management software (MEAMS) for professional/trade/government associations and lobbying firms, ~51 employees, HQ 2839 Paces Ferry Rd SE Atlanta, created 2018 by Crescerance Inc., backed by BIP Capital/BIP Ventures. NOT POLLABLE: Engagifii uses Insperity as its PEO and posts through Insperity's Avature instance (insperity.avature.net), an ATS poll_ats.py does not speak. No company-owned Greenhouse/Ashby/Lever/Workday board exists to enroll. Its 'Director of Product Support and Perfection' req scored 118 and was fully tailored the same day.",
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Director of Product Support and Perfection, Atlanta GA (in-office), $93.5K-$115K. Tier-1 title, Atlanta, 51-person company. Apply via https://insperity.avature.net/careers/JobDetails?jobId=22078",
+      "recheck_if_resurfaced": true,
+      "gap_class": "peo_hosted_board",
+      "gap_note": "NEW DISCOVERY-GAP CLASS, first identified 2026-08-25. Small companies that outsource HR to a PEO (Insperity, TriNet, Justworks, Gusto, Sequoia) frequently post reqs on the PEO's ATS instance rather than a company-owned board. Those reqs carry the PEO's domain, so they are invisible to every company-name-keyed discovery source AND to harvest_ats.py's slug-variant probing, which only ever tries the company's own name. This is structurally different from the Origami Risk/iCIMS case: there the company had its own board on an unsupported ATS; here there is no company board at all to find. The segment it hides is exactly the one the small-company bonus was built to surface, and Atlanta is full of it. Worth considering a PEO-host dork (site:insperity.avature.net, site:jobs.trinet.com, etc.) as a discovery source."
     }
   ]
 }
