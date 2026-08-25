@@ -1481,6 +1481,27 @@
       "slug": "cbts",
       "enrolled_date": "2026-08-24",
       "headcount_band": "2000+"
+    },
+    {
+      "name": "Incode Technologies",
+      "ats": "greenhouse",
+      "slug": "incode",
+      "enrolled_date": "2026-08-25",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Twelve Labs",
+      "ats": "ashby",
+      "slug": "twelve-labs",
+      "enrolled_date": "2026-08-25",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Higharc",
+      "ats": "ashby",
+      "slug": "higharc",
+      "enrolled_date": "2026-08-25",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -4272,6 +4293,87 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-24",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "AT&T",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-25",
+      "reason": "No board found for AT&T. IMPORTANT: harvest_ats.py's deterministic slug-variant generator FALSE-MATCHED this to ashby/attio -- that is Attio, an unrelated CRM startup, not AT&T. The '44 jobs, 0 US fit-titles' result in the 2026-08-25 run log describes Attio's board, not AT&T's. Corrected by hand the same run. AT&T is a large telco with a self-hosted careers site; if it is ever worth pursuing, try site:myworkdayjobs.com att rather than trusting a slug variant.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "harvest_false_match": "ashby/attio"
+    },
+    {
+      "name": "Lightcone Infrastructure",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-25",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Center for AI Safety",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-25",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Varonis",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-25",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Clio",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-25",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "CGI",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-25",
+      "reason": "No board resolved from deterministic name-variant slugs. The one-search Workday fallback was NOT run for this entry on 2026-08-25 (search budget spent on Syncron, which had the stronger role). CGI is a ~90k-person IT consultancy self-hosting at cgi.com/en/careers; low expected value to enroll, and the surfacing role ('Technical Delivery Manager', Atlanta) is consultancy staffing rather than a product support-ops role. Recheck only if it resurfaces with a better-fitting title.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Technical Delivery Manager (tier2 delivery/deployment family), Atlanta",
+      "careers_url": "https://www.cgi.com/en/careers",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Syncron",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-25",
+      "reason": "No supported ATS. The documented site:myworkdayjobs.com fallback ran 2026-08-25 and found no Workday tenant (results were Synchrony Financial and Synechron, not Syncron). Syncron self-hosts at careers.syncron.com, which is a Teamtailor-style board the poller does not speak. The surfacing role is real and confirmed live: 'Project Manager - Software Implementation', Atlanta / Chicago / fully remote, https://careers.syncron.com/jobs/7575925-project-manager-software-implementation",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Project Manager - Software Implementation (tier2 implementation family), Atlanta",
+      "careers_url": "https://careers.syncron.com/jobs/7575925-project-manager-software-implementation",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Jacoby & Meyers Accident & Injury Lawyers",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-25",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
