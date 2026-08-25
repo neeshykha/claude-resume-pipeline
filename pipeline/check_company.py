@@ -34,6 +34,35 @@ def hit(query: str, candidate: str) -> bool:
     return bool(q and c) and (q in c or c in q)
 
 
+# Manual-coverage blocks in watchlist_companies.json. These hold companies the
+# poller structurally CANNOT reach but which ARE actively covered by a rotation,
+# so a hit here means "already handled", not "new discovery".
+MANUAL_BLOCKS = ("_blind_spot_companies", "_unpollable_backlog_companies")
+
+
+def load_known() -> list[str]:
+    """Every company name/slug the pipeline already knows, as a flat list.
+
+    Importable so other harvesters dedupe against exactly the same surface this
+    CLI reports on -- see harvest_vc_portfolios.py.
+    """
+    with open(WATCHLIST) as f:
+        watchlist = json.load(f)
+    with open(ENROLLMENT) as f:
+        enrollment = json.load(f)
+
+    out = []
+    for c in watchlist.get("companies", []):
+        out += [c.get("name", ""), c.get("slug", "") or ""]
+    for block in MANUAL_BLOCKS:
+        for c in watchlist.get(block, {}).get("companies", []):
+            out.append(c.get("name", ""))
+    for bucket in ("pending", "enrolled", "rejected"):
+        for e in enrollment.get(bucket, []):
+            out += [e.get("name", ""), e.get("slug") or ""]
+    return [n for n in out if n]
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
@@ -58,6 +87,22 @@ def main():
                     print(f"    board_status: {c['board_status']}")
                 if c.get("reason"):
                     print(f"    reason: {c['reason'][:200]}")
+
+        # Fixed 2026-08-25: these blocks were NOT searched, so this tool returned
+        # UNKNOWN for Home Depot, Delta, Equifax, and Cox Automotive -- all of
+        # which ARE covered by the blind-spot rotation. Since a result of UNKNOWN
+        # is what sends a company to `pending`, the omission caused real wasted
+        # cycles: Microsoft was queued, failed ATS resolution, and was rejected
+        # 2026-07-29 with the note "Already covered by _blind_spot_companies
+        # rotation. Enrolling would duplicate that coverage."
+        for block in MANUAL_BLOCKS:
+            for c in watchlist.get(block, {}).get("companies", []):
+                if hit(query, c.get("name", "")):
+                    found = True
+                    print(f"  {block.strip('_').upper()}: {c['name']}"
+                          f" (last_checked {c.get('last_checked', '?')})")
+                    if c.get("why"):
+                        print(f"    {c['why'][:200]}")
 
         for bucket in ("pending", "enrolled", "rejected"):
             for e in enrollment.get(bucket, []):
