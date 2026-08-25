@@ -37,12 +37,49 @@ Engagifii, the 118-scoring Atlanta role that arrived by recruiter because no
 automated channel could see it), plus Cloverly, FinQuery, and GoFan/PlayOn --
 all already on the watchlist.
 
-EXPECTED YIELD, so nobody over-reads a thin run: of ~105 BIP names, maybe 30-40
-are Atlanta, roughly half of those run a supported ATS, and roughly half of
-those have a fit-title open at any moment. Five to ten enrollments on a first
-run and a trickle after. Companies too small to run any ATS (Engagifii's case)
-land in `rejected` as unpollable, which is still strictly better than invisible:
-weekly_channel_report.py surfaces those as a manual punch list.
+FIRST-RUN RESULT: ZERO. READ THIS BEFORE RUNNING IT AGAIN.
+----------------------------------------------------------
+Predicted five to ten enrollments. Actual, 2026-08-25: **enrollable=0** out of
+40 processed (no_board=38, no_fit=2). The prediction was wrong and the reason is
+structural, not a bug in this script.
+
+The portfolio split along a line that was not anticipated: every company large
+enough to run Greenhouse/Ashby/Lever was ALREADY on the watchlist (13 of BIP's
+100 -- Cloverly, FinQuery, GoFan/PlayOn). Everything that survived dedupe as
+"new" was seed-stage: 1 True Health, Blooksy, Inked, Genie, Dropstat. The 13
+already-known rate was misread as evidence of good aim; it is really a CEILING
+signal. The reachable companies were already reached.
+
+Spot-checking eight of the no-board results by hand shows they are not all
+jobless, just unreachable or quiet:
+  * Case Status  -- live Greenhouse board at slug `casestatus`, ZERO jobs open
+  * FortifyData  -- careers page live, runs on UKG (unsupported ATS)
+  * ConnexPay    -- careers page live with roles, no recognizable ATS
+  * ChartSpan, Aspirion, Crescerance, Acclivity Health, Car360 -- no careers
+    page at any common path
+
+So the real obstacle is a BASE RATE, not discovery. A 20-person company has
+zero to two openings at a time and maybe one role in fifteen is support/CS/ops.
+Across 38 such companies you would expect two or three fit roles to exist at any
+moment, and you would need all 38 pollable at once to see them. Company-first
+polling assumes continuous hiring; sub-100-headcount companies violate that.
+
+CONCLUSION (Aneesh's call, 2026-08-25): the harvested queue was cleared rather
+than enrolled or rejected. This script is NOT wired into daily_task_prompt.md
+and does not run on any schedule -- it only runs if invoked by hand. Do not
+schedule it without a reason to expect a different outcome.
+
+The one change that could make it worth re-running: harvest_ats.py rejects a
+company for having no fit-titles AT HARVEST TIME, so a live-but-empty board like
+Case Status is discarded even though watching it costs one API call a day and
+would catch the role whenever it opens. If that gate is ever changed to enroll
+live-but-quiet boards at low priority, re-run this and re-measure.
+
+For this segment the channels that actually work are role-first and human:
+LinkedIn alerts and the Jobs recommendation feed (which produced Engagifii,
+Hercules, Philips, and Headway), recruiter inbound, and network. An untested
+role-first API option is Adzuna -- location-filtered, names the employer (unlike
+PEO boards), free key required.
 """
 import argparse
 import html as html_mod
