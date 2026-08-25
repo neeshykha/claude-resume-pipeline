@@ -151,7 +151,17 @@ def fetch_greenhouse(url):
         "title": d.get("title"),
         "location": (d.get("location") or {}).get("name"),
         "remote": None,
-        "posted": d.get("updated_at") or d.get("first_published"),
+        # first_published FIRST, matching poll_ats.extract_posted_date. Fixed
+        # 2026-08-25: this used to prefer updated_at, and most large Greenhouse
+        # boards bulk-refresh every req daily, so updated_at is almost always
+        # "today". That produced phantom "the poller's date is wrong" reports
+        # whenever a JD read was compared against the shortlist — Snorkel AI
+        # (first_published 2026-07-31, updated_at 2026-08-24) and Sprout Social
+        # (2026-07-23 vs 2026-08-24) both got flagged as ~30-day drift when the
+        # poller was reading the correct field the whole time. Posting AGE is
+        # the question this field answers, so first publication is the right
+        # answer and updated_at is only a fallback.
+        "posted": d.get("first_published") or d.get("updated_at"),
         "salary": meta.get("Salary Range") or meta.get("Compensation"),
         "body": strip_html(html.unescape(d.get("content") or "")),
     }
