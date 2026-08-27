@@ -134,6 +134,24 @@ def slug_variants(name: str):
              # alongside bare rippling/supper/tixr/kion) -- harmless no-ops
              # against every other ATS, which just 404 on them.
              hyphen + "-careers", hyphen + "-open-positions", hyphen + "-jobs"]
+
+    # Capitalised variants -- REQUIRED for Ashby and SmartRecruiters, whose board
+    # names are CASE-SENSITIVE. Everything above is lowercased by construction
+    # (`n = name.strip().lower()`), so before 2026-08-27 a company whose board is
+    # named "Lime" or "TrimbleCareers" could never be resolved no matter how many
+    # suffixes were tried: every candidate 404'd on a case mismatch alone.
+    # Found via a user-surfaced Lime posting whose own embed script pointed at
+    # `jobs.ashbyhq.com/Lime` while this function had only ever probed `lime`.
+    # Same harmless-no-op property as the Rippling suffixes above: a wrong-case
+    # candidate just 404s on the case-insensitive ATSes.
+    cased = []
+    for c in (base, nospace, hyphen, stripped):
+        if c:
+            cased.append(c[:1].upper() + c[1:])          # Lime, Tripactions
+    if words:
+        cased.append("".join(w.capitalize() for w in words))  # TrimbleCareers-style
+    cands += cased
+
     out, seen = [], set()
     for c in cands:
         if c and len(c) > 1 and c not in seen:
