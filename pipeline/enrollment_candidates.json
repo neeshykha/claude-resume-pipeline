@@ -1516,6 +1516,13 @@
       "slug": "flexport",
       "enrolled_date": "2026-08-27",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Aprio",
+      "ats": "lever",
+      "slug": "Aprio",
+      "enrolled_date": "2026-08-27",
+      "headcount_band": "2000+"
     }
   ],
   "rejected": [
@@ -2526,11 +2533,12 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
+      "reason": "CORRECTED 2026-08-27: the original 'no board resolved' was wrong, but NOT for the case reason. A board resolves at pinpoint/deel. Deel was rejected 2026-07-31 and Pinpoint support was not added to the poller until 2026-08-12, so it was never probed against Pinpoint at all. Rejection STANDS on fit: the Pinpoint board exposes only 1 posting with no tier1/2/2c/3 title. Likely a partial/secondary board for a company this size; recheck if it resurfaces.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-24"
+      "weekly_report_surfaced_date": "2026-08-24",
+      "reason_corrected_date": "2026-08-27"
     },
     {
       "name": "Snyk",
@@ -3054,9 +3062,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-10",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "CORRECTED 2026-08-27: 'no board resolved' was wrong. Board resolves at rippling/blueprint (1 job). Rejected 2026-08-10, before Rippling support landed 2026-08-12, so it was never probed against Rippling. Rejection STANDS on fit: single posting, no fit-title.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "reason_corrected_date": "2026-08-27"
     },
     {
       "name": "GitHub",
@@ -3129,15 +3138,6 @@
     },
     {
       "name": "Samsung Healthcare USA",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-11",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
-      "name": "Aprio",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-11",
@@ -3219,9 +3219,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-12",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "CORRECTED 2026-08-27: 'no board resolved' was wrong. Board resolves at pinpoint/trulygoodfoods (10 jobs). Same cause as Deel: rejected 2026-08-12, probed before Pinpoint coverage was reliable. Rejection STANDS on fit: zero tier1/2/2c/3 titles. NOTE: snack-food distribution touches the agriculture/food passion domain, so recheck if the board grows an ops/CX role.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "reason_corrected_date": "2026-08-27"
     },
     {
       "name": "Tixr",
@@ -4298,9 +4299,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-24",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "CORRECTED 2026-08-27: the original 'no board resolved' was wrong. Board is live at lever/Ketch (CAPITAL K) -- a slug_variants() case-sensitivity artifact, fixed the same day. Rejection STANDS on fit rather than pollability: only 4 open roles and the single fit-title (Customer Experience Engineer) is Bengaluru, not US-reachable. Data-privacy/governance tooling company, so recheck if the board grows US roles.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "reason_corrected_date": "2026-08-27"
     },
     {
       "name": "Crunchbase",

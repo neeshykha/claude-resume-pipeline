@@ -4600,6 +4600,18 @@
       "score_bonus": 0,
       "bonus_reason": "No vertical bonus (classified 2026-08-27, day of enrollment). Freight forwarding and customs brokerage with a software layer on top. Not AI-native, and not developer/infra tooling: the platform is sold to shippers and logistics teams, not to engineers. What makes Flexport worth polling is ATLANTA headcount in fit-space titles (Regional Implementation Manager, 3PL Customer Success Manager, Staff Program Manager Strategic Initiatives all list Atlanta), and Atlanta in-office is the single largest location lever in the rubric at +20.",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (160 jobs) with 3 fit-titles at harvest time (1 tier2, 1 tier2c, 1 tier3(location-gated)), e.g. '3PL Customer Success Manager ' [Atlanta Warehouse; Chicago Warehouse; Da]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Sourced 2026-08-27 from the BODY of a LinkedIn 'Jobs You Might Be Interested In' digest whose subject named a different company entirely, which is the exact failure mode the 2026-08-21 digest-body rule was written to fix."
+    },
+    {
+      "name": "Aprio",
+      "ats": "lever",
+      "slug": "Aprio",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "enrolled_date": "2026-08-27",
+      "enrolled_via": "Post-Lime re-probe of 'no board resolved' rejections (case-sensitivity fix)",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus: accounting and business advisory firm, not an AI/ML product company and not a tooling company. Atlanta-enterprise +10 applies at scoring time.",
+      "reason": "Atlanta-headquartered accounting and business advisory firm. Board verified live 2026-08-27: lever/Aprio returns 185 postings. Enrolled because Atlanta HQ plus a large live board is the highest-leverage combination in the rubric (+20 in-office / +10 Atlanta-enterprise), and it already carries a tier2c 'Tax Technology Automation Manager' in Atlanta. Was wrongly rejected 2026-08-11 as 'no board resolved' because slug_variants() only probed lowercase 'aprio'; the real slug is capitalised."
     }
   ]
 }
