@@ -80,8 +80,12 @@ column is to make per-channel conversion comparable once enough outcomes land.
 
 Recognized drifted shapes:
 
+  O. LEGACY_V3: the 14-column schema in force 2026-08-21 to 2026-08-27
+     -> widen with one empty trailing column (furthest_stage).
+
   N. LEGACY_V2: the 13-column schema in force 2026-08-01 to 2026-08-21
-     -> widen with one empty trailing column (hard_req_cap_trigger).
+     -> widen with two empty trailing columns (hard_req_cap_trigger,
+        furthest_stage).
 
   M. LEGACY_V1: the 10-column schema in force 2026-07-28 to 2026-08-01
      -> widen with three empty trailing columns. Told apart from the drifted
@@ -125,8 +129,26 @@ LEGACY_V1 = CORE + ["source_channel"]
 # shape "N" widens these rows by one column.
 LEGACY_V2 = LEGACY_V1 + ["surfaced_date", "unmet_hard_reqs",
                          "vendor_tool_named_in_jd"]
-CANONICAL = LEGACY_V2 + ["hard_req_cap_trigger"]
+# Schema in force 2026-08-21 through 2026-08-27. Recognized input shape:
+# shape "O" widens these rows by one column.
+LEGACY_V3 = LEGACY_V2 + ["hard_req_cap_trigger"]
+# Added 2026-08-27. `outcome` is a single TERMINAL-state column, so a role that
+# reached an interview and was then rejected ends up reading `rejected` and the
+# interview is erased. That made interview rate uncomputable from the schema:
+# an audit that day found SIX interview-stage events of which only two showed in
+# `outcome`, the other four surviving as free text in `notes`. This column
+# records the furthest point a role ever reached and is never overwritten
+# downward. Vocabulary in FURTHEST_STAGES below.
+CANONICAL = LEGACY_V3 + ["furthest_stage"]
 DEFAULT_CHANNEL = "pipeline"
+
+# Ordered weakest to strongest. `furthest_stage` only ever moves right.
+# EMPTY IS NOT "no interview" -- it means NOT RECORDED, and it is the correct
+# value for the ~230 rows that predate this column. Same three-state rule as
+# hard_req_cap_trigger: do not backfill by assumption, because "nobody checked"
+# and "checked, never interviewed" are different facts and conflating them is
+# exactly what made `outcome` useless here.
+FURTHEST_STAGES = ["", "applied", "assessment", "interview", "onsite", "offer"]
 
 
 def is_url(v):
@@ -177,6 +199,8 @@ def classify(row):
 
     if len(row) == len(CANONICAL) and row[9].strip() in KNOWN_CHANNELS:
         return "ok", row
+    if len(row) == len(LEGACY_V3) and row[9].strip() in KNOWN_CHANNELS:
+        return "O", pad(row)
     if len(row) == len(LEGACY_V2) and row[9].strip() in KNOWN_CHANNELS:
         return "N", pad(row)
     if len(row) == len(LEGACY_V1) and row[9].strip() in KNOWN_CHANNELS:
@@ -214,12 +238,12 @@ def main():
     with open(OUTCOMES, newline="", encoding="utf-8") as f:
         raw = list(csv.reader(f))
     header, rows = raw[0], raw[1:]
-    if header not in (CANONICAL, LEGACY_V2, LEGACY_V1, CORE):
+    if header not in (CANONICAL, LEGACY_V3, LEGACY_V2, LEGACY_V1, CORE):
         print(f"header is not a recognized schema: {header}", file=sys.stderr)
         return 2
 
     out = []
-    counts = {"ok": 0, "A": 0, "B": 0, "C": 0, "L": 0, "M": 0, "N": 0}
+    counts = {"ok": 0, "A": 0, "B": 0, "C": 0, "L": 0, "M": 0, "N": 0, "O": 0}
     unknown = []
     for i, row in enumerate(rows, start=2):
         shape, repaired = classify(row)
@@ -231,12 +255,13 @@ def main():
         out.append(repaired)
 
     total_fixed = (counts["A"] + counts["B"] + counts["C"] + counts["L"]
-                   + counts["M"] + counts["N"])
+                   + counts["M"] + counts["N"] + counts["O"])
     print(f"rows: {len(rows)} | already canonical: {counts['ok']}")
     print(f"repairable: {total_fixed} "
           f"(A trailing-pdf: {counts['A']}, B transposed: {counts['B']}, "
           f"C shifted: {counts['C']}, L legacy-9col: {counts['L']}, "
-          f"M widen-v1: {counts['M']}, N widen-v2: {counts['N']})")
+          f"M widen-v1: {counts['M']}, N widen-v2: {counts['N']}, "
+          f"O widen-v3: {counts['O']})")
     if unknown:
         print(f"UNRECOGNIZED, left untouched: {len(unknown)}")
         for ln, n, head in unknown:
