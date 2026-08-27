@@ -192,8 +192,29 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | `outcomes.csv` outcome (rejected/interview/offer) | `mark_outcome.py` | infer an outcome from silence |
 | `outcomes.csv` schema migrations | `repair_outcomes.py` | hand-fix drifted rows |
 
-**`outcomes.csv` canonical schema (14 columns as of 2026-08-21):**
-`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger`
+**`outcomes.csv` canonical schema (15 columns as of 2026-08-27):**
+`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage`
+
+**`furthest_stage` landed 2026-08-27, and the bug it fixes had been silently destroying data
+since the file existed.** `outcome` is a single TERMINAL-state column, so a role that reached an
+interview and was then rejected ends up reading `rejected` and the interview is gone. Aneesh said
+he was sure he'd had more interviews than the tracker showed; he was right. An audit that day
+found **six interview-stage events, of which only two appeared in `outcome`** — the other four
+survived only as free text in `notes` and had to be recovered by regex. Interview rate was
+therefore uncomputable from the schema, which meant the pipeline was systematically understating
+its own conversion. This is a strictly worse failure than the `jd_coverage_pct` problem below:
+that metric merely has no variance, this one erased its own history.
+
+`furthest_stage` records the furthest point a role ever reached and **only ever moves right**.
+Vocabulary, weakest to strongest, in `FURTHEST_STAGES` (`repair_outcomes.py`):
+`applied` · `assessment` · `interview` · `onsite` · `offer`.
+
+**Empty means NOT RECORDED, not "never interviewed"** — the same three-state discipline as
+`hard_req_cap_trigger`. The 233 rows that predate the column stay blank on purpose. Do NOT
+backfill them to "no interview": "nobody checked" and "checked, never interviewed" are different
+facts, and conflating them is precisely what made `outcome` useless here. Populate it going
+forward whenever a stage is confirmed, and set it alongside any `mark_outcome.py` run that records
+an interview, assessment, or offer.
 
 Columns 11–13 landed 2026-08-01 from the conversion audit (SESSION_STATE 2026-08-01):
 

@@ -56,7 +56,8 @@ OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
 OUTCOMES_HEADER = ["applied_date", "company", "title", "url", "fit_score",
                    "jd_coverage_pct", "stage", "outcome", "notes",
                    "source_channel", "surfaced_date", "unmet_hard_reqs",
-                   "vendor_tool_named_in_jd", "hard_req_cap_trigger"]
+                   "vendor_tool_named_in_jd", "hard_req_cap_trigger",
+                   "furthest_stage"]
 
 
 def load_json(path, default):
