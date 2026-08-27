@@ -3062,7 +3062,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-10",
-      "reason": "CORRECTED 2026-08-27: 'no board resolved' was wrong. Board resolves at rippling/blueprint (1 job). Rejected 2026-08-10, before Rippling support landed 2026-08-12, so it was never probed against Rippling. Rejection STANDS on fit: single posting, no fit-title.",
+      "reason": "CORRECTED 2026-08-27: 'no board resolved' was wrong. Board resolves at rippling/blueprint (1 job). Rejected 2026-08-10, before Rippling support landed 2026-08-12, so it was never probed against Rippling. Rejection STANDS on fit: single posting, no fit-title. SECOND CORRECTION, same day: there are TWO companies behind this one queue entry. The role that originally surfaced 'Blueprint' was a 'Technical Program Manager - Customer Success Enablement' req at BLUEPRINT TECHNOLOGIES (Bellevue WA consulting firm, ~500 people), whose Greenhouse slug is 'bpcs' -- underivable from the company name, which is why every name-variant probe missed it and why the Step 1c Greenhouse dork found it instead. Blueprint Technologies is now enrolled on the watchlist in its own right. This rejected entry refers only to the rippling/blueprint company and stays rejected. Lesson worth keeping: a generic company name plus an acronym slug defeats deterministic resolution entirely, and the board dorks are the only layer that catches it.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "reason_corrected_date": "2026-08-27"
