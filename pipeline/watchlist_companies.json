@@ -4602,6 +4602,18 @@
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (160 jobs) with 3 fit-titles at harvest time (1 tier2, 1 tier2c, 1 tier3(location-gated)), e.g. '3PL Customer Success Manager ' [Atlanta Warehouse; Chicago Warehouse; Da]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Sourced 2026-08-27 from the BODY of a LinkedIn 'Jobs You Might Be Interested In' digest whose subject named a different company entirely, which is the exact failure mode the 2026-08-21 digest-body rule was written to fix."
     },
     {
+      "name": "Blueprint Technologies",
+      "ats": "greenhouse",
+      "slug": "bpcs",
+      "priority": "medium",
+      "enrolled_date": "2026-08-27",
+      "enrolled_via": "Greenhouse board dork (Step 1c rotation) exposed the slug; enrolled by hand at Aneesh's direct request",
+      "headcount_band": "201-500",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-27, day of enrollment). Technology consulting firm: software development, data analytics, and cloud, founded 2013, Bellevue WA HQ with a Redmond office, ~500 employees, heavily Microsoft-partner oriented. Services rather than product, so it is neither AI-native nor developer/infra tooling under the curated definition. Judgment call worth revisiting if they ship a data product of their own.",
+      "reason": "DO NOT CONFUSE WITH the 'Blueprint' entry in enrollment_candidates.json -> rejected, which is a DIFFERENT company at rippling/blueprint. This one is Blueprint Technologies and its Greenhouse slug is 'bpcs', which no name-variant probe can derive from 'Blueprint' -- that is precisely why deterministic slug resolution failed on 2026-08-10 and why the board dork found it instead. Surfacing role was 'Technical Program Manager - Customer Success Enablement' (tier2c-adjacent, since closed). Board verified live 2026-08-27: 35 open jobs. Current US-reachable fit-space is THIN and mostly tier3/supplemental -- 'Cloud Support Engineer - Microsoft 365 and AI' (Remote), 'Microsoft Copilot Pre-Sales Solutions Architect' (Remote), 'Assistant Director Operations' (Bellevue) -- and a large share of the board is contract localization and AI data-labeling work well under the salary floor. Enrolled anyway because polling is free and the fit-space demonstrably cycles: the TPM req existed within the last few weeks. Prune via --prune if it stays fit-space-empty."
+    },
+    {
       "name": "Aprio",
       "ats": "lever",
       "slug": "Aprio",
