@@ -170,7 +170,20 @@ def main() -> int:
                         run_date,
                         j.get("unmet_hard_reqs", ""),
                         j.get("vendor_tool_named_in_jd", ""),
-                        j.get("hard_req_cap_trigger", "")])
+                        j.get("hard_req_cap_trigger", ""),
+                        # furthest_stage: added to OUTCOMES_HEADER on 2026-08-27
+                        # but NOT to this writerow, so every row appended after
+                        # that date came out 14 columns wide against a 15-column
+                        # header. mark_applied.py silently skips any row whose
+                        # column count differs from the header, so those rows
+                        # could never be promoted when their confirmation
+                        # arrived -- the exact failure the 2026-07-28 audit found
+                        # for 32% of the file. Caught 2026-08-28.
+                        #
+                        # Empty is CORRECT here and must stay empty: per
+                        # CLAUDE.md, "" means not recorded, which is what a
+                        # freshly surfaced row is. It is not "never interviewed".
+                        ""])
             appended += 1
 
     print(f"seen_jobs: +{len(added)} new, {len(touched)} re-touched, "

@@ -709,6 +709,27 @@ def extract_salary_min(compensation) -> int | None:
     return None
 
 
+def _apply_workplace_type(full: str, workplace_type) -> str:
+    """Prefix a location string with its workplace type when the ATS states one.
+
+    Ashby uses "Remote"/"Hybrid"/"OnSite"; Lever uses lowercase
+    "remote"/"hybrid"/"on-site". Both are normalised here.
+
+    A missing or unrecognised value returns the location unchanged, so an ATS
+    that doesn't set the field degrades to the old behaviour rather than
+    guessing. "OnSite" is deliberately NOT prefixed: the bare city is already
+    what the location bucketing expects, and prefixing it would only add noise.
+    """
+    wt = (workplace_type or "").strip().lower()
+    full = (full or "").strip()
+    if wt in ("remote", "hybrid"):
+        label = wt.capitalize()
+        # Don't double up when the location already says it ("Remote - Nationwide").
+        if label.lower() not in full.lower():
+            full = f"{label} {full}".strip()
+    return full or "Unknown"
+
+
 def parse_location(job_data: dict, ats: str) -> str:
     """Extract location string from ATS job data."""
     if ats in ("greenhouse", "greenhouse_eu"):
@@ -717,13 +738,36 @@ def parse_location(job_data: dict, ats: str) -> str:
             return loc.get("name", "Unknown")
         return str(loc) if loc else "Unknown"
     elif ats == "ashby":
+        # Ashby exposes TWO remote-ish fields and only one of them is usable.
+        #
+        # `isRemote` is very nearly a constant: on 2026-08-28 it was true on
+        # 78/80 Baseten postings (including the two marked OnSite) and on 32/32
+        # at 7AI. Treating it as "this role is remote" would hand +16 location
+        # points to on-site roles across whole boards.
+        #
+        # `workplaceType` ("Remote" / "Hybrid" / "OnSite") is the real signal,
+        # and it IS set meaningfully when a company bothers: Maven AGI's board
+        # splits 8 Remote / 8 Hybrid / 1 OnSite, and its Remote roles carry
+        # explicit "Remote - EST/CST/MST/PST" secondary locations.
+        #
+        # Fold it into the location STRING rather than adding a new field, so
+        # the location bucketing further down (which matches on the words
+        # "remote"/"hybrid") picks it up without a second code path. Same
+        # convention the workable / smartrecruiters / comeet branches use.
+        #
+        # Why this matters: without it an Ashby posting labeled "San Francisco"
+        # that is actually Remote is indistinguishable from an on-site one, and
+        # the 2026-08-02 location rule is worth 16-20 points. Added 2026-08-28
+        # after three hybrid-in-a-non-Atlanta-city roles were scored as remote
+        # US and reached full tailoring (Baseten, 7AI, Benchling).
         loc = job_data.get("location", "")
-        if isinstance(loc, list):
-            return ", ".join(loc) if loc else "Unknown"
-        return str(loc) if loc else "Unknown"
+        full = ", ".join(loc) if isinstance(loc, list) else (str(loc) if loc else "")
+        return _apply_workplace_type(full, job_data.get("workplaceType"))
     elif ats == "lever":
         cats = job_data.get("categories", {})
-        return cats.get("location", "Unknown") if isinstance(cats, dict) else "Unknown"
+        full = cats.get("location", "") if isinstance(cats, dict) else ""
+        # Lever's workplaceType is lowercase ("remote"/"hybrid"/"on-site").
+        return _apply_workplace_type(full, job_data.get("workplaceType"))
     elif ats == "workday":
         return job_data.get("_workday_location") or "Unknown"
     elif ats == "workable":
