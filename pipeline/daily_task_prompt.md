@@ -409,10 +409,26 @@ resolved **Outreach** (`lever/outreach` — two tier1 titles: "Manager, Customer
 "Manager, Technical Support" Seattle) and **Benchling** (`ashby/benchling` — Implementation Manager
 and TAM), both of which had failed manual slug guessing an hour earlier.
 
-Names it cannot resolve are reported, not guessed at. Those are usually Workday or a non-obvious
-slug, and are worth ONE manual `site:myworkdayjobs.com <company>` search each if the company
-matters — the same fallback that cracked Red Hat (`Jobs`), CrowdStrike (`crowdstrikecareers`),
-Trimble (`TrimbleCareers`), and Finastra (`FINC`).
+**Workday is probed automatically as of 2026-08-28**, after the harvester's five-ATS coverage
+was found to be the real bottleneck rather than slug guessing: it had rejected General Motors,
+Brown & Brown, and Reputation as unpollable while all three ran large live Workday boards. It
+now tries Workday last, once every cheaper ATS has failed, gated on the CXS status code (`422`
+= no such tenant, stop; `404` = wrong site name, keep walking; `200` = hit). DNS cannot gate
+this — myworkdayjobs.com serves wildcard DNS, so gibberish tenants resolve — and an early
+DNS-gated version timed out a three-company run at 600s. Typical cost is ~1.5s for a hit, ~3s
+to rule a company out, ~12s worst case where a tenant exists but no site name matches.
+
+Names it still cannot resolve are reported, not guessed at. Two classes remain, and both need
+ONE manual `site:myworkdayjobs.com <company>` search:
+- **Non-obvious tenant**, which no name variant produces: Brown & Brown is `bbinsurance`.
+- **Non-derivable site name**, where the tenant resolves but the site is an abbreviation or
+  regional string outside the tried list: General Motors is `Careers_GM`, and Availity is
+  `Availity_Careers_US`. The probe tries 11 common names plus four derived from the tenant
+  (`{slug}careers`, `{slug}Careers`, `{slug}_careers`, `Careers_{SLUG}`), which covers the
+  CrowdStrike/Trimble/Synechron shape but not an abbreviation.
+That fallback is also what cracked Red Hat (`Jobs`) and Finastra (`FINC`). **Run it** when a
+company matters: an audit on 2026-08-28 found 139 rejected entries whose own reason text asked
+for that search and never got it, 13 of them with a confirmed tier-matching role already seen.
 
 **Dead-board audit — run `--prune` weekly** (it is a report; it writes nothing):
 
