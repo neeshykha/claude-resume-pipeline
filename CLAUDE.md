@@ -432,9 +432,29 @@ co-equal secondary. Backed by real resume content: 25+ Salesforce Flow automatio
 admin, the Maven AGI deployment, and the CES/QA tooling he built.
 - Business Systems Manager / Analyst · Support Systems Manager · Systems Manager
 - Platform Operations Manager · Internal Tools Manager · Tooling Manager · Automation Manager
-- GTM / Sales / Revenue Systems Manager · Revenue Operations Manager
-- Salesforce Administrator / Business Analyst · CRM Administrator (salary floor filters the
-  junior end of this family on its own)
+- Applications Manager family (Business / Enterprise / IT Applications Manager)
+- Revenue Operations Manager
+
+**GTM-qualified and Salesforce-admin-titled variants are DEMOTED as of 2026-08-28.** They stay
+in the tier2c title list so they still match and surface, but `_poller_config →
+function_mismatch_titles` now demotes them to digest FYI lines: `GTM Systems`, `Go-to-Market`,
+`Revenue Systems`, `Sales Systems`, `Salesforce Administrator`, `Salesforce Business Systems`.
+Aneesh prompted the review by reading the Baseten GTM Systems Manager JD and saying it looked
+very different from what he does. He was right, and his own history said so: **every
+GTM-qualified or Salesforce-admin-titled systems role the pipeline ever surfaced went unsent
+(0 of 5), and every systems role he did send lacked that qualifier (3 of 3)** — including
+CrowdStrike's "Sr. Business Systems Analyst, Go-to-Market" at 116, the second-highest score in
+the tracker. Four of the five unsent ones got full tailoring *with a cover letter*, so this was
+burning the pipeline's most expensive artifact about once a week.
+
+Two things that make this a real finding rather than a small sample: the discriminator is NOT
+the hard-requirement cap (Wiz was capped to light tier and he applied anyway; CrowdStrike
+carried `hard_req_cap_trigger: none` at priority tier and he did not), and the original tier2c
+note assumed **the salary floor would screen the Salesforce-admin end out on its own**, which
+fails at AI-native companies paying $160K–$200K for that work. The distinction underneath:
+Service Cloud and Sales Cloud are the same platform and different jobs. Verified against the
+live matcher (5/5 demoted, 0/3 sent roles affected, 0/7 controls affected); reverting is a
+one-line delete per pattern.
 
 **Tier 4 — Weak stretch (light tailoring only, title match +8):**
 - Renewal Manager / Partner Success Manager
