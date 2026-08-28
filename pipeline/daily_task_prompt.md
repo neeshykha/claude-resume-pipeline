@@ -827,6 +827,35 @@ not the individual call, is what this rule fixes. Judgment still applies to what
 "the same function": Service Cloud admin work is not GTM Systems experience, but a Support
 Operations Manager req asking for "5+ years in support operations" is squarely met.
 
+**MULTI-BRANCH REQUIREMENTS: do not treat the loosest-sounding branch as an escape hatch
+(added 2026-08-28, from a mis-scored role the same day).** When a JD states its years minimum
+across several alternative functions ("N+ years in A, B, or C"), read the alternatives *as a
+set* before deciding one is met. If every branch names the same domain, the loosest-sounding
+one is a synonym, not a general exemption, and the cap should fire.
+
+Baseten's GTM Systems Manager (2026-08-28) is the case. Its bar reads **"4+ years in GTM
+systems, RevOps, or sales/business systems"**, and the third branch was read as satisfied by
+Aneesh's Salesforce Service Cloud administration, so the cap was recorded as `none` and the
+role got priority tier with a cover letter. All three alternatives are GTM-flavored:
+"sales/business systems" is one compound category sitting alongside the other two, not a
+licence to count any business system anywhere. Aneesh has zero years in any of the three as
+that JD means them, so the cap should have fired and the role should have been light tier.
+
+The underlying confusion is worth naming because it will recur: **Service Cloud and Sales
+Cloud are the same platform and different jobs.** Cases, Omni-Channel routing, assignment
+rules, and CES are what he administers; a GTM systems req expects someone who knows how a
+revenue org runs, because those systems encode the sales process. Craft overlap is real,
+domain overlap is near zero, and the keyword-overlap score should reflect that split rather
+than crediting craft as though it were domain (that run scored it 27/30; ~20 was honest).
+
+Contrast with the branches that ARE genuine exemptions, so this rule does not overcorrect:
+Nimble Gravity (2026-08-25) asked for "enablement, training, consulting, organizational
+adoption, or a related field", which spans several distinct functions and is honestly met by
+support-ops training ownership; 7AI (2026-08-28) asked for "TAM, Customer Success, Solutions
+Engineering, Implementation, **or a similar customer-facing role**", where the final clause is
+explicitly open-ended. The test is whether the alternatives span different functions or
+restate one domain.
+
 **Record the outcome of this judgment every time, in `hard_req_cap_trigger` (Step 6).** Quote
 the triggering requirement verbatim when the cap fires; write the literal `none` when you
 checked and it does not. Leaving it blank discards the one signal that separates a correctly
