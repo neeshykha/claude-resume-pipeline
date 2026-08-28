@@ -435,10 +435,19 @@ admin, the Maven AGI deployment, and the CES/QA tooling he built.
 - Applications Manager family (Business / Enterprise / IT Applications Manager)
 - Revenue Operations Manager
 
-**GTM-qualified and Salesforce-admin-titled variants are DEMOTED as of 2026-08-28.** They stay
-in the tier2c title list so they still match and surface, but `_poller_config →
+**Narrow platform-administration variants are DEMOTED as of 2026-08-28.** The governing rule is
+Aneesh's own: *"it's the narrow admin work I don't want."* **The line is ALTITUDE, not domain:**
+own a function (build the tooling, run adoption, decide what the system does) versus be someone's
+platform administrator (configure the tool, work the queue, hold the cert). Use that test on
+titles the list has not seen yet; full statement lives in the career-narrative skill's
+Target-Role Criteria. Analyst level is fine and this is not a seniority rule — he applied to
+Wiz's "Sr. Business Systems Analyst" (106) unprompted; the *administrator* rung is the one he
+declines. A "Manager" in the title does not rescue a role either: check the responsibilities.
+
+The demoted titles stay in the tier2c list so they still match and surface, but `_poller_config →
 function_mismatch_titles` now demotes them to digest FYI lines: `GTM Systems`, `Go-to-Market`,
-`Revenue Systems`, `Sales Systems`, `Salesforce Administrator`, `Salesforce Business Systems`.
+`Revenue Systems`, `Sales Systems`, `Salesforce Administrator`, `Salesforce Business Systems`,
+`CRM Administrator`, `Applications Administrator`.
 Aneesh prompted the review by reading the Baseten GTM Systems Manager JD and saying it looked
 very different from what he does. He was right, and his own history said so: **every
 GTM-qualified or Salesforce-admin-titled systems role the pipeline ever surfaced went unsent
