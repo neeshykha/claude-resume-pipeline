@@ -3256,6 +3256,21 @@
       "vertical_flag_added": "2026-08-26 (backfill: enrolled before the flag existed)"
     },
     {
+      "name": "Reputation",
+      "ats": "workday",
+      "slug": "reputation",
+      "wd_host": "reputation.wd1.myworkdayjobs.com",
+      "wd_tenant": "reputation",
+      "wd_site": "External",
+      "priority": "medium",
+      "headcount_band": "501-2000",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-28, day of enrollment). Reputation sells reputation-management and customer-feedback SaaS to multi-location brands: not an AI/ML platform (AI is a feature over review and survey data) and not developer/infra tooling, since the audience is marketing and operations teams rather than developers. Same audience test that excluded Benchling and FullStory.",
+      "reason": "Rejected 2026-08-21 as unpollable after deterministic slug guessing found no board; the rejection carried manual_review for a 'Sr. Manager, Technical Support' seen in a LinkedIn alert. Resolved 2026-08-28 during the enrollment-only sweep by probing Workday tenants directly, which harvest_ats.py does not do. Verified live: 14 postings, 5 US-remote fit-titles including the flagged tier1 'Sr. Manager, Technical Support' (Remote US), plus Customer Success Manager, Principal CSM Healthcare, Product Operations Manager, and Director Customer Success Automotive.",
+      "enrolled_date": "2026-08-28",
+      "enrolled_via": "Enrollment-only Workday/ATS sweep of manual_review + unpollable rejections (2026-08-28)"
+    },
+    {
       "name": "Brown & Brown",
       "ats": "workday",
       "slug": "bbinsurance",
