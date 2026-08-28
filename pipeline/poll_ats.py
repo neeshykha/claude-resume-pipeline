@@ -1655,6 +1655,49 @@ def poll_all(run_date: date) -> dict:
                 job["passion_domain"] = domain
                 break
 
+        # Freshness — a ROLE attribute, added 2026-08-28 after the second
+        # documented case of company-level drag sinking a strong fresh role
+        # below the shortlist cutoff.
+        #
+        # Until now every term below the location block described the COMPANY
+        # (priority, headcount band, novelty, repetition), and their combined
+        # swing is roughly 37 points against a shortlist cutoff that lands in
+        # the 50s. CLAUDE.md's Scoring Guardrails already state the principle
+        # for full scoring -- "Role-fit signal must remain the larger share of
+        # any score" -- but the pre-score, which decides what ever REACHES full
+        # scoring, had no counterweight at all: it could not see that a posting
+        # was two days old.
+        #
+        # The two misses, both surfaced by Aneesh rather than by the pipeline:
+        #   n8n "Technical Account Manager (US)", 2026-08-26: pre_score 51 vs a
+        #     cutoff of 54, published 1 day earlier. Scored 108 once corrected
+        #     by hand and was fully tailored.
+        #   Outreach "Principal Technical Account Manager", 2026-08-28:
+        #     pre_score 46 vs a cutoff of 50. tier2 title, "Remote Atlanta, GA"
+        #     (the top location bucket), $120K-$140K disclosed, 2 days old,
+        #     department Support / team Technical Support. Lost to priority=low
+        #     (+3 rather than +10, because harvest_ats.py auto-enrolls at low so
+        #     automation never outranks hand-vetted companies) plus the
+        #     repetition penalty for Outreach having surfaced recently. Both of
+        #     those are company facts being charged to a role.
+        # +8 clears both with margin. It is deliberately BELOW the full rubric's
+        # +10 (_scoring_config -> freshness_bonus_2d) because every pre-score
+        # term is compressed relative to Step 2c, and small enough that a fresh
+        # tier4 role (8 + 20 + 10 + 8 = 46) still cannot reach the cutoff on
+        # recency alone. The empirical basis is the same one behind the rubric's
+        # bonus: response rates fall sharply after 48 hours.
+        #
+        # Unknown date scores 0, NOT a bonus. Step 2's "assume <=7 days for
+        # direct ATS sources" is a judgment for full scoring where Claude can
+        # see the posting; granting points here for absent data would let an
+        # ATS with no date field outrank one that publishes it.
+        age = job.get("posting_age_days")
+        if age is not None:
+            if age <= 2:
+                score += 8
+            elif age <= 7:
+                score += 3
+
         # Novelty / repetition (see company_surface_stats). Companies never
         # surfaced before get a lift; companies surfaced repeatedly in the last
         # 14 days get pushed down so the shortlist rotates.
