@@ -1537,6 +1537,13 @@
       "slug": "bbinsurance",
       "enrolled_date": "2026-08-28",
       "headcount_band": "2000+"
+    },
+    {
+      "name": "Reputation",
+      "ats": "workday",
+      "slug": "reputation",
+      "enrolled_date": "2026-08-28",
+      "headcount_band": "501-2000"
     }
   ],
   "rejected": [
@@ -2898,12 +2905,13 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-04",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable, and a follow-up site:myworkdayjobs.com search found no Cisco-hosted results either -- Cisco's careers site is not on a poll_ats.py-supported ATS.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable, and a follow-up site:myworkdayjobs.com search found no Cisco-hosted results either -- Cisco's careers site is not on a poll_ats.py-supported ATS. Probed 2026-08-28 (enrollment-only sweep): Greenhouse, Ashby, Lever, SmartRecruiters, and Workable across several name variants, plus direct Workday tenant probing (which harvest_ats.py does not attempt) over hosts wd1/wd3/wd5/wd12/wd101 and 11 common site names. No live board found on any supported ATS. Two earlier WebSearch attempts (Syncron/LiftOne, Paylocity) returned no usable tenant either. NOT re-checkable by the same method: this now needs a browser-based look or the company's own careers site, so do not re-run the automated sweep on it.",
       "recheck_if_resurfaced": true,
       "manual_review": true,
       "manual_review_why": "Customer Operations Manager (Hybrid), Atlanta, GA -- tier1 exact title match at a confirmed Atlanta location.",
       "manual_review_surfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "Euna Solutions",
@@ -3116,12 +3124,13 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-10",
-      "reason": "No board resolved from deterministic name-variant slugs; site:myworkdayjobs.com follow-up found no Paylocity tenant either. Custom career site, not pollable.",
+      "reason": "No board resolved from deterministic name-variant slugs; site:myworkdayjobs.com follow-up found no Paylocity tenant either. Custom career site, not pollable. Probed 2026-08-28 (enrollment-only sweep): Greenhouse, Ashby, Lever, SmartRecruiters, and Workable across several name variants, plus direct Workday tenant probing (which harvest_ats.py does not attempt) over hosts wd1/wd3/wd5/wd12/wd101 and 11 common site names. No live board found on any supported ATS. Two earlier WebSearch attempts (Syncron/LiftOne, Paylocity) returned no usable tenant either. NOT re-checkable by the same method: this now needs a browser-based look or the company's own careers site, so do not re-run the automated sweep on it.",
       "recheck_if_resurfaced": true,
       "manual_review": true,
       "manual_review_why": "Manager Technical Operations (Implementation and Support), fully remote US per WebSearch confirmation \u2014 exact tier1 'Technical Operations Manager' title match. Alert repeated twice (2026-08-09).",
       "manual_review_surfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "Ripple Property Management",
@@ -3853,11 +3862,12 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-18",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): smartrecruiters/'devotedhealth' is live but carries only 2 nurse-practitioner postings and 0 fit-titles: a fragment board, not the company's main careers system. Left rejected.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Senior Manager, AI Performance & Operations -- United States (likely remote-eligible)"
+      "manual_review_why": "Senior Manager, AI Performance & Operations -- United States (likely remote-eligible)",
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "IDEXX",
@@ -4028,14 +4038,15 @@
     },
     {
       "name": "Reputation",
-      "ats": null,
-      "slug": null,
+      "ats": "workday",
+      "slug": "reputation",
       "rejected_date": "2026-08-21",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
+      "reason": "SUPERSEDED 2026-08-28. Resolved by direct Workday tenant probing during the enrollment-only sweep: reputation.wd1 / site External, 14 postings, 5 US-remote fit-titles including the flagged tier1 'Sr. Manager, Technical Support'. Enrolled on the watchlist the same day.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
       "manual_review": true,
-      "manual_review_why": "Sr. Manager, Technical Support \u2014 tier-1 loose match on 'Technical Support Manager'. Location not stated in the alert subject."
+      "manual_review_why": "Sr. Manager, Technical Support \u2014 tier-1 loose match on 'Technical Support Manager'. Location not stated in the alert subject.",
+      "superseded_by_enrollment": "2026-08-28"
     },
     {
       "name": "Stefanini North America and APAC",
@@ -4060,11 +4071,12 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-21",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): smartrecruiters/'nextgen' resolves to a Las Vegas fire-sprinkler contractor, not NextGen Healthcare. Slug collision, not a board. Left rejected.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "tier2c title 'Salesforce Administrator/Manager' (Enterprise Applications Manager); location not stated in alert subject, unverified"
+      "manual_review_why": "tier2c title 'Salesforce Administrator/Manager' (Enterprise Applications Manager); location not stated in alert subject, unverified",
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "SPAR Solutions",
@@ -4099,11 +4111,12 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-21",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): Greenhouse, Ashby, Lever, SmartRecruiters, and Workable across several name variants, plus direct Workday tenant probing (which harvest_ats.py does not attempt) over hosts wd1/wd3/wd5/wd12/wd101 and 11 common site names. No live board found on any supported ATS. Two earlier WebSearch attempts (Syncron/LiftOne, Paylocity) returned no usable tenant either. NOT re-checkable by the same method: this now needs a browser-based look or the company's own careers site, so do not re-run the automated sweep on it.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Operations Support Manager (tier1 loose match); location not read from the alert body this run (budget-capped), verify at resolution."
+      "manual_review_why": "Operations Support Manager (tier1 loose match); location not read from the alert body this run (budget-capped), verify at resolution.",
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "Cloudbeds",
@@ -4228,12 +4241,13 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-23",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): Greenhouse, Ashby, Lever, SmartRecruiters, and Workable across several name variants, plus direct Workday tenant probing (which harvest_ats.py does not attempt) over hosts wd1/wd3/wd5/wd12/wd101 and 11 common site names. No live board found on any supported ATS. Two earlier WebSearch attempts (Syncron/LiftOne, Paylocity) returned no usable tenant either. NOT re-checkable by the same method: this now needs a browser-based look or the company's own careers site, so do not re-run the automated sweep on it.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Manager, Advanced Support Consulting, United States (remote-US). Tier-adjacent support-consulting management title; surface it if no pollable board is found.",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "JLL",
@@ -4258,12 +4272,13 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-23",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): Greenhouse, Ashby, Lever, SmartRecruiters, and Workable across several name variants, plus direct Workday tenant probing (which harvest_ats.py does not attempt) over hosts wd1/wd3/wd5/wd12/wd101 and 11 common site names. No live board found on any supported ATS. Two earlier WebSearch attempts (Syncron/LiftOne, Paylocity) returned no usable tenant either. NOT re-checkable by the same method: this now needs a browser-based look or the company's own careers site, so do not re-run the automated sweep on it.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "'Support & Operations Lead - AI-First', Remote - Americas (stated in the alert snippet). Tier1-adjacent support-operations title with an explicit AI-first mandate.",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "Lavazza Group",
@@ -4391,13 +4406,14 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-25",
-      "reason": "No supported ATS. The documented site:myworkdayjobs.com fallback ran 2026-08-25 and found no Workday tenant (results were Synchrony Financial and Synechron, not Syncron). Syncron self-hosts at careers.syncron.com, which is a Teamtailor-style board the poller does not speak. The surfacing role is real and confirmed live: 'Project Manager - Software Implementation', Atlanta / Chicago / fully remote, https://careers.syncron.com/jobs/7575925-project-manager-software-implementation",
+      "reason": "No supported ATS. The documented site:myworkdayjobs.com fallback ran 2026-08-25 and found no Workday tenant (results were Synchrony Financial and Synechron, not Syncron). Syncron self-hosts at careers.syncron.com, which is a Teamtailor-style board the poller does not speak. The surfacing role is real and confirmed live: 'Project Manager - Software Implementation', Atlanta / Chicago / fully remote, https://careers.syncron.com/jobs/7575925-project-manager-software-implementation Probed 2026-08-28 (enrollment-only sweep): Greenhouse, Ashby, Lever, SmartRecruiters, and Workable across several name variants, plus direct Workday tenant probing (which harvest_ats.py does not attempt) over hosts wd1/wd3/wd5/wd12/wd101 and 11 common site names. No live board found on any supported ATS. Two earlier WebSearch attempts (Syncron/LiftOne, Paylocity) returned no usable tenant either. NOT re-checkable by the same method: this now needs a browser-based look or the company's own careers site, so do not re-run the automated sweep on it.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Project Manager - Software Implementation (tier2 implementation family), Atlanta",
       "careers_url": "https://careers.syncron.com/jobs/7575925-project-manager-software-implementation",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "Jacoby & Meyers Accident & Injury Lawyers",
@@ -4476,13 +4492,14 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-26",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): Greenhouse, Ashby, Lever, SmartRecruiters, and Workable across several name variants, plus direct Workday tenant probing (which harvest_ats.py does not attempt) over hosts wd1/wd3/wd5/wd12/wd101 and 11 common site names. No live board found on any supported ATS. Two earlier WebSearch attempts (Syncron/LiftOne, Paylocity) returned no usable tenant either. NOT re-checkable by the same method: this now needs a browser-based look or the company's own careers site, so do not re-run the automated sweep on it.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Salesforce Administrator \u2014 exact tier2c title; location unconfirmed, check before discarding.",
       "manual_review_surfaced": true,
-      "manual_review_surfaced_date": "2026-08-26"
+      "manual_review_surfaced_date": "2026-08-26",
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "LP Building Solutions",
@@ -4559,11 +4576,12 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-27",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): Greenhouse, Ashby, Lever, SmartRecruiters, and Workable across several name variants, plus direct Workday tenant probing (which harvest_ats.py does not attempt) over hosts wd1/wd3/wd5/wd12/wd101 and 11 common site names. No live board found on any supported ATS. Two earlier WebSearch attempts (Syncron/LiftOne, Paylocity) returned no usable tenant either. NOT re-checkable by the same method: this now needs a browser-based look or the company's own careers site, so do not re-run the automated sweep on it.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Implementation Project Manager, zip 30349 (Atlanta GA) -- tier2 title in Atlanta."
+      "manual_review_why": "Implementation Project Manager, zip 30349 (Atlanta GA) -- tier2 title in Atlanta.",
+      "sweep_checked_2026_08_28": true
     },
     {
       "name": "CrossCountry Consulting",
