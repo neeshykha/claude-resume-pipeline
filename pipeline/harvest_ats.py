@@ -241,6 +241,81 @@ def probe(ats: str, slug: str):
     return None
 
 
+WORKDAY_HOSTS = ["wd1", "wd5", "wd3", "wd12", "wd101"]
+WORKDAY_SITES = ["Careers", "External", "ExternalCareers", "External_Career_Site",
+                 "Search", "careers", "Jobs", "US", "Global", "ext", "CareerSite"]
+
+
+def probe_workday(slug: str):
+    """Resolve a Workday board. Returns ([(title, location)], meta) or (None, None).
+
+    Workday is addressed by THREE parts (tenant, host, site) rather than the
+    single slug every other ATS here uses, so it gets its own function instead
+    of being bent into probe(). Added 2026-08-28: harvest_ats.py probed five
+    ATSes and never Workday, which is why it rejected General Motors, Brown &
+    Brown, and Reputation as unpollable even though all three had large live
+    Workday boards. The documented site:myworkdayjobs.com fallback was supposed
+    to catch those by hand and reliably did not, because the rejection reason
+    said "worth one manual search if the company matters" and nobody ran it.
+
+    Cost is controlled by the STATUS CODE, not by DNS. myworkdayjobs.com serves
+    wildcard DNS -- every tenant name resolves, including gibberish -- so a DNS
+    gate was tried first and did nothing but add latency ahead of 55 requests per
+    slug variant (5 hosts x 11 sites), which timed out a three-company test run at
+    600s. The CXS endpoint distinguishes the two failures cleanly and fast (~0.3s):
+
+        422  tenant does not exist on this host  -> stop, skip its 11 site names
+        404  tenant exists, wrong site name      -> keep walking the site list
+        200  hit
+
+    So one request rules a host out. The common all-miss case is 5 requests per
+    slug variant instead of 55, and the full site walk only happens on a host that
+    has already proven the tenant is real.
+
+    Requires total > 0. An empty-but-valid board is treated as no board, matching
+    how assess() already handles the other ATSes -- and more sharply, a probe that
+    accepts a zero count is how the 2026-08-28 sweep initially reported ten
+    companies as resolved when every one was a slug collision (the SmartRecruiters
+    API returns totalFound:0 rather than 404 for nonexistent slugs).
+    """
+    # Static site names plus ones derived from the tenant. The derived forms are
+    # not speculative: crowdstrikecareers, TrimbleCareers, and SynechronCareers
+    # are all real boards resolved by hand, and they share this shape. They cost
+    # nothing in the common case, because a 422 short-circuits the whole list
+    # before any of them is tried; they only lengthen the walk on a host where the
+    # tenant has already proven real, which is exactly when trying harder pays.
+    sites = WORKDAY_SITES + [
+        f"{slug}careers", f"{slug}Careers", f"{slug}_careers",
+        f"Careers_{slug.upper()}",
+    ]
+    body = {"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": ""}
+    for host in WORKDAY_HOSTS:
+        fqdn = f"{slug}.{host}.myworkdayjobs.com"
+        for site in sites:
+            url = f"https://{fqdn}/wday/cxs/{slug}/{site}/jobs"
+            try:
+                r = requests.post(url, json=body, headers=UA, timeout=TIMEOUT)
+            except Exception:
+                break          # network trouble on this host; try the next one
+            finally:
+                time.sleep(DELAY)
+            if r.status_code == 422:
+                break          # no such tenant here -- don't try the other sites
+            if r.status_code != 200:
+                continue       # 404: wrong site name, keep walking
+            try:
+                d = r.json()
+            except Exception:
+                continue
+            if not isinstance(d.get("total"), int) or d["total"] <= 0:
+                continue
+            jobs = [(p.get("title", ""), p.get("locationsText", ""))
+                    for p in d.get("jobPostings", [])]
+            return jobs, {"wd_host": fqdn, "wd_tenant": slug, "wd_site": site,
+                          "total": d["total"]}
+    return None, None
+
+
 def us_reachable(loc: str) -> bool:
     return any(h in (loc or "").lower() for h in US_HINTS)
 
@@ -298,6 +373,23 @@ def load_known():
     return wl, q, names, pairs
 
 
+def _score_board(jobs, matcher, hard_excluded):
+    """Split a board's titles into the strong-fit subset used for enrollment."""
+    strong = []
+    for title, loc in jobs:
+        if hard_excluded(title):
+            continue
+        m = matcher.match_exact(title)
+        if not m:
+            continue
+        tier = m[0]
+        if tier in STRONG_TIERS and us_reachable(loc):
+            strong.append((title, loc, tier))
+        elif tier == TIER3_TIER and tier3_location_ok(loc):
+            strong.append((title, loc, tier))
+    return strong
+
+
 def assess(name, matcher, hard_excluded, known_pairs):
     """Resolve a company to (ats, slug, strong_hits, total_jobs) or a reason."""
     for slug in slug_variants(name):
@@ -312,19 +404,24 @@ def assess(name, matcher, hard_excluded, known_pairs):
                 # before concluding anything; an empty board is weak evidence
                 # that we found the right company at all.
                 continue
-            strong = []
-            for title, loc in jobs:
-                if hard_excluded(title):
-                    continue
-                m = matcher.match_exact(title)
-                if not m:
-                    continue
-                tier = m[0]
-                if tier in STRONG_TIERS and us_reachable(loc):
-                    strong.append((title, loc, tier))
-                elif tier == TIER3_TIER and tier3_location_ok(loc):
-                    strong.append((title, loc, tier))
-            return {"ats": ats, "slug": slug, "total": len(jobs), "strong": strong}
+            return {"ats": ats, "slug": slug, "total": len(jobs),
+                    "strong": _score_board(jobs, matcher, hard_excluded)}
+
+    # Workday LAST, and only once every cheaper ATS has failed for every slug
+    # variant. It is the most expensive probe here (DNS gate per host, then up
+    # to 11 site names) and the least likely to hit, so running it first would
+    # slow down the common case for no benefit. Added 2026-08-28 -- see
+    # probe_workday for why this gap mattered.
+    for slug in slug_variants(name):
+        if ("workday", slug) in known_pairs:
+            continue
+        jobs, meta = probe_workday(slug)
+        if not jobs:
+            continue
+        res = {"ats": "workday", "slug": slug, "total": meta["total"],
+               "strong": _score_board(jobs, matcher, hard_excluded)}
+        res.update({k: meta[k] for k in ("wd_host", "wd_tenant", "wd_site")})
+        return res
     return None
 
 
@@ -407,7 +504,7 @@ def main():
 
     today = __import__("datetime").date.today().isoformat()
     for name, res in enrollable:
-        wl["companies"].append({
+        entry = {
             "name": name, "ats": res["ats"], "slug": res["slug"],
             "priority": "low",
             "enrolled_date": today,
@@ -432,7 +529,13 @@ def main():
                        f"priority by design: auto-enrollment should not outrank "
                        f"hand-vetted companies. Prune via --prune if the board goes "
                        f"dead or fit-space-empty."),
-        })
+        }
+        # Workday needs the full three-part address on the watchlist entry;
+        # poll_ats.py cannot reach a Workday board from ats+slug alone.
+        for k in ("wd_host", "wd_tenant", "wd_site"):
+            if k in res:
+                entry[k] = res[k]
+        wl["companies"].append(entry)
         q.setdefault("enrolled", []).append(
             {"name": name, "ats": res["ats"], "slug": res["slug"],
              "enrolled_date": today, "via": "harvest_ats.py"})
