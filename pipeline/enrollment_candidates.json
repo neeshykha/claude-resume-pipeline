@@ -1523,6 +1523,13 @@
       "slug": "Aprio",
       "enrolled_date": "2026-08-27",
       "headcount_band": "2000+"
+    },
+    {
+      "name": "Tenna",
+      "ats": "lever",
+      "slug": "tenna",
+      "enrolled_date": "2026-08-28",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -4549,6 +4556,59 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Implementation Project Manager, zip 30349 (Atlanta GA) -- tier2 title in Atlanta."
+    },
+    {
+      "name": "CrossCountry Consulting",
+      "ats": "lever",
+      "slug": "crosscountry-consulting",
+      "rejected_date": "2026-08-28",
+      "reason": "Board resolves and is live (97 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Sevaro",
+      "ats": "ashby",
+      "slug": "sevaro",
+      "rejected_date": "2026-08-28",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "General Motors",
+      "ats": "workday",
+      "slug": "generalmotors",
+      "rejected_date": "2026-08-28",
+      "reason": "SUPERSEDED SAME DAY, NOT A REJECTION. harvest_ats.py resolved no board from name variants, but the documented site:myworkdayjobs.com fallback found generalmotors.wd5 / Careers_GM, verified live 2026-08-28 with 636 postings. Enrolled on the watchlist the same run; kept here only as an audit trail of the harvester's miss.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-08-28"
+    },
+    {
+      "name": "AmeriHealth Caritas",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-28",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Fleet Data Centers",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-28",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Rentokil Pest Control North America",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-28",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
     }
   ]
 }
