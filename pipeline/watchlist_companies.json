@@ -3256,6 +3256,21 @@
       "vertical_flag_added": "2026-08-26 (backfill: enrolled before the flag existed)"
     },
     {
+      "name": "Brown & Brown",
+      "ats": "workday",
+      "slug": "bbinsurance",
+      "wd_host": "bbinsurance.wd1.myworkdayjobs.com",
+      "wd_tenant": "bbinsurance",
+      "wd_site": "Careers",
+      "priority": "medium",
+      "headcount_band": "2000+",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-08-28, day of enrollment). Insurance brokerage: not an AI/ML platform and not developer/infra tooling. Its draw is an Atlanta (Sandy Springs) presence plus a live enterprise-AI-adoption program, so the lift comes from the location score rather than a company bonus. NOT Atlanta-enterprise either: headquarters is Daytona Beach, FL; Atlanta is an office, and the location points are already counted at the role level.",
+      "reason": "Surfaced by the LinkedIn alert harvest 2026-08-26 ('AI Adoption & Enablement Lead') and rejected the same day because harvest_ats.py resolved no board from deterministic name variants. Aneesh re-surfaced the role from the LinkedIn Jobs feed on 2026-08-28; the documented site:myworkdayjobs.com fallback that the rejection reason itself called for found the tenant immediately. The slug is 'bbinsurance', which no name-variant generator would produce from 'Brown & Brown' -- the same non-obvious-slug class as Red Hat ('Jobs'), CrowdStrike ('crowdstrikecareers'), and Finastra ('FINC'). Verified live 2026-08-28: 237 postings, including the AI Adoption & Enablement Lead in Sandy Springs (Atlanta), GA.",
+      "enrolled_date": "2026-08-28",
+      "enrolled_via": "User-surfaced (LinkedIn Jobs feed screenshot) + Workday WebSearch fallback (2026-08-28)"
+    },
+    {
       "name": "General Motors",
       "ats": "workday",
       "slug": "generalmotors",
