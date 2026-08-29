@@ -1050,13 +1050,21 @@ as a fact about the environment rather than a decision, so the tool was never ev
 deferred tools are names until fetched, and searching only for what the instructions imply you
 need will confirm whatever they already claim.
 
-**Keep drafting the daily digest anyway, and send by hand.** The reason is specific to this
-document rather than general caution: the digest is composed mid-run off numbers that are still
-being checked, and on 2026-08-28 it needed **two** corrections after first creation — once when
-three roles turned out to be hybrid rather than remote, and again when a fifth role was found and
-scored. `update_draft` revised it in place both times. Auto-send would instead have put a wrong
-digest in the inbox and chased it with two more. A draft is the right shape for a document whose
-own contents are the thing under review.
+**SEND the digest. Aneesh's explicit call, 2026-08-28.** Create it with `create_draft`, then
+send it with `send_message` passing that `draftId`. Do not leave it sitting as a draft.
+
+His reasoning, and it overrides the argument this file made first: *"draft is just another step.
+I don't care if there are multiple sends if I come back."* The case for drafting was that the
+digest gets composed mid-run off numbers still under review, and this one needed two corrections
+after creation (three roles turned out hybrid rather than remote; a fifth role was found and
+rescored the run). That is real, but the cost it avoids is a tidy inbox, which he does not value,
+while the cost it imposes is a manual step on every single run, which he does. **If the digest
+needs correcting after it has gone out, send a follow-up rather than trying to suppress the
+first.** A superseded email in his inbox is cheaper than a digest he never receives because
+nobody opened the draft.
+
+Still create the draft first rather than composing straight into `send_message`: it costs one
+extra call and gives a recoverable artifact if the send fails partway.
 
 **Do not spend budget auto-attaching the PDFs** (Aneesh's call, 2026-08-28). It works, but he
 applies through each ATS's upload dialog, which reads from the `tailored/` folder directly, so an
@@ -1064,8 +1072,10 @@ email attachment is a detour rather than a shortcut. It also costs roughly 4k to
 in base64, all of which has to pass through the run's context. The digest's "attach the PDFs
 listed at the bottom" line stays as a manifest of what to upload from disk.
 
-If a future routine SHOULD send (a notification with no numbers to re-check, for instance), say
-so explicitly in that routine's instructions: an autonomous run will not send unless told to.
+General rule this run established, worth carrying to any other routine: **an autonomous run will
+not send, post, or delete unless its instructions say so explicitly.** That default is right. It
+just has to be a stated decision rather than a claim about what the tools can do, or nobody
+re-examines it.
 
 - Subject: `Daily Job Matches — [date] ([N] jobs)`
 - Top note: "Open this draft, attach the PDFs listed at the bottom, and send."
