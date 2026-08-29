@@ -537,7 +537,20 @@ had run correctly the day before, so the failure mode is silent omission, not br
 zero is verifiable; an absent section is indistinguishable from a skipped step.
 
 1. Search Gmail for `deliveredto:{{CONFIRM_ALIAS}} from:linkedin.com newer_than:1d`.
-   Zero results is normal and not an error. **Read snippets/subjects, not full bodies** —
+   Zero results is normal and not an error.
+
+   **WIDEN THE WINDOW TO COVER ANY GAP SINCE THE LAST RUN (added 2026-08-28).** The task runs
+   `0 3 * * 1-5`, weekdays only, so a `1d` window on a **Monday** reaches back only to Sunday
+   03:00 and silently drops Friday, Saturday, and Sunday: roughly **48 alert threads lost every
+   week**, which is the pipeline's highest-yield discovery channel per call. Use `newer_than:4d`
+   on Mondays, and widen similarly after any skipped or failed run (check the most recent
+   `run_*.json` date). Step 0.5's confirmation query does not have this problem because its `3d`
+   window already spans Friday to Monday, which is likely why that number was chosen; this step
+   was left at `1d` and the weekday-only schedule was never reconciled with it.
+
+   Widening is close to free and cannot double-count: these are subject-line reads for
+   `jobalerts-noreply@`, every extracted company goes through `check_company.py` before it can
+   become a lead, and the hard cap of 15 new companies per run still bounds the downstream work. **Read snippets/subjects, not full bodies** —
    these emails are long and a full read of several will blow the run's context budget. The
    subject line alone carries the company and title (`<Title> at <Company>`), which is all this
    step needs.
