@@ -1098,6 +1098,22 @@ re-examines it.
   already been SENT, `update_draft` fails with "Message not a draft" — create a corrected
   replacement draft rather than trying to patch it.
 - HTML table: title, company, location, salary, score, unmet hard reqs, apply link.
+
+  **EVERY table that names a role carries its apply link. No exceptions (added 2026-08-28,
+  Aneesh's call).** Splitting the picks into "send these" and "your call" is good and should
+  continue, but on 2026-08-28 only the first table had an Apply column, so deciding to pursue a
+  "your call" role meant going and finding the posting by hand. That inverts the point: the
+  roles needing a decision are the ones where friction actually costs a send. Same rule for the
+  near-miss and "also live (FYI)" sections, which are lists of real postings even when they are
+  not recommendations.
+
+  **Watch the header-row contrast in dark mode.** The 2026-08-28 digest styled `<th>` rows with
+  an inline background plus `color:#fff`, and in Aneesh's dark-mode client the header text
+  rendered nearly invisible against the background: the column labels were unreadable in both
+  tables. Not fully diagnosed (Gmail dark mode rewrites some inline colors and not others), so
+  the safe move is to stop depending on a background/foreground pair for legibility. Use plain
+  `<th>` with `<b>` and let the client theme it, or pick a combination that reads correctly
+  whether or not it gets inverted.
   (JD coverage % was dropped from the table 2026-08-15 — it's a pass/fail build gate with
   no variance (94.6% mean across applied rows), so showing it invited ranking by it.
   `unmet_hard_reqs` is the readiness signal.)
