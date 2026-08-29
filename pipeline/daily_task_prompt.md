@@ -70,7 +70,21 @@ brief digest saying so rather than guessing an address.
    Precedence: the style guide (item 3) + CLAUDE.md voice rules govern FORM; the career
    narrative governs SUBSTANCE; `master_resume.md` remains the only source of factual
    claims. Step 4 says how to apply it per document.
-5. **Record the working-tree baseline (added 2026-08-21).** Run this before changing
+5. **Rotate the apply-now folder (added 2026-08-28, Aneesh's request).** Run:
+   ```bash
+   .venv/bin/python pipeline/rotate_apply_folder.py --apply
+   ```
+   `tailored/apply_now/` holds ONLY the PDFs of roles still waiting to be sent, so an ATS
+   upload dialog opens on a short list instead of `tailored/`'s 1,500+ files where the `.md`
+   sorts next to the `.pdf` of the same name. This step evicts anything whose `outcomes.csv`
+   row has left `surfaced`, plus anything still surfaced after 7 days. **It moves files back
+   to `tailored/`; it never deletes**, and an unmatched PDF is always kept rather than evicted
+   on a guess. Read the `DIGEST LINE:` it prints and carry it into the digest (Step 5) — that
+   line is unsent tailoring showing up where it will be seen, rather than only when someone
+   runs `age_report.py`. Rationale for the 7-day window and for not giving high scorers a
+   longer one is in the script's docstring.
+
+6. **Record the working-tree baseline (added 2026-08-21).** Run this before changing
    anything, so Step 7 can tell your edits from ones that were already sitting there:
    ```bash
    .venv/bin/python pipeline/repo_sync.py --snapshot
@@ -1023,16 +1037,21 @@ ATS optimization → tailor → verify). Per job:
   CLAUDE.md opener rules still own the first sentence of every cover letter. Outcomes
   before tools, always; never escape-framing.
 
+**PDFs render into `tailored/apply_now/`; everything else stays in `tailored/`.** The
+markdown and JSON are working files and belong with the rest of the archive; only the two
+PDFs Aneesh actually uploads go in the folder his upload dialog opens on. Step 0 item 5
+rotates that folder; nothing here needs to clean it up.
+
 1. Tailored resume markdown → `tailored/Aneesh_Khan_[Company]_[Role].md`
 2. Resume JSON → `tailored/..._data.json` (schema: `pipeline/pdf_helpers.py` docstring)
-3. `.venv/bin/python pipeline/render_pdf.py resume <data.json> <out.pdf>`
+3. `.venv/bin/python pipeline/render_pdf.py resume <data.json> tailored/apply_now/<name>.pdf`
 4. **Coverage check:** write the JD's top-15 phrases to
    `tailored/Aneesh_Khan_[Company]_[Role]_phrases.json`, then
    `.venv/bin/python pipeline/check_coverage.py <resume.md> <phrases.json>`
    Target ≥80% (12/15). Below that: apply the second-pass rule (CLAUDE.md Step 6), revise,
    re-run. Never fabricate to close a gap — flag genuine gaps honestly.
 5. Cover letter (full-tailoring tier only) → `_cover.md` + `_cover_data.json` +
-   `.venv/bin/python pipeline/render_pdf.py cover <cover_data.json> <out.pdf>`
+   `.venv/bin/python pipeline/render_pdf.py cover <cover_data.json> tailored/apply_now/<name>_cover.pdf`
    - Apply ALL voice rules from CLAUDE.md Step 8 (opener, structure variety, banned
      phrases, specific close, honesty moments)
    - **Opener anti-template check:** read `tailored/_cover_openers.md` (create if missing);
@@ -1136,6 +1155,10 @@ re-examines it.
   `manual_review: true`. One line each (company, the flagged title and location, careers-page
   link if found). Omit the section entirely if none. These are NOT scored or tailored; they are
   roles the automated layer structurally cannot watch, surfaced once so Aneesh can decide.
+- **Apply-folder line.** Carry the `DIGEST LINE:` printed by `rotate_apply_folder.py` at
+  Step 0 whenever it names any evictions, and point the file manifest at
+  `tailored/apply_now/`. Omit the line entirely when nothing was evicted for being unsent —
+  a role leaving because it was actually applied to is housekeeping, not news.
 - Note any ATS errors, capped companies, enrollments/rejections, and skill gaps observed
 - **"Full breakdown: what was checked" section (added 2026-08-06, standing requirement).**
   Aneesh asked for this after catching a real discovery-layer miss by hand (Hercules, Philips,
