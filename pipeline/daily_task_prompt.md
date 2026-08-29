@@ -1039,7 +1039,33 @@ ATS optimization → tailor → verify). Per job:
 
 ## Step 5: Email digest
 
-Gmail MCP `create_draft` (drafts only — no send, no attachments) to **{{DIGEST_RECIPIENT}}**:
+Gmail MCP `create_draft` to **{{DIGEST_RECIPIENT}}**.
+
+**Drafting is a CHOICE, not a capability limit. Corrected 2026-08-28.** This file and the
+scheduled task's SKILL.md both said "drafts only — no send, no attachments" for weeks, and both
+were wrong. `send_message` exists, takes a `draftId`, and sends immediately; `create_draft` and
+`send_message` both accept an `attachments` array (base64, 25MB combined). Verified by loading
+the schemas and by attaching a PDF to a live draft. Nobody checked, because the instruction read
+as a fact about the environment rather than a decision, so the tool was never even loaded —
+deferred tools are names until fetched, and searching only for what the instructions imply you
+need will confirm whatever they already claim.
+
+**Keep drafting the daily digest anyway, and send by hand.** The reason is specific to this
+document rather than general caution: the digest is composed mid-run off numbers that are still
+being checked, and on 2026-08-28 it needed **two** corrections after first creation — once when
+three roles turned out to be hybrid rather than remote, and again when a fifth role was found and
+scored. `update_draft` revised it in place both times. Auto-send would instead have put a wrong
+digest in the inbox and chased it with two more. A draft is the right shape for a document whose
+own contents are the thing under review.
+
+**Do not spend budget auto-attaching the PDFs** (Aneesh's call, 2026-08-28). It works, but he
+applies through each ATS's upload dialog, which reads from the `tailored/` folder directly, so an
+email attachment is a detour rather than a shortcut. It also costs roughly 4k tokens per two PDFs
+in base64, all of which has to pass through the run's context. The digest's "attach the PDFs
+listed at the bottom" line stays as a manifest of what to upload from disk.
+
+If a future routine SHOULD send (a notification with no numbers to re-check, for instance), say
+so explicitly in that routine's instructions: an autonomous run will not send unless told to.
 
 - Subject: `Daily Job Matches — [date] ([N] jobs)`
 - Top note: "Open this draft, attach the PDFs listed at the bottom, and send."
