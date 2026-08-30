@@ -1017,6 +1017,52 @@ title to `jd_verification_required_titles` so the class is covered. Only worth t
 API call when the top pick's JD genuinely disqualifies it — not a step to run for every
 company by default.
 
+## Step 3.5: Stretch lane — FDE / Solutions Engineer conditional review (added 2026-08-30)
+
+Aneesh's explicit call, 2026-08-30: he knows Forward Deployed Engineer is a title he is
+mostly not qualified for yet, he is actively working on getting qualified for it (and for
+Solutions Engineer), and he wants conditionally-viable postings surfaced anyway; his words:
+"I can take risks and see if I can get them." This lane makes those postings VISIBLE
+without reversing the 2026-07-09 FDE demotion or spending full-tailoring budget on long
+shots. It changes visibility, not scoring: do not raise FDE's tier, do not remove it from
+`jd_verification_required_titles`, and never let a stretch role displace one of Step 2's
+top 3-4 normal-lane picks.
+
+Mechanics; hard cap of 2 JD reads per run for this lane:
+
+1. Collect today's entries (poller `matched` + `borderline`, plus WebSearch finds) whose
+   title contains "Forward Deployed", "FDE", "Deployed Engineer", "Solutions Engineer", or
+   "Solution Engineer", excluding any that already earned tailoring on the normal path
+   (a tier3 SE role scoring ≥88 already gets full treatment; this lane exists for the ones
+   that don't). Known limit, accepted at creation: an FDE role pre-scoring +8 that misses
+   the top-25 shortlist is invisible to this lane too. If the lane logs zero candidates
+   for ~2 weeks while FDE reqs are visibly live at watchlist companies (Cresta, Decagon,
+   Baseten, Modal, and LangChain all carry them per their watchlist notes), say so in
+   digest housekeeping rather than silently accepting it.
+2. Take up to 2, highest pre-score first, and read the full JD (`fetch_jd.py`, verbatim
+   requirements; these are exactly the titles the verbatim rule exists for). Surface a
+   role ONLY if ALL four gates hold:
+   - **Location** qualifies under the standard rules (remote US or metro Atlanta).
+   - **No stated years-minimum in software engineering and no non-negotiable CS degree.**
+     "Or equivalent experience" / "non-traditional backgrounds welcome" counts in favor.
+   - **The coding bar is scripting/API level** ("Python or SQL a plus", "comfortable with
+     APIs", "scripting experience"). Kubernetes, Terraform, CI/CD ownership, or
+     "write/ship production code" in the requirements → fail closed.
+   - **Domain overlap with an SME area**: support/CX AI, IoT/smart building, or the
+     Salesforce ecosystem; somewhere the SME-first argument can carry the title gap.
+   A failed gate costs at most one digest housekeeping line ("checked, disqualified by
+   <quoted requirement>") and no further budget.
+3. A passing role goes in its own digest section, **"Stretch lane (FDE/SE) — risk
+   accepted"**: title, company, salary, apply link (the no-exceptions link rule applies),
+   which gates it passed, and the gap that remains. LIGHT tailoring at most, and only when
+   its honest score independently clears the light threshold; never a cover letter from
+   this lane. The HARD-REQUIREMENT TIER CAP applies with no special pleading; the lane's
+   gates overlap with the cap on purpose, so a role that passes them usually escapes the
+   cap honestly. If Aneesh wants a full package for one, he'll ask for it by name.
+4. Log `stretch_lane: {candidates_seen, jds_read, passed, surfaced_titles}` in
+   `run_[date].json` every run, zeros included: a logged zero is verifiable, while an
+   absent section is indistinguishable from a skipped step (the Step 1d-2 lesson).
+
 ## Step 4: Tailor resumes and cover letters
 
 Follow the CLAUDE.md tailoring workflow for each top job (JD analysis → top-15 phrases →
@@ -1155,6 +1201,9 @@ re-examines it.
   `manual_review: true`. One line each (company, the flagged title and location, careers-page
   link if found). Omit the section entirely if none. These are NOT scored or tailored; they are
   roles the automated layer structurally cannot watch, surfaced once so Aneesh can decide.
+- **"Stretch lane (FDE/SE) — risk accepted"** section (Step 3.5): at most 2 lines, each
+  with apply link, gates passed, and the remaining gap. Omit the section entirely when
+  nothing passed; a "checked, disqualified by X" line goes in housekeeping instead.
 - **Apply-folder line.** Carry the `DIGEST LINE:` printed by `rotate_apply_folder.py` at
   Step 0 whenever it names any evictions, and point the file manifest at
   `tailored/apply_now/`. Omit the line entirely when nothing was evicted for being unsent —
