@@ -470,6 +470,13 @@ one-line delete per pattern.
 - Onboarding Manager / Customer Onboarding
 - Product Customer Success
 
+**Stretch lane (added 2026-08-30, Aneesh's explicit risk-accepted ask):** Forward Deployed
+Engineer and Solutions Engineer postings that fail the normal bar still get a bounded
+conditional review; spec is `daily_task_prompt.md` Step 3.5 (max 2 JD reads/run, four
+gates, own digest section, logged even at zero). Visibility only: the tiers above and the
+2026-07-09 FDE demotion stand. He is separately working a qualification pathway toward
+both titles.
+
 ## Supplemental WebSearch Sources (Atlanta + Startup Discovery)
 
 The `_websearch_sources` block in `pipeline/watchlist_companies.json` defines additional sources to run each daily pipeline pass. These catch companies NOT on the ATS watchlist — Atlanta startups plus, as of 2026-06-25, broader ATS-host and AI-vertical discovery.
