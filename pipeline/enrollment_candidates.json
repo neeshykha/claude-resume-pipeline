@@ -1544,6 +1544,41 @@
       "slug": "reputation",
       "enrolled_date": "2026-08-28",
       "headcount_band": "501-2000"
+    },
+    {
+      "name": "Pinterest",
+      "ats": "greenhouse",
+      "slug": "pinterest",
+      "enrolled_date": "2026-08-31",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Lyra Health",
+      "ats": "lever",
+      "slug": "lyrahealth",
+      "enrolled_date": "2026-08-31",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Rad AI",
+      "ats": "ashby",
+      "slug": "radai",
+      "enrolled_date": "2026-08-31",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Sardine",
+      "ats": "ashby",
+      "slug": "sardine",
+      "enrolled_date": "2026-08-31",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "SeatGeek",
+      "ats": "greenhouse",
+      "slug": "seatgeek",
+      "enrolled_date": "2026-08-31",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -1587,7 +1622,9 @@
       "rejected_date": "2026-08-03",
       "reason": "No pollable board found -- probed Greenhouse/Ashby/Lever/Workday name variants, no match. Likely a custom or unresolved Workday tenant. Named target company in PropTech source notes; revisit if a myworkdayjobs.com tenant surfaces via a targeted site: search. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Epiroc",
@@ -2650,7 +2687,9 @@
       "rejected_date": "2026-08-01",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "SoundHound AI",
@@ -2659,7 +2698,9 @@
       "rejected_date": "2026-08-01",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Undaunted",
@@ -2668,7 +2709,9 @@
       "rejected_date": "2026-08-01",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Pave",
@@ -2677,7 +2720,9 @@
       "rejected_date": "2026-08-01",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Honeywell Technologies",
@@ -2686,7 +2731,9 @@
       "rejected_date": "2026-08-01",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Deloitte",
@@ -2695,7 +2742,9 @@
       "rejected_date": "2026-08-03",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Dot Compliance",
@@ -2704,7 +2753,9 @@
       "rejected_date": "2026-08-03",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Avanos Medical",
@@ -2713,7 +2764,9 @@
       "rejected_date": "2026-08-03",
       "reason": "Confirmed custom career site (careers.avanos.com), not on Greenhouse/Ashby/Lever/Workday -- unlike a slug-guessing miss, this is a genuine no-board case, verified by direct WebSearch for the tenant. Surfacing role (Systems Support Team Leader, req 7170, Alpharetta GA / Atlanta metro) was actually a strong functional fit despite the generic title -- day-to-day operational leadership over Salesforce CRM and sales-support systems/processes -- but failed on salary regardless: $70K-$101K, midpoint $85.5K, below both the $100K floor and the $90K near-miss floor. Don't re-reject on board-pollability alone if this resurfaces; check the specific role's salary too.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Age of Learning",
@@ -2826,7 +2879,9 @@
       "rejected_date": "2026-08-04",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "AiDOOS",
@@ -2835,7 +2890,9 @@
       "rejected_date": "2026-08-04",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Vulcury",
@@ -2844,7 +2901,9 @@
       "rejected_date": "2026-08-04",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "FloraPulse",
@@ -2853,7 +2912,9 @@
       "rejected_date": "2026-08-04",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Owner.com",
@@ -2862,7 +2923,9 @@
       "rejected_date": "2026-08-04",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Honeycomb.io",
@@ -2871,7 +2934,9 @@
       "rejected_date": "2026-08-04",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "AppOmni",
@@ -2880,7 +2945,9 @@
       "rejected_date": "2026-08-04",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Ambient",
@@ -2889,7 +2956,9 @@
       "rejected_date": "2026-08-04",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "The Scion Group",
@@ -2898,7 +2967,9 @@
       "rejected_date": "2026-08-04",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Cisco",
@@ -2911,7 +2982,9 @@
       "manual_review_why": "Customer Operations Manager (Hybrid), Atlanta, GA -- tier1 exact title match at a confirmed Atlanta location.",
       "manual_review_surfaced": true,
       "unpollable": true,
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Euna Solutions",
@@ -2923,7 +2996,9 @@
       "manual_review": true,
       "manual_review_why": "Implementation Manager (Grants), Atlanta, GA (Hybrid) -- tier2 title match at a confirmed Atlanta location.",
       "manual_review_surfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "Bullhorn",
@@ -4632,6 +4707,109 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-28",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "ChowNow",
+      "ats": "lever",
+      "slug": "chownow",
+      "rejected_date": "2026-08-31",
+      "reason": "Board resolves and is live (13 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "T-Mobile",
+      "ats": "workday",
+      "slug": "tmobile",
+      "rejected_date": "2026-08-31",
+      "reason": "Board resolves and is live (2000 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Children's Healthcare of Atlanta",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-31",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Director, Support Operations \u2014 Atlanta, GA (tier1 exact title, Atlanta employer)",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Procure Analytics",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-31",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Implementation Manager (tier2 exact; location not read from the alert body)",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "RethinkFirst",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-31",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Senior Manager of Customer Support (tier1 loose; location not read from the alert body)",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Parallels",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-31",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Technical Account Manager (tier2 exact; alert copy suggests remote)",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Seeq Corporation",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-31",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Technical Account Manager, up to $130K (tier2 exact; location not read from the alert body)",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "OnTrac",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-31",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Omnissa",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-31",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Hitachi Vantara",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-08-31",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
