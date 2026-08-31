@@ -4774,6 +4774,28 @@
       "enrolled_date": "2026-08-31",
       "enrolled_via": "PROMOTED OUT OF _blind_spot_companies. Sat there since 2026-07-27 as 'Workday site name unresolved (404 on the guess)' and returned zero Equifax results on 2026-08-17. The documented site:myworkdayjobs.com fallback finally exposed the real host on 2026-08-31 via an Atlanta 'Customer Success Advisor - IXI Network' req. Fifth time that fallback has cracked a long-stuck tenant, after Availity, NCR Voyix, Cengage, and Global Payments.",
       "reason": "Atlanta HQ enterprise data and analytics platform. Verified live 2026-08-31: POST to /wday/cxs/equifax/External/jobs returns total=180. Real US fit-space presence, including a 'Customer Success Advisor - IXI Network' at USA-Georgia-Atlanta-Remote (post-sales implementation program management, adoption, and retention) and a 'Lead Technical Configuration Analyst' in Atlanta calling for prior Salesforce expertise. Board skews heavily India/Canada, so expect the poller's US filter to cut most of it; the Atlanta reqs are the point."
+    },
+    {
+      "name": "Owner.com",
+      "ats": "ashby",
+      "slug": "owner",
+      "priority": "medium",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- self-described 'AI-native system local business owners use to succeed', starting with restaurants. Classified 2026-08-31 at enrollment.",
+      "enrolled_date": "2026-08-31",
+      "enrolled_via": "Manual punch-list sweep 2026-08-31 (Aneesh's request). Rejected 2026-08-04 as 'no board from name variants'; the slug is plainly 'owner', so this was a harvester miss rather than a genuinely unpollable company.",
+      "reason": "AI-native restaurant/local-business software, remote-first, SF HQ with a Toronto sales hub. Board verified live 2026-08-31: ashby/owner, 50 jobs, 5 tier3 CSM fit-titles remote-US incl. 'Senior Manager of Customer Success (Enterprise)' and 'POS Customer Success Manager'. Also runs a lever/owner board carrying engineering roles; ashby is the one with the fit-space. Food/restaurant passion domain applies at Step 2c scoring (+10), not here. headcount_band deliberately unset: not verified, and the rubric says absent band = 0 rather than guess."
+    },
+    {
+      "name": "Ambient.ai",
+      "ats": "ashby",
+      "slug": "ambient.ai",
+      "priority": "high",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) -- computer-vision physical security; the product IS the model. Classified 2026-08-31 at enrollment.",
+      "enrolled_date": "2026-08-31",
+      "enrolled_via": "Manual punch-list sweep 2026-08-31 (Aneesh's request). Rejected 2026-08-04 as 'no board from name variants'. The real Ashby slug KEEPS THE DOT ('ambient.ai'); harvest_ats.py's slugify strips punctuation and generated 'ambientai', which 404s. A separate greenhouse/ambientai board exists but returns nothing useful.",
+      "reason": "AI-powered physical security platform (computer vision), Series B, backed by a16z and Y Combinator, founded 2017. Board verified live 2026-08-31: ashby/ambient.ai, 18 jobs, TWO tier2 'Technical Account Manager' reqs (Remote Redwood City, Remote Los Angeles). Physical-security-for-buildings is a genuine adjacency to iApartments' smart-apartment hardware. headcount_band deliberately unset: not verified, and the rubric says absent band = 0 rather than guess."
     }
   ]
 }
