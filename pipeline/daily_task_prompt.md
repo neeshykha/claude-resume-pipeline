@@ -548,8 +548,18 @@ roles including a tier-1 Head of Support, invisible to every discovery source un
 unrelated email exposed it.)
 
 **THIS STEP IS MANDATORY AND MUST BE LOGGED, even when it finds nothing.** Record a
-`step_1d_2_linkedin_harvest` object in `run_[date].json` on every run: the query used, the count
-of threads returned, companies extracted, and how many were newly queued. **On 2026-07-30 this
+`step_1d_2_linkedin_harvest` object in `run_[date].json` on every run with AT LEAST these fields:
+the query used, `window_used`, the count of threads returned, companies extracted, and how many
+were newly queued, plus **`jobs_noreply_threads_seen` and `digest_bodies_opened` (added
+2026-08-31)**.
+
+Those last two exist because the digest-body rule below (the `jobs-noreply@` exception) was
+previously unauditable: the four original fields are identical whether every digest body was read
+or none were, so a run that captured 1 company out of 6 looked exactly like a run that captured
+all 6. That is precisely how the rule came to be needed in the first place — on 2026-08-21 the
+step self-reported a plausible non-zero result while dropping five companies from a single email.
+**`digest_bodies_opened` should equal `jobs_noreply_threads_seen`**; when it doesn't, that is a
+miss worth naming in the digest rather than a number to fill in. **On 2026-07-30 this
 step did not execute at all** — the run record contained zero mentions of LinkedIn and the step
 was absent from `searches_run` — while roughly a dozen unprocessed alerts sat in the inbox. It
 had run correctly the day before, so the failure mode is silent omission, not breakage. A logged
@@ -558,14 +568,36 @@ zero is verifiable; an absent section is indistinguishable from a skipped step.
 1. Search Gmail for `deliveredto:{{CONFIRM_ALIAS}} from:linkedin.com newer_than:1d`.
    Zero results is normal and not an error.
 
+   **DO NOT PICK THE WINDOW BY HAND. Run this first (added 2026-08-31):**
+
+   ```bash
+   .venv/bin/python pipeline/linkedin_window.py
+   ```
+
+   It prints the exact `newer_than:` value to use and the full query line. Use what it says.
+
    **WIDEN THE WINDOW TO COVER ANY GAP SINCE THE LAST RUN (added 2026-08-28).** The task runs
    `0 3 * * 1-5`, weekdays only, so a `1d` window on a **Monday** reaches back only to Sunday
    03:00 and silently drops Friday, Saturday, and Sunday: roughly **48 alert threads lost every
-   week**, which is the pipeline's highest-yield discovery channel per call. Use `newer_than:4d`
-   on Mondays, and widen similarly after any skipped or failed run (check the most recent
-   `run_*.json` date). Step 0.5's confirmation query does not have this problem because its `3d`
-   window already spans Friday to Monday, which is likely why that number was chosen; this step
-   was left at `1d` and the weekday-only schedule was never reconciled with it.
+   week**, which is the pipeline's highest-yield discovery channel per call. Step 0.5's
+   confirmation query does not have this problem because its `3d` window already spans Friday to
+   Monday, which is likely why that number was chosen; this step was left at `1d` and the
+   weekday-only schedule was never reconciled with it.
+
+   **Why that rule became a script.** As prose it read "use `newer_than:4d` on Mondays, and widen
+   similarly after any skipped or failed run (check the most recent `run_*.json` date)" — correct,
+   and it asks a model mid-run to notice the weekday, locate the last run file, and do arithmetic.
+   This step's own documented failure mode is being skipped while self-reporting success
+   (2026-07-30: it did not execute at all and the run record contained zero mentions of LinkedIn),
+   so a prose rule guarding against silent omission is itself silently omissible. The window is a
+   pure function of the gap since the last completed run, so there is no judgment to preserve:
+   `window = (today - last_run_date) + 1` day of overlap, capped at 7 days.
+
+   The cap matters. If the gap exceeds 7 days the script says so **loudly** instead of quietly
+   truncating: an unbounded window after a long outage would pull hundreds of threads into the
+   run's context, which is its own failure. When that alert fires, **say in the digest that alert
+   history older than the window was not reachable** rather than letting the run read as full
+   coverage.
 
    Widening is close to free and cannot double-count: these are subject-line reads for
    `jobalerts-noreply@`, every extracted company goes through `check_company.py` before it can
