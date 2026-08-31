@@ -595,6 +595,10 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             raw = job_data.get("first_published") or job_data.get("updated_at")
             if raw:
                 return datetime.fromisoformat(raw).date()
+        elif ats == "paylocity":
+            raw = job_data.get("PublishedDate")
+            if raw:
+                return datetime.fromisoformat(raw).date()
         elif ats == "ashby":
             raw = job_data.get("publishedAt")
             if raw:
@@ -795,6 +799,12 @@ def parse_location(job_data: dict, ats: str) -> str:
         if wtype and base != "Unknown" and wtype.lower() not in base.lower():
             base = f"{base} ({wtype})"
         return base or "Unknown"
+    elif ats == "paylocity":
+        # LocationName only. IsRemote is NOT consulted: it disagrees with
+        # LocationName in both directions on a real board (33 city-named jobs
+        # flagged remote because they are home-based field-sales territories,
+        # 13 "Remote, US" jobs flagged not-remote). See fetch_paylocity.
+        return job_data.get("LocationName") or "Unknown"
     elif ats == "rippling":
         locs = job_data.get("locations") or []
         names = [l.get("name") for l in locs if l.get("name")]
@@ -832,6 +842,10 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
         return f"https://jobs.smartrecruiters.com/{slug}/{jid}"
     elif ats in ("pinpoint", "rippling"):
         return job_data.get("url", "")
+    elif ats == "paylocity":
+        # Precomputed in fetch_paylocity, which knows the tenant host; the
+        # job objects themselves carry only a numeric JobId.
+        return job_data.get("_paylocity_url", "")
     elif ats == "comeet":
         return (job_data.get("url_comeet_hosted_page")
                 or job_data.get("url_active_page")
@@ -1091,6 +1105,82 @@ def fetch_pinpoint(slug: str) -> list[dict]:
         return [{"_error": f"{type(e).__name__}: {e}"}]
 
 
+def fetch_paylocity(company: dict) -> list[dict]:
+    """Fetch jobs from a Paylocity Recruiting board.
+
+    Added 2026-08-28. Paylocity SELLS HR and recruiting software and hosts its
+    own jobs on its own product, which is why harvest_ats.py rejected it as
+    unpollable twice (2026-08-10, and again in the 2026-08-28 sweep that probed
+    six ATSes plus Workday tenants). That was an ATS-COVERAGE gap, not a slug
+    or scoring gap. Prompted by a user-surfaced LinkedIn alert for "Manager
+    Technical Operations (Implementation and Support)", a tier1 title, fully
+    remote US, that the poller structurally could not see.
+
+    MULTI-TENANT, so this is worth far more than one company: Paylocity's
+    customers host here too. Two host forms, both verified live:
+      - `recruiting.paylocity.com`           shared host, customers
+      - `<id>recruiting.paylocity.com`       tenant-prefixed (Paylocity = 2000)
+    The identifier is a GUID, NOT a name slug, so `slug` holds the GUID and an
+    optional `paylocity_host` overrides the default shared host. Verified across
+    five distinct tenants (229/24/17/3/94 jobs), all identical schema; a bogus
+    GUID returns a page with no Jobs array and is rejected rather than 200-ing
+    into an empty board.
+
+    There is no JSON API. The listing page server-renders the complete job array
+    into the HTML as `"Jobs":[...]`, which is why a plain requests GET works and
+    no browser is needed. Extracted by bracket-balancing from that anchor rather
+    than by regex, because Description strings contain braces and quotes.
+
+    IsRemote IS DELIBERATELY IGNORED. It disagrees with LocationName in BOTH
+    directions on Paylocity's own board: 33 jobs are IsRemote=true while named
+    for a city (field-sales territory roles that are home-based, not
+    location-flexible) and 13 read "Remote, US" while IsRemote=false. Same shape
+    as Ashby's isRemote, corrected the same day in parse_location. LocationName
+    is the field that means what it says.
+
+    Salary is not present in the listing payload; the per-job detail page at
+    /Recruiting/Jobs/Details/<JobId> carries the comp text. Left to fetch_jd.py
+    rather than paid for on every poll.
+    """
+    guid = (company.get("slug") or "").strip()
+    host = (company.get("paylocity_host") or "recruiting.paylocity.com").strip()
+    url = f"https://{host}/Recruiting/Jobs/All/{guid}"
+    try:
+        resp = requests.get(
+            url, headers={"User-Agent": "Mozilla/5.0 (resume-pipeline)"},
+            timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+        text = resp.text
+        anchor = text.find('"Jobs":[')
+        if anchor == -1:
+            return [{"_error": "Paylocity board has no Jobs array "
+                               "(wrong GUID, or the board was removed)"}]
+        start = anchor + len('"Jobs":')
+        depth = 0
+        raw = None
+        for i in range(start, len(text)):
+            ch = text[i]
+            if ch == "[":
+                depth += 1
+            elif ch == "]":
+                depth -= 1
+                if depth == 0:
+                    raw = text[start:i + 1]
+                    break
+        if raw is None:
+            return [{"_error": "Paylocity Jobs array never closed"}]
+        jobs = json.loads(raw)
+        for j in jobs:
+            # Normalize into the shape parse_location / extract_posted_date read.
+            j["_paylocity_location"] = j.get("LocationName") or ""
+            j["_paylocity_url"] = (f"https://{host}/Recruiting/Jobs/Details/"
+                                   f"{j.get('JobId')}")
+        # Internal-only reqs are not public applications; drop them.
+        return [j for j in jobs if not j.get("IsInternal")]
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
 def fetch_rippling(slug: str) -> list[dict]:
     """Fetch jobs from a Rippling ATS board.
 
@@ -1321,6 +1411,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_pinpoint(slug)
         elif ats == "rippling":
             jobs = fetch_rippling(slug)
+        elif ats == "paylocity":
+            jobs = fetch_paylocity(company)
         elif ats == "comeet":
             jobs = fetch_comeet(company)
         else:
@@ -1353,7 +1445,10 @@ def poll_all(run_date: date) -> dict:
         role_exclusions = [r.lower() for r in company.get("role_exclusions", [])]
 
         for job_data in jobs:
-            title = job_data.get("title", job_data.get("text", ""))
+            # "name" is Rippling/SmartRecruiters, "text" is Lever,
+            # "JobTitle" is Paylocity (PascalCase throughout its payload).
+            title = (job_data.get("title") or job_data.get("text")
+                     or job_data.get("JobTitle") or "")
             if not title:
                 continue
 

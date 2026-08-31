@@ -518,7 +518,12 @@ company should not sit in `pending` for weeks. Only Gainsight resisted, and that
 block rather than a wrong site name (rejected 2026-07-29 after 8 rechecks).
 
 ATS providers the poller speaks: Greenhouse, Ashby, Lever, Workday, SmartRecruiters
-(case-sensitive slug), Workable, Pinpoint, and Rippling. (This line previously claimed Workable
+(case-sensitive slug), Workable, Pinpoint, Rippling, Comeet, and **Paylocity** (added
+2026-08-28). **Paylocity boards CANNOT be auto-resolved by `harvest_ats.py` and must be
+enrolled by hand**: its identifier is a GUID from the careers URL rather than anything derived
+from a company name, so no slug generator will ever produce one. It is multi-tenant, so the
+adapter covers Paylocity's customers and not just Paylocity: see `_paylocity_notes` for both
+host forms and for why `IsRemote` is ignored in favour of `LocationName`. (This line previously claimed Workable
 was unsupported — stale since 2026-07-27, when `fetch_workable` was added; corrected 2026-08-12
 alongside adding Pinpoint and Rippling support, prompted by two user-surfaced misses — Napier AI
 and Nerdio — that turned out to have real public/scrapeable job data the poller just didn't know
