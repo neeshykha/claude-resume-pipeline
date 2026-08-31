@@ -49,6 +49,7 @@ import argparse
 import datetime as dt
 import html
 import json
+import os
 import re
 import sys
 import urllib.parse
@@ -219,7 +220,78 @@ def fetch_smartrecruiters(url):
     }
 
 
-FETCHERS = (fetch_ashby, fetch_workday, fetch_greenhouse, fetch_lever, fetch_smartrecruiters)
+def fetch_comeet(url):
+    """Comeet, via the same public board API poll_ats.py already speaks.
+
+    Added 2026-08-31, correcting a claim this file made from the start. The
+    Comeet *hosted page* really is a Spark Hire template (see the module
+    docstring), and that was generalized into "Comeet has no per-posting JSON
+    endpoint" here and in daily_task_prompt.md Step 3. That is wrong: Comeet's
+    BOARD endpoint returns every posting with a `details` array holding the
+    full Description / Requirements HTML -- the same whole-board-filter-locally
+    shape as Ashby.
+
+    The cost of the wrong claim was concrete. On 2026-08-31 Stampli's
+    "Implementation Consultant/Onboarding Specialist" took the top pre-score of
+    the run (74) and was written off as unreadable, so nobody saw that it pays
+    $80-95K base (under the $100K floor AND the $90K near-miss floor) and sits
+    in the Mountain View office three days a week. It was a hard-filter
+    elimination wearing a near-miss label.
+
+    Comeet has no slug-derivable credentials: the API needs the company `uid`
+    and a public widget `token`. The uid IS in the URL
+    (comeet.com/jobs/<slug>/<uid>/...), and the token is stored on the
+    watchlist entry at enrollment time, so resolve the pair from there.
+    """
+    m = re.search(r"comeet\.com/jobs/([^/]+)/([^/]+)/", url)
+    if not m:
+        return None
+    slug, uid = m.group(1), m.group(2)
+    wl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "watchlist_companies.json")
+    with open(wl_path) as fh:
+        wl = json.load(fh)
+    entry = next((c for c in wl.get("companies", [])
+                  if c.get("ats") == "comeet"
+                  and (c.get("comeet_uid") == uid or c.get("slug") == slug)), None)
+    if not entry or not entry.get("comeet_token"):
+        return {"ats": "comeet", "title": None, "location": None, "remote": None,
+                "posted": None, "salary": None,
+                "body": f"Comeet needs a widget token, and no watchlist entry was found "
+                        f"for uid={uid} / slug={slug}. Enroll the company (which stores "
+                        f"comeet_uid + comeet_token) and retry."}
+    # Same endpoint shape as ATS_ENDPOINTS["comeet"] in watchlist_companies.json;
+    # `details=true` is what returns the Description / Requirements HTML.
+    api = (f"https://www.comeet.co/careers-api/2.0/company/{uid}/positions"
+           f"?token={entry['comeet_token']}&details=true")
+    jobs = get(api).json()
+    tail = url.rstrip("/").rsplit("/", 1)[-1]
+    job = next((j for j in jobs
+                if tail in str(j.get("url_comeet_hosted_page", ""))
+                or tail == str(j.get("uid", ""))), None)
+    if job is None:
+        return {"error": f"comeet: no posting on {slug}'s board matched {tail}"}
+    loc = job.get("location") or {}
+    body = "\n\n".join(
+        f"### {d.get('name')}\n{strip_html(d.get('value'))}"
+        for d in (job.get("details") or []) if isinstance(d, dict))
+    return {
+        "ats": "comeet",
+        "title": job.get("name"),
+        "location": ", ".join(filter(None, [loc.get("city"), loc.get("state")])) or loc.get("name"),
+        # Reported for visibility, NOT trusted: this field was true on 19/19
+        # Stampli postings including ones that state in-office days. Same
+        # constant-field problem as Ashby isRemote and Paylocity IsRemote.
+        # poll_ats.py ignores it; read the body for the real policy.
+        "remote": f"{loc.get('is_remote')} (UNRELIABLE, read the body)",
+        "posted": job.get("time_updated"),
+        "salary": None,
+        "body": body,
+    }
+
+
+FETCHERS = (fetch_ashby, fetch_workday, fetch_greenhouse, fetch_lever,
+            fetch_smartrecruiters, fetch_comeet)
 
 
 def fetch(url):
@@ -231,7 +303,7 @@ def fetch(url):
         if out is not None:
             return out
     return {"error": "no fetcher matched this URL. Supported: Ashby, Workday, "
-                     "Greenhouse, Lever, SmartRecruiters. Comeet/Pinpoint/Rippling "
+                     "Greenhouse, Lever, SmartRecruiters, Comeet. Pinpoint/Rippling "
                      "have no per-posting JSON endpoint; use WebSearch for those."}
 
 
