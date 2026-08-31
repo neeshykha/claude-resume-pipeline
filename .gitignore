@@ -71,3 +71,7 @@ pipeline/BROWSER_VERIFY_TASK.md
 # step cannot publish them, as happened with _schema_test.py on 2026-08-01.
 pipeline/_*.py
 !pipeline/__init__.py
+
+# Personal application field values (home address, exact employment months).
+# Same reasoning as local_config.json: this repo is public.
+pipeline/application_profile.json

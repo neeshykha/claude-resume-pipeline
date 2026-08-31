@@ -557,6 +557,35 @@ When Aneesh mentions a job or company he found outside the pipeline, do all four
    automatic dead-board pruning. Daily poll cost stays flat (poller pre-filters to a fixed
    top-25); the build is an engineering session, not a heavier daily process.
 
+## Assisted Apply (on-demand skill)
+
+`assisted-apply` (`.claude/skills/assisted-apply/SKILL.md`, local-only) fills a job
+application form in the browser up to but never including submit. **Explicit invocation
+only** — "assisted apply", "help me apply to X", "fill out this application". Never
+triggered by the daily pipeline, never inferred from a role being tailored.
+
+Built 2026-08-28 after a Brown & Brown Workday form was abandoned mid-way. Aimed at the
+high-effort ATSes (Workday, Paylocity, Taleo, iCIMS) that make him retype his whole work
+history after an upload, which is a plausible contributor to the 38% send rate and
+31-day median at `stage=surfaced`.
+
+Claude never creates accounts, enters passwords, clicks submit, answers EEO or
+self-identification questions, answers screening questions (work authorization, salary,
+start date, "why this company"), or invents a field value. Aneesh signs in, Claude types
+the work history, Aneesh reviews and sends.
+
+Reusable field values live in `pipeline/application_profile.json` (**gitignored** — it
+holds a home address and exact employment months, same reasoning as `local_config.json`).
+Anything reading `NEEDS_ANEESH` has never been supplied; the skill collects those once,
+writes them back, and never asks again. This exists because `master_resume.md` carries a
+month only for iApartments while every Workday form demands month and year.
+
+Known constraint: the Chrome extension runs in its own isolated tab group and cannot
+drive a tab Aneesh already has open, so he signs in on Claude's tab. The no-browser
+fallback is a paste-ready field sheet in the form's own section order (example:
+`tailored/Aneesh_Khan_BrownBrown_AIAdoption_workday_fields.md`), which is often the
+better option anyway.
+
 ## LinkedIn Browser Sweep (on-demand skill)
 
 `linkedin-sweep` (`.claude/skills/linkedin-sweep/SKILL.md`, local-only) drives a logged-in
