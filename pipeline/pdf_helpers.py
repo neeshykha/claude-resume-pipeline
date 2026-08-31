@@ -187,6 +187,131 @@ def build_resume_pdf(data: dict, output_path: str) -> None:
     print(f"PDF generated: {output_path}")
 
 
+def _plain(text: str) -> str:
+    """Strip inline markup and normalize characters that break ATS parsers.
+
+    Entities and tags first, then the character substitutions: en/em dashes and
+    curly quotes are the ones that most often come back as mojibake or as a
+    token glued to its neighbour in a parsed field.
+    """
+    import html as _html
+    import re as _re
+    t = _re.sub(r"<br\s*/?>", " ", text or "")
+    t = _re.sub(r"<[^>]+>", "", t)
+    t = _html.unescape(t)
+    for bad, good in (("–", "-"), ("—", "-"), ("’", "'"),
+                      ("‘", "'"), ("“", '"'), ("”", '"'),
+                      ("•", "-"), (" ", " ")):
+        t = t.replace(bad, good)
+    return _re.sub(r"\s{2,}", " ", t).strip()
+
+
+def _ats_styles():
+    """One font, one colour, one column. Every deviation from that is a place a
+    parser can guess wrong, and none of them win an interview."""
+    base = getSampleStyleSheet()
+    black = HexColor("#000000")
+    return {
+        "name": ParagraphStyle("AtsName", parent=base["Normal"], fontSize=14,
+                               spaceAfter=2, leading=17, textColor=black,
+                               fontName="Helvetica-Bold"),
+        "contact": ParagraphStyle("AtsContact", parent=base["Normal"], fontSize=10,
+                                  spaceAfter=1, leading=13, textColor=black),
+        "section": ParagraphStyle("AtsSection", parent=base["Normal"], fontSize=11,
+                                  spaceBefore=12, spaceAfter=4, leading=14,
+                                  textColor=black, fontName="Helvetica-Bold"),
+        "job_title": ParagraphStyle("AtsJobTitle", parent=base["Normal"], fontSize=10,
+                                    spaceBefore=8, spaceAfter=1, leading=13,
+                                    textColor=black, fontName="Helvetica-Bold"),
+        "company": ParagraphStyle("AtsCompany", parent=base["Normal"], fontSize=10,
+                                  spaceAfter=3, leading=13, textColor=black),
+        "bullet": ParagraphStyle("AtsBullet", parent=base["Normal"], fontSize=10,
+                                 leftIndent=12, spaceAfter=3, leading=13,
+                                 textColor=black),
+        "body": ParagraphStyle("AtsBody", parent=base["Normal"], fontSize=10,
+                               spaceAfter=4, leading=13, textColor=black),
+    }
+
+
+def build_ats_resume_pdf(data: dict, output_path: str) -> None:
+    """Render the SAME resume data in a deliberately parser-friendly layout.
+
+    Built 2026-08-28. Workday and Paylocity both make you retype your entire
+    work history after uploading a resume, and the working theory is that the
+    styled template is part of why their parse is bad enough to be useless. This
+    is the control: identical content, stripped of everything an ATS parser is
+    known to mishandle, so the two can be compared through a real autofill.
+
+    What is deliberately removed relative to build_resume_pdf, and why each one
+    is a real hazard rather than a superstition:
+
+    - Centered contact line with bullet separators and an inline <a> hyperlink.
+      Becomes left-aligned plain lines, one field per line. The bullet glyph
+      fuses tokens ("Atlanta, GA | Remote * 770-402-8907") and a hyperlink is a
+      separate text run, which is how phone numbers and emails go missing.
+    - Horizontal rules. Vector flowables that can read as column or table edges.
+    - Colour. Every heading and body run is pure black.
+    - Italics for the company line. Style changes mid-block can split runs.
+    - Hanging indents (firstLineIndent=-14). Text positioned left of its own
+      block is a classic source of out-of-order extraction.
+    - "*" bullets with non-breaking spaces. U+2022 followed by U+00A0 does not
+      split on whitespace in many parsers, so the marker glues to the first
+      word. Replaced with "- " and a real space.
+    - En dashes and curly quotes throughout (see _plain).
+
+    What is deliberately KEPT: exact section headings ATS look for
+    (PROFESSIONAL SUMMARY / PROFESSIONAL EXPERIENCE / EDUCATION / SKILLS), one
+    column, one font, and title-then-company-then-dates ordering.
+
+    Note SKILLS rather than TECHNICAL SKILLS: the plain heading is the one in
+    every ATS keyword list, and the styled template's "TECHNICAL SKILLS" is a
+    small unnecessary risk. Category labels inside skill lines survive as plain
+    "Category: value" text.
+    """
+    s = _ats_styles()
+    doc = SimpleDocTemplate(
+        output_path, pagesize=letter,
+        topMargin=0.6 * inch, bottomMargin=0.6 * inch,
+        leftMargin=0.75 * inch, rightMargin=0.75 * inch,
+    )
+    story = []
+
+    story.append(Paragraph("Aneesh Khan", s["name"]))
+    for line in ("Atlanta, GA", "770-402-8907", "khan.aneesh10@gmail.com",
+                 "linkedin.com/in/aneesh-khan-1820b6b5"):
+        story.append(Paragraph(line, s["contact"]))
+
+    story.append(Paragraph("PROFESSIONAL SUMMARY", s["section"]))
+    story.append(Paragraph(_plain(data["summary"]), s["body"]))
+
+    if data.get("core_competencies"):
+        story.append(Paragraph("CORE COMPETENCIES", s["section"]))
+        story.append(Paragraph(_plain(data["core_competencies"]), s["body"]))
+
+    story.append(Paragraph("PROFESSIONAL EXPERIENCE", s["section"]))
+    for job in data["experience"]:
+        story.append(Paragraph(_plain(job["title"]), s["job_title"]))
+        story.append(Paragraph(_plain(job["company"]), s["company"]))
+        for b in job["bullets"]:
+            story.append(Paragraph("- " + _plain(b), s["bullet"]))
+
+    story.append(Paragraph("EDUCATION", s["section"]))
+    story.append(Paragraph(_plain(data["education"]["degree"]), s["body"]))
+    story.append(Paragraph(_plain(data["education"]["school"]), s["body"]))
+
+    story.append(Paragraph("SKILLS", s["section"]))
+    for skill_line in data["skills"]:
+        story.append(Paragraph(_plain(skill_line), s["body"]))
+
+    if "community" in data:
+        story.append(Paragraph("COMMUNITY", s["section"]))
+        for item in data["community"]:
+            story.append(Paragraph("- " + _plain(item), s["bullet"]))
+
+    doc.build(story)
+    print(f"ATS-formatted PDF generated: {output_path}")
+
+
 def build_cover_pdf(data: dict, output_path: str) -> None:
     """Generate a tailored cover letter PDF from structured data."""
     s = _cover_styles()

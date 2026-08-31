@@ -1096,6 +1096,28 @@ rotates that folder; nothing here needs to clean it up.
 1. Tailored resume markdown → `tailored/Aneesh_Khan_[Company]_[Role].md`
 2. Resume JSON → `tailored/..._data.json` (schema: `pipeline/pdf_helpers.py` docstring)
 3. `.venv/bin/python pipeline/render_pdf.py resume <data.json> tailored/apply_now/<name>.pdf`
+
+   **Also render an ATS variant for high-effort ATSes (added 2026-08-28):**
+   ```bash
+   .venv/bin/python pipeline/render_pdf.py ats <data.json> tailored/apply_now/<name>_ATS.pdf
+   ```
+   Same JSON, no extra authoring. Do this whenever the apply path is **Workday, Paylocity,
+   Taleo, or iCIMS** — the ones that make Aneesh retype his whole work history after an
+   upload. Keep the styled `resume` output as the one a human reads, and for ATSes that parse
+   well (Greenhouse, Ashby, Lever).
+
+   The confirmed defect it fixes: in the styled template the centered contact line extracts as
+   `' Atlanta, GA | Remote  \x7f  770-402-8907  \x7f  khan.aneesh10@gmail.com  \x7f  LinkedIn'`
+   — the `&bull;` separator comes back as **DEL (0x7f)**, so the whole contact block is one
+   line delimited by control characters, and the LinkedIn URL is unrecoverable because it
+   lives in an `<a href>` rather than in the text layer. Contact fields are the first thing
+   autofill populates. The ATS variant emits four plain lines, one field each.
+
+   **Be honest about the limit.** Body text and reading order extract fine in BOTH renders, so
+   this is a narrower fix than "the template is why Workday's parse is bad." Whether it
+   improves Workday's field MAPPING enough to reduce retyping is still unproven; only running
+   it through a real Workday autofill settles that. Don't claim more than the contact-block
+   result until someone has.`
 4. **Coverage check:** write the JD's top-15 phrases to
    `tailored/Aneesh_Khan_[Company]_[Role]_phrases.json`, then
    `.venv/bin/python pipeline/check_coverage.py <resume.md> <phrases.json>`
