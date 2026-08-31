@@ -8,6 +8,7 @@ renders it using the shared pdf_helpers templates.
 
 Usage:
     python pipeline/render_pdf.py resume  path/to/resume_data.json  path/to/output.pdf
+    python pipeline/render_pdf.py ats     path/to/resume_data.json  path/to/output_ats.pdf
     python pipeline/render_pdf.py cover   path/to/cover_data.json   path/to/output.pdf
     python pipeline/render_pdf.py both    path/to/resume.json path/to/cover.json  output_dir/
 
@@ -54,7 +55,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 sys.path.insert(0, PROJECT_ROOT)
 
-from pipeline.pdf_helpers import build_resume_pdf, build_cover_pdf
+from pipeline.pdf_helpers import (build_resume_pdf, build_cover_pdf,
+                                 build_ats_resume_pdf)
 
 
 def render_resume(data_path: str, output_path: str) -> None:
@@ -70,6 +72,25 @@ def render_resume(data_path: str, output_path: str) -> None:
         sys.exit(1)
 
     build_resume_pdf(data, output_path)
+
+
+def render_ats(data_path: str, output_path: str) -> None:
+    """Render the SAME resume data in the parser-friendly ATS layout.
+
+    Same JSON, no extra authoring per application -- that is the point.
+    Use for Workday, Paylocity, Taleo, and anything else that makes you
+    retype your work history after uploading; use the styled `resume`
+    output for humans and for ATSes that parse well (Greenhouse, Ashby,
+    Lever).
+    """
+    with open(data_path) as f:
+        data = json.load(f)
+    required = ["summary", "experience", "education", "skills"]
+    missing = [k for k in required if k not in data]
+    if missing:
+        print(f"ERROR: Missing required fields in {data_path}: {missing}", file=sys.stderr)
+        sys.exit(1)
+    build_ats_resume_pdf(data, output_path)
 
 
 def render_cover(data_path: str, output_path: str) -> None:
@@ -89,7 +110,7 @@ def render_cover(data_path: str, output_path: str) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description="Render resume/cover PDFs from JSON data")
-    parser.add_argument("type", choices=["resume", "cover", "both"],
+    parser.add_argument("type", choices=["resume", "ats", "cover", "both"],
                         help="Type of PDF to render")
     parser.add_argument("inputs", nargs="+",
                         help="JSON data file(s). For 'both': resume.json cover.json output_dir/")
@@ -101,6 +122,12 @@ def main():
             print("Usage: render_pdf.py resume <data.json> <output.pdf>", file=sys.stderr)
             sys.exit(1)
         render_resume(args.inputs[0], args.inputs[1])
+
+    elif args.type == "ats":
+        if len(args.inputs) != 2:
+            print("Usage: render_pdf.py ats <data.json> <output.pdf>", file=sys.stderr)
+            sys.exit(1)
+        render_ats(args.inputs[0], args.inputs[1])
 
     elif args.type == "cover":
         if len(args.inputs) != 2:
