@@ -943,12 +943,25 @@ with the identical conclusion in every digest from 07-15 through 07-19.)
 .venv/bin/python pipeline/fetch_jd.py --from-hits pipeline/jobs/ats_hits_[date].json --match "<title fragment>"
 ```
 
-It hits the ATS's own JSON API (Ashby, Workday, Greenhouse, Lever, SmartRecruiters) and prints
-title, location, remote flag, posting date, compensation, and the **full description text** for
-you to read directly. Accepts bare URLs as positional args too, and `--match` is repeatable.
-Only fall back to WebFetch for an ATS it does not cover (Comeet, Pinpoint, and Rippling have no
+It hits the ATS's own JSON API (Ashby, Workday, Greenhouse, Lever, SmartRecruiters, **Comeet**)
+and prints title, location, remote flag, posting date, compensation, and the **full description
+text** for you to read directly. Accepts bare URLs as positional args too, and `--match` is
+repeatable. Only fall back to WebFetch for an ATS it does not cover (Pinpoint and Rippling have no
 per-posting JSON endpoint), then to WebSearch for a cached or mirrored copy. If the JD is
 unreachable two runs in a row, drop it to the near-miss list with a note rather than stalling.
+
+**Comeet was wrongly listed as unreachable here until 2026-08-31, and it cost a real read.** The
+Comeet *hosted page* is a Spark Hire template, which is true and is why WebFetch fails on it; that
+got generalized into "no per-posting JSON endpoint," which is false. Comeet's BOARD endpoint
+returns every posting with a `details` array carrying the full Description and Requirements HTML,
+the same whole-board-filter-locally shape as Ashby, and `poll_ats.py` had been reading it since
+2026-08-20. On 2026-08-31 Stampli's "Implementation Consultant/Onboarding Specialist" took the top
+pre-score of the run (74) and went to the near-miss list as "JD unreadable" — when in fact it pays
+**$80–95K base**, under both the $100K floor and the $90K near-miss floor, and sits in the Mountain
+View office three days a week. It was a hard-filter elimination wearing a near-miss label.
+`fetch_jd.py` now resolves the Comeet uid from the URL and the widget token from the watchlist
+entry. **Generalize the lesson, not the symptom: a broken rendered page is not evidence about the
+API behind it.**
 
 Why this replaced WebFetch as the default: **WebFetch does not work on three of the five ATSes
 that actually reach the shortlist.** Ashby and Workday are JS-rendered and return a page
@@ -1398,7 +1411,8 @@ not folded into the daily digest.
    week. Aneesh reviews the batch by hand (find the real slug/Workday tenant, or let it drop);
    this is a **standing backlog**, not a trailing-week window, so don't be surprised if the
    first several weeks each show a full 20-entry batch with "N more carry over."
-3. Create a **separate** Gmail draft (`create_draft`, not `update_draft` on the daily digest):
+3. Create a **separate** Gmail draft (`create_draft`, not `update_draft` on the daily digest),
+   **then SEND it with `send_message` passing that `draftId`** — same as Step 5:
    - To: `{{DIGEST_RECIPIENT}}`
    - Subject: `Weekly Channel Report — [window start] to [window end]`
    - Body: the script's output, lightly formatted as HTML (same raw-HTML rule as Step 5 —
@@ -1421,9 +1435,21 @@ not folded into the daily digest.
    run rather than silently lost.
 5. Write today's date to `pipeline/jobs/weekly_channel_report_state.json` as
    `{"last_sent": "YYYY-MM-DD"}` (Write tool, overwrite whatever was there).
-6. Note the draft ID in `run_[date].json → weekly_channel_report_draft_id` and one line in
-   `SESSION_STATE.md`. Do not mention this step in the main digest email at all — it has its
-   own draft and its own send decision.
+6. Note the draft ID in `run_[date].json → weekly_channel_report_draft_id`, the sent message id
+   in `weekly_channel_report_sent_message_id`, and one line in `SESSION_STATE.md`. Do not mention
+   this step in the main digest email at all — it is its own email.
+
+**Send this report; do not leave it as a draft. Aneesh's explicit call, 2026-08-31.** This step
+said only "create a draft" and called it "its own send decision" for three weeks, which is why the
+2026-08-31 run drafted it and stopped: Step 5 carried an explicit send instruction and this one did
+not, so the autonomous run correctly declined to infer one. The reasoning that settled Step 5 on
+2026-08-28 applies here unchanged and always did — a draft he has to open and send is just a manual
+step, and he does not mind a follow-up email if a report needs correcting after it goes out. The
+only reason the two steps disagreed was that nobody carried the decision across.
+
+The general rule this illustrates is worth keeping: **an autonomous run will not send unless its
+instructions say so explicitly, and "its own send decision" is not an instruction.** If a future
+step should send, write "send it" in that step. Do not rely on a neighbouring step's precedent.
 
 ## Step 7: Sync the public repo
 

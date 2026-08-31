@@ -811,13 +811,28 @@ def parse_location(job_data: dict, ats: str) -> str:
         return ", ".join(names) if names else "Unknown"
     elif ats == "comeet":
         # Comeet location: {"name": "Austin, TX", "city": ..., "state": ...,
-        # "is_remote": bool}. Build city+state, fall back to name, prefix
-        # "Remote" when flagged (mirrors the workable branch).
+        # "is_remote": bool}. Build city+state, fall back to name.
+        #
+        # `is_remote` is DELIBERATELY IGNORED (2026-08-31). It is a constant,
+        # exactly like Ashby's `isRemote` (fixed 2026-08-28) and Paylocity's
+        # `IsRemote` (see fetch_paylocity): it was true on 19/19 Stampli
+        # postings, and 17 of those 19 describe in-office days in the body
+        # ("...office (Tuesday, Wednesday, and Thursday)", "Hybrid", "days a
+        # week"). Prefixing "Remote" handed +16 to hybrid Bay Area roles and
+        # produced the string "Remote Mountain View, CA" for an
+        # Implementation Consultant that is 3 days/week in Mountain View at
+        # $80-95K base. That role took the TOP pre-score of the 2026-08-31
+        # run (74) on the strength of this field alone.
+        #
+        # Comeet exposes no trustworthy remote flag, so a genuinely remote
+        # Comeet posting will now read as its city and score 0 on location.
+        # That is the correct trade: a false negative costs one missed role,
+        # a false positive costs a tailored application to a role requiring
+        # relocation. Revisit only if a Comeet board is found where the field
+        # actually varies.
         loc = job_data.get("location") or {}
         parts = [p.strip() for p in [loc.get("city"), loc.get("state")] if p and p.strip()]
         full = ", ".join(parts) if parts else (loc.get("name") or "")
-        if loc.get("is_remote"):
-            full = f"Remote {full}".strip()
         return full or "Unknown"
     return "Unknown"
 
