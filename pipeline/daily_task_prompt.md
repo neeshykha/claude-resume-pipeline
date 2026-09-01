@@ -550,16 +550,24 @@ unrelated email exposed it.)
 **THIS STEP IS MANDATORY AND MUST BE LOGGED, even when it finds nothing.** Record a
 `step_1d_2_linkedin_harvest` object in `run_[date].json` on every run with AT LEAST these fields:
 the query used, `window_used`, the count of threads returned, companies extracted, and how many
-were newly queued, plus **`jobs_noreply_threads_seen` and `digest_bodies_opened` (added
-2026-08-31)**.
+were newly queued, plus **`job_alert_threads_seen` and `bodies_read` (2026-09-01, replacing the
+narrower `jobs_noreply_threads_seen` / `digest_bodies_opened` pair added 2026-08-31)**. Keep
+writing the old two as well when the sender split is known; they cost nothing and preserve
+continuity with earlier runs.
 
-Those last two exist because the digest-body rule below (the `jobs-noreply@` exception) was
-previously unauditable: the four original fields are identical whether every digest body was read
-or none were, so a run that captured 1 company out of 6 looked exactly like a run that captured
-all 6. That is precisely how the rule came to be needed in the first place — on 2026-08-21 the
-step self-reported a plausible non-zero result while dropping five companies from a single email.
-**`digest_bodies_opened` should equal `jobs_noreply_threads_seen`**; when it doesn't, that is a
-miss worth naming in the digest rather than a number to fill in. **On 2026-07-30 this
+These exist because the digest-body rule below was previously unauditable: the four original
+fields are identical whether every body was read or none were, so a run that captured 1 company
+out of 6 looked exactly like a run that captured all 6. That is precisely how the rule came to be
+needed in the first place — on 2026-08-21 the step self-reported a plausible non-zero result while
+dropping five companies from a single email.
+
+**`bodies_read` should equal `job_alert_threads_seen`**; when it doesn't, name the shortfall in
+the digest rather than filling in a number. **The 2026-08-31 pair was scoped too narrowly and
+that is exactly how the bug below survived**: it audited body-reading only for `jobs-noreply@`,
+the sender the spec already told you to open, and asked nothing about `jobalerts-noreply@`, the
+sender the spec wrongly told you to skip. A metric that only measures the part you already
+believed was correct cannot catch the part you got wrong. Count every job-alert thread from
+either sender. **On 2026-07-30 this
 step did not execute at all** — the run record contained zero mentions of LinkedIn and the step
 was absent from `searches_run` — while roughly a dozen unprocessed alerts sat in the inbox. It
 had run correctly the day before, so the failure mode is silent omission, not breakage. A logged
@@ -606,24 +614,54 @@ zero is verifiable; an absent section is indistinguishable from a skipped step.
    subject line alone carries the company and title (`<Title> at <Company>`), which is all this
    step needs.
 
-   **CRITICAL EXCEPTION, added 2026-08-21 — the rule above is true for only ONE of the two job
-   senders, and applying it blindly discards about five companies per digest email.**
+   **STOP. READ THE BODY OF EVERY JOB-ALERT EMAIL. Rewritten 2026-09-01 — the previous version
+   of this block was FACTUALLY WRONG and cost roughly five companies per email, on every email,
+   for five weeks.**
 
-   - `jobalerts-noreply@linkedin.com` — single-role saved-search alerts. The subject really is
-     `<Title> at <Company>`, one role per email. Subject-only reading is correct here.
-   - `jobs-noreply@linkedin.com` — "Jobs You Might Be Interested In" **digests**. The subject
-     names ONE company ("Skydio is hiring for a Remote role") while the BODY carries roughly
-     **six roles at six different companies**, grouped into themed sections. Subject-only
-     reading captures 1 of 6 and silently drops the rest.
+   **BOTH job senders are multi-company digests. There is no single-role sender.**
 
-   **For `jobs-noreply@` messages you MUST open the body** (`messageFormat: PLAIN_TEXT`). Each
-   card is a clean three-line block: title, company, location. That is strictly MORE structured
-   than a subject line, and it also resolves the location problem in the 2026-07-30 correction
-   below: digest bodies state the location, so no second per-message fetch is needed to decide
-   `manual_review`. Ignore the tracking URLs, which are most of the byte count.
+   - `jobs-noreply@linkedin.com` — "Jobs You Might Be Interested In" digests. Subject names ONE
+     company; body carries ~6 roles at ~6 companies.
+   - `jobalerts-noreply@linkedin.com` — saved-search alerts. Subject is `<Title> at <Company>`,
+     which **looks** like one role per email and is not. The body opens with
+     `Your job alert for "<saved search>" in United States` and then lists **~6 roles at ~6
+     different companies**, each a clean block of title / company / location separated by a
+     `---------` rule. LinkedIn's own page type on these is `email_job_alert_digest_01`. The
+     word `digest` is in the markup.
 
-   The cost is bounded: digests are a minority of volume (1 of 14 job-alert threads on
-   2026-08-21), so this is a couple of body reads per run, not one per thread.
+   **So: open the body (`messageFormat: PLAIN_TEXT`) of every message from either sender.** The
+   body is strictly MORE structured than the subject and it states the location, which also
+   removes the two-stage per-message location fetch described in the 2026-07-30 correction
+   below. Ignore the tracking URLs; they are most of the byte count.
+
+   **How this was wrong, and why the wrongness survived so long.** The 2026-08-21 fix caught the
+   `jobs-noreply@` half correctly and then wrote down a confident, specific, untested claim about
+   the other half ("The subject really is `<Title> at <Company>`, one role per email.
+   Subject-only reading is correct here"). Nobody opened a `jobalerts-noreply@` body to check,
+   because the rule said not to bother. It read as a finding when it was an assumption, which is
+   the same failure mode as the "drafts only — no send" line in Step 5.
+
+   Caught 2026-09-01 when Aneesh opened one in Mail and saw six companies where the pipeline had
+   logged one. The email subject-lined "Senior Technical Account Manager at NiCE" contained NiCE,
+   Evlo AI, **Vultr**, **Affirm**, Swooped, and RemoteHunter. Vultr was a tier2 Technical Account
+   Manager, remote US, at a cloud-infrastructure company that would carry the +20 tooling
+   vertical, and it was UNKNOWN to the watchlist and all three enrollment buckets. The Affirm
+   card was a **Client Success Lead in Atlanta**, which directly contradicts Affirm's standing
+   rejection reason ("Senior TAM is Remote Canada -- not US-reachable. No other fit-space role
+   found"). Two more bodies read the same run confirmed the pattern held across unrelated saved
+   searches, surfacing OCHIN, Samsung Healthcare USA, Resource Innovations, Zimmer Biomet, and
+   Sundayy.
+
+   **Cost, honestly.** This is now one body read per job-alert thread, roughly 15-19 reads a day,
+   not "a couple per run." That is a real budget line and it is worth it: this is the highest-
+   yield discovery channel in the pipeline and it was running at about 17% of its actual yield.
+   If the run cannot afford every body, read them **newest first**, and record
+   `bodies_read` vs `job_alert_threads_seen` in `run_[date].json` so the shortfall is visible
+   instead of silent. Never go back to reading subjects only.
+
+   **Aggregators appear far more often in bodies than in subjects** (Swooped, Hired,
+   RemoteHunter, Jobot, Dice, ZipRecruiter, Talentify, Lensa). Drop them at extraction per 2b
+   below; they are reposters, not employers.
 
    Proven on 2026-08-21, when Aneesh asked directly whether the pipeline was seeing what he saw
    in these emails. It was not. One digest subject-lined "Skydio" contained Skydio, Precisely,
