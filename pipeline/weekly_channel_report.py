@@ -49,6 +49,10 @@ import json
 from datetime import datetime, timedelta
 
 UNPOLLABLE_WEEKLY_CAP = 20
+
+# Set by --all-unpollable. Off by default: see load_unpollable_batch for why the
+# ungated list was measured at zero yield and retired as a weekly chore.
+INCLUDE_ALL_UNPOLLABLE = False
 QUEUE_PATH = "pipeline/enrollment_candidates.json"
 
 
@@ -88,10 +92,47 @@ def sum_field(rows, *path):
     return total
 
 
+def has_role_signal(entry: dict) -> bool:
+    """Did anything ever confirm a fit-space ROLE at this company?
+
+    `manual_review_why` is set by Step 1d-2 when a LinkedIn card showed a
+    tier1/tier2/tier2c title at that company in Atlanta or remote-US, and it is
+    carried onto the rejection by harvest_ats.py. That is the only per-company
+    evidence in this file that a real matching role was ever seen, as opposed to
+    a name someone once encountered on a job board.
+    """
+    return bool(entry.get("manual_review_why") or entry.get("manual_review"))
+
+
 def load_unpollable_batch(cap=UNPOLLABLE_WEEKLY_CAP):
     """Return (batch, remaining_after_batch, total_unsurfaced) of rejected
-    entries tagged unpollable=true that haven't been surfaced in a prior
-    weekly report yet. Oldest rejected_date first."""
+    entries tagged unpollable=true, NOT yet surfaced, AND carrying confirmed
+    role signal. Oldest rejected_date first.
+
+    GATED ON ROLE SIGNAL as of 2026-08-31, after measuring the ungated version.
+    This section used to hand Aneesh 20 companies a week sorted only by
+    rejection date, and a 30-company dry run of that exact population produced
+    **zero enrollable companies**: 23 had no board at all, 3 had boards with no
+    fit-titles, and the batch was dominated by AI-policy nonprofits (GovAI, Pax
+    Sapiens, CivAI) and mega-enterprises (Microsoft, Wabtec, Epiroc) that do not
+    run a supported ATS and never will. It was a standing weekly chore with a
+    measured yield of nothing.
+
+    The premise had also expired. This punch list was created 2026-08-14 because
+    harvest_ats.py could not resolve non-obvious slugs, so a human searching by
+    hand genuinely beat the machine. On 2026-08-31 the three gaps behind that
+    (TLD stripping, legal-form suffixes, dotted slugs) were fixed and verified on
+    18/20 known cases, so the machine now finds what the hand-search was for.
+
+    What still justifies human attention is a company where a REAL MATCHING ROLE
+    was seen and the automated layer structurally cannot reach it. That is what
+    `manual_review_why` records, and it is the same principle behind
+    `_unpollable_backlog_companies` in the watchlist: curated from confirmed role
+    signal rather than from "no board found."
+
+    Ungated entries are not deleted, just not surfaced; `--all-unpollable`
+    restores the old behaviour for a one-off sweep.
+    """
     try:
         with open(QUEUE_PATH) as f:
             q = json.load(f)
@@ -101,6 +142,7 @@ def load_unpollable_batch(cap=UNPOLLABLE_WEEKLY_CAP):
     unsurfaced = [
         r for r in q.get("rejected", [])
         if r.get("unpollable") and not r.get("weekly_report_surfaced")
+        and (INCLUDE_ALL_UNPOLLABLE or has_role_signal(r))
     ]
     unsurfaced.sort(key=lambda r: r.get("rejected_date") or "")
     batch = unsurfaced[:cap]
@@ -137,20 +179,37 @@ def mark_surfaced(batch):
 
 def print_unpollable_section(batch, remaining, total_unsurfaced):
     print()
-    print("=== Unpollable companies (no ATS board ever found) ===")
+    scope = ("ALL unsurfaced entries (--all-unpollable)" if INCLUDE_ALL_UNPOLLABLE
+             else "confirmed role signal only")
+    print(f"=== Unpollable companies with a role worth chasing ({scope}) ===")
     if not batch:
-        print("None pending review. Every unpollable=true entry has already been surfaced.")
+        if INCLUDE_ALL_UNPOLLABLE:
+            print("None pending review. Every unpollable=true entry has already been surfaced.")
+        else:
+            print("Nothing to review: no unsurfaced unpollable company has a confirmed "
+                  "fit-space role on record.")
+            print("This is the expected steady state, not an error. Gated 2026-08-31 after a "
+                  "30-company dry run")
+            print("of the ungated list returned ZERO enrollable companies. Run with "
+                  "--all-unpollable for a")
+            print("deliberate full sweep.")
         return
-    print(f"{total_unsurfaced} total awaiting review; showing the oldest {len(batch)}"
-          + (f" ({remaining} more carry over to next week)" if remaining else " (backlog clear after this batch)") + ".")
-    print("Workaround options per company: find the real ATS slug/Workday tenant by hand,")
-    print("or decide it's not worth chasing and let it drop.")
+    print(f"{total_unsurfaced} awaiting review; showing the oldest {len(batch)}"
+          + (f" ({remaining} more carry over to next week)" if remaining else " (batch clears the list)") + ".")
+    if not INCLUDE_ALL_UNPOLLABLE:
+        print("Every entry below had a tier1/tier2/tier2c title seen in Atlanta or remote-US,")
+        print("at a company the poller structurally cannot watch. That is why it is worth your time.")
+    print("Per company: find the real ATS slug/Workday tenant by hand, or decide it is not")
+    print("worth chasing and let it drop.")
     print()
     for r in batch:
         name = r.get("name", "?")
         date = r.get("rejected_date", "?")
         reason = (r.get("reason") or "").strip()
+        why = (r.get("manual_review_why") or "").strip()
         print(f"  - {name} (rejected {date})")
+        if why:
+            print(f"      ROLE SEEN: {why}")
         print(f"      {reason}")
 
 
@@ -160,7 +219,15 @@ def main():
                          help="Mark the printed unpollable batch as weekly_report_surfaced "
                               "so it doesn't repeat next week. Only run this after the "
                               "digest draft has actually been created.")
+    parser.add_argument("--all-unpollable", action="store_true",
+                        help="Restore the pre-2026-08-31 behaviour and list EVERY unsurfaced "
+                             "unpollable entry, not just those with confirmed role signal. "
+                             "For a deliberate one-off sweep; a 30-company dry run of this "
+                             "population yielded zero enrollable companies, so it is not the "
+                             "weekly default.")
     args = parser.parse_args()
+    global INCLUDE_ALL_UNPOLLABLE
+    INCLUDE_ALL_UNPOLLABLE = args.all_unpollable
 
     rows, missing, cutoff = load_window()
     today = datetime.now().date()
