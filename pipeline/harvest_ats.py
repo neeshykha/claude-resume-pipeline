@@ -246,6 +246,34 @@ def _get(url):
         time.sleep(DELAY)
 
 
+def _confirm_empty(ats: str, slug: str):
+    """Re-probe a board that came back empty, to tell a real empty board from load noise.
+
+    Added 2026-08-31, from a false positive that reached the repo. A 30-company
+    backlog run reported FOUR resolved-but-empty boards -- workable/microsoft-inc,
+    workable/lime, workable/frame, workable/trustonic. Re-probed slowly and in
+    isolation, every one of them returns 404. Microsoft plainly does not recruit
+    through a Workable board called "microsoft-inc"; the signal was an artifact.
+
+    The mechanism: `_get` returns None on any non-200 and the caller turns a 200
+    into a list, so a 200 carrying an empty jobs array is indistinguishable from a
+    real empty board. Under burst load Workable evidently serves exactly that.
+    Greenhouse and Pinpoint appear honest -- greenhouse/appomni and
+    pinpoint/coursedog re-confirm as genuinely empty -- but the guard is applied
+    uniformly because there is no reason to trust that asymmetry to hold.
+
+    Empties are rare, so this costs almost nothing: one extra request, after a
+    pause, only when a board reports zero jobs. Returning False makes the caller
+    treat it as no-board, which is the safe direction: under-claiming a board
+    costs one missed re-check, over-claiming writes a wrong ats/slug onto a
+    company's permanent record and suppresses the manual search that would have
+    found the real one.
+    """
+    time.sleep(max(DELAY, 2.0))
+    again = probe(ats, slug)
+    return again is not None and len(again) == 0
+
+
 def probe(ats: str, slug: str):
     """Return [(title, location)] if the board resolves, else None."""
     if ats == "greenhouse":
@@ -493,8 +521,11 @@ def assess(name, matcher, hard_excluded, known_pairs):
             if not jobs:
                 # Keep looking under other slugs before concluding anything; an
                 # empty board is weak evidence that we found the right company
-                # at all. But hold on to it in case nothing better turns up.
-                empty_hits.append((ats, slug))
+                # at all. But hold on to it in case nothing better turns up --
+                # and only after confirming it is a real empty board rather than
+                # a load artifact (see _confirm_empty).
+                if _confirm_empty(ats, slug):
+                    empty_hits.append((ats, slug))
                 continue
             return {"ats": ats, "slug": slug, "total": len(jobs),
                     "strong": _score_board(jobs, matcher, hard_excluded)}
