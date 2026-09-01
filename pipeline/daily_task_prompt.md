@@ -1433,16 +1433,43 @@ not folded into the daily digest.
    actually had data. Early on, most of the window will be missing (schema only exists from
    2026-08-10 forward) — the report says so explicitly; don't treat that as an error.
 
-   It also prints an **"Unpollable companies"** section (added 2026-08-14, from Aneesh asking
-   for a weekly punch list of companies the automated layer structurally can't reach): a capped
-   batch (`UNPOLLABLE_WEEKLY_CAP` = 20, oldest `rejected_date` first) of
-   `enrollment_candidates.json → rejected` entries tagged `unpollable: true` — meaning no ATS
-   board was ever found for them, as opposed to a board being found and the company rejected
-   for fit/geo/category reasons — that haven't been surfaced in a prior weekly report yet. This
-   runs regardless of whether the channel-stats window has data, so it fires even on an early
-   week. Aneesh reviews the batch by hand (find the real slug/Workday tenant, or let it drop);
-   this is a **standing backlog**, not a trailing-week window, so don't be surprised if the
-   first several weeks each show a full 20-entry batch with "N more carry over."
+   It also prints an **"Unpollable companies with a role worth chasing"** section (added
+   2026-08-14, from Aneesh asking for a weekly punch list of companies the automated layer
+   structurally can't reach): a capped batch (`UNPOLLABLE_WEEKLY_CAP` = 20, oldest
+   `rejected_date` first) of `enrollment_candidates.json → rejected` entries tagged
+   `unpollable: true` — meaning no ATS board was ever found for them, as opposed to a board
+   being found and the company rejected for fit/geo/category reasons — that haven't been
+   surfaced in a prior weekly report yet. This runs regardless of whether the channel-stats
+   window has data, so it fires even on an early week.
+
+   **GATED ON CONFIRMED ROLE SIGNAL as of 2026-08-31 (Aneesh's call), and the gate is the
+   point.** Only entries carrying `manual_review_why` are surfaced: companies where Step 1d-2
+   saw an actual tier1/tier2/tier2c title in Atlanta or remote-US. Ungated, this section handed
+   him 20 companies a week sorted by nothing but rejection date, and a 30-company dry run of
+   that exact population returned **zero enrollable companies** — 23 had no board at all, 3 had
+   boards with no fit-titles, and the batch was dominated by AI-policy nonprofits (GovAI, Pax
+   Sapiens, CivAI) and mega-enterprises (Microsoft, Wabtec, Epiroc) that will never run a
+   supported ATS. It was a standing weekly chore with a measured yield of nothing.
+
+   The premise had also expired. The punch list existed because `harvest_ats.py` could not
+   resolve non-obvious slugs, so a human searching by hand genuinely beat the machine. The three
+   gaps behind that (TLD stripping, legal-form suffixes, dotted slugs) were fixed 2026-08-31 and
+   verified on 18/20 known cases. What still justifies human attention is a company where a REAL
+   MATCHING ROLE was seen and the poller structurally cannot reach it — which is exactly what
+   `manual_review_why` records, and the same principle behind `_unpollable_backlog_companies`.
+
+   The gate cut the list from 189 to **21**, and every survivor names its role (Engagifii's
+   Atlanta Director of Product Support at $93.5–115K, Barracuda's Manager Technical Support in
+   Alpharetta, GitHub's Senior Product Operations Manager at $124–329K remote). Include the full
+   batch in the report; this is the part Aneesh acts on, so don't compress it away.
+
+   Ungated entries are **not deleted**, only unsurfaced: `--all-unpollable` restores the old
+   behaviour for a deliberate one-off sweep. Two known rough edges, both minor and left alone on
+   purpose rather than fixed with brittle text matching: an entry whose `manual_review_why`
+   records that the role was checked and CLEARED still appears (LP Building Solutions, a Nashville
+   hybrid req that fails the location gate), and a company already surfaced once in a daily
+   digest's "Manual channel" section can appear again here, since the two use separate
+   surfaced-flags. Reading the entry explains both.
 3. Create a **separate** Gmail draft (`create_draft`, not `update_draft` on the daily digest),
    **then SEND it with `send_message` passing that `draftId`** — same as Step 5:
    - To: `{{DIGEST_RECIPIENT}}`
