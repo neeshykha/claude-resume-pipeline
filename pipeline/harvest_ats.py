@@ -110,6 +110,52 @@ NON_US_CODES = frozenset((
 ))
 
 
+_LEADING_STOPWORDS = {"the", "a", "an"}
+
+
+def _first_word(text: str) -> str:
+    """First meaningful word, skipping a leading article.
+
+    "The Scion Group" must not reduce to "the": that is not a plausible tenant
+    and probing it costs a full site-name walk against whatever tenant happens
+    to answer to it.
+    """
+    words = re.sub(r"[^a-z0-9 ]+", " ", text).split()
+    while words and words[0] in _LEADING_STOPWORDS:
+        words = words[1:]
+    return words[0] if words else ""
+
+
+def workday_slug_candidates(name: str):
+    """The few tenant-plausible slugs worth spending a Workday probe on.
+
+    Added 2026-08-31. Kept separate from slug_variants() because the two answer
+    different questions: that one asks "what might this company's board be called
+    on any ATS", which is worth being generous about since a wrong guess costs one
+    cheap 404. This one asks "what might the Workday TENANT be", where a wrong
+    guess costs up to ~12s because probe_workday walks 15 site names per tenant.
+
+    Workday tenants are plain company names or short abbreviations. They are never
+    the Rippling `-careers` suffixes, never dotted, never brand-suffixed
+    (`gongio`, `ironcladhq`), and case is irrelevant to the CXS endpoint.
+    """
+    n = re.sub(r"[''`]", "", name.strip().lower())
+    detld = re.sub(r"\.(io|com|ai|co|dev|so|app|net|org|xyz)$", "", n)
+    forms = [
+        re.sub(r"[^a-z0-9]+", "", n),                                  # thesciongroup
+        re.sub(r"[^a-z0-9]+", "", detld),                              # honeycomb
+        re.sub(r"(inc|llc|ltd|corp|co|company|labs|technologies|technology)$",
+               "", re.sub(r"[^a-z0-9]+", "", detld)),                  # legal form dropped
+        _first_word(detld),                                            # motorola, brown
+    ]
+    out, seen = [], set()
+    for f in forms:
+        if f and len(f) > 1 and f not in seen:
+            seen.add(f)
+            out.append(f)
+    return out
+
+
 def slug_variants(name: str):
     """Deterministic slug candidates from a company name, most-likely first.
 
@@ -126,8 +172,38 @@ def slug_variants(name: str):
     nospace = "".join(words)
     hyphen = "-".join(words)
     stripped = re.sub(r"(inc|llc|ltd|corp|co|company|labs|technologies|technology)$", "", base)
-    cands = [base, nospace, hyphen, stripped, base + "io", base + "hq",
-             base + "inc", base + "industries", base + "ai",
+
+    # TLD STRIPPING (added 2026-08-31). A company whose NAME is a domain slugs to
+    # the bare name far more often than to name-plus-TLD: Honeycomb.io is
+    # `honeycomb`, Owner.com is `owner`. This function already knew the inverse
+    # (it appends "io" to catch Gong's `gongio`) but never removed one, so both
+    # of those were reported unresolved on 2026-08-04 and sat in the unpollable
+    # backlog for four weeks with live boards the whole time.
+    detld_name = re.sub(r"\.(io|com|ai|co|dev|so|app|net|org|xyz)$", "", n)
+    detld = re.sub(r"[^a-z0-9]+", "", detld_name)
+    detld_hyphen = "-".join(re.sub(r"[^a-z0-9 ]+", " ", detld_name).split())
+
+    # PUNCTUATION-PRESERVING (added 2026-08-31). Ashby board names may keep a dot:
+    # Ambient.ai's board really is `ambient.ai`, not `ambientai`. Every other
+    # candidate here is punctuation-stripped by construction, so that board was
+    # unreachable no matter how many suffixes were tried.
+    dotted = re.sub(r"[^a-z0-9.]+", "", n)
+
+    cands = [base, nospace, hyphen, stripped, detld, detld_hyphen, dotted,
+             base + "io", base + "hq",
+             # Legal-form suffixes are STRIPPED above but were never ADDED, which
+             # is a different miss: The Scion Group's board is `thesciongroupllc`
+             # and Advisor360's is `advisor360-llc`. Advisor360's own rejection
+             # note has said "the auto-guesser missed the '-llc' slug suffix"
+             # since 2026-08-15; it was diagnosed and never fixed until now.
+             base + "inc", base + "llc", hyphen + "-llc", hyphen + "-inc",
+             base + "industries", base + "ai",
+             # Dotted-TLD APPENDING, the inverse of the stripping above (added
+             # 2026-08-31). A queue lead named plainly "Ambient" has to reach a
+             # board named `ambient.ai`; `base + "ai"` yields `ambientai` and
+             # misses it. Common for AI-native companies whose brand IS the
+             # domain, and the queue often carries the bare name.
+             base + ".ai", base + ".io", base + ".com",
              # Rippling-hosted boards commonly append one of these to the bare
              # name rather than using it plain (seen live 2026-08-12:
              # routeware-careers, gaiias-open-positions, nerdio-careers,
@@ -145,7 +221,7 @@ def slug_variants(name: str):
     # Same harmless-no-op property as the Rippling suffixes above: a wrong-case
     # candidate just 404s on the case-insensitive ATSes.
     cased = []
-    for c in (base, nospace, hyphen, stripped):
+    for c in (base, nospace, hyphen, stripped, detld, dotted):
         if c:
             cased.append(c[:1].upper() + c[1:])          # Lime, Tripactions
     if words:
@@ -392,6 +468,21 @@ def _score_board(jobs, matcher, hard_excluded):
 
 def assess(name, matcher, hard_excluded, known_pairs):
     """Resolve a company to (ats, slug, strong_hits, total_jobs) or a reason."""
+    # Boards that resolved but returned zero jobs. Remembered rather than
+    # discarded (added 2026-08-31): continuing to look is right, but FORGETTING
+    # was a reporting bug. Before this, a company whose only hit was an empty
+    # board fell through to `return None` and was written up as "No board
+    # resolved from deterministic name-variant slugs ... worth one manual
+    # site:myworkdayjobs.com search", tagged unpollable=True. That is false on
+    # both counts: the board was found, and no search can help.
+    #
+    # AppOmni is the case. greenhouse/appomni resolves and returns 0 jobs; it was
+    # rejected 2026-08-04 as no-board, which put it on the weekly unpollable
+    # punch list and cost a manual search on 2026-08-31 that could never have
+    # paid off. "Board found, currently empty" and "no board exists" need
+    # different reasons because they need different actions: the first is one
+    # cheap API re-check, the second is human research.
+    empty_hits = []
     for slug in slug_variants(name):
         for ats in ("greenhouse", "ashby", "lever", "workable", "pinpoint", "rippling"):
             if (ats, slug) in known_pairs:
@@ -400,9 +491,10 @@ def assess(name, matcher, hard_excluded, known_pairs):
             if jobs is None:
                 continue
             if not jobs:
-                # Board resolves but is empty. Keep looking under other slugs
-                # before concluding anything; an empty board is weak evidence
-                # that we found the right company at all.
+                # Keep looking under other slugs before concluding anything; an
+                # empty board is weak evidence that we found the right company
+                # at all. But hold on to it in case nothing better turns up.
+                empty_hits.append((ats, slug))
                 continue
             return {"ats": ats, "slug": slug, "total": len(jobs),
                     "strong": _score_board(jobs, matcher, hard_excluded)}
@@ -412,7 +504,23 @@ def assess(name, matcher, hard_excluded, known_pairs):
     # to 11 site names) and the least likely to hit, so running it first would
     # slow down the common case for no benefit. Added 2026-08-28 -- see
     # probe_workday for why this gap mattered.
-    for slug in slug_variants(name):
+    # BOUND THE WORKDAY SLUG SET (added 2026-08-31, with the slug-variant widening
+    # the same day). Workday is by far the most expensive probe -- it walks 11
+    # common site names plus 4 derived ones per tenant, ~12s worst case -- and
+    # this loop used to run it against EVERY slug variant. Widening the variant
+    # list from 13 to ~23 candidates therefore multiplied the slowest probe and
+    # pushed a 4-company run past 7 minutes, which would have made the daily
+    # 15-company harvest unusable.
+    #
+    # Workday TENANTS are plain-name-shaped by construction (`equifax`, `humana`,
+    # `reputation`, `salesforce`) or a short abbreviation. They are never the
+    # Rippling-style `-careers` / `-open-positions` suffixes, never dotted
+    # (`ambient.ai`), never brand-suffixed (`gongio`, `ironcladhq`), and case does
+    # not matter to the CXS endpoint. So build the tenant-plausible set directly
+    # rather than slicing slug_variants positionally -- a positional slice fills
+    # up with `+io`/`+hq` forms for single-word names, which are pure waste here.
+    wd_slugs = workday_slug_candidates(name)
+    for slug in wd_slugs:
         if ("workday", slug) in known_pairs:
             continue
         jobs, meta = probe_workday(slug)
@@ -422,6 +530,13 @@ def assess(name, matcher, hard_excluded, known_pairs):
                "strong": _score_board(jobs, matcher, hard_excluded)}
         res.update({k: meta[k] for k in ("wd_host", "wd_tenant", "wd_site")})
         return res
+
+    # Nothing had jobs anywhere. If a board DID resolve and was merely empty,
+    # say that instead of claiming no board exists (see empty_hits above).
+    if empty_hits:
+        ats, slug = empty_hits[0]
+        return {"ats": ats, "slug": slug, "total": 0, "strong": [],
+                "empty_board": True, "empty_hits": empty_hits}
     return None
 
 
@@ -466,7 +581,7 @@ def main():
         print("nothing to do: pass --names or --from-pending")
         return 0
 
-    enrollable, no_board, no_fit, skipped = [], [], [], []
+    enrollable, no_board, no_fit, empty_board, skipped = [], [], [], [], []
     for name in targets:
         if name.lower() in known_names and not args.names:
             skipped.append(name)
@@ -475,6 +590,11 @@ def main():
         if res is None:
             no_board.append(name)
             print(f"  [--] {name:24s} no board resolved from name variants")
+            continue
+        if res.get("empty_board"):
+            empty_board.append((name, res))
+            print(f"  [00] {name:24s} {res['ats']}/{res['slug']:20s} "
+                  f"board resolves but returns 0 jobs")
             continue
         if not res["strong"]:
             no_fit.append((name, res))
@@ -496,7 +616,8 @@ def main():
             print("         * tier3 counted only because the role is Atlanta or remote-US")
 
     print(f"\nenrollable={len(enrollable)} no_fit={len(no_fit)} "
-          f"no_board={len(no_board)} already_known_skipped={len(skipped)}")
+          f"empty_board={len(empty_board)} no_board={len(no_board)} "
+          f"already_known_skipped={len(skipped)}")
 
     if not args.apply:
         print("dry run; re-run with --apply to enroll")
@@ -551,6 +672,22 @@ def main():
                         f"does NOT qualify, so this company may still have a Boston or SF "
                         f"CSM open; that is intended."),
              "recheck_if_resurfaced": True})
+    for name, res in empty_board:
+        # NOT unpollable: the board was found. A manual site: search cannot help
+        # here, so this must never reach the weekly unpollable punch list.
+        q.setdefault("rejected", []).append(
+            {"name": name, "ats": res["ats"], "slug": res["slug"],
+             "rejected_date": today,
+             "reason": (f"Board RESOLVED at {res['ats']}/{res['slug']} but returned ZERO "
+                        f"jobs, so there was nothing to score. This is NOT an unpollable "
+                        f"company and a manual site: search will not help: the slug is "
+                        f"known and re-checking costs one API call. Either the board is "
+                        f"between postings or the company has paused hiring. Recheck on "
+                        f"any resurfacing and enroll directly if it has repopulated. "
+                        f"(Slugs that resolved empty: "
+                        f"{', '.join(a + '/' + s for a, s in res.get('empty_hits', []))}.)"),
+             "recheck_if_resurfaced": True,
+             "unpollable": False})
     for name in no_board:
         entry = {"name": name, "ats": None, "slug": None, "rejected_date": today,
                   "reason": ("No board resolved from deterministic name-variant slugs across "
@@ -565,7 +702,8 @@ def main():
                 entry[field] = pending_entry[field]
         q.setdefault("rejected", []).append(entry)
 
-    handled = {n.lower() for n, _ in enrollable} | {n.lower() for n, _ in no_fit} | {n.lower() for n in no_board}
+    handled = ({n.lower() for n, _ in enrollable} | {n.lower() for n, _ in no_fit}
+               | {n.lower() for n, _ in empty_board} | {n.lower() for n in no_board})
     q["pending"] = [e for e in q.get("pending", [])
                     if str(e.get("name", "")).lower() not in handled]
 
@@ -573,7 +711,8 @@ def main():
         tmp = path + ".tmp"
         json.dump(data, open(tmp, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
         os.replace(tmp, path)
-    print(f"\nenrolled {len(enrollable)}, rejected {len(no_fit) + len(no_board)}; "
+    print(f"\nenrolled {len(enrollable)}, "
+          f"rejected {len(no_fit) + len(empty_board) + len(no_board)}; "
           f"watchlist now {len(wl['companies'])}")
     return 0
 
