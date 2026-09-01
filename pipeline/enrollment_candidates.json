@@ -2682,12 +2682,12 @@
     },
     {
       "name": "Trustonic",
-      "ats": "workable",
-      "slug": "trustonic",
+      "ats": null,
+      "slug": null,
       "rejected_date": "2026-08-01",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). No board on Greenhouse, Ashby, Lever, Workday, or Workable; searches surface only same-name confusions (Trustly, Trust Automation, Trustpilot, TrustOne). Device/IoT security, which is a real adjacency to the First Alert and Luma years, so worth a look at trustonic.com/careers by hand. CORRECTED 2026-08-31 by the fixed harvester: Trustonic DOES have a board at workable/trustonic; it currently returns ZERO jobs. WebSearch missed it because the query is swamped by same-name companies. Not unpollable -- recheck costs one API call. This is also evidence that the search fallback is weaker than a direct probe for common-name companies.",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). No board on Greenhouse, Ashby, Lever, Workday, or Workable; searches surface only same-name confusions (Trustly, Trust Automation, Trustpilot, TrustOne). Device/IoT security, which is a real adjacency to the First Alert and Luma years, so worth a look at trustonic.com/careers by hand. RETRACTION 2026-08-31: a same-day harvest run reported workable/trustonic as a resolved-but-empty board and that was recorded here. It was WRONG. Re-probed slowly and in isolation, workable/trustonic returns 404. Workable returns spurious HTTP 200 with an empty jobs array under burst load, which _get() cannot distinguish from a real empty board. Trustonic remains genuinely unpollable. See harvest_ats.py _confirm_empty for the guard added as a result.",
       "recheck_if_resurfaced": true,
-      "unpollable": false,
+      "unpollable": true,
       "weekly_report_surfaced": true,
       "weekly_report_surfaced_date": "2026-08-31",
       "manual_search_done": "2026-08-31"
