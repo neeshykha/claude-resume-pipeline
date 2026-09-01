@@ -1153,6 +1153,39 @@ Mechanics; hard cap of 2 JD reads per run for this lane:
 
 ## Step 4: Tailor resumes and cover letters
 
+### 4-pre. ALREADY-APPLIED GUARD (mandatory, before writing a single line of any resume)
+
+**For every role about to be tailored, grep `outcomes.csv` for its URL and for its company:**
+
+```bash
+grep -i "<company>" pipeline/outcomes.csv
+```
+
+If a row exists with the same URL, or the same company plus a title that means the same
+requisition, **STOP. Do not tailor it.** Report it as already-handled and say what stage
+that row is in. Re-applying to a requisition Aneesh already applied to is worse than
+surfacing nothing.
+
+**`seen_jobs.json` IS NOT THIS CHECK, and using it as one is how this rule got written**
+(2026-09-01). Mid-run I found n8n's "Technical Account Manager (US)" live on a watchlist
+board, grepped `seen_jobs.json`, got **zero** n8n keys, and concluded the pipeline had never
+seen the role. I re-derived its score from scratch (108, which happened to match exactly),
+declared it the pick of the run, and had written most of the tailored resume when Aneesh said
+he thought he had already applied. He had. `outcomes.csv` carried
+`2026-08-26, n8n, Technical Account Manager (US), <the same Ashby URL>, 108, applied` the
+whole time, and the rejection had landed that morning.
+
+The two files answer different questions and only one of them is about applications:
+
+| File | Contains | Misses |
+|---|---|---|
+| `seen_jobs.json` | roles the POLLER shortlisted | every user-surfaced, referral, or recruiter-sourced role |
+| `outcomes.csv` | every role ever tailored, from any channel | nothing |
+
+n8n arrived through a LinkedIn recruiter message, not the poll, so it was correctly absent
+from `seen_jobs.json`. A partial index that returns a clean zero reads exactly like a real
+zero. Check the file that tracks applications.
+
 Follow the CLAUDE.md tailoring workflow for each top job (JD analysis → top-15 phrases →
 ATS optimization → tailor → verify). Per job:
 
