@@ -217,13 +217,33 @@ continue. If not:
 .venv/bin/python pipeline/poll_ats.py
 ```
 
-Then read the output. It contains: top-25 `matched` (pre-scored, deduped, diversity-capped
+Then read the output. It contains: top-40 `matched` (pre-scored, deduped, diversity-capped
 at 2/company, and **balanced**: ≥10 slots each reserved for sub-500 companies and for
-larger/unknown-size companies, remainder by score), up to 20 `borderline` titles for
-semantic review, `function_mismatch` (see below), `reseen_keys`, `errors`, `stats`, and
-`capped_companies`. Entries flagged `new_req_of_applied_title: true` are
-reposts of a title Aneesh already applied to under a new requisition — treat as new but
+larger/unknown-size companies, remainder by score), `near_window` (see below), up to 20
+`borderline` titles for semantic review, `function_mismatch` (see below), `reseen_keys`,
+`errors`, `stats`, and `capped_companies`. Entries flagged `new_req_of_applied_title: true`
+are reposts of a title Aneesh already applied to under a new requisition — treat as new but
 mention the prior application in the digest.
+
+**TIER1-COMPLETE GUARANTEE (added 2026-09-01, Aneesh's pick):** `matched` can now exceed 40.
+Every `tier1_true_match` that passes the gates surfaces regardless of rank, tagged
+`tier1_guarantee_over_rank_cutoff` in `provenance` and counted in `stats.tier1_guaranteed`
+(~5-10/day; the 2-per-company cap still bounds it). These are FULL shortlist members: score
+them like any other entry. Rationale: the 2026-09-01 diagnosis showed ~170 gate-passing jobs
+above the cutoff with only 40 shown, and Pinterest's tier1 "Manager II, Technical Support
+Engineer" sat at rank 51 for 3.5 weeks of LinkedIn alerts without ever surfacing — the same
+class as the point-patched n8n (08-26) and Outreach (08-28) misses. If digest quality drops,
+the provenance tag is what makes THIS change attributable and reversible on its own.
+
+**`near_window` section (added 2026-09-01, Aneesh's pick):** the next ~40 gate-passing jobs
+below the shortlist cutoff, compressed to company/title/location/pre_score/tier/url. These
+exist for visibility parity with Aneesh's LinkedIn alerts, which sample this population with
+no rank window. Render them in the digest as ONE-LINE FYIs with apply links (Step 5) — do
+NOT score, fetch JDs for, or tailor from this section by default. One exception, used
+sparingly: an entry that is obviously exceptional (exact-title match, Atlanta, or a named
+passion domain) may be promoted into normal Step 2 scoring, with the promotion named in the
+digest. Expect sibling duplicates here (same title, different location reqs); they are
+documented and harmless.
 
 **`function_mismatch` section (added 2026-07-19):** title classes with a documented
 poor-function-fit history (Product Manager, TPM, Sales Engineer, Engineering Manager,
@@ -1406,6 +1426,12 @@ re-examines it.
   consistently ignores roles carrying one particular tag, roll THAT change back rather than
   reverting the whole widening.
 - Per-job tailoring diff below the table
+- **"Below the cutoff (ranks 41+)" section (added 2026-09-01):** the poller's `near_window`
+  list as one-liners — `[pre_score] Company: Title | location | link`. Collapse obvious
+  sibling duplicates to one line ("also NYC, SLC"). This section is FYI parity with the
+  LinkedIn alert inbox; no scoring, no tailoring diffs. If an entry was promoted to full
+  scoring under the Step 1a exception, say so where it appears in the main table instead.
+  Report `stats.tier1_guaranteed` alongside the other provenance counts in housekeeping.
 - "Also live (FYI)" lines for same-company extras; near-misses section at the bottom
   (one line each with reason tag, e.g. "scored 74" / "pay $92K midpoint"); omit if none
 - **"Manual channel — no pollable board"** section: companies rejected at Step 1d that carried
