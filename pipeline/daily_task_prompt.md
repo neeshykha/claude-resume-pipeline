@@ -1295,6 +1295,31 @@ Runs **after all tailoring, before the digest**, so fixes land before the PDFs a
 **Cover letters only.** Do not run this on resumes: resume bullets are deliberately terse,
 verb-initial fragments, and the pattern catalog would flag a register that is correct there.
 
+### 0. NEVER EDIT A LETTER THAT HAS ALREADY BEEN SENT
+
+`check_voice.py` resolves each letter to its `outcomes.csv` row and labels it. Act only on
+`surfaced` and `drafted today, not yet tracked`:
+
+| Label | Meaning | Action |
+|---|---|---|
+| `[stage=surfaced]` | drafted, not sent | **edit freely** |
+| `[drafted today, not yet tracked]` | written this run; Step 6 has not run yet | **edit freely** |
+| `[stage=applied]` and every other stage | already went out | **report only, never edit** |
+| `[NO ROW, SENT STATUS UNKNOWN]` | older letter, filename absent from notes | **verify before touching** |
+
+A sent letter is the record of what the employer actually read. Editing it makes the archive
+disagree with what was submitted, and later nobody can tell which version went out: the same
+class of mistake as a tracker column that means two things. Carry the finding into the next
+letter instead. A sent letter never fails the gate, so it cannot block a run.
+
+**This step exists because of a real error on 2026-09-01.** The contraction fix was applied to
+all six letters from 2026-08-28 before anyone checked their status. Four had already been
+submitted: Outreach (the 116, applied), Baseten (applied), Seven AI (applied), and Paylocity,
+which had already come back **rejected**. Only Benchling and Brown & Brown were still editable.
+One `grep` on `outcomes.csv` first would have made that obvious. Note the ordering trap that
+made it easy to miss: this step runs BEFORE Step 6 writes tracking, so "no row" is the normal
+state for the current run's own letters and cannot be used as a proxy for "unsent" on its own.
+
 ### 1. Mechanical gate
 
 ```bash
@@ -1302,8 +1327,9 @@ verb-initial fragments, and the pattern catalog would flag a register that is co
 ```
 
 Three arithmetic checks that do not need judgment: contraction ratio, em-dash count against
-the CLAUDE.md cap of 2, and the share of sentences in the 15-25 word band. Exit code 1 on any
-failure. Fix what it reports.
+the CLAUDE.md cap of 2, and the share of sentences in the 15-25 word band. Every line also
+carries the stage label from item 0. Exit code 1 on any actionable failure; already-sent
+letters report their findings without failing. Fix what it reports **on editable letters only**.
 
 **The contraction check is the one that earned this step.** On 2026-09-01 the avoid-ai-writing
 skill audited the Brown & Brown letter and found 0 contractions against 13 expansions, against
@@ -1316,7 +1342,8 @@ of output. The tell is the aggregate, and only counting finds it.
 
 Invoke the **`avoid-ai-writing`** skill in **detect mode** on each letter written this run. It
 defaults to Aneesh's voice profile. Read its output and apply the clear problems; leave the
-judgment calls unless one is obviously right.
+judgment calls unless one is obviously right. **The item 0 stage gate binds here too**: audit
+a sent letter if it is useful, but the output is a lesson for the next letter, not an edit.
 
 **Protected — never "fix" these**, they are the voice and the skill's own profile carves them
 out: the opening line (the anti-template log in Step 4 item 5 governs it, not this step), the
