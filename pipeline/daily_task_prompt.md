@@ -1323,8 +1323,16 @@ markdown and JSON are working files and belong with the rest of the archive; onl
 PDFs Aneesh actually uploads go in the folder his upload dialog opens on. Step 0 item 5
 rotates that folder; nothing here needs to clean it up.
 
-1. Tailored resume markdown → `tailored/Aneesh_Khan_[Company]_[Role].md`
-2. Resume JSON → `tailored/..._data.json` (schema: `pipeline/pdf_helpers.py` docstring)
+1. Resume JSON → `tailored/Aneesh_Khan_[Company]_[Role]_data.json` (schema:
+   `pipeline/pdf_helpers.py` docstring). **This is the single source of truth for the
+   resume as of 2026-09-02. Do not also write a `.md` twin.** Until then every resume was
+   authored twice (markdown for the coverage check, JSON for the PDF) and every coverage fix
+   was applied twice: Cresta on 2026-09-02 took 4 fixes as 8 edits, and the two copies had
+   already drifted apart on the same phrase list (the JSON that rendered the PDF scored
+   11/15 where the markdown scored 14/15). The check now reads the JSON, so what is
+   measured is what ships. Write a markdown copy only if Aneesh asks for one.
+2. (retired 2026-09-02; see item 1. Older tailored versions keep their `.md` files and
+   `check_coverage.py` still reads those.)
 3. `.venv/bin/python pipeline/render_pdf.py resume <data.json> tailored/apply_now/<name>.pdf`
 
    **Also render an ATS variant for high-effort ATSes (added 2026-08-28):**
@@ -1348,11 +1356,13 @@ rotates that folder; nothing here needs to clean it up.
    improves Workday's field MAPPING enough to reduce retyping is still unproven; only running
    it through a real Workday autofill settles that. Don't claim more than the contact-block
    result until someone has.`
-4. **Coverage check:** write the JD's top-15 phrases to
+4. **Coverage check, against the JSON:** write the JD's top-15 phrases to
    `tailored/Aneesh_Khan_[Company]_[Role]_phrases.json`, then
-   `.venv/bin/python pipeline/check_coverage.py <resume.md> <phrases.json>`
-   Target ≥80% (12/15). Below that: apply the second-pass rule (CLAUDE.md Step 6), revise,
-   re-run. Never fabricate to close a gap — flag genuine gaps honestly.
+   `.venv/bin/python pipeline/check_coverage.py <data.json> <phrases.json>`
+   (it flattens summary, competencies, titles, bullets, education, skills, and community,
+   with the renderer's markup stripped). Target ≥80% (12/15). Below that: apply the
+   second-pass rule (CLAUDE.md Step 6), edit the JSON, re-run, re-render. One file, one
+   edit per fix. Never fabricate to close a gap — flag genuine gaps honestly.
 5. Cover letter (full-tailoring tier only) → `_cover.md` + `_cover_data.json` +
    `.venv/bin/python pipeline/render_pdf.py cover <cover_data.json> tailored/apply_now/<name>_cover.pdf`
    - Apply ALL voice rules from CLAUDE.md Step 8 (opener, structure variety, banned
