@@ -494,8 +494,10 @@ def _score_board(jobs, matcher, hard_excluded):
     return strong
 
 
-def assess(name, matcher, hard_excluded, known_pairs):
-    """Resolve a company to (ats, slug, strong_hits, total_jobs) or a reason."""
+def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False):
+    """Resolve a company to (ats, slug, strong_hits, total_jobs) or a reason.
+
+    skip_workday=True stops at the six cheap ATSes. See --skip-workday in main()."""
     # Boards that resolved but returned zero jobs. Remembered rather than
     # discarded (added 2026-08-31): continuing to look is right, but FORGETTING
     # was a reporting bug. Before this, a company whose only hit was an empty
@@ -550,7 +552,18 @@ def assess(name, matcher, hard_excluded, known_pairs):
     # not matter to the CXS endpoint. So build the tenant-plausible set directly
     # rather than slicing slug_variants positionally -- a positional slice fills
     # up with `+io`/`+hq` forms for single-word names, which are pure waste here.
-    wd_slugs = workday_slug_candidates(name)
+    # SKIP ENTIRELY on request (added 2026-09-02). The bound above is per slug;
+    # it does not bound the batch. On 2026-09-02 a 16-company --from-pending run
+    # that included several large enterprises with live Workday tenants (Palo
+    # Alto Networks, RSA Security, Forescout, Worldwide Clinical Trials) was
+    # SIGKILLed at ~10 min and, re-run, was still silent past 40 min. A tenant
+    # that resolves but matches no site name costs the full walk, and five hosts
+    # x ~15 sites x TIMEOUT=20s is the worst case per slug, so a handful of such
+    # names in one batch is enough. --skip-workday lets the cheap six run to
+    # completion so a stuck Workday probe cannot hold the whole queue hostage;
+    # the names it leaves unresolved are reported as no-board in the usual way
+    # and keep their manual site:myworkdayjobs.com fallback.
+    wd_slugs = [] if skip_workday else workday_slug_candidates(name)
     for slug in wd_slugs:
         if ("workday", slug) in known_pairs:
             continue
@@ -583,6 +596,10 @@ def main():
     ap.add_argument("--from-pending", action="store_true")
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--prune", action="store_true")
+    ap.add_argument("--skip-workday", action="store_true",
+                    help="Probe only Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling. "
+                         "Added 2026-09-02 after the Workday walk hung two full runs; "
+                         "see the comment above the Workday loop in assess().")
     args = ap.parse_args()
 
     if args.names_file:
@@ -617,7 +634,8 @@ def main():
         if name.lower() in known_names and not args.names:
             skipped.append(name)
             continue
-        res = assess(name, matcher, P.title_hard_excluded, known_pairs)
+        res = assess(name, matcher, P.title_hard_excluded, known_pairs,
+                     skip_workday=args.skip_workday)
         if res is None:
             no_board.append(name)
             print(f"  [--] {name:24s} no board resolved from name variants")
