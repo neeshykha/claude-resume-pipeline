@@ -1175,16 +1175,26 @@ he thought he had already applied. He had. `outcomes.csv` carried
 `2026-08-26, n8n, Technical Account Manager (US), <the same Ashby URL>, 108, applied` the
 whole time, and the rejection had landed that morning.
 
-The two files answer different questions and only one of them is about applications:
+**CORRECTED SAME DAY, after a full trace: the "zero n8n keys" result was itself a bug in the
+check, and the first version of this section wrote the wrong root cause into the spec.**
+`seen_jobs.json` is NOT a flat dict: the top level is `{schema_version, description, jobs}`
+and every entry lives under `jobs`. Iterating top-level keys returns three metadata keys and
+a clean, plausible zero for any company. The n8n key (`n8n::technical-account-manager-us`)
+was present under `jobs` the entire time — written by `update_tracking.py` when the role was
+tailored on 08-26 — and the poller had been correctly deduping it as `reseen` on every run
+since. There was no poller miss and no coverage gap; there was a mis-shaped query trusted
+because its zero looked clean. The original version of this section claimed "n8n arrived
+through a recruiter message, not the poll, so it was correctly absent from seen_jobs" —
+plausible, load-bearing, and false, which is precisely the failure mode documented for the
+`jobalerts-noreply@` rule in Step 1d-2.
 
-| File | Contains | Misses |
-|---|---|---|
-| `seen_jobs.json` | roles the POLLER shortlisted | every user-surfaced, referral, or recruiter-sourced role |
-| `outcomes.csv` | every role ever tailored, from any channel | nothing |
-
-n8n arrived through a LinkedIn recruiter message, not the poll, so it was correctly absent
-from `seen_jobs.json`. A partial index that returns a clean zero reads exactly like a real
-zero. Check the file that tracks applications.
+Both lessons stand, and they compose:
+1. **The applied-check belongs to `outcomes.csv`**, which records every tailored role from
+   every channel. `seen_jobs.json` exists for the poller's dedup, whatever its exact contents.
+2. **Any query of `seen_jobs.json` must read the `jobs` sub-key.** A top-level grep returns a
+   false zero for every company. When a check of a tracking file produces a surprising
+   clean zero, verify the file's SHAPE (`grep` the raw file for the literal key) before
+   building any conclusion on it.
 
 Follow the CLAUDE.md tailoring workflow for each top job (JD analysis → top-15 phrases →
 ATS optimization → tailor → verify). Per job:

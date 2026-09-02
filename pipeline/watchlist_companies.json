@@ -558,8 +558,11 @@
         "Director of Support Operations",
         "Customer Support Manager",
         "Product Support Manager",
-        "CS Operations Manager"
-      ]
+        "CS Operations Manager",
+        "Support Operations Lead"
+      ],
+      "_notes": "",
+      "_lead_variant_note": "'Support Operations Lead' added 2026-09-01 after Cursor's 'Support Operations Systems Lead' (tier1-substance role, remote, later tailored at 115 priority tier) matched NO tier at all: every configured title used Manager/Head/Director word-forms, so the entire Lead family was invisible to the matcher. Stemmed-window matching means this one entry also covers 'Support Operations Systems Lead' and 'Support Operations Team Lead'. 'Support Systems Lead' added to tier2c the same day for the same reason."
     },
     "tier2_strong_overlap": {
       "title_match_score": 22,
@@ -740,7 +743,8 @@
         "Business Applications Manager",
         "Enterprise Applications Manager",
         "IT Applications Manager",
-        "Applications Administrator"
+        "Applications Administrator",
+        "Support Systems Lead"
       ]
     }
   },

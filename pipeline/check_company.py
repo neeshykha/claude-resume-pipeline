@@ -29,9 +29,43 @@ def norm(s: str) -> str:
     return "".join(c for c in (s or "").lower() if c.isalnum())
 
 
+# Corporate boilerplate that shouldn't block a match: "Blueprint" should hit
+# "Blueprint Technologies", "Coca-Cola" should hit "The Coca-Cola Company".
+_STOP_TOKENS = {"inc", "llc", "corp", "corporation", "company", "co", "the",
+                "ltd", "group", "technologies", "labs", "software"}
+
+
+def _tokens(s: str) -> frozenset:
+    toks = {t for t in "".join(c if c.isalnum() else " " for c in (s or "").lower()).split()}
+    core = toks - _STOP_TOKENS
+    return frozenset(core or toks)
+
+
 def hit(query: str, candidate: str) -> bool:
+    """Whole-token match, either direction, plus joined-string equality (slugs).
+
+    REWRITTEN 2026-09-01. The original was bidirectional SUBSTRING containment
+    on alnum-collapsed strings, which produced four false "already known" hits
+    in three days -- 'Ada' inside 'r-ADA-i' (Rad AI, 2026-08-31), 'Vanta'
+    inside 'Hitachi VANTAra', 'EY' inside 'harv-EY', 'Meta' inside 'na-META-g'
+    (all 2026-09-01). A false already-known is the one failure mode this tool
+    exists to prevent inverted: it silently discards a genuinely new company.
+    Every one was caught only because a human read the output.
+
+    Token-subset keeps the intended hits (Blueprint / Blueprint Technologies,
+    Coca-Cola / The Coca-Cola Company, Hawk-Eye / Hawk-Eye Innovations) while
+    killing intra-word collisions. Joined equality keeps exact slug matches
+    ('radai' vs 'radai'). Deliberately lost: partial-slug containment like
+    'clutch' vs slug 'withclutch' -- the display NAME still matches in every
+    such case on the current watchlist, checked before shipping.
+    """
     q, c = norm(query), norm(candidate)
-    return bool(q and c) and (q in c or c in q)
+    if not (q and c):
+        return False
+    if q == c:
+        return True
+    qt, ct = _tokens(query), _tokens(candidate)
+    return bool(qt and ct) and (qt <= ct or ct <= qt)
 
 
 # Manual-coverage blocks in watchlist_companies.json. These hold companies the
