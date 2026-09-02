@@ -552,7 +552,10 @@ class Grader:
         if not loc:
             return "unknown"
         has_us = "united states" in loc or re.search(r"\b(usa|u\.s\.|us)\b", loc)
-        non_us = (any(mk in loc for mk in H.NON_US_MARKERS)
+        # Word-boundary match on the long markers, not substring: harvest_ats matches
+        # them as substrings, and on the live 2026-09-02 run "india" fired inside
+        # "Indianapolis, IN" and graded a Salesforce card non-US.
+        non_us = (any(re.search(r"\b" + re.escape(mk) + r"\b", loc) for mk in H.NON_US_MARKERS)
                   or bool(H.NON_US_CODES & set(re.split(r"[^a-z0-9-]+", loc))))
         if non_us and not has_us:
             return "non-us"
@@ -653,13 +656,25 @@ def default_window(today: dt.date) -> tuple[str, str]:
 
 def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict) -> dict:
     job_records = [r for r in records if r["sender"] in JOB_SENDERS]
+    # Threads are counted per thread id (that is what the search returns), but
+    # bodies are kept per MESSAGE: LinkedIn re-sends a saved search into the same
+    # thread hours later with a different card set (live 2026-09-02: thread
+    # 1a060c5c... carried "support operations manager in Atlanta" and then "head of
+    # support in Atlanta"), so keeping one body per thread drops real cards.
     threads = {}
     for r in job_records:
         key = r["thread_id"] or r["source"]
         cur = threads.get(key)
         if cur is None or (r["body"] and not cur["body"]):
             threads[key] = r
-    bodies = [r for r in threads.values() if r["body"].strip()]
+    by_msg: dict[str, dict] = {}
+    for r in job_records:
+        if not r["body"].strip():
+            continue
+        key = r["id"] or (r["thread_id"] + ":" + r["source"])
+        by_msg.setdefault(key, r)
+    bodies = list(by_msg.values())
+    threads_with_body = {(r["thread_id"] or r["source"]) for r in bodies}
 
     cards_by_id: dict[str, dict] = {}
     order: list[str] = []
@@ -734,7 +749,8 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
         "job_alert_threads_seen": len(threads),
         "jobalerts_threads_seen": jobalerts_seen,
         "jobs_noreply_threads_seen": jobs_noreply_seen,
-        "bodies_read": len(bodies),
+        "bodies_read": len(threads_with_body),
+        "messages_read": len(bodies),
         "digest_bodies_opened": sum(1 for r in bodies if r["sender"] == JOB_SENDERS[1]),
         "non_job_threads_skipped": len({(r["thread_id"] or r["source"]) for r in records
                                         if r["sender"] not in JOB_SENDERS}),

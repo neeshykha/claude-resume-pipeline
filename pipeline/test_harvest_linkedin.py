@@ -85,6 +85,23 @@ View job: https://www.linkedin.com/comm/jobs/view/4461000008/{TRK}
 
 {RULE}
 
+Deployment Strategist
+Example Labs
+Indianapolis, IN
+
+This company is actively hiring
+View job: https://www.linkedin.com/comm/jobs/view/4461000009/{TRK}
+
+{RULE}
+
+Mission Control Supervisor
+Example Labs
+Atlanta Metropolitan Area
+Apply with resume & profile
+View job: https://www.linkedin.com/comm/jobs/view/4461000010/{TRK}
+
+{RULE}
+
 See all jobs on LinkedIn: https://www.linkedin.com/comm/jobs/search-results/?x=y
 """
 
@@ -96,6 +113,8 @@ EXPECT = {
     "4461000006": ("none", "atlanta", False),      # Google, no tier; blind-spot company
     "4461000007": ("tier3", "non-us", False),      # Canada -> no review flag
     "4461000008": ("demoted", "remote", False),    # GTM Systems demotion must show
+    "4461000009": ("tier2", "other", False),       # "india" must not fire inside Indianapolis
+    "4461000010": ("none", "atlanta", False),      # "Apply with resume & profile" with no blank line
 }
 DROPPED = {"Swooped", "RemoteHunter"}
 
@@ -104,9 +123,14 @@ def main() -> int:
     fails = 0
     cards = HL.parse_cards(BODY)
     ids = [c["job_id"] for c in cards]
-    if len(cards) != 8:
-        print(f"FAIL parse: expected 8 cards, got {len(cards)}: {ids}")
+    if len(cards) != 10:
+        print(f"FAIL parse: expected 10 cards, got {len(cards)}: {ids}")
         fails += 1
+    for c in cards:
+        if c["job_id"] == "4461000010" and (c["company"] != "Example Labs"
+                                             or c["location"] != "Atlanta Metropolitan Area"):
+            print(f"FAIL parse: apply-hint line shifted the card: {c}")
+            fails += 1
     for c in cards:
         if c["job_id"] == "4461000002" and (c["company"] != "Upwind Security"
                                              or c["extra"] != "3 connections"):
