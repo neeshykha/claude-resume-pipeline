@@ -10,7 +10,8 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 **Token budget:** the run must fit one context window.
 - ATS polling is Python (`poll_ats.py`) — read its small output, never WebFetch boards inline
 - PDFs via `render_pdf.py` + JSON data files — never copy/edit `generate_pdf.py`
-- Coverage checks via `check_coverage.py` — never hand-rolled bash loops
+- Coverage checks via `check_coverage.py` on the `_data.json` — never hand-rolled bash loops
+- LinkedIn alert bodies via `harvest_linkedin.py` (Step 1d-2) — fetch them, never read them
 - Full JDs via `fetch_jd.py` (Step 3) — never WebFetch an Ashby/Workday/Comeet posting, they
   are JS-rendered or templated and return the title only, which costs retries and search budget
 - Tracking updates via `update_tracking.py` — never hand-edit `seen_jobs.json`
@@ -612,6 +613,49 @@ was absent from `searches_run` — while roughly a dozen unprocessed alerts sat 
 had run correctly the day before, so the failure mode is silent omission, not breakage. A logged
 zero is verifiable; an absent section is indistinguishable from a skipped step.
 
+**HOW TO RUN THIS STEP (script-first as of 2026-09-02). The numbered list below it is the
+MANUAL FALLBACK, used only when the script fails, and the fallback is what the history in
+that list is about.**
+
+a. Window, unchanged: `.venv/bin/python pipeline/linkedin_window.py`.
+b. Fetch the bodies through the MCP, and **do not read them.** Run the Step 1d-2 query with
+   `search_messages`, then call `get_message` (`messageFormat: PLAIN_TEXT`) on EVERY thread
+   from `jobalerts-noreply@` or `jobs-noreply@`, newest first. Do not extract, grade, or
+   summarize anything from a result; the only purpose of the call is that the record lands
+   in the session transcript, where the script picks it up. Each call still costs the body's
+   input tokens (the part only a Gmail API credential could remove, which does not exist
+   yet); it no longer costs reasoning or output tokens, and it must not: a model that reads
+   the body "just to check" has paid the full price the script exists to avoid.
+c. Grade, dedupe, and queue:
+
+   ```bash
+   .venv/bin/python pipeline/harvest_linkedin.py --from-transcripts
+   ```
+
+   Read its stdout (the card block and the UNKNOWN list are short), then re-run with
+   `--apply` to append the UNKNOWN companies to `pending`. `--apply` is the only write to
+   a tracked file; it caps at 15 (flagged cards first, then order of appearance), carries
+   `manual_review` / `manual_review_why` per item 2, and runs `validate_config.py` after.
+   The dry run is idempotent and only writes `pipeline/jobs/linkedin_cards_[date].json`
+   and the `.txt` digest block.
+d. Record: copy the script's `counters` object into `run_[date].json ->
+   step_1d_2_linkedin_harvest` verbatim; it carries every field required above
+   (`job_alert_threads_seen`, `bodies_read`, `companies_extracted`, `newly_queued`,
+   `cap_deferred`, the legacy pair, the aggregators dropped, the review and blind-spot
+   lists). If it prints `SHORTFALL`, name the shortfall in the digest.
+e. Digest: the `.txt` block goes in verbatim as its own section, **"LinkedIn alert cards,
+   graded"** (Step 5). Every card, one line, in the script's order. Do not trim it to the
+   good ones; Aneesh asked to see what the alerts contained and how each was scored.
+f. Item 3b below still applies by hand: the script lists the qualifying cards under
+   `blind_spot_qualifying`; you decide which of them (max 3) get a verification search.
+
+**Fallback trigger:** a traceback, or `job_alert_threads_seen: 0` while the search returned
+job-alert threads (that means the records did not reach the transcript the script scans;
+`--transcript-dir` overrides the derived path). Then run the numbered list by hand and say
+in the run record that the fallback was used. Other inputs the script accepts:
+`--input-dir <dir>` for saved records / `.eml` exports / bare bodies, and `--gmail` for the
+credential-backed path that is written but unverified and cannot run until a token exists.
+
 1. Search Gmail for `deliveredto:{{CONFIRM_ALIAS}} from:linkedin.com newer_than:1d`.
    Zero results is normal and not an error.
 
@@ -698,24 +742,30 @@ zero is verifiable; an absent section is indistinguishable from a skipped step.
    `bodies_read` vs `job_alert_threads_seen` in `run_[date].json` so the shortfall is visible
    instead of silent. Never go back to reading subjects only.
 
-   **BUILD TARGET (2026-09-02 retro, Aneesh's call): bodies should be read by a script, and
-   every card should be GRADED, not just harvested for a company name.** The 2026-09-02 run
-   read 13 of 29 bodies at ~8k tokens each, ~100k tokens for one real find (Cloudbeds), and
-   ~80% of every body is tracking URLs. The cards have a fixed shape (`title / company /
-   location` blocks split by a `---------` rule), so a Gmail-API extractor can emit
-   `company, title, location, title_tier, location_verdict` per card at zero context cost and
-   cover all 29 threads instead of 13. Two outputs it must produce: (1) the deduped UNKNOWN
-   company list this step already needs, and (2) a **graded card list** rendered in the digest
-   one line per card, e.g. `[tier1 | Atlanta] Cloudbeds: Director of Customer Support`, so
+   **BUILT 2026-09-02 (from the retro, Aneesh's call): `pipeline/harvest_linkedin.py` reads
+   the bodies and GRADES every card.** The manual body-read rule in this list is now the
+   fallback; the routine is in "How to run this step" above the list. Why it was built: the
+   2026-09-02 run read 13 of 29 bodies at ~8k tokens each, ~100k tokens for one real find
+   (Cloudbeds), and ~80% of every body is tracking URLs. The cards have a fixed shape
+   (`title / company / location` blocks split by a `---------` rule), so a script emits
+   `company, title, location, title_tier, location_verdict` per card and covers every thread
+   instead of 13. It produces both outputs the step needs: the deduped UNKNOWN company list,
+   and a **graded card list** rendered in the digest one line per card, e.g.
+   `[tier1 | Atlanta] Cloudbeds: Director of Customer Support | 4461060231 | watchlist`, so
    Aneesh can see what the alerts contained and how each was scored. His observation
    prompting this: the roles inside the alerts read better than what the pipeline exports
    from them, and the company-only design discards the role signal that `manual_review`
-   only partially recovers. Until the extractor exists, the manual body-read rule above
-   stands.
+   only partially recovers. **What the script did NOT remove:** the body still passes
+   through context once, because the script cannot call the claude.ai Gmail connector and
+   no Gmail API credential exists on the machine (docstring has the details). Re-running it
+   on the 2026-09-02 transcript recovered all 14 bodies that run had opened, 64 cards, 43
+   companies; the by-hand pass had logged three flagged roles from the same bodies.
 
    **Aggregators appear far more often in bodies than in subjects** (Swooped, Hired,
    RemoteHunter, Jobot, Dice, ZipRecruiter, Talentify, Lensa). Drop them at extraction per 2b
-   below; they are reposters, not employers.
+   below; they are reposters, not employers. The list lives in `watchlist_companies.json ->
+   _poller_config.linkedin_aggregator_blocklist` as of 2026-09-02; the script reads it and
+   the fallback should too. Add a name there, not here.
 
    Proven on 2026-08-21, when Aneesh asked directly whether the pipeline was seeing what he saw
    in these emails. It was not. One digest subject-lined "Skydio" contained Skydio, Precisely,
@@ -1507,6 +1557,14 @@ re-examines it.
   LinkedIn alert inbox; no scoring, no tailoring diffs. If an entry was promoted to full
   scoring under the Step 1a exception, say so where it appears in the main table instead.
   Report `stats.tier1_guaranteed` alongside the other provenance counts in housekeeping.
+- **"LinkedIn alert cards, graded"** section (added 2026-09-02): the `.txt` block written by
+  `harvest_linkedin.py` at Step 1d-2, verbatim, one line per card in the script's order:
+  `[tier | location] Company: Title | linkedin job id | status  (flags)`. Status is `new` or
+  the surface the company already sits on (watchlist, pending, rejected, blind_spot);
+  flags are `review`, a seniority term, or `loose:tierN`. FYI parity with the alert inbox,
+  same as the section above; nothing here is scored or tailored, and a tier1 line at a
+  `rejected` company is information, not a pick. Include the section even when it is long.
+  Omit it only when zero cards parsed, and then say why.
 - "Also live (FYI)" lines for same-company extras; near-misses section at the bottom
   (one line each with reason tag, e.g. "scored 74" / "pay $92K midpoint"); omit if none
 - **"Manual channel — no pollable board"** section: companies rejected at Step 1d that carried

@@ -64,8 +64,9 @@ def prior_run_dates(today: dt.date) -> list[dt.date]:
     return sorted(out, reverse=True)
 
 
-def main() -> int:
-    today = dt.date.today()
+def compute_window(today: dt.date) -> dict:
+    """The window as data: {window, last, gap, note}. harvest_linkedin.py imports this
+    so the script and the printed instruction can never disagree about the window."""
     prior = prior_run_dates(today)
 
     if not prior:
@@ -90,6 +91,13 @@ def main() -> int:
                     "for: a 1d window here would drop Friday through Sunday.")
         else:
             note = "normal weekday gap."
+    return {"window": window, "last": last, "gap": gap, "note": note}
+
+
+def main() -> int:
+    today = dt.date.today()
+    w = compute_window(today)
+    window, last, gap, note = w["window"], w["last"], w["gap"], w["note"]
 
     print(f"today          : {today.isoformat()} ({today.strftime('%A')})")
     print(f"last run       : {last.isoformat() + ' (' + last.strftime('%A') + ')' if last else 'none found'}")

@@ -75,3 +75,9 @@ pipeline/_*.py
 # Personal application field values (home address, exact employment months).
 # Same reasoning as local_config.json: this repo is public.
 pipeline/application_profile.json
+
+# Gmail API credential + token for harvest_linkedin.py --gmail, IF that path is ever
+# set up (it is not, as of 2026-09-02; see the script's docstring). Listed now so the
+# first attempt cannot commit a token by accident.
+pipeline/gmail_token.json
+pipeline/gmail_credentials.json
