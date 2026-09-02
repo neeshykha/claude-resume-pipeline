@@ -170,7 +170,12 @@ Worked example (Framer, Engineering Support Lead, 2026-08-20): "I'd rather close
 **Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific. (3) Check the opener log for structural repetition.
 
 **Mechanical voice gate (added 2026-09-01):** run
-`.venv/bin/python pipeline/check_voice.py <cover.md>` before rendering. It checks the
+`.venv/bin/python pipeline/check_voice.py --drafted-now <cover.md>` before rendering.
+**Never edit a letter that has already been sent** — the file is the record of what the
+employer read, and editing it makes the archive disagree with the submission. The script
+labels each letter's stage. Note `surfaced` does NOT mean unsent: it means no confirmation
+was matched, and CodePath and Cursor both read `surfaced` on 2026-09-01 while already sent.
+Only `--drafted-now` (letters the current run authored) is safe to edit without asking. It checks the
 contraction ratio, the em-dash cap, and sentence-length uniformity, and exits 1 on failure.
 **Contractions are the one that keeps slipping.** Aneesh's own letters run 5–15 contractions
 with zero expanded forms; every letter written on 2026-08-28 inverted that, Brown & Brown

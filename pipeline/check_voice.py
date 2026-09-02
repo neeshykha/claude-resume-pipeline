@@ -88,7 +88,7 @@ def sentences(text):
     return [p for p in parts if len(p.split()) > 2]
 
 
-def check(path):
+def check(path, drafted_now=False):
     text = open(path, encoding="utf-8").read()
     name = os.path.basename(path)
     contractions = CONTRACTION.findall(text)
@@ -126,27 +126,40 @@ def check(path):
     stage = stage_of(path)
     sent = stage in SENT_STAGES
 
+    # `surfaced` DOES NOT MEAN UNSENT. It means no confirmation has been matched,
+    # and confirmations arrive only through the Gmail +jobs forwarding filter,
+    # which has documented capture gaps (the 2026-08-27 Datadog invitation came
+    # from a personal recruiter domain and missed all three filters) and a lag of
+    # hours to days besides. Proven 2026-09-01: CodePath and Cursor both read
+    # `surfaced` and Aneesh had already sent both.
+    #
+    # A file-mtime heuristic was tried first and is also wrong. Several runs
+    # happen per day now, so "modified today" caught letters an earlier run wrote
+    # and Aneesh sent hours later: Cursor was written 08:59 and sent before this
+    # check existed. Only the caller knows which letters IT just authored, so
+    # that assertion is passed in rather than guessed. Step 4.5 passes explicit
+    # paths with --drafted-now; a bare --today run is a REPORT and greenlights
+    # nothing.
+    editable = drafted_now and not sent
+
     if sent:
         status = "sent"
+    elif not editable:
+        status = "ASK "
     elif problems:
         status = "FAIL"
     else:
         status = "ok  "
-    # "No row" is genuinely ambiguous, and the two cases want opposite handling.
-    # Step 4.5 runs BEFORE Step 6 writes tracking, so a letter drafted in the
-    # current run has no row yet and is by definition unsent and safe to edit.
-    # A letter from an earlier day with no row is unknown: it may have been sent
-    # and simply not carry its filename in the notes column. Split on mtime.
-    if stage:
+    # Note "no row" is the NORMAL state for a letter this run just wrote: Step
+    # 4.5 runs before Step 6 writes tracking. It is only alarming on a letter the
+    # run did not author, which is what the --drafted-now assertion separates.
+    if sent:
         stage_note = f"  [stage={stage}]"
+    elif editable:
+        stage_note = f"  [drafted this run{', ' + stage if stage else ''}]"
     else:
-        try:
-            written_today = (datetime.date.fromtimestamp(os.path.getmtime(path))
-                             == datetime.date.today())
-        except OSError:
-            written_today = False
-        stage_note = ("  [drafted today, not yet tracked]" if written_today
-                      else "  [NO ROW, SENT STATUS UNKNOWN - verify before editing]")
+        stage_note = (f"  [stage={stage or 'no row'} "
+                      f"- SENT STATUS UNKNOWN, not written by this run]")
     print(f"[{status}] {name}{stage_note}")
     print(f"         contractions={len(contractions)} expanded={len(expanded)} "
           f"em-dashes={dashes} sentences={len(lengths)} in-band={band_pct:.0f}%")
@@ -155,7 +168,12 @@ def check(path):
     if sent and problems:
         print("         ^ ALREADY SENT. Do not edit: this file is the record of "
               "what the employer read. Carry the finding into the next letter instead.")
-    # A sent letter never fails the gate; nothing actionable remains.
+    elif not editable and problems:
+        print("         ^ ASK ANEESH BEFORE EDITING. 'surfaced' only means no "
+              "confirmation was matched, not that it went unsent.")
+    # A sent letter never fails: nothing is actionable, the text already went out.
+    # Everything else with a problem fails, INCLUDING an ASK row -- asking Aneesh
+    # is itself the required action, and a silent pass would hide it.
     return sent or not problems
 
 
@@ -163,7 +181,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="*")
     ap.add_argument("--today", action="store_true",
-                    help="check every *_cover.md modified today")
+                    help="REPORT on every *_cover.md modified today. Greenlights "
+                         "nothing: use --drafted-now for letters this run wrote.")
+    ap.add_argument("--drafted-now", action="store_true",
+                    help="assert the listed files were authored by the current run, "
+                         "so they cannot have been sent yet and are safe to edit")
     args = ap.parse_args()
 
     paths = list(args.files)
@@ -178,11 +200,14 @@ def main():
 
     # Evaluate every file before reducing: all() over a generator short-circuits
     # on the first failure, which silently skips the rest of the batch.
-    results = [check(p) for p in paths]
+    results = [check(p, drafted_now=args.drafted_now) for p in paths]
     ok = all(results)
     print()
-    print("all clean" if ok else
-          "FIX THE FAILURES ABOVE, then re-render the PDF and the _ATS variant.")
+    if ok:
+        print("all clean")
+    else:
+        print("FIX THE FAILURES ABOVE, then re-render the PDF and the _ATS variant.")
+        print("ASK rows are NOT yours to edit without checking with Aneesh first.")
     return 0 if ok else 1
 
 
