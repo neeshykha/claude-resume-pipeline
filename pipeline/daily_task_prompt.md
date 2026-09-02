@@ -424,7 +424,15 @@ re-run, and was still silent past 40 minutes, leaving 21 entries unresolved unti
 existed. With it, the six cheap ATSes run to completion in minutes; names that need Workday
 are reported as no-board with the usual manual `site:myworkdayjobs.com` fallback, which is the
 same outcome the hung run would have produced for them anyway, minus the hang. Run the
-Workday-inclusive form only on a short, deliberate list via `--names`. For each pending name it generates
+Workday-inclusive form only on a short, deliberate list via `--names`.
+
+The flag is a workaround, not the fix. **Fix target (2026-09-02 retro):** a per-company
+wall-clock cap inside `assess()` so no single name can exceed, say, 60s across all probes, and
+unbuffered per-company progress lines (`flush=True`) so a run is never silent. The 2026-09-02
+hang cost more than its 50 minutes: while the script held the two config files, every other
+write in the run (blind-spot write-back, dork queueing, the Cloudbeds enrollment) had to wait
+or become a one-off script, and the Step 1c-3 monthly sweep was deferred out of the scheduled
+pass entirely. For each pending name it generates
 deterministic slug variants, probes Greenhouse/Ashby/Lever/Workable directly, and scores the
 resulting board with the **same `TitleMatcher` the poller uses**, so a company is judged on real
 US-reachable fit-titles rather than keyword guessing.
@@ -689,6 +697,21 @@ zero is verifiable; an absent section is indistinguishable from a skipped step.
    If the run cannot afford every body, read them **newest first**, and record
    `bodies_read` vs `job_alert_threads_seen` in `run_[date].json` so the shortfall is visible
    instead of silent. Never go back to reading subjects only.
+
+   **BUILD TARGET (2026-09-02 retro, Aneesh's call): bodies should be read by a script, and
+   every card should be GRADED, not just harvested for a company name.** The 2026-09-02 run
+   read 13 of 29 bodies at ~8k tokens each, ~100k tokens for one real find (Cloudbeds), and
+   ~80% of every body is tracking URLs. The cards have a fixed shape (`title / company /
+   location` blocks split by a `---------` rule), so a Gmail-API extractor can emit
+   `company, title, location, title_tier, location_verdict` per card at zero context cost and
+   cover all 29 threads instead of 13. Two outputs it must produce: (1) the deduped UNKNOWN
+   company list this step already needs, and (2) a **graded card list** rendered in the digest
+   one line per card, e.g. `[tier1 | Atlanta] Cloudbeds: Director of Customer Support`, so
+   Aneesh can see what the alerts contained and how each was scored. His observation
+   prompting this: the roles inside the alerts read better than what the pipeline exports
+   from them, and the company-only design discards the role signal that `manual_review`
+   only partially recovers. Until the extractor exists, the manual body-read rule above
+   stands.
 
    **Aggregators appear far more often in bodies than in subjects** (Swooped, Hired,
    RemoteHunter, Jobot, Dice, ZipRecruiter, Talentify, Lensa). Drop them at extraction per 2b
