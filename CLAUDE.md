@@ -82,13 +82,12 @@ Before tailoring, apply these principles based on how modern ATS (Greenhouse, Le
 - **Keep it honest**: Every claim must be backed by actual experience from the master resume
 
 ### 4. Save the Tailored Version
-- Save the tailored markdown to `tailored/Aneesh_Khan_[Company]_[Role].md` (e.g., `tailored/Aneesh_Khan_Datadog_TAM.md`)
+- Save the tailored resume as `tailored/Aneesh_Khan_[Company]_[Role]_data.json` (schema: see `pipeline/pdf_helpers.py` docstring; e.g., `tailored/Aneesh_Khan_Datadog_TAM_data.json`). **The JSON is the single source of truth as of 2026-09-02**: the PDF renders from it and the coverage check reads it. Do not also write a markdown twin; every resume used to be authored twice and every coverage fix applied twice, and the two copies drifted (Cresta, 2026-09-02: 4 fixes as 8 edits, JSON at 11/15 where the markdown read 14/15 on the same phrases). Write a `.md` only if Aneesh asks for one.
 - Use `Aneesh_Khan_` prefix — recruiter inboxes and ATS systems often surface the filename; including the candidate name improves recognition and reduces the chance of misrouted files
 - Use TitleCase for company, short role abbreviation (TAM, CSM, SAM, SE, IC)
 
 ### 5. Generate PDF
-**Preferred (pipeline mode):** Write a JSON data file and use the renderer:
-- Save resume data to `tailored/Aneesh_Khan_[Company]_[Role]_data.json` (schema: see `pipeline/pdf_helpers.py` docstring)
+**Preferred (pipeline mode):** Render the JSON from Step 4:
 - Run: `.venv/bin/python pipeline/render_pdf.py resume tailored/Aneesh_Khan_[Company]_[Role]_data.json tailored/Aneesh_Khan_[Company]_[Role].pdf`
 - This is dramatically cheaper on tokens than writing a full Python script per resume
 
@@ -100,8 +99,8 @@ Before tailoring, apply these principles based on how modern ATS (Greenhouse, Le
 Output PDF to `tailored/Aneesh_Khan_[Company]_[Role].pdf`
 
 ### 6. Verify JD Keyword Coverage
-- Count how many of the JD's top 15 exact phrases (from Step 1) appear as literal substrings (case-insensitive) in the tailored resume
-- **Target: ≥80% (12 of 15).** If below 80%, revise: reorder bullets, swap terminology, or re-surface skills — **without fabricating experience**
+- Write the JD's top 15 exact phrases (from Step 1) to `tailored/Aneesh_Khan_[Company]_[Role]_phrases.json` and run `.venv/bin/python pipeline/check_coverage.py tailored/Aneesh_Khan_[Company]_[Role]_data.json tailored/Aneesh_Khan_[Company]_[Role]_phrases.json`. It reports each phrase as a literal, case-insensitive substring of the resume JSON (summary, competencies, titles, bullets, education, skills, community; renderer markup stripped). It also still accepts a `.md` path for older tailored versions.
+- **Target: ≥80% (12 of 15).** If below 80%, revise the JSON: reorder bullets, swap terminology, or re-surface skills — **without fabricating experience** — then re-run the check and re-render the PDF
 - **Second-pass rule (apply before accepting any missing phrase as a gap):** For each phrase still missing after the first tailoring pass, check whether a real experience in `master_resume.md` justifies that language. Ask: "Is there something Aneesh actually did that this phrase describes?" If yes, work the phrase in — don't leave achievable coverage on the table. Only flag a phrase as a genuine gap if no honest mapping exists.
 - If a JD phrase genuinely cannot be covered because Aneesh doesn't have that experience, flag it in the Step 7 summary as a true gap, don't fake it
 - Log the coverage % and the list of missing phrases in the Step 7 summary
@@ -192,7 +191,7 @@ runs this plus an `avoid-ai-writing` detect pass at Step 4.5.
 - The PDF venv is at `.venv/` — always activate it before running Python scripts
 - If the user asks to adjust a tailored version, edit that version's files, not the master
 - **Never use `python3 -c "..."`** for JSON analysis or file updates — multi-line inline scripts with `#` comments trigger a hardcoded security prompt that no permission entry can bypass. Instead: (a) use `grep` for existence checks on seen_jobs.json, (b) write a named `.py` script to `pipeline/_taskname.py`, run it with `.venv/bin/python pipeline/_taskname.py`, then delete it. The `_*.py` pattern is in the allow-list.
-- **Never use bash arrays or shell control-flow (`arr=(...)`, `${arr[@]}`, inline `for`/`while`/`if` loops) in Bash commands.** The permission engine cannot statically analyze them, so they prompt *every time* regardless of allow-list entries — and hang autonomous runs. This is the same failure class as `python3 -c`. For the JD keyword coverage check (Step 6 / Step 4), use the permanent helper: write the JD's top phrases to a JSON file, then run `.venv/bin/python pipeline/check_coverage.py <resume.md> <phrases.json>` (allow-listed, prints ✓/✗ per phrase + `Coverage: N/M (P%)`). Do not hand-roll coverage checks with `grep` inside a bash `for` loop.
+- **Never use bash arrays or shell control-flow (`arr=(...)`, `${arr[@]}`, inline `for`/`while`/`if` loops) in Bash commands.** The permission engine cannot statically analyze them, so they prompt *every time* regardless of allow-list entries — and hang autonomous runs. This is the same failure class as `python3 -c`. For the JD keyword coverage check (Step 6 / Step 4), use the permanent helper: write the JD's top phrases to a JSON file, then run `.venv/bin/python pipeline/check_coverage.py <resume _data.json> <phrases.json>` (allow-listed, prints ✓/✗ per phrase + `Coverage: N/M (P%)`; a `.md` path still works for older versions). Do not hand-roll coverage checks with `grep` inside a bash `for` loop.
 
 ## Pipeline Routine — Source of Truth
 
