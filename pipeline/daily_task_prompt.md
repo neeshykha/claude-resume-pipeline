@@ -1302,10 +1302,22 @@ verb-initial fragments, and the pattern catalog would flag a register that is co
 
 | Label | Meaning | Action |
 |---|---|---|
-| `[stage=surfaced]` | drafted, not sent | **edit freely** |
-| `[drafted today, not yet tracked]` | written this run; Step 6 has not run yet | **edit freely** |
-| `[stage=applied]` and every other stage | already went out | **report only, never edit** |
-| `[NO ROW, SENT STATUS UNKNOWN]` | older letter, filename absent from notes | **verify before touching** |
+| `[drafted this run]` | you just wrote it, so it cannot have been sent | **edit freely** |
+| `[stage=applied]` and every other sent stage | already went out | **report only, never edit** |
+| `[SENT STATUS UNKNOWN, not written by this run]` | anything else, **`surfaced` included** | **ask Aneesh first** |
+
+**`surfaced` is NOT a green light**, and this is the part that bit twice. It means no
+confirmation was matched, not that the letter went unsent: confirmations arrive only through
+the Gmail `+jobs` filter, which has documented capture gaps (the 2026-08-27 Datadog invitation
+came from a personal recruiter domain and missed all three filters) and lags by hours or days
+regardless. On 2026-09-01 both **CodePath** and **Cursor** read `surfaced` and Aneesh had
+already sent both.
+
+**Pass the run's own letters explicitly with `--drafted-now`.** A file-mtime heuristic was
+tried and is also wrong: several runs happen per day, so "modified today" caught letters an
+earlier run wrote and Aneesh sent hours later. Only the caller knows what it just authored, so
+the script takes that as an assertion rather than guessing. A bare `--today` invocation is a
+REPORT and greenlights nothing.
 
 A sent letter is the record of what the employer actually read. Editing it makes the archive
 disagree with what was submitted, and later nobody can tell which version went out: the same
@@ -1323,8 +1335,10 @@ state for the current run's own letters and cannot be used as a proxy for "unsen
 ### 1. Mechanical gate
 
 ```bash
-.venv/bin/python pipeline/check_voice.py --today
+.venv/bin/python pipeline/check_voice.py --drafted-now tailored/Aneesh_Khan_[Company]_[Role]_cover.md ...
 ```
+List every letter THIS run wrote. Use `--today` only for a read-only sweep; it greenlights
+nothing by design.
 
 Three arithmetic checks that do not need judgment: contraction ratio, em-dash count against
 the CLAUDE.md cap of 2, and the share of sentences in the 15-25 word band. Every line also
