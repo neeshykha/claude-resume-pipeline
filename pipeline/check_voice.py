@@ -27,11 +27,42 @@ Not a style opinion. A letter that reads a register stiffer than the man who
 signs it is a worse letter, and this is the cheapest possible way to catch it.
 """
 import argparse
+import csv
 import datetime
 import glob
 import os
 import re
 import sys
+
+OUTCOMES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outcomes.csv")
+
+# Stages that mean the letter has already gone out. A letter in one of these is
+# a RECORD of what was sent, not a draft.
+SENT_STAGES = {"applied", "rejected", "closed", "expired", "interview",
+               "assessment", "onsite", "offer"}
+
+
+def stage_of(cover_path):
+    """Return the outcomes.csv stage for a cover letter, or None if unmatched.
+
+    Matches the same way rotate_apply_folder.py does: Step 6 notes record the
+    pair as "tailored/X.pdf + _cover.pdf", so a cover is found by stripping
+    _cover and looking for the resume filename.
+    """
+    stem = os.path.basename(cover_path)
+    for suffix in ("_cover.md", "_cover_data.json", "_cover.pdf"):
+        if stem.endswith(suffix):
+            stem = stem[: -len(suffix)]
+            break
+    key = stem + ".pdf"
+    try:
+        with open(OUTCOMES, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                if key in (row.get("notes") or ""):
+                    return (row.get("stage") or "").strip().lower()
+    except OSError:
+        return None
+    return None
 
 CONTRACTION = re.compile(
     r"\b\w+n't\b|\b(?:I'm|I've|I'd|I'll|it's|that's|you're|you've|you'd|"
@@ -85,13 +116,47 @@ def check(path):
             f"({in_band}/{len(lengths)}). Over 60% reads metronomic; break it with a "
             f"short one.")
 
-    status = "FAIL" if problems else "ok  "
-    print(f"[{status}] {name}")
+    # STAGE GATE. A letter whose role has left `surfaced` has already been sent,
+    # and the file is the record of what was sent. Editing it makes the archive
+    # disagree with what the employer read, which is the same class of mistake as
+    # a tracker column that means two things: later, nobody can tell which
+    # version went out. Added 2026-09-01 after the contraction fix was applied to
+    # six letters, four of which had already been submitted (Outreach, Baseten,
+    # and Seven AI applied; Paylocity already rejected). Report, never edit.
+    stage = stage_of(path)
+    sent = stage in SENT_STAGES
+
+    if sent:
+        status = "sent"
+    elif problems:
+        status = "FAIL"
+    else:
+        status = "ok  "
+    # "No row" is genuinely ambiguous, and the two cases want opposite handling.
+    # Step 4.5 runs BEFORE Step 6 writes tracking, so a letter drafted in the
+    # current run has no row yet and is by definition unsent and safe to edit.
+    # A letter from an earlier day with no row is unknown: it may have been sent
+    # and simply not carry its filename in the notes column. Split on mtime.
+    if stage:
+        stage_note = f"  [stage={stage}]"
+    else:
+        try:
+            written_today = (datetime.date.fromtimestamp(os.path.getmtime(path))
+                             == datetime.date.today())
+        except OSError:
+            written_today = False
+        stage_note = ("  [drafted today, not yet tracked]" if written_today
+                      else "  [NO ROW, SENT STATUS UNKNOWN - verify before editing]")
+    print(f"[{status}] {name}{stage_note}")
     print(f"         contractions={len(contractions)} expanded={len(expanded)} "
           f"em-dashes={dashes} sentences={len(lengths)} in-band={band_pct:.0f}%")
     for p in problems:
         print(f"         - {p}")
-    return not problems
+    if sent and problems:
+        print("         ^ ALREADY SENT. Do not edit: this file is the record of "
+              "what the employer read. Carry the finding into the next letter instead.")
+    # A sent letter never fails the gate; nothing actionable remains.
+    return sent or not problems
 
 
 def main():
