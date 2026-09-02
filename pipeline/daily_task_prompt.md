@@ -413,7 +413,18 @@ re-surface regularly too.)
 .venv/bin/python pipeline/harvest_ats.py --from-pending
 ```
 
-Dry-run by default; re-run with `--apply` to enroll. For each pending name it generates
+Dry-run by default; re-run with `--apply` to enroll.
+
+**Add `--skip-workday` whenever the pending queue holds more than a handful of names
+(added 2026-09-02).** The Workday probe walks 5 hosts × ~15 site names at a 20s timeout per
+slug, so a batch containing even a few enterprises whose tenant resolves but matches no site
+name will hang the whole run: on 2026-09-02 a 16-name LinkedIn batch (Palo Alto Networks,
+RSA Security, Forescout, Worldwide Clinical Trials among them) was SIGKILLed at ~10 minutes,
+re-run, and was still silent past 40 minutes, leaving 21 entries unresolved until the flag
+existed. With it, the six cheap ATSes run to completion in minutes; names that need Workday
+are reported as no-board with the usual manual `site:myworkdayjobs.com` fallback, which is the
+same outcome the hung run would have produced for them anyway, minus the hang. Run the
+Workday-inclusive form only on a short, deliberate list via `--names`. For each pending name it generates
 deterministic slug variants, probes Greenhouse/Ashby/Lever/Workable directly, and scores the
 resulting board with the **same `TitleMatcher` the poller uses**, so a company is judged on real
 US-reachable fit-titles rather than keyword guessing.
