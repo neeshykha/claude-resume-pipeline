@@ -51,6 +51,7 @@ MAX_PER_COMPANY_PER_RUN = 2  # diversity cap: max roles per company in the surfa
 # stranded below the line). Costs slightly more tokens per run; the balance
 # quotas below still apply.
 SHORTLIST_SIZE = 40
+NEAR_WINDOW_SIZE = 40  # ranks just below the cutoff, emitted as compressed FYI lines (2026-09-01)
 
 # Populated from watchlist_companies.json by _init_config():
 ATS_ENDPOINTS = {}       # ← _endpoints (workday excluded; fetch_workday builds its URL from wd_* fields)
@@ -1978,6 +1979,29 @@ def poll_all(run_date: date) -> dict:
             continue
         try_take(job, top_matched, taken)
 
+    # Phase 3: TIER1-COMPLETE GUARANTEE (added 2026-09-01, Aneesh's pick).
+    # Every tier1_true_match that survived the gates surfaces, rank be damned.
+    # Diagnosis behind it: a lifted-cap run showed 676 title matches, 170 at or
+    # above the day's cutoff, 40 shown -- and Pinterest's "Manager II,
+    # Technical Support Engineer" (tier1, Remote US, $145-300K) at rank 51,
+    # alerting Aneesh since 08-07 without ever reaching a shortlist. Same class
+    # as the point-patched n8n (08-26, missed cutoff by 3) and Outreach (08-28,
+    # by 4) misses; MIN_TIER1_SLOTS only protects tier1 at the TOP of the list.
+    # try_take still applies, so the 2-per-company diversity cap and sibling
+    # collapse hold -- this cannot let one employer flood the shortlist, and
+    # tier1 is ~8% of matches so the overflow is bounded in practice (~5-10
+    # entries). Tagged with provenance so a later quality drop is attributable
+    # to this change specifically, per the 2026-07-27 widening discipline.
+    tier1_guaranteed = 0
+    for job in tier1_pool:
+        if id(job) in taken:
+            continue
+        if try_take(job, top_matched, taken):
+            job.setdefault("provenance", []).append(
+                "tier1_guarantee_over_rank_cutoff")
+            tier1_guaranteed += 1
+    stats["tier1_guaranteed"] = tier1_guaranteed
+
     top_matched.sort(key=lambda j: -j["pre_score"])
 
     # Rank-based provenance: anything past position 25 only exists because
@@ -2036,9 +2060,38 @@ def poll_all(run_date: date) -> dict:
     # list to keep the output file readable on PM-heavy days.
     function_mismatch.sort(key=lambda j: (j["company"], j["title"]))
 
+    # NEAR-WINDOW FYI LIST (added 2026-09-01, Aneesh's pick, alongside the
+    # tier1 guarantee above). The next 40 gate-passing jobs below the shortlist
+    # cutoff, compressed to one line each. Purpose is visibility parity with
+    # Aneesh's LinkedIn alerts, which sample this same population with no rank
+    # window: on the diagnosis day 170 jobs cleared the cutoff and 40 were
+    # shown, so he kept finding real roles (ranks 41-280) in his inbox that
+    # the run had scanned, matched, gated -- and then silently discarded.
+    # These are digest one-liners, NOT candidates for scoring or tailoring by
+    # default; each entry keeps its url because every digest line that names a
+    # role carries its apply link (2026-08-28 rule, no exceptions). Includes
+    # diversity-cap casualties (real distinct reqs at over-represented
+    # companies); sibling-collapsed duplicates already have their own section
+    # and may appear in both, which is harmless.
+    shortlisted_ids = {id(j) for j in top_matched}
+    near_window = [
+        {
+            "company": j.get("company"),
+            "title": j.get("title"),
+            "location": j.get("location"),
+            "pre_score": j.get("pre_score"),
+            "title_tier": j.get("title_tier"),
+            "url": j.get("url"),
+            "posted_date": j.get("posted_date"),
+        }
+        for j in matched if id(j) not in shortlisted_ids
+    ][:NEAR_WINDOW_SIZE]
+    stats["near_window"] = len(near_window)
+
     return {
         "run_date": run_date.isoformat(),
         "matched": top_matched,
+        "near_window": near_window,
         "sibling_collapsed": sibling_collapsed,
         "borderline": borderline_capped,
         "function_mismatch": function_mismatch[:40],
