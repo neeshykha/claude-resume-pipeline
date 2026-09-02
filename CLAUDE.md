@@ -169,6 +169,16 @@ Worked example (Framer, Engineering Support Lead, 2026-08-20): "I'd rather close
 
 **Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific. (3) Check the opener log for structural repetition.
 
+**Mechanical voice gate (added 2026-09-01):** run
+`.venv/bin/python pipeline/check_voice.py <cover.md>` before rendering. It checks the
+contraction ratio, the em-dash cap, and sentence-length uniformity, and exits 1 on failure.
+**Contractions are the one that keeps slipping.** Aneesh's own letters run 5–15 contractions
+with zero expanded forms; every letter written on 2026-08-28 inverted that, Brown & Brown
+worst at 0 against 13 ("I have never", "I did not", "does not make me", "is not a logistics
+problem"). No single sentence looks wrong, so it survived six letters undetected — the tell
+is only visible in aggregate, which is why it is a script and not a habit. The daily pipeline
+runs this plus an `avoid-ai-writing` detect pass at Step 4.5.
+
 ## Important Rules
 - NEVER invent experience, certifications, or skills that aren't in `master_resume.md`
 - NEVER modify `master_resume.md` — it is the source of truth

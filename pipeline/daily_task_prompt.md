@@ -1268,6 +1268,64 @@ rotates that folder; nothing here needs to clean it up.
 
 **NEVER fabricate experience, certifications, or skills.**
 
+## Step 4.5: AI-writing pass on the cover letters (added 2026-09-01, Aneesh's request)
+
+Runs **after all tailoring, before the digest**, so fixes land before the PDFs are final.
+
+**Cover letters only.** Do not run this on resumes: resume bullets are deliberately terse,
+verb-initial fragments, and the pattern catalog would flag a register that is correct there.
+
+### 1. Mechanical gate
+
+```bash
+.venv/bin/python pipeline/check_voice.py --today
+```
+
+Three arithmetic checks that do not need judgment: contraction ratio, em-dash count against
+the CLAUDE.md cap of 2, and the share of sentences in the 15-25 word band. Exit code 1 on any
+failure. Fix what it reports.
+
+**The contraction check is the one that earned this step.** On 2026-09-01 the avoid-ai-writing
+skill audited the Brown & Brown letter and found 0 contractions against 13 expansions, against
+a personal corpus that runs 5-15 contractions and zero expansions (Vanta AI Optimization 14,
+Zocdoc 15, WitnessAI 13). It was not one letter: **all six written on 2026-08-28 had inverted
+the ratio.** No individual sentence looks wrong, which is exactly why it survived a whole day
+of output. The tell is the aggregate, and only counting finds it.
+
+### 2. Judgment pass
+
+Invoke the **`avoid-ai-writing`** skill in **detect mode** on each letter written this run. It
+defaults to Aneesh's voice profile. Read its output and apply the clear problems; leave the
+judgment calls unless one is obviously right.
+
+**Protected — never "fix" these**, they are the voice and the skill's own profile carves them
+out: the opening line (the anti-template log in Step 4 item 5 governs it, not this step), the
+honesty moment naming a real gap, the single-sentence pivot, transitional qualifiers ("having
+said that", "given that"), and sports or nature analogies.
+
+**Targeted edits only, never a wholesale rewrite.** These letters are built from the CLAUDE.md
+voice rules plus the career-narrative skill; a full rewrite would sand off the deliberate
+honesty moments and the hard-won opener. If a letter trips five or more vocabulary flags across
+several categories, that is a signal the draft was wrong to begin with: say so in the digest
+rather than laundering it.
+
+### 3. Re-render whatever changed
+
+Any letter whose markdown you edited needs its PDF rebuilt, and the ATS variant too if one
+exists:
+
+```bash
+.venv/bin/python pipeline/render_pdf.py cover <cover_data.json> tailored/apply_now/<name>_cover.pdf
+```
+Remember the `_cover_data.json` carries the prose separately from the `.md`. **Edit both**, or
+the PDF silently keeps the old text. This is the easiest way for this step to appear to work
+while changing nothing.
+
+### 4. Report
+
+One digest line naming what was flagged and what was changed. Report a clean pass too, in one
+short clause: a step that only speaks up when it fails is a step nobody can tell ran.
+
 ## Step 5: Email digest
 
 Gmail MCP `create_draft` to **{{DIGEST_RECIPIENT}}**.
