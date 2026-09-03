@@ -1650,6 +1650,34 @@
       "slug": "jumpcloud",
       "enrolled_date": "2026-09-02",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Airship",
+      "ats": "greenhouse",
+      "slug": "airship",
+      "enrolled_date": "2026-09-03",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Sisense",
+      "ats": "ashby",
+      "slug": "sisense",
+      "enrolled_date": "2026-09-03",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Docebo",
+      "ats": "ashby",
+      "slug": "docebo",
+      "enrolled_date": "2026-09-03",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Wonderful",
+      "ats": "ashby",
+      "slug": "wonderful",
+      "enrolled_date": "2026-09-03",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -5108,6 +5136,140 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-09-02",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Guild",
+      "ats": "greenhouse",
+      "slug": "guild",
+      "rejected_date": "2026-09-03",
+      "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Ellevation Education",
+      "ats": "lever",
+      "slug": "ellevationeducation",
+      "rejected_date": "2026-09-03",
+      "reason": "Board resolves and is live (3 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Arine",
+      "ats": "rippling",
+      "slug": "arine",
+      "rejected_date": "2026-09-03",
+      "reason": "Board resolves and is live (14 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "WindBorne Systems",
+      "ats": "ashby",
+      "slug": "windborne-systems",
+      "rejected_date": "2026-09-03",
+      "reason": "Board resolves and is live (23 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Cognizant",
+      "ats": "workable",
+      "slug": "cognizant",
+      "rejected_date": "2026-09-03",
+      "reason": "Board RESOLVED at workable/cognizant but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/cognizant.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false
+    },
+    {
+      "name": "Duck Creek Technologies",
+      "ats": "workable",
+      "slug": "duck-creek-technologies",
+      "rejected_date": "2026-09-03",
+      "reason": "Board RESOLVED at workable/duck-creek-technologies but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/duck-creek-technologies.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false
+    },
+    {
+      "name": "Geek+",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-03",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Project Manager [Atlanta, GA] -- loose:tier2 title, Atlanta; LinkedIn job 4460065479"
+    },
+    {
+      "name": "Steno",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-03",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Revenue Operations Manager [United States] -- tier2c title, US (unspecified); LinkedIn job 4460082249"
+    },
+    {
+      "name": "Pixel Machinery",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-03",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Technical Account Manager [United States] -- tier2 title, US (unspecified); LinkedIn job 4461274240"
+    },
+    {
+      "name": "Flexcar",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-03",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Operations Manager [Marietta, GA] -- loose:tier1 title, Atlanta; LinkedIn job 4460061125"
+    },
+    {
+      "name": "System Automation Corporation",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-03",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Technical Project Manager [United States] -- tier2 title, US (unspecified); LinkedIn job 4430616981"
+    },
+    {
+      "name": "K&L Gates",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-03",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Manager, Enterprise Applications [United States] -- tier2c title, US (unspecified); LinkedIn job 4409065954"
+    },
+    {
+      "name": "Caterpillar Inc.",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-03",
+      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Deep Cogito",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-03",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
