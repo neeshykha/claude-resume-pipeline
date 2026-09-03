@@ -30,6 +30,18 @@ pass over a dozen names costs seconds and zero WebSearches.
 DELIBERATELY NOT A CRAWLER. It never enumerates or brute-forces slug space; it
 only tries a handful of deterministic variants of a name someone already
 surfaced, with a polite delay between requests.
+
+TWO RESOLUTION MODELS, NOT ONE (Comeet, added 2026-09-03). Everything above
+assumes a board is addressed by a name-derived slug, which held for every ATS
+here until Comeet. Comeet boards are keyed by a `comeet_uid` + `comeet_token`
+pair that exists only in the company's own careers page, so no slug guess can
+ever reach one. That gave this script a blind spot it could not report
+accurately: it rejected Upwind Security on 2026-09-02 for "no board resolved
+from deterministic name-variant slugs" while Upwind ran a live 58-position
+Comeet board -- an ATS poll_ats.py has supported since 2026-08-20. probe_comeet
+inverts the walk for that one case (name -> own domain -> careers page ->
+scraped credentials -> board) and is documented in full at the Comeet section
+below.
 """
 import argparse
 import json
@@ -37,6 +49,7 @@ import os
 import re
 import sys
 import time
+from urllib.parse import urlsplit
 
 import requests
 
@@ -47,6 +60,80 @@ QUEUE = os.path.join(SCRIPT_DIR, "enrollment_candidates.json")
 TIMEOUT = 20
 DELAY = 0.35          # politeness pause between HTTP calls
 UA = {"User-Agent": "Mozilla/5.0 (resume-pipeline-harvest)"}
+
+# Wall-clock ceiling for ONE company, across every probe including Workday.
+# Nothing in this script is individually unbounded -- TIMEOUT caps each request
+# and probe_workday's 422 short-circuit caps each tenant -- but the PRODUCT of
+# those bounds is not small: 4 tenant slugs x 5 hosts x 15 site names x 20s is
+# roughly 100 minutes for a single name in the worst case. That case is not
+# hypothetical. It is exactly what a large enterprise whose Workday tenant
+# RESOLVES but matches none of our site names does, and on 2026-09-02 a 16-name
+# batch holding four of them (Palo Alto Networks, RSA Security, Forescout,
+# Worldwide Clinical Trials) was SIGKILLed at ~10 minutes, re-run, and was still
+# silent past 40, leaving 21 queue entries unresolved and forcing a hand
+# enrollment. --skip-workday was added the same day to route around it, at the
+# cost of giving up Workday resolution for the whole batch.
+#
+# 60s is chosen so the daily ~15-name harvest has a hard 15-minute ceiling
+# instead of an open-ended one. It is a CEILING, not a target: the common case
+# is 5-20s per name (a board resolves early and returns), and only names that
+# resolve nothing anywhere approach it.
+PER_COMPANY_BUDGET = 60.0
+
+
+class Budget:
+    """Per-company wall-clock cap, consulted between and during probes.
+
+    Threaded explicitly rather than kept in a module global so prune() and any
+    future caller can keep the old unbounded behaviour by simply not passing one
+    -- `budget=None` everywhere means "no cap", which is what every existing call
+    site outside assess() wants.
+
+    Two mechanisms, and both are needed:
+
+      expired()  gates the loops, so a tripped budget stops the walk instead of
+                 letting it run to its natural end.
+      timeout()  shrinks the per-request HTTP timeout to whatever is left, so a
+                 single hung socket cannot overshoot the cap by a full TIMEOUT.
+                 Without it the cap would be honoured only to +/-20s, which is a
+                 third of the budget.
+    """
+
+    def __init__(self, seconds=PER_COMPANY_BUDGET):
+        self.seconds = seconds
+        self.start = time.monotonic()
+        self.deadline = self.start + seconds
+        self.tripped = False
+
+    def elapsed(self):
+        return time.monotonic() - self.start
+
+    def remaining(self):
+        return self.deadline - time.monotonic()
+
+    def expired(self):
+        if self.remaining() <= 0:
+            self.tripped = True
+            return True
+        return False
+
+    def timeout(self):
+        """HTTP timeout for the next request: never longer than what is left.
+
+        Floored at 1s rather than at 0 so the last request before the cap is a
+        real attempt and not a guaranteed failure.
+        """
+        return max(1.0, min(TIMEOUT, self.remaining()))
+
+    def sleep(self, seconds):
+        """Politeness pause, clipped to the remaining budget.
+
+        A 2s _confirm_empty pause with 0.4s left on the clock is 1.6s of pure
+        overshoot for no information, and those pauses are the largest
+        non-network cost in a full slug walk.
+        """
+        time.sleep(max(0.0, min(seconds, self.remaining())))
+
 
 # Location strings that count as US-reachable. Mirrors the intent of the
 # poller's location handling: we only want fit-titles Aneesh could actually take.
@@ -236,17 +323,86 @@ def slug_variants(name: str):
     return out
 
 
-def _get(url):
+# Last request time per SERVICE, for the politeness pause below.
+_SERVICE_LAST_HIT = {}
+
+
+def _service(url: str) -> str:
+    """Registrable domain of a URL: 'greenhouse.io', 'myworkdayjobs.com'.
+
+    Deliberately not the full hostname. Pinpoint and Workday put the tenant in
+    the hostname ({slug}.pinpointhq.com, {slug}.wd5.myworkdayjobs.com), so
+    keying on the hostname would give every slug its own fresh quota and
+    throttle nothing at all -- which is the opposite of the intent.
+    """
+    host = urlsplit(url).hostname or ""
+    parts = host.split(".")
+    return ".".join(parts[-2:]) if len(parts) >= 2 else host
+
+
+def _pace(url, budget=None):
+    """Politeness pause, measured PER SERVICE rather than globally.
+
+    DELAY exists so we do not hammer any one ATS. It used to be an unconditional
+    sleep after every request, which charged the pause to the WRONG party: the
+    inner loop walks six unrelated services in a row (Greenhouse, Ashby, Lever,
+    Workable, Pinpoint, Rippling), so five of every six pauses were spent being
+    polite to a host we were not about to contact.
+
+    That was not merely inelegant, it is what made the 60s cap unusable. A
+    19-variant name like "Palo Alto Networks" issues 114 cheap-ATS requests, so
+    the old global pause put a ~40s floor under the cheap phase alone -- two
+    thirds of the budget in time.sleep() before a single byte moved -- and the
+    Workday walk the cap was written to bound could never be reached. Measured
+    2026-09-03: the cheap phase for that name took 77s, of which 40s was sleep.
+
+    Per-service is also the stricter reading of politeness where it counts. Each
+    ATS still sees at most one request per DELAY, and in practice far fewer,
+    because a full six-service cycle takes longer than DELAY on its own.
+    """
+    svc = _service(url)
+    wait = DELAY - (time.monotonic() - _SERVICE_LAST_HIT.get(svc, 0.0))
+    if wait > 0:
+        if budget is None:
+            time.sleep(wait)
+        else:
+            budget.sleep(wait)
+    _SERVICE_LAST_HIT[svc] = time.monotonic()
+
+
+def _get(url, budget=None):
+    if budget is not None and budget.expired():
+        return None
+    _pace(url, budget)
     try:
-        r = requests.get(url, headers=UA, timeout=TIMEOUT)
+        r = requests.get(url, headers=UA,
+                         timeout=TIMEOUT if budget is None else budget.timeout())
         return r if r.status_code == 200 else None
     except Exception:
         return None
-    finally:
-        time.sleep(DELAY)
 
 
-def _confirm_empty(ats: str, slug: str):
+def _raw_get(url, budget=None):
+    """GET returning the response on ANY HTTP status; None only on network failure.
+
+    _get collapses "the host does not exist" and "the host exists and 404'd"
+    into the same None, which is exactly the distinction the Comeet careers-page
+    walk needs: a dead domain should be abandoned after one request, while a
+    live domain that 404s on /careers is worth trying /jobs on. Every ATS probe
+    above genuinely only cares about 200, so they keep using _get.
+    """
+    if budget is not None and budget.expired():
+        return None
+    _pace(url, budget)
+    try:
+        return requests.get(url, headers=UA,
+                            timeout=TIMEOUT if budget is None else budget.timeout(),
+                            allow_redirects=True)
+    except Exception:
+        return None
+
+
+def _confirm_empty(ats: str, slug: str, budget=None):
     """Re-probe a board that came back empty, to tell a real empty board from load noise.
 
     Added 2026-08-31, from a false positive that reached the repo. A 30-company
@@ -269,39 +425,43 @@ def _confirm_empty(ats: str, slug: str):
     company's permanent record and suppresses the manual search that would have
     found the real one.
     """
-    time.sleep(max(DELAY, 2.0))
-    again = probe(ats, slug)
+    if budget is None:
+        time.sleep(max(DELAY, 2.0))
+    else:
+        budget.sleep(max(DELAY, 2.0))
+    again = probe(ats, slug, budget)
     return again is not None and len(again) == 0
 
 
-def probe(ats: str, slug: str):
+def probe(ats: str, slug: str, budget=None):
     """Return [(title, location)] if the board resolves, else None."""
     if ats == "greenhouse":
-        r = _get(f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs")
+        r = _get(f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs", budget)
         if not r:
             return None
         return [(j.get("title", ""), (j.get("location") or {}).get("name", ""))
                 for j in r.json().get("jobs", [])]
     if ats == "ashby":
-        r = _get(f"https://api.ashbyhq.com/posting-api/job-board/{slug}")
+        r = _get(f"https://api.ashbyhq.com/posting-api/job-board/{slug}", budget)
         if not r:
             return None
         return [(j.get("title", ""), j.get("location", ""))
                 for j in r.json().get("jobs", [])]
     if ats == "lever":
-        r = _get(f"https://api.lever.co/v0/postings/{slug}?mode=json")
+        r = _get(f"https://api.lever.co/v0/postings/{slug}?mode=json", budget)
         if not r:
             return None
         return [(j.get("text", ""), (j.get("categories") or {}).get("location", ""))
                 for j in r.json()]
     if ats == "workable":
-        r = _get(f"https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true")
+        r = _get(f"https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true",
+                 budget)
         if not r:
             return None
         return [(j.get("title", ""), j.get("location", "") or j.get("city", ""))
                 for j in r.json().get("jobs", [])]
     if ats == "pinpoint":
-        r = _get(f"https://{slug}.pinpointhq.com/postings.json")
+        r = _get(f"https://{slug}.pinpointhq.com/postings.json", budget)
         if not r:
             return None
         out = []
@@ -315,7 +475,7 @@ def probe(ats: str, slug: str):
         # First page only (20 postings) -- enough to judge fit-space; the real
         # daily poll (fetch_rippling in poll_ats.py) paginates fully once a
         # company is actually enrolled.
-        r = _get(f"https://ats.rippling.com/{slug}/jobs")
+        r = _get(f"https://ats.rippling.com/{slug}/jobs", budget)
         if not r:
             return None
         m = re.search(
@@ -350,7 +510,7 @@ WORKDAY_SITES = ["Careers", "External", "ExternalCareers", "External_Career_Site
                  "Search", "careers", "Jobs", "US", "Global", "ext", "CareerSite"]
 
 
-def probe_workday(slug: str):
+def probe_workday(slug: str, budget=None):
     """Resolve a Workday board. Returns ([(title, location)], meta) or (None, None).
 
     Workday is addressed by THREE parts (tenant, host, site) rather than the
@@ -394,15 +554,23 @@ def probe_workday(slug: str):
     ]
     body = {"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": ""}
     for host in WORKDAY_HOSTS:
+        if budget is not None and budget.expired():
+            return None, None
         fqdn = f"{slug}.{host}.myworkdayjobs.com"
         for site in sites:
+            # Checked per SITE, not just per host. The 422 short-circuit only
+            # helps when the tenant is absent; the expensive case is a tenant
+            # that RESOLVES and 404s on all ~15 site names, and that walk lives
+            # entirely inside this inner loop.
+            if budget is not None and budget.expired():
+                return None, None
             url = f"https://{fqdn}/wday/cxs/{slug}/{site}/jobs"
+            _pace(url, budget)
             try:
-                r = requests.post(url, json=body, headers=UA, timeout=TIMEOUT)
+                r = requests.post(url, json=body, headers=UA,
+                                  timeout=TIMEOUT if budget is None else budget.timeout())
             except Exception:
                 break          # network trouble on this host; try the next one
-            finally:
-                time.sleep(DELAY)
             if r.status_code == 422:
                 break          # no such tenant here -- don't try the other sites
             if r.status_code != 200:
@@ -418,6 +586,311 @@ def probe_workday(slug: str):
             return jobs, {"wd_host": fqdn, "wd_tenant": slug, "wd_site": site,
                           "total": d["total"]}
     return None, None
+
+
+# ---------------------------------------------------------------------------
+# Comeet
+# ---------------------------------------------------------------------------
+# Added 2026-09-03, from the FOURTH instance of the "unsupported-ATS-looks-like-
+# no-ATS" miss class named in watchlist_companies.json -> _comeet_notes (Napier
+# AI/Pinpoint, Nerdio/Rippling, Stampli/Comeet were one through three). Upwind
+# Security is the sharpest of the four, because Comeet is NOT unsupported here:
+# poll_ats.py has had fetch_comeet since 2026-08-20 and polls Stampli through it
+# daily. Only DISCOVERY was broken, and it was broken structurally rather than
+# by a missing slug guess.
+#
+# WHY NO AMOUNT OF SLUG WIDENING COULD EVER HAVE FIXED THIS. Every other adapter
+# in this file is addressed by a name-derived string, so slug_variants() is the
+# whole resolution strategy and widening it (as on 2026-08-31) buys real
+# coverage. Comeet has no slug at all: its API is keyed by a per-company
+# `comeet_uid` ("49.004", "F6.007") and a public widget `comeet_token`, neither
+# of which is derivable from anything -- they exist only in the company's own
+# careers page. So Upwind was rejected on 2026-09-02 with "No board resolved
+# from deterministic name-variant slugs", which was true and useless: it had a
+# live 58-position board carrying a "Technical Account Manager (US Remote)" req,
+# and the LinkedIn harvest had surfaced that same req twice while the poller
+# structurally could not see it.
+#
+# The resolution path is therefore inverted from every other probe: name ->
+# careers page -> scraped credentials -> board, instead of name -> slug ->
+# board. That is more speculative than a slug guess, so it runs LAST among the
+# cheap probes and its result is written with the careers URL it came from
+# (comeet_careers_url on the watchlist entry) so a wrong-company hit is
+# auditable rather than silent.
+COMEET_ENDPOINT = ("https://www.comeet.co/careers-api/2.0/company/{uid}/positions"
+                   "?token={token}&details=false")
+
+# details=false, unlike poll_ats.py's ATS_ENDPOINTS["comeet"]. The position list
+# is identical either way; `details` only adds the Description/Requirements HTML,
+# which the poller flattens for the industry exclusion and this file has no use
+# for. Dropping it takes the Upwind payload from ~287KB to a fraction of that.
+
+# Markup the Comeet widget leaves on a careers page. The class names come from
+# the widget's own DOM and the last two from the two embed shapes below.
+COMEET_MARKERS = ("comeet-outer-wrapper", "comeet-groups-list", "comeet-position-info",
+                  "comeetvar", "careers-api/2.0/company")
+
+# Paths worth trying on a domain that has proven live. Ordered by how common
+# they are; /careers alone covers both companies confirmed on Comeet so far.
+CAREERS_PATHS = ("/careers", "/jobs", "/company/careers", "/about/careers", "/join-us")
+
+# TLDs tried when guessing a company's own domain. Deliberately short: this is
+# the speculative half of the walk and each miss is a DNS failure, which is
+# cheap but not free.
+DOMAIN_TLDS = ("com", "io", "ai", "co")
+
+# A domain that resolves but has no Comeet widget still costs a full path walk,
+# so cap how many live domains are walked. Two is enough in practice (the apex
+# and one alternate spelling); the third is slack for names whose first-word
+# guess collides with an unrelated live site.
+MAX_CAREERS_DOMAINS = 3
+
+# Same-origin scripts followed when a page shows Comeet markup but no inline
+# credentials -- see comeet_credentials().
+MAX_SCRIPT_HOPS = 3
+
+# Embed shape 1, the Comeet WordPress plugin: a wp_localize_script block reading
+# `var comeetvar = {"comeet_token":"...","comeet_uid":"...", ...}`. Both
+# companies confirmed live on Comeet (Stampli 2026-08-20, Upwind 2026-09-03) use
+# this, and in both the credentials sit inline in the raw careers HTML.
+_COMEET_WP_UID = re.compile(r'"comeet_uid"\s*:\s*"([^"]{2,32})"')
+_COMEET_WP_TOKEN = re.compile(r'"comeet_token"\s*:\s*"([^"]{8,64})"')
+
+# Embed shape 2, the generic script embed: the credentials ride in the URL of a
+# comeet.co careers-api include rather than in a JS object. Matched against the
+# page source AND against followed script bodies, since a bootstrap loader can
+# build this URL rather than emitting it.
+_COMEET_API_URL = re.compile(
+    r'careers-api/2\.0/company/([A-Za-z0-9][A-Za-z0-9.\-]{1,30})'
+    r'/[A-Za-z_]+\?[^"\'\s>]{0,200}?token=([A-Za-z0-9]{8,64})')
+
+# Loose fallback for a hand-rolled embed that assigns the two values separately.
+# Kept tight on SHAPE rather than on key name -- a Comeet uid is two chars, a
+# dot, three chars ("49.004", "F6.007"), and the token is a long hex string --
+# because bare `uid`/`token` keys appear all over a marketing page's analytics
+# and consent scripts. Only consulted once the markers above already proved the
+# page is a Comeet page.
+_COMEET_LOOSE_UID = re.compile(
+    r'\buid\s*[:=]\s*["\']([A-Za-z0-9]{2}\.[A-Za-z0-9]{3})["\']')
+_COMEET_LOOSE_TOKEN = re.compile(
+    r'\btoken\s*[:=]\s*["\']([A-Fa-f0-9]{16,64})["\']')
+
+_COMEET_SCRIPT_SRC = re.compile(r'<script[^>]+src=["\']([^"\']+)["\']', re.IGNORECASE)
+
+
+def looks_like_comeet(html: str) -> bool:
+    return any(m in html for m in COMEET_MARKERS)
+
+
+def _credentials_from_text(text: str):
+    """(uid, token) from one document, or None. Tries both embed shapes."""
+    uid = _COMEET_WP_UID.search(text)
+    token = _COMEET_WP_TOKEN.search(text)
+    if uid and token:
+        return uid.group(1), token.group(1)
+    pair = _COMEET_API_URL.search(text)
+    if pair:
+        return pair.group(1), pair.group(2)
+    uid = _COMEET_LOOSE_UID.search(text)
+    token = _COMEET_LOOSE_TOKEN.search(text)
+    if uid and token:
+        return uid.group(1), token.group(1)
+    return None
+
+
+def comeet_credentials(html: str, page_url: str, budget=None):
+    """Scrape (comeet_uid, comeet_token) from a careers page, or None.
+
+    The credentials are usually inline (the WordPress plugin emits them in a
+    `comeetvar` block), but they do not have to be: a site can include a
+    bootstrap script that carries them instead, leaving the raw HTML with only
+    the widget's wrapper divs. So when the page is recognisably a Comeet page
+    and yet holds no credentials, follow its own comeet-named scripts and look
+    there. Bounded at MAX_SCRIPT_HOPS and to same-origin comeet-named includes
+    -- this is a credential scrape, not a crawl, and following arbitrary
+    third-party scripts off a marketing page is not something this script should
+    ever do.
+    """
+    found = _credentials_from_text(html)
+    if found:
+        return found
+    origin = "{0.scheme}://{0.netloc}".format(urlsplit(page_url))
+    hops = 0
+    for m in _COMEET_SCRIPT_SRC.finditer(html):
+        if hops >= MAX_SCRIPT_HOPS:
+            break
+        src = m.group(1)
+        if "comeet" not in src.lower():
+            continue
+        if src.startswith("//"):
+            src = "https:" + src
+        elif src.startswith("/"):
+            src = origin + src
+        elif not src.startswith("http"):
+            continue
+        if urlsplit(src).netloc not in (urlsplit(page_url).netloc, "www.comeet.co",
+                                        "comeet.co"):
+            continue
+        hops += 1
+        r = _get(src, budget)
+        if r is None:
+            continue
+        found = _credentials_from_text(r.text)
+        if found:
+            return found
+    return None
+
+
+def domain_candidates(name: str):
+    """Plausible own-domains for a company, most-specific first.
+
+    Comeet is reached through the company's own site, so this is the one place
+    in the file that has to guess a DOMAIN rather than a board slug. Full name
+    before first word ("upwindsecurity.com" before "upwind.com") because the
+    longer form is far less likely to collide with an unrelated business; the
+    hit that matters, Upwind's real "upwind.io", is found on the first-word pass.
+    """
+    n = re.sub(r"[''`]", "", name.strip().lower())
+
+    # A name that already IS a domain resolves to itself and nothing else.
+    if re.search(r"\.(io|com|ai|co|dev|so|app|net|org|xyz)$", n):
+        return [re.sub(r"[^a-z0-9.\-]+", "", n)]
+
+    words = re.sub(r"[^a-z0-9 ]+", " ", n).split()
+    nospace = "".join(words)
+    stripped = re.sub(r"(inc|llc|ltd|corp|co|company|labs|technologies|technology)$",
+                      "", nospace)
+    bases, seen = [], set()
+    for b in (nospace, stripped, _first_word(n)):
+        if b and len(b) > 2 and b not in seen:
+            seen.add(b)
+            bases.append(b)
+    return [f"{b}.{tld}" for b in bases for tld in DOMAIN_TLDS]
+
+
+def _redirected_home(response) -> bool:
+    """True if a careers URL landed on the site root -- i.e. the path did not exist.
+
+    A soft 404. It matters more here than the status code does, because the two
+    pages this walk must tell apart are "the careers page" and "the homepage",
+    and a homepage on a Comeet-using site trips looks_like_comeet() on its
+    sitewide script and CSS includes while carrying no credentials at all. That
+    is not hypothetical: upwindsecurity.io is a parked domain that redirects
+    every path to https://www.upwind.io/, whose 490KB homepage matches the
+    markers, yields no credentials, and then costs three script hops to
+    disprove.
+    """
+    return urlsplit(response.url).path.strip("/") == ""
+
+
+def probe_comeet(name: str, budget=None):
+    """Resolve a Comeet board from a company NAME. ([(title, location)], meta) or (None, None).
+
+    Walks name-derived domains, and on each one that actually answers, walks a
+    short list of careers paths looking for the widget.
+
+    Three rules keep this from turning into an open-ended fetch of company
+    marketing pages, which is the real cost risk here -- a careers page is
+    hundreds of KB where an ATS API response is a few. All three were added
+    after measuring the Upwind walk at 63s standalone, against a 60s
+    per-company budget that also has to cover the slug walk. With them it is
+    22s, and the whole harvest of that name went 57.5s -> 47.6s. Measured
+    misses are cheaper still (Nscale 3.4s, 11 requests), because rule three
+    ends most domains after a single page:
+
+      - A path that redirects to the site root did not exist (_redirected_home).
+        Skip it, and abandon that domain: a domain that answers /careers from
+        its homepage is ignoring paths, so its other paths will do the same.
+        Re-queue where it redirected TO instead, which is how a parked
+        name-variant domain leads to the real site rather than wasting the walk.
+      - A domain whose careers page resolves onto a host already walked is a
+        duplicate, not a second chance.
+      - A 200 careers page WITHOUT Comeet markup ends that domain's walk. The
+        careers page has been found and it is not Comeet; trying four more paths
+        on the same site cannot change that.
+
+    Requires a non-empty board, matching probe() and probe_workday(): an
+    empty-or-invalid response must not be allowed to write a uid/token pair onto
+    a company's permanent record.
+    """
+    queue = list(domain_candidates(name))
+    seen_domains = set(queue)
+    walked_hosts = set()
+    walked = 0
+    while queue:
+        if budget is not None and budget.expired():
+            return None, None
+        if walked >= MAX_CAREERS_DOMAINS:
+            break
+        domain = queue.pop(0)
+        first = _raw_get(f"https://{domain}{CAREERS_PATHS[0]}", budget)
+        if first is None:
+            continue          # domain does not resolve; nothing else to try here
+        host = urlsplit(first.url).netloc
+        if host in walked_hosts:
+            continue          # a second spelling of a site already walked
+        if _redirected_home(first):
+            # Parked or path-ignoring domain. Follow it to the host it actually
+            # serves, and try the careers paths there.
+            if host and host not in seen_domains:
+                seen_domains.add(host)
+                queue.append(host)
+            continue
+        walked_hosts.add(host)
+        walked += 1
+        for path in CAREERS_PATHS:
+            if budget is not None and budget.expired():
+                return None, None
+            url = f"https://{domain}{path}"
+            r = first if path == CAREERS_PATHS[0] else _raw_get(url, budget)
+            if r is None or r.status_code != 200 or _redirected_home(r):
+                continue
+            html = r.text
+            if not looks_like_comeet(html):
+                break         # real careers page, different ATS -- stop here
+            creds = comeet_credentials(html, r.url or url, budget)
+            if not creds:
+                continue
+            uid, token = creds
+            api = _get(COMEET_ENDPOINT.format(uid=uid, token=token), budget)
+            if api is None:
+                continue
+            try:
+                positions = api.json()
+            except (json.JSONDecodeError, ValueError):
+                continue
+            if not isinstance(positions, list) or not positions:
+                continue
+            jobs = []
+            for p in positions:
+                if p.get("is_internal"):
+                    continue
+                loc = p.get("location") or {}
+                # Mirrors parse_location's comeet branch in poll_ats.py: city +
+                # state, falling back to the location name. is_remote is
+                # deliberately NOT consulted -- it was true on 19/19 Stampli
+                # postings, 17 of which describe in-office days, and reading it
+                # here would hand tier3's location gate a constant.
+                parts = [q.strip() for q in (loc.get("city"), loc.get("state"))
+                         if q and q.strip()]
+                jobs.append((p.get("name", ""),
+                             ", ".join(parts) if parts else (loc.get("name") or "")))
+            if not jobs:
+                continue
+            return jobs, {"comeet_uid": uid, "comeet_token": token,
+                          "comeet_careers_url": r.url or url, "total": len(jobs)}
+    return None, None
+
+
+def comeet_slug(name: str) -> str:
+    """Human-readable stand-in for the slug Comeet does not have.
+
+    validate_config.py requires `slug` on every watchlist entry and the poller
+    prefixes dedup keys with it, but for Comeet it addresses nothing -- the API
+    is keyed by comeet_uid/comeet_token. Stampli's hand-written entry set it to
+    'stampli', so follow that: the company name, lowercased and hyphenated.
+    """
+    return re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
 
 
 def us_reachable(loc: str) -> bool:
@@ -494,10 +967,27 @@ def _score_board(jobs, matcher, hard_excluded):
     return strong
 
 
-def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False):
+def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
+           skip_comeet=False, budget_seconds=PER_COMPANY_BUDGET):
     """Resolve a company to (ats, slug, strong_hits, total_jobs) or a reason.
 
-    skip_workday=True stops at the six cheap ATSes. See --skip-workday in main()."""
+    skip_workday=True stops before the Workday tenant walk; skip_comeet=True
+    stops before the Comeet careers-page walk. See main().
+
+    budget_seconds caps the WALL CLOCK for this one company across every probe
+    (see the Budget class). On a trip this returns a `timed_out` result rather
+    than raising: a name that ran out of clock is a name we could not resolve,
+    which is the same actionable state as no-board, and the caller records it
+    with a reason that says so. Raising would abort the whole batch, which is
+    the failure mode being fixed here -- the point is that one slow name must
+    not cost the other fourteen. 0 or None disables the cap entirely.
+    """
+    budget = Budget(budget_seconds) if budget_seconds else None
+
+    def timed_out(phase):
+        return {"timed_out": True, "phase": phase, "empty_hits": empty_hits,
+                "elapsed": budget.elapsed(), "budget": budget.seconds}
+
     # Boards that resolved but returned zero jobs. Remembered rather than
     # discarded (added 2026-08-31): continuing to look is right, but FORGETTING
     # was a reporting bug. Before this, a company whose only hit was an empty
@@ -515,9 +1005,11 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False):
     empty_hits = []
     for slug in slug_variants(name):
         for ats in ("greenhouse", "ashby", "lever", "workable", "pinpoint", "rippling"):
+            if budget is not None and budget.expired():
+                return timed_out("cheap-ATS slug walk")
             if (ats, slug) in known_pairs:
                 continue
-            jobs = probe(ats, slug)
+            jobs = probe(ats, slug, budget)
             if jobs is None:
                 continue
             if not jobs:
@@ -526,11 +1018,35 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False):
                 # at all. But hold on to it in case nothing better turns up --
                 # and only after confirming it is a real empty board rather than
                 # a load artifact (see _confirm_empty).
-                if _confirm_empty(ats, slug):
+                if _confirm_empty(ats, slug, budget):
                     empty_hits.append((ats, slug))
                 continue
             return {"ats": ats, "slug": slug, "total": len(jobs),
                     "strong": _score_board(jobs, matcher, hard_excluded)}
+
+    # COMEET, after every slug-addressable ATS has failed and before Workday.
+    #
+    # Ordered here for two reasons. It cannot run earlier: resolving a Comeet
+    # board means guessing the company's own domain and fetching marketing
+    # pages, which is both more speculative and (per page) far heavier than a
+    # slug probe, so it must not run against a company whose Greenhouse board
+    # would have answered on the first try. And it runs before Workday because
+    # it is much cheaper -- a handful of requests that mostly fail at DNS,
+    # against Workday's 5 hosts x ~15 site names per tenant.
+    #
+    # See the Comeet section above for why the discovery gap was structural.
+    if not skip_comeet:
+        if budget is not None and budget.expired():
+            return timed_out("Comeet careers-page walk")
+        jobs, meta = probe_comeet(name, budget)
+        if jobs:
+            slug = comeet_slug(name)
+            if ("comeet", slug) not in known_pairs:
+                res = {"ats": "comeet", "slug": slug, "total": meta["total"],
+                       "strong": _score_board(jobs, matcher, hard_excluded)}
+                res.update({k: meta[k] for k in
+                            ("comeet_uid", "comeet_token", "comeet_careers_url")})
+                return res
 
     # Workday LAST, and only once every cheaper ATS has failed for every slug
     # variant. It is the most expensive probe here (DNS gate per host, then up
@@ -563,17 +1079,31 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False):
     # completion so a stuck Workday probe cannot hold the whole queue hostage;
     # the names it leaves unresolved are reported as no-board in the usual way
     # and keep their manual site:myworkdayjobs.com fallback.
+    # The wall-clock cap (2026-09-03) is the real fix the flag was standing in
+    # for: it bounds the product of the nested loops rather than any one factor,
+    # so a Workday walk that would have run for an hour is cut at the cap and
+    # reported against a named company instead of stalling the batch.
     wd_slugs = [] if skip_workday else workday_slug_candidates(name)
     for slug in wd_slugs:
+        if budget is not None and budget.expired():
+            return timed_out("Workday tenant walk")
         if ("workday", slug) in known_pairs:
             continue
-        jobs, meta = probe_workday(slug)
+        jobs, meta = probe_workday(slug, budget)
         if not jobs:
             continue
         res = {"ats": "workday", "slug": slug, "total": meta["total"],
                "strong": _score_board(jobs, matcher, hard_excluded)}
         res.update({k: meta[k] for k in ("wd_host", "wd_tenant", "wd_site")})
         return res
+
+    # A trip on the LAST slug leaves both loops normally, so re-check here.
+    # Without this the run would report a truncated walk as a clean no-board,
+    # which is the exact conflation this cap exists to prevent: "we looked
+    # everywhere and found nothing" and "we ran out of clock" need different
+    # follow-ups, and only the second one is worth re-running.
+    if budget is not None and budget.tripped:
+        return timed_out("Workday tenant walk" if wd_slugs else "cheap-ATS slug walk")
 
     # Nothing had jobs anywhere. If a board DID resolve and was merely empty,
     # say that instead of claiming no board exists (see empty_hits above).
@@ -598,8 +1128,20 @@ def main():
     ap.add_argument("--prune", action="store_true")
     ap.add_argument("--skip-workday", action="store_true",
                     help="Probe only Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling. "
-                         "Added 2026-09-02 after the Workday walk hung two full runs; "
-                         "see the comment above the Workday loop in assess().")
+                         "Added 2026-09-02 after the Workday walk hung two full runs. "
+                         "Since the per-company wall-clock cap landed (2026-09-03) this "
+                         "is an option for trimming a run, not a requirement for large "
+                         "batches; see the Budget class.")
+    ap.add_argument("--skip-comeet", action="store_true",
+                    help="Skip the Comeet careers-page walk (name -> own domain -> "
+                         "scraped comeet_uid/comeet_token). Unlike every other probe "
+                         "here this one fetches company marketing pages, so it is the "
+                         "one to drop when a run must stay light.")
+    ap.add_argument("--budget-seconds", type=float, default=PER_COMPANY_BUDGET,
+                    help=f"Wall-clock cap per company across all probes "
+                         f"(default {PER_COMPANY_BUDGET:g}s). 0 disables the cap and "
+                         f"restores the pre-2026-09-03 unbounded behaviour -- only "
+                         f"sensible on a one-name run you are watching.")
     args = ap.parse_args()
 
     if args.names_file:
@@ -629,47 +1171,77 @@ def main():
         print("nothing to do: pass --names or --from-pending")
         return 0
 
+    # PROGRESS IS PRINTED PER COMPANY AND FLUSHED (added 2026-09-03). Every
+    # print here used to inherit Python's block buffering, so a run redirected
+    # to a file or read through a pipe -- which is how the scheduled pipeline
+    # runs it -- emitted absolutely nothing until the process exited. That is
+    # why the 2026-09-02 hang was diagnosed only by wall-clock: a stalled run
+    # and a slow-but-healthy run looked identical from outside, and there was no
+    # way to name the company that was stuck. The `-> name` line goes out BEFORE
+    # the probing starts, so whatever company is on the last printed line is the
+    # one currently in flight.
     enrollable, no_board, no_fit, empty_board, skipped = [], [], [], [], []
-    for name in targets:
+    timed_out = []
+    run_started = time.monotonic()
+    total_targets = len(targets)
+    for idx, name in enumerate(targets, 1):
         if name.lower() in known_names and not args.names:
             skipped.append(name)
+            print(f"  [{idx}/{total_targets}] -> {name:24s} already known, skipped",
+                  flush=True)
             continue
+        print(f"  [{idx}/{total_targets}] -> {name}", flush=True)
+        t0 = time.monotonic()
         res = assess(name, matcher, P.title_hard_excluded, known_pairs,
-                     skip_workday=args.skip_workday)
+                     skip_workday=args.skip_workday,
+                     skip_comeet=args.skip_comeet,
+                     budget_seconds=args.budget_seconds)
+        took = f"{time.monotonic() - t0:5.1f}s"
+        if res is not None and res.get("timed_out"):
+            timed_out.append((name, res))
+            print(f"  [TO] {name:24s} {took} hit the {res['budget']:g}s cap during "
+                  f"the {res['phase']}; unresolved", flush=True)
+            continue
         if res is None:
-            no_board.append(name)
-            print(f"  [--] {name:24s} no board resolved from name variants")
+            no_board.append((name, None))
+            print(f"  [--] {name:24s} {took} no board resolved from name variants",
+                  flush=True)
             continue
         if res.get("empty_board"):
             empty_board.append((name, res))
-            print(f"  [00] {name:24s} {res['ats']}/{res['slug']:20s} "
-                  f"board resolves but returns 0 jobs")
+            print(f"  [00] {name:24s} {took} {res['ats']}/{res['slug']:20s} "
+                  f"board resolves but returns 0 jobs", flush=True)
             continue
         if not res["strong"]:
             no_fit.append((name, res))
-            print(f"  [..] {name:24s} {res['ats']}/{res['slug']:20s} "
-                  f"{res['total']:>4} jobs, 0 US fit-titles")
+            print(f"  [..] {name:24s} {took} {res['ats']}/{res['slug']:20s} "
+                  f"{res['total']:>4} jobs, 0 US fit-titles", flush=True)
             continue
         enrollable.append((name, res))
-        print(f"  [OK] {name:24s} {res['ats']}/{res['slug']:20s} "
+        print(f"  [OK] {name:24s} {took} {res['ats']}/{res['slug']:20s} "
               f"{res['total']:>4} jobs, {len(res['strong'])} fit-titles "
-              f"({tier_breakdown(res['strong'])})")
+              f"({tier_breakdown(res['strong'])})", flush=True)
         for t, l, tier in res["strong"][:3]:
             # tier2c_tooling_systems and tier2_strong_overlap both truncate to
             # "tier2" at 5 chars, so label from the full tier name instead.
             label = {"tier1_true_match": "tier1", "tier2_strong_overlap": "tier2",
                      "tier2c_tooling_systems": "tier2c",
                      TIER3_TIER: "tier3*"}.get(tier, tier[:6])
-            print(f"         [{label:6s}] {t[:44]:44s} | {str(l)[:24]}")
+            print(f"         [{label:6s}] {t[:44]:44s} | {str(l)[:24]}", flush=True)
         if any(tier == TIER3_TIER for _, _, tier in res["strong"]):
-            print("         * tier3 counted only because the role is Atlanta or remote-US")
+            print("         * tier3 counted only because the role is Atlanta or remote-US",
+                  flush=True)
 
     print(f"\nenrollable={len(enrollable)} no_fit={len(no_fit)} "
           f"empty_board={len(empty_board)} no_board={len(no_board)} "
-          f"already_known_skipped={len(skipped)}")
+          f"timed_out={len(timed_out)} already_known_skipped={len(skipped)} "
+          f"[{time.monotonic() - run_started:.0f}s total]", flush=True)
+    if timed_out:
+        print("TIMED OUT (unresolved, safe to re-run individually): "
+              + ", ".join(n for n, _ in timed_out), flush=True)
 
     if not args.apply:
-        print("dry run; re-run with --apply to enroll")
+        print("dry run; re-run with --apply to enroll", flush=True)
         return 0
 
     today = __import__("datetime").date.today().isoformat()
@@ -678,7 +1250,14 @@ def main():
             "name": name, "ats": res["ats"], "slug": res["slug"],
             "priority": "low",
             "enrolled_date": today,
-            "enrolled_via": "harvest_ats.py automated slug resolution",
+            # Comeet is not resolved by a slug -- saying so would misdescribe the
+            # only entries whose provenance a reader is likely to question, since
+            # their uid/token came off a guessed careers URL rather than an API.
+            "enrolled_via": (
+                "harvest_ats.py Comeet careers-page resolution "
+                f"(credentials scraped from {res.get('comeet_careers_url')})"
+                if res["ats"] == "comeet"
+                else "harvest_ats.py automated slug resolution"),
             # This layer CANNOT assign a vertical bonus. score_bonus/bonus_reason
             # are hand-curated on purpose (a keyword pass was ~40% wrong in both
             # directions -- see CLAUDE.md Scoring Guardrails), so auto-enrolled
@@ -701,8 +1280,15 @@ def main():
                        f"dead or fit-space-empty."),
         }
         # Workday needs the full three-part address on the watchlist entry;
-        # poll_ats.py cannot reach a Workday board from ats+slug alone.
-        for k in ("wd_host", "wd_tenant", "wd_site"):
+        # poll_ats.py cannot reach a Workday board from ats+slug alone. Comeet
+        # is the same shape of problem -- its `slug` addresses nothing, so
+        # fetch_comeet needs comeet_uid/comeet_token or it errors out (and
+        # validate_config.py rejects the entry outright). comeet_careers_url is
+        # not read by anything; it records WHICH page the credentials were
+        # scraped from, so a domain-guess that landed on the wrong company can
+        # be spotted by reading the entry instead of by re-deriving the walk.
+        for k in ("wd_host", "wd_tenant", "wd_site",
+                  "comeet_uid", "comeet_token", "comeet_careers_url"):
             if k in res:
                 entry[k] = res[k]
         wl["companies"].append(entry)
@@ -737,12 +1323,23 @@ def main():
                         f"{', '.join(a + '/' + s for a, s in res.get('empty_hits', []))}.)"),
              "recheck_if_resurfaced": True,
              "unpollable": False})
-    for name in no_board:
+    for name, _ in no_board:
+        # The old wording here read "across Greenhouse/Ashby/Lever/Workable" long
+        # after the probe list had grown past those four, and named a
+        # site:myworkdayjobs.com search as the only follow-up. That is what
+        # Upwind Security's 2026-09-02 rejection said while it was running a
+        # live 58-position Comeet board -- a true sentence pointing at the wrong
+        # next step. Keep this text honest about what was actually tried.
         entry = {"name": name, "ats": None, "slug": None, "rejected_date": today,
-                  "reason": ("No board resolved from deterministic name-variant slugs across "
-                             "Greenhouse/Ashby/Lever/Workable. May still be pollable under a "
-                             "non-obvious slug or on Workday: worth one manual "
-                             "site:myworkdayjobs.com search if the company matters."),
+                  "reason": ("No board resolved: no deterministic name-variant slug matched "
+                             "Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling, no Workday "
+                             "tenant answered, and no Comeet widget was found on a "
+                             "name-derived careers page. May still be pollable under a "
+                             "non-obvious slug, on a careers page this script could not "
+                             "guess the domain of, or on an ATS with no adapter yet "
+                             "(Paylocity boards are GUID-addressed and can never be "
+                             "auto-resolved). Worth one manual look at the company's own "
+                             "careers page if the company matters."),
                   "recheck_if_resurfaced": True,
                   "unpollable": True}
         pending_entry = pending_by_name.get(name.lower(), {})
@@ -751,8 +1348,35 @@ def main():
                 entry[field] = pending_entry[field]
         q.setdefault("rejected", []).append(entry)
 
+    # A timeout is NOT a finding about the company, so it gets its own reason and
+    # is explicitly not marked unpollable: nothing was learned about whether a
+    # board exists, and writing the standard no-board text would put the company
+    # on the weekly unpollable punch list on the strength of a clock. The queue
+    # entry is still drained (see `handled` below) so the batch makes forward
+    # progress, but the reason tells the next reader that a targeted --names
+    # re-run is the cheap next step, not a manual search.
+    for name, res in timed_out:
+        found = ", ".join(a + "/" + s for a, s in res.get("empty_hits", []))
+        q.setdefault("rejected", []).append(
+            {"name": name, "ats": None, "slug": None, "rejected_date": today,
+             "reason": (f"UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the "
+                        f"{res['budget']:g}s per-company wall-clock cap after "
+                        f"{res['elapsed']:.0f}s, during the {res['phase']}, so the "
+                        f"remaining probes never ran and nothing is known about whether "
+                        f"this company has a board. Typical cause: a Workday tenant that "
+                        f"resolves but matches none of the site names tried, which costs "
+                        f"the full 5-host walk. Cheap next step is a targeted re-run "
+                        f"(--names \"{name}\" --budget-seconds 300), NOT a manual "
+                        f"site:myworkdayjobs.com search."
+                        + (f" Boards that resolved empty before the cap: {found}."
+                           if found else "")),
+             "recheck_if_resurfaced": True,
+             "unpollable": False,
+             "timed_out": True})
+
     handled = ({n.lower() for n, _ in enrollable} | {n.lower() for n, _ in no_fit}
-               | {n.lower() for n, _ in empty_board} | {n.lower() for n in no_board})
+               | {n.lower() for n, _ in empty_board} | {n.lower() for n, _ in no_board}
+               | {n.lower() for n, _ in timed_out})
     q["pending"] = [e for e in q.get("pending", [])
                     if str(e.get("name", "")).lower() not in handled]
 
@@ -761,31 +1385,44 @@ def main():
         json.dump(data, open(tmp, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
         os.replace(tmp, path)
     print(f"\nenrolled {len(enrollable)}, "
-          f"rejected {len(no_fit) + len(empty_board) + len(no_board)}; "
-          f"watchlist now {len(wl['companies'])}")
+          f"rejected {len(no_fit) + len(empty_board) + len(no_board)}, "
+          f"unresolved-on-timeout {len(timed_out)}; "
+          f"watchlist now {len(wl['companies'])}", flush=True)
     return 0
 
 
 def prune(wl, matcher, hard_excluded):
     """Dead-board audit: report enrolled companies whose board 404s or is empty."""
     dead, empty, ok = [], [], 0
+    # One probe per enrolled company, several hundred of them, so this is a
+    # multi-minute run by nature. It reports each dead/empty board as it finds
+    # one (flushed, same reasoning as the harvest loop) instead of holding the
+    # entire audit until the last company; a heartbeat every 25 companies keeps
+    # an all-healthy stretch from looking like a stall.
+    checked = 0
     for c in wl["companies"]:
         ats, slug = c.get("ats"), c.get("slug")
         if ats not in ("greenhouse", "ashby", "lever", "workable") or not slug:
             continue  # Workday and custom hosts are out of scope for this audit
         jobs = probe(ats, slug)
+        checked += 1
         if jobs is None:
             dead.append(c["name"])
+            print(f"  [XX] {c['name']:32s} {ats}/{slug} 404", flush=True)
         elif not jobs:
             empty.append(c["name"])
+            print(f"  [00] {c['name']:32s} {ats}/{slug} 0 jobs", flush=True)
         else:
             ok += 1
-    print(f"live={ok} dead(404)={len(dead)} empty={len(empty)}")
+        if checked % 25 == 0:
+            print(f"  ... {checked} checked", flush=True)
+    print(f"live={ok} dead(404)={len(dead)} empty={len(empty)}", flush=True)
     if dead:
-        print("DEAD:", ", ".join(dead))
+        print("DEAD:", ", ".join(dead), flush=True)
     if empty:
-        print("EMPTY:", ", ".join(empty))
-    print("\nReport only; no changes written. Set board_status by hand after review.")
+        print("EMPTY:", ", ".join(empty), flush=True)
+    print("\nReport only; no changes written. Set board_status by hand after review.",
+          flush=True)
     return 0
 
 
