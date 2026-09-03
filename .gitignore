@@ -28,6 +28,12 @@ pipeline/*.tmp
 pipeline/linkedin_browser_harvest.md
 pipeline/linkedin_sweep_state.json
 
+# poll_builtin.py's page cursor. Pure per-machine runtime state (page numbers and
+# run dates, no company names), but it changes on every run, so tracking it would
+# put a commit in the repo for every pipeline pass. Same treatment as pipeline/jobs/.
+# Losing it costs nothing: the feeder restarts each slice at page 1.
+pipeline/builtin_state.json
+
 # Mail-routing details referenced as {{PLACEHOLDER}} tokens by daily_task_prompt.md.
 # Kept local because that spec is published and these values map two of Aneesh's
 # identities to each other.
