@@ -398,6 +398,35 @@ sightings from dead-ending. Run the feeders:
   Algolia backend (added 2026-07-13, replaces the old lossy WebSearch dork for this
   source). Leads arrive with (ats, slug) pre-resolved when the apply link is a
   supported ATS; salary floor still applies at enrollment
+- `.venv/bin/python pipeline/poll_builtin.py --apply` — daily; BuiltIn's COMPANY
+  directory (added 2026-09-03). Walks three configured slices — Atlanta 51-500, US
+  fully-remote 51-500, US fully-remote 501-1000, all restricted to companies with open
+  roles — and keeps only companies hiring in "Customer Success & Experience" or
+  "Operations & Support". Every lead is name-only: BuiltIn hosts its own apply flow and
+  exposes no source ATS (verified on `/company/rethinkfirst/jobs`, zero outbound
+  greenhouse/lever/ashby/workday links), so leads carry `needs_ats_resolution` and wait
+  for `harvest_ats.py` exactly like the LinkedIn ones. Capped at 15 new leads per run,
+  same cap and same reasoning as Step 1d-2.
+
+  **Cadence: daily, but it walks 4 pages per slice per run, not the whole directory.**
+  The slices total ~42 pages; a persisted cursor in `pipeline/builtin_state.json`
+  advances 4 pages per slice each run and wraps at the end, so full coverage lands every
+  ~3-7 days depending on the slice. This is the Step 1c rotation argument applied to
+  pagination: these are COMPANIES, not perishable reqs, so a company two pages further
+  in is still there on Thursday. Do not "catch up" by raising `--max-pages`; the run
+  prints its cursor position every time, and a slice that has never wrapped shows
+  `cycles 0`. `--all-pages` walks a slice whole without touching the cursor, for
+  interactive use only.
+
+  **Read the `ambiguous` count in its output, it is a known recall hole.** BuiltIn
+  truncates the per-company function breakdown at four functions, descending by count
+  (6 of 20 companies on Atlanta page 1 listed fewer roles than their own total, worst
+  case 44 open with 30 attributed). A company hiring one support-ops role behind four
+  larger functions is invisible to the filter, and the miss is biased toward large,
+  engineering-heavy employers. Those companies are reported as `ambiguous` and NOT
+  queued; `--include-ambiguous` queues them when recall matters more than queue noise.
+  There is no cheap fix — `/company/<slug>/jobs` is client-rendered, and BuiltIn's
+  category-filtered JOB directory returns ~10 companies a page, mostly already enrolled.
 - `.venv/bin/python pipeline/harvest_hn_hiring.py` — only on/after the 1st of the month
 - Board dorks (from 1c) — append any UNFAMILIAR company to `pending`
 
@@ -421,8 +450,12 @@ recommendation (fixed 2026-09-03).** The hang the flag was invented for is gone:
 enforces a **60s wall-clock cap per company across every probe, Workday included**
 (`--budget-seconds` to override, `0` to disable). A name that exhausts its budget is reported
 as `[TO] … unresolved` and the run moves to the next one, so no single company can stall a
-batch. The daily ~15-name harvest therefore has a hard ~15-minute ceiling rather than an
-open-ended one.
+batch. The batch ceiling is therefore 60s × the pending count rather than open-ended. There
+is no cap on the batch itself: `--from-pending` takes every pending name, and with LinkedIn
+(Step 1d-2) and BuiltIn (`poll_builtin.py`) each allowed 15 new names a run, a full queue is
+~30 names and a ~30-minute worst case. Typical is far less (most names resolve in 5–20s).
+Left uncapped on purpose (Aneesh, 2026-09-03); revisit if the harvest step starts crowding
+out the JD reads.
 
 Two things make that ceiling real, and both matter if you touch this code:
 
@@ -432,9 +465,10 @@ Two things make that ceiling real, and both matter if you touch this code:
   diagnosable only by wall-clock: a stall and slow-but-healthy progress looked identical, and
   nothing named the company that was stuck. The `-> name` line now goes out *before* probing
   starts, so the last line printed is the company in flight.
-- **The politeness pause is per SERVICE, not global.** The inner loop walks six unrelated ATSes
-  in a row, so five of every six `DELAY` sleeps were spent being polite to a host we were not
-  about to contact. That put a ~40s floor under the cheap phase alone for a 19-variant name
+- **The politeness pause is per SERVICE, not global.** The inner loop walks every cheap ATS
+  in a row (eight as of 2026-09-03: Greenhouse, Ashby, Lever, Workable, Pinpoint, Rippling,
+  JazzHR, SmartRecruiters), so all but one of each cycle's `DELAY` sleeps were spent being
+  polite to a host we were not about to contact. That put a ~40s floor under the cheap phase alone for a 19-variant name
   (114 requests × 0.35s) — two thirds of the budget in `time.sleep()` before a byte moved — and
   a 60s cap would have starved the Workday walk it exists to bound, making the cap a permanent
   `--skip-workday` in disguise. Each ATS still sees at most one request per `DELAY`.
@@ -445,7 +479,7 @@ minutes and silence past 40 before. `--prune` returns byte-identical results to 
 code (live=289, dead=6, empty=7) in 1:43 against its 3:13.
 
 Use `--skip-workday` deliberately: to trim a run you already know is Workday-free, or when you
-want the cheap six only. Names it leaves unresolved still get the manual
+want the cheap slug-addressed ATSes only. Names it leaves unresolved still get the manual
 `site:myworkdayjobs.com` fallback. A company that times out is recorded with
 `unpollable: false` and `timed_out: true` — it is **not** a finding that the company has no
 board, so it must never reach the weekly unpollable punch list; the cheap next step is a
@@ -458,7 +492,8 @@ one-off script, and the Step 1c-3 monthly sweep was deferred out of the schedule
 entirely.
 
 For each pending name the layer generates deterministic slug variants, probes
-Greenhouse/Ashby/Lever/Workable directly, and scores the resulting board with the **same
+Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters directly, then the
+Comeet careers-page walk, then Workday, and scores the resulting board with the **same
 `TitleMatcher` the poller uses**, so a company is judged on real US-reachable fit-titles rather
 than keyword guessing.
 
@@ -582,8 +617,9 @@ company should not sit in `pending` for weeks. Only Gainsight resisted, and that
 block rather than a wrong site name (rejected 2026-07-29 after 8 rechecks).
 
 ATS providers the poller speaks: Greenhouse, Ashby, Lever, Workday, SmartRecruiters
-(case-sensitive slug), Workable, Pinpoint, Rippling, Comeet, and **Paylocity** (added
-2026-08-28). **Paylocity boards CANNOT be auto-resolved by `harvest_ats.py` and must be
+(case-sensitive slug), Workable, Pinpoint, Rippling, Comeet, **Paylocity** (added
+2026-08-28), and **JazzHR** (added 2026-09-03; slug is the `applytojob.com` subdomain, often
+not derivable from the company name, see `_jazzhr_notes`). **Paylocity boards CANNOT be auto-resolved by `harvest_ats.py` and must be
 enrolled by hand**: its identifier is a GUID from the careers URL rather than anything derived
 from a company name, so no slug generator will ever produce one. It is multi-tenant, so the
 adapter covers Paylocity's customers and not just Paylocity: see `_paylocity_notes` for both
@@ -1647,7 +1683,10 @@ re-examines it.
     deferred to the next run**, and a compressed list of what surfaced (mostly-known vs.
     genuinely new). Carry `websearch_rotation.py`'s staleness alarm here verbatim when it
     fires — a rotation is only honest if nothing rots at the back of it.
-  - Discovery feeders: poll_remotive/poll_80k/harvest_hn_hiring status (including DEGRADED/skipped)
+  - Discovery feeders: poll_remotive/poll_80k/poll_builtin/harvest_hn_hiring status
+    (including DEGRADED/skipped). For `poll_builtin`, report leads, the `ambiguous`
+    count, and each slice's cursor position — a slice stuck at the same page across
+    runs means the cursor is not being saved (it advances only under `--apply`).
   - Blind-spot rotation: which named employers were checked this run
   - Unpollable-backlog monthly check: due/not-due, and if due, what was found (skip this line
     entirely on a not-due day — silent housekeeping, same as monthly WebSearch sources)
@@ -1757,8 +1796,11 @@ re-examines it.
    jobs_scanned, title_matched, shortlisted), `websearch` (sources_run, new_companies_found,
    enrolled), `linkedin_harvest` (threads_found, companies_extracted, enrolled,
    blind_spot_real_hits), `feeders` (poll_remotive_status, poll_remotive_leads,
-   poll_80k_leads, harvest_hn_hiring_status, harvest_hn_hiring_leads), plus a top-level
-   `tailored_count`. This is the ONLY thing `pipeline/weekly_channel_report.py` reads —
+   poll_80k_leads, poll_builtin_leads, poll_builtin_ambiguous,
+   harvest_hn_hiring_status, harvest_hn_hiring_leads), plus a top-level
+   `tailored_count`. The two `poll_builtin_*` keys were added 2026-09-03 with that
+   feeder; `weekly_channel_report.py` tolerates absent keys, so runs before that date
+   simply lack them — do not backfill. This is the ONLY thing `pipeline/weekly_channel_report.py` reads —
    every run must write it, in this exact shape, or that day silently drops out of the
    weekly rollup. Do not backfill historical runs by guessing; the source data isn't
    consistently structured that far back (checked 2026-08-10: zero of ~45 prior run files

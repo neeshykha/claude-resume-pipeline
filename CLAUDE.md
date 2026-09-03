@@ -504,7 +504,14 @@ retrieval and kept getting skipped wholesale (zero ran on 2026-08-21, four on 20
 these sources discover *companies* rather than perishable reqs, so a ~3-day cycle costs almost
 nothing. The JSON block is still the source of truth for the queries themselves — don't
 hardcode a query count here (it drifts). As of 2026-06-25 the active set is:
-1. **BuiltIn Atlanta** / **BuiltIn Remote** — Atlanta + remote mid-size tech (title terms broadened)
+1. **BuiltIn Atlanta** — Atlanta mid-size tech (title terms broadened). **BuiltIn Remote was
+   disabled 2026-09-03**, superseded by `pipeline/poll_builtin.py`, which walks BuiltIn's
+   COMPANY directory instead of dorking `site:builtin.com/job` for individual roles (see
+   `daily_task_prompt.md` Step 1d). BuiltIn Atlanta stays active because it is not fully
+   subsumed: the feeder yields companies that still need a resolvable board, so a live
+   Atlanta role at a company whose board never resolves reaches the pipeline only through
+   the role-level dork. This is a judgement call — `channel_stats.websearch` has no
+   per-source attribution, so neither dork's actual yield is known.
 2. **Wellfound** — early-stage startups nationally, filter to Atlanta
 3. **AI-Titled Roles** — novel AI-prefixed titles (tier2b wildcard)
 4. **Ashby / Greenhouse / Lever Boards - Target Roles** — discover companies off the watchlist on each ATS host
@@ -578,10 +585,18 @@ harvester-unknown ATS gets written to `rejected` with `unpollable: true`, which 
 and self-suppressing, since that flag is what stops it being re-checked. Upwind Security sat
 there on Comeet, an ATS `poll_ats.py` had read since 2026-08-20; fixed 2026-09-03 by
 `probe_comeet`, which resolves a Comeet board from the company's own careers page because
-Comeet has no slug to guess. **SmartRecruiters is still uncovered** (slug-addressable, so a
-small fix); Paylocity is uncovered and unfixable by name (GUID-addressed). **When adding an
-ATS adapter to `poll_ats.py`, check whether `harvest_ats.py` can discover it too — the two
-keep separate ATS lists and nothing syncs them.**
+Comeet has no slug to guess. **SmartRecruiters closed 2026-09-03** the same way: slug-addressable,
+so it needed only a `probe()` branch, but the branch has one non-obvious requirement. That API
+answers 200 with `totalFound: 0` for a slug that does not exist rather than 404ing, so the probe
+returns `None` (no board) and never `[]` on an empty result. Returning `[]` would route into
+`_confirm_empty`, whose re-probe gets the same confident 200 and would therefore *confirm* a slug
+collision and write a wrong ats/slug onto a company's permanent record; that is the failure a
+2026-08-28 sweep hit when it reported ten resolved companies that were all collisions. It probes
+last among the cheap ATSes for the same reason. Paylocity is still uncovered and unfixable by
+name (GUID-addressed). `prune()` still skips SmartRecruiters on purpose: that audit splits
+dead-404 from resolved-empty, and this probe collapses both into `None`. **When adding an ATS
+adapter to `poll_ats.py`, check whether `harvest_ats.py` can discover it too — the two keep
+separate ATS lists and nothing syncs them.**
 
 ## Assisted Apply (on-demand skill)
 

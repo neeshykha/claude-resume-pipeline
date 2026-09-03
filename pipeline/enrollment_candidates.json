@@ -14,7 +14,143 @@
     "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced, [unpollable], [weekly_report_surfaced], [weekly_report_surfaced_date]}] — don't re-evaluate unless it resurfaces with new roles. unpollable=true (added 2026-08-14) means the reason is specifically 'no ATS board was ever found' (a genuine automation gap Aneesh could work around by hand), as opposed to a board being found and the company rejected for fit/geo/category reasons. Set this directly when rejecting for no-board (harvest_ats.py does; do the same by hand in Step 1d). weekly_channel_report.py surfaces unpollable=true entries once a week for manual review; weekly_report_surfaced=true (set by that script's --apply pass) stops an entry from repeating in future weekly reports once Aneesh has seen it."
   },
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry — for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards — their fit roles aren't US-reachable.",
-  "pending": [],
+  "pending": [
+    {
+      "name": "Pie Insurance",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 350 employees; offices Fully Remote; 22 open positions incl. Customer Success & Experience (1), Operations & Support (13); builtin.com/company/pie-insurance",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Vetcove",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 65 employees; offices Fully Remote; 25 open positions incl. Customer Success & Experience (7); builtin.com/company/vetcove",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Teamworks",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 600 employees; offices Fully Remote, Noblesville; 19 open positions incl. Customer Success & Experience (6); builtin.com/company/teamworks",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "FULL Creative",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 825 employees; offices Fully Remote, United Kingdom, India, Canada; 9 open positions incl. Customer Success & Experience (2), Operations & Support (2); builtin.com/company/full-creative-1",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Dscout",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 180 employees; offices Fully Remote, London, Seattle, New York +2 more; 10 open positions incl. Customer Success & Experience (3); builtin.com/company/dscout",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Premier Bankcard",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 979 employees; offices Fully Remote; 13 open positions incl. Operations & Support (3); builtin.com/company/premier-bankcard",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Hermeus",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [Atlanta, 51-500 employees, hiring]: 270 employees; offices Atlanta, Los Angeles; 56 open positions incl. Operations & Support (2); builtin.com/company/hermeus",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Jasper",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 209 employees; offices Fully Remote, Australia, France; 9 open positions incl. Customer Success & Experience (2); builtin.com/company/jasper",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Solvd, Inc.",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 708 employees; offices Fully Remote; 19 open positions incl. Operations & Support (2); builtin.com/company/solvd-inc",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Vendavo",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 450 employees; offices Fully Remote; 6 open positions incl. Customer Success & Experience (1), Operations & Support (1); builtin.com/company/vendavo",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Apryse",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 665 employees; offices Fully Remote, South End, Vancouver, Zwijnaardse Dries +1 more; 15 open positions incl. Customer Success & Experience (1); builtin.com/company/apryse",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Doximity",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 740 employees; offices Fully Remote; 10 open positions incl. Customer Success & Experience (1); builtin.com/company/doximity",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Dragos",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 295 employees; offices Fully Remote, Subiaco, Riyadh, Dubai +2 more; 46 open positions incl. Customer Success & Experience (1); builtin.com/company/dragos",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "ECI Group",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [Atlanta, 51-500 employees, hiring]: 145 employees; offices Atlanta; 1 open positions incl. Operations & Support (1); builtin.com/company/eci-group",
+      "needs_ats_resolution": true
+    },
+    {
+      "name": "Moov",
+      "ats": null,
+      "slug": null,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 63 employees; offices Fully Remote, Los Angeles, Boston, Denver +5 more; 1 open positions incl. Operations & Support (1); builtin.com/company/moov-financial",
+      "needs_ats_resolution": true
+    }
+  ],
   "enrolled": [
     {
       "name": "US Bank",
@@ -1685,6 +1821,20 @@
       "slug": "upwind-security",
       "enrolled_date": "2026-09-03",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "RethinkFirst",
+      "ats": "jazzhr",
+      "slug": "rethink",
+      "enrolled_date": "2026-09-03",
+      "enrolled_via": "Manual board resolution 2026-09-03. Rejected as unpollable twice (2026-08-31, and a deliberate 300s re-probe) because the pipeline had no JazzHR support at all -- an ATS-coverage gap reported as a slug gap. JazzHR support added to poll_ats/harvest_ats/validate_config the same day. Note the slug is 'rethink', not any deterministic variant of the company name, so slug_variants() alone would still not have found it; the careers page pointed at applytojob.com and the slug was probed by hand."
+    },
+    {
+      "name": "PayMitto",
+      "ats": "jazzhr",
+      "slug": "paymitto",
+      "enrolled_date": "2026-09-03",
+      "enrolled_via": "Unblocked by JazzHR support added 2026-09-03. Its rejected entry (2026-08-06) had already IDENTIFIED the board -- 'PayMitto uses JazzHR (paymitto.applytojob.com), not a poll_ats.py-supported ATS' -- so this was never a discovery failure, only a coverage one, and the role sat in the unpollable-backlog review queue for four weeks with the answer written next to it. Worth noting for the next unsupported-ATS decision: a rejection reason that names a specific ATS is a standing feature request, not a dead end."
     }
   ],
   "rejected": [
@@ -3124,19 +3274,6 @@
       "rejected_date": "2026-08-06",
       "reason": "Resolved via manual site:myworkdayjobs.com search (bullhorn.wd1.myworkdayjobs.com, tenant BullhornCareers) after the deterministic harvest failed. Direct CXS probe confirmed the board is live (15 jobs) but zero US-reachable tier1/tier2/tier2c titles at check time: only Support-category posting is 'Product Support Analyst' (Remote EMEA - UK). Staffing/recruitment CRM SaaS, ~1,400 employees (Boston HQ), sub-2000 so worth another look if the role mix changes.",
       "recheck_if_resurfaced": true
-    },
-    {
-      "name": "PayMitto",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-06",
-      "reason": "Manual follow-up WebSearch confirmed: PayMitto uses JazzHR (paymitto.applytojob.com), not a poll_ats.py-supported ATS. Cross-border payments fintech, ~50 employees. Not pollable; surfaced once in the digest per manual_review protocol since the Implementation Manager (Atlanta) role is a real tier2 fit.",
-      "recheck_if_resurfaced": true,
-      "manual_review": true,
-      "manual_review_why": "Implementation Manager, Atlanta Metropolitan Area -- tier2_strong_overlap title match at a confirmed Atlanta location.",
-      "manual_review_surfaced": true,
-      "careers_page": "https://paymitto.applytojob.com/apply/",
-      "unpollable": true
     },
     {
       "name": "Yahoo",
@@ -4846,18 +4983,6 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Implementation Manager (tier2 exact; location not read from the alert body)",
-      "manual_review_surfaced": true
-    },
-    {
-      "name": "RethinkFirst",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "manual_review": true,
-      "manual_review_why": "Senior Manager of Customer Support (tier1 loose; location not read from the alert body)",
       "manual_review_surfaced": true
     },
     {

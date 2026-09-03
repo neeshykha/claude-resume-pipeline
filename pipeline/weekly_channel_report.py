@@ -9,7 +9,7 @@ four discovery/execution channels:
   - websearch: the 14 active _websearch_sources dorks (discovery layer)
   - linkedin_harvest: Step 1d-2 forwarded LinkedIn job-alert emails (discovery
     layer, plus the blind-spot auto-trigger for named unpollable companies)
-  - feeders: poll_remotive.py, poll_80k.py, harvest_hn_hiring.py (discovery
+  - feeders: poll_remotive.py, poll_80k.py, poll_builtin.py, harvest_hn_hiring.py (discovery
     layer, lower daily cadence)
 
 Only aggregates days that actually have a channel_stats block -- older run
@@ -261,6 +261,8 @@ def main():
     feeder_remotive_leads = sum_field(rows, "feeders", "poll_remotive_leads")
     feeder_80k_leads = sum_field(rows, "feeders", "poll_80k_leads")
     feeder_hn_leads = sum_field(rows, "feeders", "harvest_hn_hiring_leads")
+    feeder_builtin_leads = sum_field(rows, "feeders", "poll_builtin_leads")
+    feeder_builtin_ambiguous = sum_field(rows, "feeders", "poll_builtin_ambiguous")
     remotive_degraded_days = sum(
         1 for _, cs in rows if cs.get("feeders", {}).get("poll_remotive_status") == "degraded"
     )
@@ -281,6 +283,11 @@ def main():
     print(f"Discovery feeders:")
     print(f"  poll_remotive: DEGRADED on {remotive_degraded_days} of {len(rows)} tracked days, 0 leads possible while degraded")
     print(f"  poll_80k leads: {feeder_80k_leads}  |  harvest_hn_hiring leads: {feeder_hn_leads}")
+    # poll_builtin landed 2026-09-03; runs before then carry no such key and sum to 0,
+    # which reads the same as "ran and found nothing". Check the run dates before
+    # concluding this feeder is dead.
+    print(f"  poll_builtin leads: {feeder_builtin_leads}"
+          f"  |  ambiguous (truncated breakdown, not queued): {feeder_builtin_ambiguous}")
     print()
     print(f"Tailored applications this window: {tailored_total}")
     print(f"  (all tailoring executes off the ATS-poll shortlist by design -- discovery channels")
