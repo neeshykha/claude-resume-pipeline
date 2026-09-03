@@ -1678,6 +1678,13 @@
       "slug": "wonderful",
       "enrolled_date": "2026-09-03",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Upwind Security",
+      "ats": "comeet",
+      "slug": "upwind-security",
+      "enrolled_date": "2026-09-03",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -5036,19 +5043,6 @@
       "reason": "Board RESOLVED at workable/algosec but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/algosec.)",
       "recheck_if_resurfaced": true,
       "unpollable": false
-    },
-    {
-      "name": "Upwind Security",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-02",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "manual_review": true,
-      "manual_review_why": "Technical Account Manager (US Remote) [Remote US]",
-      "manual_review_surfaced": true,
-      "manual_review_surfaced_date": "2026-09-02"
     },
     {
       "name": "Nscale",

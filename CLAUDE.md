@@ -564,12 +564,24 @@ When Aneesh mentions a job or company he found outside the pipeline, do all four
 3. **Patch the gap** — fix the config/query/filter so that *class* of miss can't recur,
    and enroll the company on the watchlist if it has a pollable board.
 4. **Log the tally** — record the miss + root cause in memory (`project_job_pipeline.md`,
-   "discovery miss tally"). **Standing decision (2026-07-02): a third WitnessAI-class miss
-   (good company, pollable board, invisible to discovery) triggers building the ATS
-   directory-harvest layer** — bulk-collect Ashby/Greenhouse slugs, auto-vet
-   programmatically (board live + ≥1 US fit-title), auto-enroll at low priority, with
-   automatic dead-board pruning. Daily poll cost stays flat (poller pre-filters to a fixed
-   top-25); the build is an engineering session, not a heavier daily process.
+   "discovery miss tally").
+
+**The 2026-07-02 standing decision here is SPENT, not open.** It said a third WitnessAI-class
+miss triggers building the ATS directory-harvest layer. That fired, and the layer was built:
+it is `pipeline/harvest_ats.py` (name → slug candidates → live board → fit-space scoring →
+auto-enroll at low priority, plus `--prune` for dead boards). Do not re-raise it, and treat
+any memory entry describing that build as un-greenlit as stale on that point.
+
+The successor question, live as of 2026-09-03: **does the harvest layer reach every ATS the
+poller does?** It does not, and the gap hides itself — a company on a poller-supported but
+harvester-unknown ATS gets written to `rejected` with `unpollable: true`, which is both wrong
+and self-suppressing, since that flag is what stops it being re-checked. Upwind Security sat
+there on Comeet, an ATS `poll_ats.py` had read since 2026-08-20; fixed 2026-09-03 by
+`probe_comeet`, which resolves a Comeet board from the company's own careers page because
+Comeet has no slug to guess. **SmartRecruiters is still uncovered** (slug-addressable, so a
+small fix); Paylocity is uncovered and unfixable by name (GUID-addressed). **When adding an
+ATS adapter to `poll_ats.py`, check whether `harvest_ats.py` can discover it too — the two
+keep separate ATS lists and nothing syncs them.**
 
 ## Assisted Apply (on-demand skill)
 
