@@ -345,12 +345,14 @@ def _pace(url, budget=None):
 
     DELAY exists so we do not hammer any one ATS. It used to be an unconditional
     sleep after every request, which charged the pause to the WRONG party: the
-    inner loop walks six unrelated services in a row (Greenhouse, Ashby, Lever,
-    Workable, Pinpoint, Rippling), so five of every six pauses were spent being
+    inner loop walks every supported cheap ATS in a row (see the tuple in
+    assess()), so all but one of every full cycle's pauses were spent being
     polite to a host we were not about to contact.
 
     That was not merely inelegant, it is what made the 60s cap unusable. A
-    19-variant name like "Palo Alto Networks" issues 114 cheap-ATS requests, so
+    19-variant name like "Palo Alto Networks" issues one request per variant per
+    cheap ATS -- 114 of them when this was measured against six adapters, and it
+    grows with every adapter added -- so
     the old global pause put a ~40s floor under the cheap phase alone -- two
     thirds of the budget in time.sleep() before a single byte moved -- and the
     Workday walk the cap was written to bound could never be reached. Measured
@@ -358,7 +360,7 @@ def _pace(url, budget=None):
 
     Per-service is also the stricter reading of politeness where it counts. Each
     ATS still sees at most one request per DELAY, and in practice far fewer,
-    because a full six-service cycle takes longer than DELAY on its own.
+    because a full cycle across every cheap ATS takes longer than DELAY on its own.
     """
     svc = _service(url)
     wait = DELAY - (time.monotonic() - _SERVICE_LAST_HIT.get(svc, 0.0))
@@ -433,6 +435,32 @@ def _confirm_empty(ats: str, slug: str, budget=None):
     return again is not None and len(again) == 0
 
 
+# SmartRecruiters is the one cheap probe whose endpoint is NOT hardcoded here.
+# Every other branch of probe() builds a URL from a literal, which is fine because
+# those URLs have never moved; the SmartRecruiters one has already been edited once
+# (the limit=100 pagination fix of 2026-08-06) and a second copy of it in this file
+# would be a second thing to remember to change. Read it from the same
+# `_endpoints` block fetch_smartrecruiters reads, cached so a 15-name harvest does
+# not re-parse a 1500-line watchlist per probe.
+_SR_ENDPOINT = None
+
+# Pagination cap for the SmartRecruiters probe, matching poll_ats.py's
+# SMARTRECRUITERS_MAX_POSTINGS so discovery judges the same board the poller will
+# read. NOT first-page-only, unlike the Rippling branch below, and the difference
+# is not stylistic: SmartRecruiters serves 100/page and its large boards are the
+# ones this project has already been burned by. See the branch for the Canva case.
+SMARTRECRUITERS_PROBE_MAX = 500
+
+
+def smartrecruiters_endpoint():
+    """`_endpoints["smartrecruiters"]` from the watchlist, read once."""
+    global _SR_ENDPOINT
+    if _SR_ENDPOINT is None:
+        with open(WATCHLIST, encoding="utf-8") as f:
+            _SR_ENDPOINT = json.load(f)["_endpoints"]["smartrecruiters"]
+    return _SR_ENDPOINT
+
+
 def probe(ats: str, slug: str, budget=None):
     """Return [(title, location)] if the board resolves, else None."""
     if ats == "greenhouse":
@@ -471,6 +499,26 @@ def probe(ats: str, slug: str, budget=None):
             label = ", ".join(parts) if parts else (loc.get("name") or "")
             out.append((j.get("title", ""), label))
         return out
+    if ats == "jazzhr":
+        # JazzHR answers 200 for a slug with no board, serving a fixed "JazzHR -
+        # Inactive Career Page" instead of redirecting or 404ing. So the title
+        # check below is the whole probe: without it a name-variant sweep would
+        # "resolve" amazon, microsoft, oracle, cisco and capitalone, all of which
+        # return that page (verified 2026-09-03). Reuses the poller's own parser
+        # so the probe and the daily fetch cannot drift apart.
+        import poll_ats as _P
+        r = _raw_get(f"https://{slug}.applytojob.com/apply/", budget)
+        if not _P.jazzhr_board_live(r):
+            return None
+        out = []
+        for block in _P.JAZZHR_ITEM_RE.split(r.text)[1:]:
+            m = _P.JAZZHR_LINK_RE.search(block)
+            if not m:
+                continue
+            loc = _P.JAZZHR_LOC_RE.search(block)
+            out.append((_P._jazzhr_text(m.group(2)),
+                        _P._jazzhr_text(loc.group(1)) if loc else ""))
+        return out
     if ats == "rippling":
         # First page only (20 postings) -- enough to judge fit-space; the real
         # daily poll (fetch_rippling in poll_ats.py) paginates fully once a
@@ -501,6 +549,82 @@ def probe(ats: str, slug: str, budget=None):
             locs = j.get("locations") or []
             names = [l.get("name") for l in locs if l.get("name")]
             out.append((j.get("name", ""), ", ".join(names)))
+        return out
+    if ats == "smartrecruiters":
+        # Added 2026-09-03, the SmartRecruiters half of the same gap probe_comeet
+        # closed the same day: poll_ats.py has read this ATS since 2026-06-30
+        # (fetch_smartrecruiters, ServiceNow and Nexthink polled through it daily)
+        # while discovery could not resolve it, so a SmartRecruiters-hosted company
+        # was written to `rejected` with unpollable=True -- the one flag that stops
+        # it ever being re-checked. Unlike Comeet this needed no new resolution
+        # model: the boards ARE slug-addressed, and slug_variants() has generated
+        # the capitalised forms they require since 2026-08-27.
+        #
+        # RETURNS None, NEVER [], AND THAT IS THE WHOLE DIFFICULTY. The postings
+        # API answers 200 with {"totalFound": 0, "content": []} for a slug that
+        # does not exist rather than 404ing, so "no such company" and "real board,
+        # nothing posted" are the same response. An empty result here is therefore
+        # overwhelmingly a slug collision, not a quiet board, and it must not reach
+        # assess()'s _confirm_empty path: that guard exists to re-probe a flaky
+        # 200-with-no-jobs, and a re-probe of a nonexistent slug returns the same
+        # confident 200, so it would CONFIRM the collision and write a wrong
+        # ats/slug onto the company's permanent record. This is not hypothetical --
+        # it is the failure probe_workday's docstring cites, where a 2026-08-28
+        # sweep reported ten companies resolved and every one was a collision.
+        #
+        # PAGINATES, and must. This was first-page-only for a few hours on
+        # 2026-09-03, copying the Rippling branch's "enough to judge fit-space"
+        # reasoning, and that reasoning is wrong for this ATS specifically -- it
+        # reintroduced one layer up the exact bug _smartrecruiters_notes records
+        # fetch_smartrecruiters being fixed for on 2026-08-06, where a live
+        # Atlanta CSM role at ServiceNow was invisible because it sorted past
+        # position 100. Caught the same day on Canva: 267 postings, and all FOUR
+        # of its US Implementation Manager reqs (tier2) sit past the first page,
+        # so the probe reported the board as having zero fit-space and the
+        # company stayed rejected. A board big enough to need page two is exactly
+        # the board most likely to be carrying something.
+        #
+        # Cost is negligible because pagination only happens on a board that has
+        # already resolved, which is rare -- 12 of 213 names in the backlog sweep.
+        base = smartrecruiters_endpoint().format(slug=slug)
+        sep = "&" if "?" in base else "?"
+        postings = []
+        offset = 0
+        while offset < SMARTRECRUITERS_PROBE_MAX:
+            r = _get(f"{base}{sep}offset={offset}", budget)
+            if not r:
+                break
+            try:
+                data = r.json()
+            except ValueError:
+                break
+            page = data.get("content") or []
+            total = data.get("totalFound")
+            # The no-board test is the FIRST page's answer only. A later page
+            # failing or coming back short is a truncated read of a real board,
+            # which is worth keeping; page one coming back empty is a collision.
+            if not postings and (not page or (isinstance(total, int) and total <= 0)):
+                return None
+            if not page:
+                break
+            postings.extend(page)
+            offset += len(page)
+            if isinstance(total, int) and offset >= total:
+                break
+        if not postings:
+            return None
+        out = []
+        for j in postings:
+            # Same location assembly as poll_ats.py's smartrecruiters branch in
+            # extract_location, so a board scores here the way it will score once
+            # enrolled -- including folding `remote` into the string, which is what
+            # us_reachable / tier3_location_ok read.
+            loc = j.get("location") or {}
+            full = loc.get("fullLocation") or ", ".join(
+                p for p in [loc.get("city"), (loc.get("country") or "").upper()] if p)
+            if loc.get("remote"):
+                full = f"Remote {full}".strip()
+            out.append((j.get("name", ""), full))
         return out
     return None
 
@@ -1004,7 +1128,13 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
     # cheap API re-check, the second is human research.
     empty_hits = []
     for slug in slug_variants(name):
-        for ats in ("greenhouse", "ashby", "lever", "workable", "pinpoint", "rippling"):
+        # SmartRecruiters runs LAST of the cheap probes. It is as cheap as any of
+        # them (one JSON GET), so this is a collision-risk ordering, not a cost
+        # one: its API cannot 404 a bad slug, so it is the branch most likely to
+        # answer for the wrong company. Letting a genuine Greenhouse or Ashby
+        # board answer first costs nothing and removes that chance entirely.
+        for ats in ("greenhouse", "ashby", "lever", "workable", "pinpoint",
+                    "rippling", "jazzhr", "smartrecruiters"):
             if budget is not None and budget.expired():
                 return timed_out("cheap-ATS slug walk")
             if (ats, slug) in known_pairs:
@@ -1075,7 +1205,7 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
     # SIGKILLed at ~10 min and, re-run, was still silent past 40 min. A tenant
     # that resolves but matches no site name costs the full walk, and five hosts
     # x ~15 sites x TIMEOUT=20s is the worst case per slug, so a handful of such
-    # names in one batch is enough. --skip-workday lets the cheap six run to
+    # names in one batch is enough. --skip-workday lets the cheap ATSes run to
     # completion so a stuck Workday probe cannot hold the whole queue hostage;
     # the names it leaves unresolved are reported as no-board in the usual way
     # and keep their manual site:myworkdayjobs.com fallback.
@@ -1127,7 +1257,8 @@ def main():
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--prune", action="store_true")
     ap.add_argument("--skip-workday", action="store_true",
-                    help="Probe only Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling. "
+                    help="Probe only Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/"
+                         "JazzHR/SmartRecruiters. "
                          "Added 2026-09-02 after the Workday walk hung two full runs. "
                          "Since the per-company wall-clock cap landed (2026-09-03) this "
                          "is an option for trimming a run, not a requirement for large "
@@ -1330,11 +1461,17 @@ def main():
         # Upwind Security's 2026-09-02 rejection said while it was running a
         # live 58-position Comeet board -- a true sentence pointing at the wrong
         # next step. Keep this text honest about what was actually tried.
+        # The skip flags change what was tried, so the text must follow them: a
+        # --skip-workday run must not claim "no Workday tenant answered".
+        workday_clause = ("Workday was NOT probed (--skip-workday)" if args.skip_workday
+                          else "no Workday tenant answered")
+        comeet_clause = ("Comeet was NOT probed (--skip-comeet)" if args.skip_comeet
+                         else "no Comeet widget was found on a name-derived careers page")
         entry = {"name": name, "ats": None, "slug": None, "rejected_date": today,
                   "reason": ("No board resolved: no deterministic name-variant slug matched "
-                             "Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling, no Workday "
-                             "tenant answered, and no Comeet widget was found on a "
-                             "name-derived careers page. May still be pollable under a "
+                             "Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/"
+                             f"JazzHR/SmartRecruiters; {workday_clause}; {comeet_clause}. "
+                             "May still be pollable under a "
                              "non-obvious slug, on a careers page this script could not "
                              "guess the domain of, or on an ATS with no adapter yet "
                              "(Paylocity boards are GUID-addressed and can never be "

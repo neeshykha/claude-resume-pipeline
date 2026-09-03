@@ -16,13 +16,14 @@ Output:
 """
 
 import argparse
+import html
 import json
 import os
 import re
 import sys
 import time
 from datetime import date, datetime, timedelta
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 import requests
 
 # ── Paths ────────────────────────────────────────────────────────────────────
@@ -71,6 +72,51 @@ COMPANY_CAP = None       # ← _scoring_config.company_cap_max_applied_pending
 CAP_PENDING_MAX_AGE_DAYS = None  # ← _scoring_config.company_cap_pending_max_age_days
 SMALL_COMPANY_BONUS = {}  # ← _scoring_config.small_company_bonus
 MATCHER = None           # ← TitleMatcher built from _title_scoring_tiers + _poller_config
+
+# JazzHR board scraping (see fetch_jazzhr). Kept module-level so they compile once
+# rather than per board.
+JAZZHR_UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+             "(KHTML, like Gecko) Chrome/120.0 Safari/537.36")
+JAZZHR_INACTIVE_RE = re.compile(r"<title[^>]*>\s*JazzHR\s*-\s*Inactive Career Page",
+                                re.I)
+JAZZHR_ITEM_RE = re.compile(r'<li\s+class="list-group-item"', re.I)
+JAZZHR_LINK_RE = re.compile(
+    r'<h3\s+class=[\'"]list-group-item-heading[\'"]\s*>\s*'
+    r'<a\s+href="([^"]+)"\s*>(.*?)</a>', re.I | re.S)
+JAZZHR_LOC_RE = re.compile(r"fa-map-marker'?\"?></i>(.*?)</li>", re.I | re.S)
+JAZZHR_DEPT_RE = re.compile(r"fa-sitemap'?\"?></i>(.*?)</li>", re.I | re.S)
+
+
+def _jazzhr_text(raw: str) -> str:
+    """Tag-stripped, entity-decoded, whitespace-collapsed inner text."""
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", raw or ""))).strip()
+
+
+def jazzhr_board_live(resp) -> bool:
+    """Is this response an actual JazzHR board, or JazzHR's way of saying no?
+
+    JazzHR NEVER 404s a bad slug, and it says "no board here" two different ways.
+    Both were hit on 2026-09-03 within one probe of each other, and missing either
+    one produces a confident wrong answer rather than a failure:
+
+      1. 302 off the tenant host to https://www.jazzhr.com/job-seekers -- what
+         `rethinkfirst` does. `requests` follows it, so the caller sees a 200 and
+         a 47KB marketing page. This is what made the first version of the probe
+         report `jazzhr/rethinkfirst` as a resolved board with 0 jobs, when the
+         real board is at the slug `rethink`.
+      2. A same-host 200 serving "JazzHR - Inactive Career Page" -- what `amazon`,
+         `microsoft`, `oracle`, `cisco` and `capitalone` all do. Without this
+         check a name-variant sweep enrolls Amazon on JazzHR.
+
+    Checking the final host catches (1) no matter where JazzHR redirects dead
+    slugs next; the title catches (2). Neither test subsumes the other.
+    """
+    if resp is None or resp.status_code != 200:
+        return False
+    host = urlsplit(resp.url or "").hostname or ""
+    if not host.endswith(".applytojob.com"):
+        return False
+    return not JAZZHR_INACTIVE_RE.search(resp.text)
 
 
 def _init_config(watchlist: dict):
@@ -619,12 +665,15 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             raw = job_data.get("published_on") or job_data.get("created_at")
             if raw:
                 return datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
-        elif ats in ("pinpoint", "rippling"):
-            # Neither public endpoint exposes a posting-creation date in the
-            # list response (Pinpoint: only deadline_at, the application
-            # cutoff, not when it opened; Rippling: the SSR job-list payload
-            # carries id/name/url/department/locations only). Always neutral,
-            # same "no data -> don't filter" treatment as a missing salary.
+        elif ats in ("pinpoint", "rippling", "jazzhr"):
+            # None of these list responses exposes a posting-creation date
+            # (Pinpoint: only deadline_at, the application cutoff, not when it
+            # opened; Rippling: the SSR job-list payload carries
+            # id/name/url/department/locations only; JazzHR: the board page
+            # renders title, location and department and nothing else). Always
+            # neutral, same "no data -> don't filter" treatment as a missing
+            # salary. For JazzHR this means MAX_POSTING_AGE_DAYS never filters
+            # its boards and they never earn the freshness bonus either.
             return None
         elif ats == "comeet":
             # Comeet exposes time_updated but no creation/publication date.
@@ -810,6 +859,12 @@ def parse_location(job_data: dict, ats: str) -> str:
         locs = job_data.get("locations") or []
         names = [l.get("name") for l in locs if l.get("name")]
         return ", ".join(names) if names else "Unknown"
+    elif ats == "jazzhr":
+        # Already a flat display string off the board page ("Remote",
+        # "Atlanta, GA"), normalized in fetch_jazzhr. JazzHR has no separate
+        # remote flag to second-guess it with, which given the Ashby /
+        # Paylocity / Comeet history with those flags is no loss.
+        return job_data.get("location") or "Unknown"
     elif ats == "comeet":
         # Comeet location: {"name": "Austin, TX", "city": ..., "state": ...,
         # "is_remote": bool}. Build city+state, fall back to name.
@@ -856,7 +911,7 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
     elif ats == "smartrecruiters":
         jid = job_data.get("id", "")
         return f"https://jobs.smartrecruiters.com/{slug}/{jid}"
-    elif ats in ("pinpoint", "rippling"):
+    elif ats in ("pinpoint", "rippling", "jazzhr"):
         return job_data.get("url", "")
     elif ats == "paylocity":
         # Precomputed in fetch_paylocity, which knows the tenant host; the
@@ -1091,6 +1146,57 @@ def fetch_comeet(company: dict) -> list[dict]:
                 if isinstance(d, dict))
             out.append(j)
         return out
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
+def fetch_jazzhr(slug: str) -> list[dict]:
+    """Fetch jobs from a JazzHR board ({slug}.applytojob.com/apply/).
+
+    Added 2026-09-03, resolving RethinkFirst. That company had been rejected as
+    unpollable twice (2026-08-31, and again on a deliberate one-name re-probe with
+    a 300s budget) while running a perfectly ordinary board with 21 live jobs on
+    it, two of them fit-space. Same failure as Paylocity (2026-08-28) and Pinpoint
+    (2026-08-12): an ATS-COVERAGE gap reported as a slug gap, because a probe set
+    that does not know an ATS exists cannot distinguish "no board" from "a board we
+    never asked about."
+
+    Scraped, not an API. JazzHR's public JSON (api.resumatorapi.com) needs a
+    per-employer key, but the board page is plain server-rendered HTML: one
+    `<li class="list-group-item">` per posting, carrying the title link, a
+    location after `fa-map-marker`, and a department after `fa-sitemap`. No
+    salary and no posting date are exposed anywhere on it, so both stay absent
+    and the generic "no data -> don't filter" path applies to each.
+
+    HOW TO TELL A REAL BOARD FROM A DEAD SLUG, which matters because JazzHR
+    answers 200 for both: a slug with no board serves a fixed "JazzHR - Inactive
+    Career Page" (byte-identical across slugs -- 79,777b for microsoft, amazon,
+    oracle, cisco, capitalone and eight others on 2026-09-03) rather than
+    redirecting or 404ing. Matching on the title is what keeps a name-variant
+    sweep from enrolling Amazon on JazzHR; matching on the byte count would work
+    today and rot the first time JazzHR edits that page.
+    """
+    url = ATS_ENDPOINTS["jazzhr"].format(slug=slug)
+    try:
+        resp = requests.get(url, headers={"User-Agent": JAZZHR_UA}, timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+        if not jazzhr_board_live(resp):
+            return [{"_error": f"JazzHR: no board at slug '{slug}' "
+                               f"(resolved to {resp.url})"}]
+        jobs = []
+        for block in JAZZHR_ITEM_RE.split(resp.text)[1:]:
+            m = JAZZHR_LINK_RE.search(block)
+            if not m:
+                continue
+            loc = JAZZHR_LOC_RE.search(block)
+            dept = JAZZHR_DEPT_RE.search(block)
+            jobs.append({
+                "title": _jazzhr_text(m.group(2)),
+                "location": _jazzhr_text(loc.group(1)) if loc else "Unknown",
+                "department": _jazzhr_text(dept.group(1)) if dept else "",
+                "url": m.group(1),
+            })
+        return jobs
     except Exception as e:
         return [{"_error": f"{type(e).__name__}: {e}"}]
 
@@ -1431,6 +1537,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_paylocity(company)
         elif ats == "comeet":
             jobs = fetch_comeet(company)
+        elif ats == "jazzhr":
+            jobs = fetch_jazzhr(slug)
         else:
             errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
             continue

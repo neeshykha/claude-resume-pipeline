@@ -40,7 +40,7 @@ SEEN_JOBS_PATH = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
 # would have blocked the whole daily run. Caught 2026-07-30 enrolling Hawk-Eye.
 SUPPORTED_ATS = {"greenhouse", "greenhouse_eu", "ashby", "lever", "workday",
                  "smartrecruiters", "workable", "pinpoint", "rippling", "comeet",
-                 "paylocity"}
+                 "paylocity", "jazzhr"}
 VALID_BANDS = {"1-50", "51-200", "201-500", "501-2000", "2000+"}
 QUEUE_BUCKETS = ("pending", "enrolled", "rejected")
 
