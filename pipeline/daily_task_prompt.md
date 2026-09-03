@@ -416,27 +416,51 @@ re-surface regularly too.)
 
 Dry-run by default; re-run with `--apply` to enroll.
 
-**Add `--skip-workday` whenever the pending queue holds more than a handful of names
-(added 2026-09-02).** The Workday probe walks 5 hosts × ~15 site names at a 20s timeout per
-slug, so a batch containing even a few enterprises whose tenant resolves but matches no site
-name will hang the whole run: on 2026-09-02 a 16-name LinkedIn batch (Palo Alto Networks,
-RSA Security, Forescout, Worldwide Clinical Trials among them) was SIGKILLed at ~10 minutes,
-re-run, and was still silent past 40 minutes, leaving 21 entries unresolved until the flag
-existed. With it, the six cheap ATSes run to completion in minutes; names that need Workday
-are reported as no-board with the usual manual `site:myworkdayjobs.com` fallback, which is the
-same outcome the hung run would have produced for them anyway, minus the hang. Run the
-Workday-inclusive form only on a short, deliberate list via `--names`.
+**Run it Workday-inclusive by default. `--skip-workday` is an option now, not a standing
+recommendation (fixed 2026-09-03).** The hang the flag was invented for is gone: `assess()`
+enforces a **60s wall-clock cap per company across every probe, Workday included**
+(`--budget-seconds` to override, `0` to disable). A name that exhausts its budget is reported
+as `[TO] … unresolved` and the run moves to the next one, so no single company can stall a
+batch. The daily ~15-name harvest therefore has a hard ~15-minute ceiling rather than an
+open-ended one.
 
-The flag is a workaround, not the fix. **Fix target (2026-09-02 retro):** a per-company
-wall-clock cap inside `assess()` so no single name can exceed, say, 60s across all probes, and
-unbuffered per-company progress lines (`flush=True`) so a run is never silent. The 2026-09-02
-hang cost more than its 50 minutes: while the script held the two config files, every other
-write in the run (blind-spot write-back, dork queueing, the Cloudbeds enrollment) had to wait
-or become a one-off script, and the Step 1c-3 monthly sweep was deferred out of the scheduled
-pass entirely. For each pending name it generates
-deterministic slug variants, probes Greenhouse/Ashby/Lever/Workable directly, and scores the
-resulting board with the **same `TitleMatcher` the poller uses**, so a company is judged on real
-US-reachable fit-titles rather than keyword guessing.
+Two things make that ceiling real, and both matter if you touch this code:
+
+- **Progress is printed per company and flushed.** Every line used to inherit Python's block
+  buffering, so a run read through a pipe — which is how the scheduled pass runs it — emitted
+  nothing at all until the process exited. That is the single reason the 2026-09-02 hang was
+  diagnosable only by wall-clock: a stall and slow-but-healthy progress looked identical, and
+  nothing named the company that was stuck. The `-> name` line now goes out *before* probing
+  starts, so the last line printed is the company in flight.
+- **The politeness pause is per SERVICE, not global.** The inner loop walks six unrelated ATSes
+  in a row, so five of every six `DELAY` sleeps were spent being polite to a host we were not
+  about to contact. That put a ~40s floor under the cheap phase alone for a 19-variant name
+  (114 requests × 0.35s) — two thirds of the budget in `time.sleep()` before a byte moved — and
+  a 60s cap would have starved the Workday walk it exists to bound, making the cap a permanent
+  `--skip-workday` in disguise. Each ATS still sees at most one request per `DELAY`.
+
+Measured 2026-09-03 on the exact names that hung: `--names "Palo Alto Networks" "RSA Security"
+"Forescout"` with Workday enabled finishes in **92s, no timeouts**, versus a SIGKILL at 10
+minutes and silence past 40 before. `--prune` returns byte-identical results to the pre-change
+code (live=289, dead=6, empty=7) in 1:43 against its 3:13.
+
+Use `--skip-workday` deliberately: to trim a run you already know is Workday-free, or when you
+want the cheap six only. Names it leaves unresolved still get the manual
+`site:myworkdayjobs.com` fallback. A company that times out is recorded with
+`unpollable: false` and `timed_out: true` — it is **not** a finding that the company has no
+board, so it must never reach the weekly unpollable punch list; the cheap next step is a
+targeted `--names "<name>" --budget-seconds 300`, not a manual search.
+
+Why this was worth fixing rather than living with the flag: the 2026-09-02 hang cost more than
+its 50 minutes. While the script held the two config files, every other write in the run
+(blind-spot write-back, dork queueing, the Cloudbeds enrollment) had to wait or become a
+one-off script, and the Step 1c-3 monthly sweep was deferred out of the scheduled pass
+entirely.
+
+For each pending name the layer generates deterministic slug variants, probes
+Greenhouse/Ashby/Lever/Workable directly, and scores the resulting board with the **same
+`TitleMatcher` the poller uses**, so a company is judged on real US-reachable fit-titles rather
+than keyword guessing.
 
 **Qualifying tiers (changed 2026-08-21, Aneesh's call):** tier1/tier2/tier2c anywhere
 US-reachable, **plus tier3 in Atlanta or remote-US only**. tier4 and supplemental remain
@@ -1117,24 +1141,34 @@ with the identical conclusion in every digest from 07-15 through 07-19.)
 .venv/bin/python pipeline/fetch_jd.py --from-hits pipeline/jobs/ats_hits_[date].json --match "<title fragment>"
 ```
 
-It hits the ATS's own JSON API (Ashby, Workday, Greenhouse, Lever, SmartRecruiters, **Comeet**)
-and prints title, location, remote flag, posting date, compensation, and the **full description
-text** for you to read directly. Accepts bare URLs as positional args too, and `--match` is
-repeatable. Only fall back to WebFetch for an ATS it does not cover (Pinpoint and Rippling have no
-per-posting JSON endpoint; **Paylocity** has no fetcher yet, see below), then to WebSearch for a
-cached or mirrored copy. If the JD is
+It hits the ATS's own JSON API (Ashby, Workday, Greenhouse, Lever, SmartRecruiters, **Comeet**) —
+or, for **Paylocity**, scrapes its server-rendered detail page — and prints title, location,
+remote flag, posting date, compensation, and the **full description text** for you to read
+directly. Accepts bare URLs as positional args too, and `--match` is repeatable. Only fall back to
+WebFetch for an ATS it does not cover (Pinpoint and Rippling have no per-posting JSON endpoint),
+then to WebSearch for a cached or mirrored copy. If the JD is
 unreachable two runs in a row, drop it to the near-miss list with a note rather than stalling.
 
-**Paylocity: the poller speaks it, `fetch_jd.py` does not, and WebFetch handles it cleanly
-(added 2026-09-03).** The Paylocity adapter landed in `poll_ats.py` on 2026-08-28, so Paylocity
-reqs now reach the shortlist, but `fetch_jd.py` has no Paylocity branch and fails fast with "no
-fetcher matched this URL". Do not read that as unreachable. A plain WebFetch of
-`2000recruiting.paylocity.com/Recruiting/Jobs/Details/<id>` returned the complete verbatim
-requirements block, salary, and remote policy on the first attempt: that host is
-server-rendered HTML, which is exactly why the outcomes.csv note from 2026-08-30 flagged it as
-scrapeable. Verified on Paylocity's own "Lead Technical Support Ops" req (which then died on a
-$65K-$75K band, well under the floor). Building `fetch_paylocity` would save one WebFetch per
-Paylocity hit; until then the fallback is reliable and cheap.
+**Paylocity got a fetcher on 2026-09-03; do not WebFetch it any more.** The poller gained its
+Paylocity adapter on 2026-08-28, so reqs reached the shortlist for six days with no fetcher to
+read them, and every Paylocity hit cost a WebFetch (Paylocity's own "Lead Technical Support Ops",
+2026-09-03). `fetch_paylocity` now covers both host forms — the shared `recruiting.paylocity.com`
+and the tenant-prefixed `<id>recruiting.paylocity.com` — and returns the requirements verbatim.
+Two things it does that WebFetch could not, both found while verifying it against live reqs:
+
+- **It takes every section, not just Description.** Some tenants split the posting into a
+  `Description` block *and* a separate `Requirements` block (Momentus Technologies). A
+  Description-only read returns a JD with no requirements in it, silently, looking complete.
+- **It reads the location line by shape, not by position.** That line is bullet-separated and its
+  segments vary: Paylocity's own board renders `Fully Remote / Remote, US / Operations`, Momentus
+  renders `Fully Remote / Brisbane, Queensland, AUS` with no department. Reading by index called
+  the Brisbane role remote-US and dropped the country — a hard-filter miss.
+
+Posting date comes from the board listing (the detail page has none), and salary is scraped out of
+the prose because Paylocity states it nowhere structured, which is why `poll_ats.py` treats every
+Paylocity hit as salary-neutral. A closed req 302s to `/Recruiting/Jobs/JobNotFound` with HTTP 200
+and is reported as closed. The `www.paylocity.com/company/careers/*.job.<id>/` URLs are useless —
+they redirect to a department index — and the fetcher says so instead of failing generically.
 
 **Comeet was wrongly listed as unreachable here until 2026-08-31, and it cost a real read.** The
 Comeet *hosted page* is a Spark Hire template, which is true and is why WebFetch fails on it; that
