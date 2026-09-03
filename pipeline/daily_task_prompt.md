@@ -1121,8 +1121,20 @@ It hits the ATS's own JSON API (Ashby, Workday, Greenhouse, Lever, SmartRecruite
 and prints title, location, remote flag, posting date, compensation, and the **full description
 text** for you to read directly. Accepts bare URLs as positional args too, and `--match` is
 repeatable. Only fall back to WebFetch for an ATS it does not cover (Pinpoint and Rippling have no
-per-posting JSON endpoint), then to WebSearch for a cached or mirrored copy. If the JD is
+per-posting JSON endpoint; **Paylocity** has no fetcher yet, see below), then to WebSearch for a
+cached or mirrored copy. If the JD is
 unreachable two runs in a row, drop it to the near-miss list with a note rather than stalling.
+
+**Paylocity: the poller speaks it, `fetch_jd.py` does not, and WebFetch handles it cleanly
+(added 2026-09-03).** The Paylocity adapter landed in `poll_ats.py` on 2026-08-28, so Paylocity
+reqs now reach the shortlist, but `fetch_jd.py` has no Paylocity branch and fails fast with "no
+fetcher matched this URL". Do not read that as unreachable. A plain WebFetch of
+`2000recruiting.paylocity.com/Recruiting/Jobs/Details/<id>` returned the complete verbatim
+requirements block, salary, and remote policy on the first attempt: that host is
+server-rendered HTML, which is exactly why the outcomes.csv note from 2026-08-30 flagged it as
+scrapeable. Verified on Paylocity's own "Lead Technical Support Ops" req (which then died on a
+$65K-$75K band, well under the floor). Building `fetch_paylocity` would save one WebFetch per
+Paylocity hit; until then the fallback is reliable and cheap.
 
 **Comeet was wrongly listed as unreachable here until 2026-08-31, and it cost a real read.** The
 Comeet *hosted page* is a Spark Hire template, which is true and is why WebFetch fails on it; that
