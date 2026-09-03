@@ -36,6 +36,9 @@ Each ATS is hit at the endpoint that returns structured data:
              this -- so go to the API host directly and skip the redirect.)
   Lever      https://api.lever.co/v0/postings/{slug}/{id}
   SmartRec.  https://api.smartrecruiters.com/v1/companies/{slug}/postings/{id}
+  Paylocity  https://{host}/Recruiting/Jobs/Details/{id}
+             (no API at all; the detail page is server-rendered HTML and is
+             scraped directly. See fetch_paylocity.)
 
 Prints title, location, remote flag, posting date, compensation, and the FULL
 description text. Read the requirements yourself rather than asking a summarizing
@@ -290,8 +293,237 @@ def fetch_comeet(url):
     }
 
 
+# --- Paylocity -------------------------------------------------------------
+# Two host forms, matching poll_ats.fetch_paylocity and _paylocity_notes: the
+# shared `recruiting.paylocity.com` (Paylocity's customers, the common case) and
+# a tenant-prefixed `<id>recruiting.paylocity.com` (Paylocity itself is 2000).
+# The prefix is glued to the label with no dot, so the host label is
+# `<something>recruiting`, not `<something>.recruiting`.
+PAYLOCITY_DETAIL = re.compile(
+    r"https?://([A-Za-z0-9-]*recruiting)\.paylocity\.com"
+    r"/Recruiting/Jobs/Details/(\d+)", re.I)
+PAYLOCITY_MARKETING = re.compile(
+    r"https?://(?:www\.)?paylocity\.com/company/careers/", re.I)
+# A segment of the bullet-separated header line that states a work arrangement
+# rather than a place. The line is NOT positional: Paylocity's own board renders
+# "Fully Remote / Remote, US / Operations" while Momentus renders
+# "Fully Remote / Brisbane, Queensland, AUS" with no department at all, so
+# reading by index mislabels the policy as the location and drops the city.
+PAYLOCITY_POLICY = re.compile(
+    r"^(fully\s+remote|remote|hybrid|on[-\s]?site|in[-\s]?office|"
+    r"work\s+from\s+home|telecommute|flexible)\b", re.I)
+_PAYLOCITY_BOARD_CACHE = {}
+
+
+def _balanced_div(text, from_idx):
+    """Inner HTML of the first <div> at or after from_idx, nesting-aware.
+
+    Paylocity's description block is a bare <div> holding arbitrary posting
+    markup, so a non-greedy `<div>(.*?)</div>` truncates at the first nested
+    close. Same reasoning as poll_ats.fetch_paylocity bracket-balancing the
+    Jobs array instead of regexing it.
+    """
+    open_re = re.compile(r"<div\b[^>]*>", re.I)
+    tok_re = re.compile(r"<div\b[^>]*>|</div\s*>", re.I)
+    m = open_re.search(text, from_idx)
+    if not m:
+        return ""
+    depth, pos, end = 1, m.end(), len(text)
+    while depth:
+        t = tok_re.search(text, pos)
+        if not t:
+            break
+        depth += 1 if t.group(0)[1] != "/" else -1
+        pos = t.end()
+        if depth == 0:
+            end = t.start()
+    return text[m.end():end]
+
+
+def _paylocity_published(host, guid, job_id):
+    """PublishedDate for one req, read off its own board listing.
+
+    The detail page carries no posting date, but the board page server-renders
+    the whole `"Jobs":[...]` array with a real ISO PublishedDate per req -- the
+    same payload poll_ats.fetch_paylocity reads. The board GUID is on the detail
+    page itself, in its "View All Jobs" link, so no watchlist lookup is needed
+    and reqs at unenrolled tenants still resolve. Cached per board: a run that
+    reads several reqs from one tenant pays for the listing once.
+
+    Best-effort by design. A missing date is a neutral freshness signal, not a
+    reason to fail a JD read.
+    """
+    key = (host, guid)
+    if key not in _PAYLOCITY_BOARD_CACHE:
+        jobs = []
+        try:
+            text = get(f"https://{host}/Recruiting/Jobs/All/{guid}").text
+            anchor = text.find('"Jobs":[')
+            if anchor != -1:
+                start = anchor + len('"Jobs":')
+                depth = 0
+                for i in range(start, len(text)):
+                    if text[i] == "[":
+                        depth += 1
+                    elif text[i] == "]":
+                        depth -= 1
+                        if depth == 0:
+                            jobs = json.loads(text[start:i + 1])
+                            break
+        except Exception:                                 # noqa: BLE001
+            jobs = []
+        _PAYLOCITY_BOARD_CACHE[key] = {str(j.get("JobId")): j.get("PublishedDate")
+                                       for j in jobs if isinstance(j, dict)}
+    return _PAYLOCITY_BOARD_CACHE[key].get(str(job_id))
+
+
+def _paylocity_salary(body):
+    """Pull a pay range out of the description text.
+
+    Salary lives nowhere structured on Paylocity -- not in the listing payload
+    (which is why poll_ats treats every Paylocity hit as salary-neutral) and not
+    in any field on the detail page. It is a sentence inside the posting, so it
+    has to be read out of the prose. Prefer a range that follows a comp keyword
+    so an unrelated dollar range in the body ("$50M ARR") does not win.
+    """
+    rng = re.compile(r"\$\s?[\d,]+(?:\.\d\d)?\s*(?:-|--|–|—|to)\s*"
+                     r"\$?\s?[\d,]+(?:\.\d\d)?", re.I)
+    kw = re.compile(r"base pay|pay range|salary range|base salary|compensation|"
+                    r"hourly rate|pay for this", re.I)
+    hits = list(rng.finditer(body))
+    if not hits:
+        return None
+    for k in kw.finditer(body):
+        for h in hits:
+            if 0 <= h.start() - k.end() <= 220:
+                return re.sub(r"\s+", " ", h.group(0)).strip()
+    return re.sub(r"\s+", " ", hits[0].group(0)).strip()
+
+
+def fetch_paylocity(url):
+    """Paylocity Recruiting, scraped from the server-rendered detail page.
+
+    Added 2026-09-03. poll_ats.py gained a Paylocity adapter on 2026-08-28, so
+    Paylocity reqs have been reaching the shortlist since -- but this file had no
+    branch for them and failed fast with "no fetcher matched this URL", which
+    forced a WebFetch fallback for every Paylocity hit (Paylocity's own "Lead
+    Technical Support Ops" req, 2026-09-03). WebFetch works here, unlike on
+    Ashby/Workday/Comeet, because the page really is server-rendered -- but it
+    spends a summarizing model on text a plain GET already returns verbatim, and
+    Step 3 needs the requirements block VERBATIM.
+
+    There is no JSON anywhere on the detail page: no embedded model, no
+    ld+json, no itemprop. Everything comes out of the rendered markup:
+
+      title     <span class="job-preview-title left"><span>...</span></span>
+      location  <div class="preview-location">, bullet-separated, and NOT
+                positional -- see PAYLOCITY_POLICY. Segments are classified by
+                shape: the first work-arrangement-shaped one is the remote
+                policy, the first of the rest is the location, and anything
+                left over is the hiring department.
+      body      EVERY <div class="job-listing-header">Label</div> plus the
+                balanced <div> after it, in document order. Labels seen live:
+                Description, Requirements, Job Type, Salary Description.
+
+    Take every section rather than just Description. Momentus Technologies
+    (recruiting.paylocity.com/.../4281459) splits the posting into Description
+    AND a separate Requirements block, so a Description-only read returns a JD
+    with no requirements in it at all -- silently, and looking complete. That is
+    the exact failure Step 3 forbids, and it is invisible unless you compare
+    against the page. Short one-line sections stay inline (`Job Type:
+    Full-time`); long ones get a `### Label` heading.
+
+    Note the remote flag here is the page's OWN rendered policy text, not the
+    listing payload's `IsRemote` boolean that poll_ats.py deliberately ignores
+    (it disagrees with LocationName in both directions). This one is the string
+    a human reads on the posting, so it is trustworthy in a way IsRemote is not
+    -- and the full policy paragraph is in the body regardless.
+
+    A closed req is not a 404: the host 302s to /Recruiting/Jobs/JobNotFound and
+    serves it with HTTP 200, so the redirect target is the only signal.
+
+    The www.paylocity.com/company/careers/*.job.<id>/ URLs are NOT usable: they
+    302 to a department index, not a posting. Matched here only to say so.
+    """
+    if PAYLOCITY_MARKETING.search(url):
+        return {"ats": "paylocity", "error":
+                "www.paylocity.com/company/careers/ URLs redirect to a department "
+                "index, not a posting. Use the real host form: "
+                "https://<tenant>recruiting.paylocity.com/Recruiting/Jobs/Details/<id>"}
+    m = PAYLOCITY_DETAIL.search(url)
+    if not m:
+        return None
+    host_label, job_id = m.group(1), m.group(2)
+    host = f"{host_label}.paylocity.com"
+    resp = get(f"https://{host}/Recruiting/Jobs/Details/{job_id}")
+    if "JobNotFound" in resp.url:
+        return {"ats": "paylocity", "error":
+                f"req {job_id} is closed or was pulled ({host} redirected to "
+                f"JobNotFound). Search indexes keep dead Paylocity reqs for a "
+                f"long time, so this is the common case for an aging link."}
+    page = resp.text
+
+    title = None
+    tm = re.search(r'class="job-preview-title[^"]*"\s*>(.*?)</span>\s*</span>',
+                   page, re.S | re.I)
+    if tm:
+        title = strip_html(tm.group(1)) or None
+
+    location, remote, department = None, None, None
+    lm = re.search(r'<div class="preview-location"\s*>(.*?)</div>', page, re.S | re.I)
+    if lm:
+        for seg in [strip_html(p) for p in re.split(r"(?:&bull;|•)", lm.group(1))]:
+            if not seg:
+                continue
+            if remote is None and PAYLOCITY_POLICY.match(seg):
+                remote = seg
+            elif location is None:
+                location = seg
+            elif department is None:
+                department = seg
+        # A remote-only header line ("Fully Remote" and nothing else) leaves the
+        # location field empty; the policy text is the best answer available.
+        location = location or remote
+
+    sections, salary_label = [], None
+    for hm in re.finditer(r'<div class="job-listing-header"\s*>(.*?)</div>',
+                          page, re.S | re.I):
+        label = strip_html(hm.group(1))
+        value = strip_html(_balanced_div(page, hm.end()))
+        if not label or not value:
+            continue
+        if "\n" in value or len(value) > 120:
+            sections.append(f"### {label}\n\n{value}")
+        else:
+            sections.append(f"{label}: {value}")
+            if salary_label is None and re.search(r"salary|pay|compensation",
+                                                  label, re.I):
+                salary_label = value
+    if department:
+        sections.insert(0, f"Department: {department}")
+    if not sections:
+        return {"ats": "paylocity", "error":
+                f"no job-listing-header sections on {host}"
+                f"/Recruiting/Jobs/Details/{job_id} (page shape changed)"}
+    body = "\n\n".join(sections)
+
+    guid = None
+    gm = re.search(r"/Recruiting/Jobs/All/([0-9a-f-]{36})", page, re.I)
+    if gm:
+        guid = gm.group(1)
+    return {
+        "ats": "paylocity",
+        "title": title,
+        "location": location,
+        "remote": remote,
+        "posted": _paylocity_published(host, guid, job_id) if guid else None,
+        "salary": salary_label or _paylocity_salary(body),
+        "body": body,
+    }
+
+
 FETCHERS = (fetch_ashby, fetch_workday, fetch_greenhouse, fetch_lever,
-            fetch_smartrecruiters, fetch_comeet)
+            fetch_smartrecruiters, fetch_comeet, fetch_paylocity)
 
 
 def fetch(url):
@@ -303,8 +535,9 @@ def fetch(url):
         if out is not None:
             return out
     return {"error": "no fetcher matched this URL. Supported: Ashby, Workday, "
-                     "Greenhouse, Lever, SmartRecruiters, Comeet. Pinpoint/Rippling "
-                     "have no per-posting JSON endpoint; use WebSearch for those."}
+                     "Greenhouse, Lever, SmartRecruiters, Comeet, Paylocity. "
+                     "Pinpoint/Rippling have no per-posting JSON endpoint; use "
+                     "WebSearch for those."}
 
 
 def render(url, rec, limit):
