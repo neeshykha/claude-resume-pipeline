@@ -371,6 +371,16 @@ it**, so a guardrail edit strands the existing queue until `--sweep-drift` recon
    while missing LaunchDarkly, 1Password, Vanta, Expel, LogicGate, and Chainguard entirely.
    To classify a new company, edit its `score_bonus`/`bonus_reason` directly.
 
+   **This rule is about free text, not about publisher-assigned taxonomies.**
+   `poll_builtin.py -> INDUSTRY_ALLOW` (added 2026-09-04) does classify companies, but it
+   reads BuiltIn's own closed 94-tag industry vocabulary with set membership — no substring
+   matching, no inference from company names, and the tag split itself was curated by hand
+   exactly as this guardrail asks. Measured on the 771 companies in the configured slices:
+   0% false negatives against the 33 that are already hand-curated onto the watchlist, and
+   ~10% false positives on the blocked set. That is a different mechanism from the 2026-07-28
+   keyword pass, and its numbers are recorded on the constant. It does NOT feed scoring — it
+   gates queue admission only, so a miss costs a lead, never a wrong score.
+
 2. **Cap total company-level bonuses at +30.** The sum of all structural bonuses that describe
    the *company* rather than the *role* — AI/ML, watchlist (+10), Atlanta-enterprise (+10) /
    Atlanta-startup (+20), IoT (+15), small-company (+15 ≤200 / +8 201-500), passion-domain
@@ -511,7 +521,11 @@ hardcode a query count here (it drifts). As of 2026-06-25 the active set is:
    subsumed: the feeder yields companies that still need a resolvable board, so a live
    Atlanta role at a company whose board never resolves reaches the pipeline only through
    the role-level dork. This is a judgement call — `channel_stats.websearch` has no
-   per-source attribution, so neither dork's actual yield is known.
+   per-source attribution, so neither dork's actual yield is known. The feeder carries TWO
+   company-level gates as of 2026-09-04: `TARGET_FUNCTIONS` (is it hiring in a support-ops
+   function?) and `INDUSTRY_ALLOW` (is it a technology company at all?). The second was added
+   after the first, alone, queued a car wash, an animal shelter, a bubble tea chain, and a
+   real-estate operator. `--no-fit-gate` turns it off to re-measure recall.
 2. **Wellfound** — early-stage startups nationally, filter to Atlanta
 3. **AI-Titled Roles** — novel AI-prefixed titles (tier2b wildcard)
 4. **Ashby / Greenhouse / Lever Boards - Target Roles** — discover companies off the watchlist on each ATS host

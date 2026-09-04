@@ -88,6 +88,20 @@ Dedupe goes through `check_company.lookup()`, the same surface the CLI reports o
 means the blind-spot and unpollable-backlog blocks count as known, so this feeder cannot
 re-queue a company that a manual rotation already covers.
 
+TWO GATES, AND THEY ASK DIFFERENT QUESTIONS
+-------------------------------------------
+`TARGET_FUNCTIONS` asks whether a company is HIRING in a support-ops function. Every
+operator of any size is, so on its own it queued a car wash, an animal shelter, a bubble
+tea chain, a hotel group, and a baseball team. `INDUSTRY_ALLOW` (added 2026-09-04) asks
+the other half: is this a company whose support-ops role is worth surfacing at all? It
+reads the industry tags BuiltIn already puts on every card -- a closed 94-tag vocabulary,
+publisher-assigned -- rather than inferring anything from the company name. Both gates
+must pass. The measurement, and why this is not the free-text keyword pass that CLAUDE.md
+records as already having failed, are on INDUSTRY_ALLOW itself.
+
+The gate runs in the dedupe loop, before `fetch_sections`, so an off-space company costs
+no JobSectionsEncoded round trip either. `--no-fit-gate` turns it off to re-measure recall.
+
 EVERY LEAD IS NAME-ONLY
 -----------------------
 BuiltIn hosts its own apply flow and does not expose the source ATS. Verified on
@@ -144,6 +158,69 @@ _URI_SAFE = "!'()*-._~"
 # BuiltIn's category names, not tier names -- the tier judgement happens later, against
 # the real JD, once the company is enrolled and the poller sees its actual titles.
 TARGET_FUNCTIONS = ("Customer Success & Experience", "Operations & Support")
+
+# The industry tags that say a company BUILDS OR SELLS TECHNOLOGY, in BuiltIn's own
+# taxonomy. Membership here is the company-level fit gate; TARGET_FUNCTIONS only ever
+# asked whether a company was hiring in a support-ops FUNCTION, which every operator
+# of any size is, so the queue filled with a car wash, an animal shelter, a bubble tea
+# chain, a hotel group, and a baseball team.
+#
+# WHY THIS IS NOT THE KEYWORD PASS THAT ALREADY FAILED ONCE
+# ---------------------------------------------------------
+# CLAUDE.md "Scoring Guardrails" item 1 records a keyword pass over free-text `reason`
+# prose that was ~40% wrong in BOTH directions ("deployment" matched every AI-application
+# company; "iam" substring-matched inside "Miami") and is why company classification is
+# hand-curated. This is a different mechanism and must not be confused with it:
+#
+#   * It reads a CLOSED, PUBLISHER-ASSIGNED vocabulary, not free text. BuiltIn tags every
+#     company from a fixed list -- 94 distinct tags across the 771 companies in the three
+#     configured slices on 2026-09-04, every company carrying at least one. There is no
+#     substring matching anywhere, so no "iam"-in-"Miami" failure mode exists.
+#   * The list below IS the hand curation the guardrail asks for. It was split by hand,
+#     once, over a vocabulary that is 94 items long and changes only when BuiltIn adds a
+#     tag. It is not derived from company names or prose.
+#
+# MEASURED 2026-09-04, against outcomes rather than intuition:
+#   * 33 companies in these slices are already on the hand-curated watchlist or in
+#     `enrolled`. The gate passes 33 of 33. FALSE-NEGATIVE RATE 0%.
+#   * All 30 companies this feeder actually queued (the 2026-09-03 and 2026-09-04
+#     batches) have known outcomes. All 10 that enrolled pass. It blocks 3 of the 8
+#     that burned the harvest budget unresolved, plus both that resolved to no board.
+#   * Over the full 771: 626 pass (81%), 145 blocked (19%). Reading all 145 by hand,
+#     roughly 12-16 are arguable misses -- tech companies BuiltIn tagged only by their
+#     vertical (Bluefin Payment Systems as "Financial Services", Knock and PadSplit as
+#     "Real Estate", Openly as "Insurance", Cultura Technologies as "Agriculture").
+#     That is a ~10% false-positive rate ON THE BLOCKED SET, ~2% of the universe, and
+#     it is the honest cost. Compare the ~40% in both directions that got the earlier
+#     attempt rejected.
+#
+# The residue is concentrated in finance / insurance / real-estate, where BuiltIn often
+# tags the vertical and omits "Software". A looser variant that blocked only tag sets
+# lying WHOLLY inside the operator sectors was measured too: same 0% false negatives,
+# but it caught 1 of the 8 timeouts instead of 3 and blocked 9% of the universe instead
+# of 19%. Not worth the recall it buys back; recorded so it is not re-derived.
+#
+# To fix a specific miss, move that company's tag -- do not add name matching.
+INDUSTRY_ALLOW = frozenset({
+    # core software / IT
+    "Software", "Information Technology", "Enterprise Web", "App development",
+    "Consumer Web", "Mobile", "Design", "Productivity", "Database",
+    "Infrastructure as a Service (IaaS)", "Cloud", "Hardware", "Semiconductor",
+    # AI / data
+    "Artificial Intelligence", "Machine Learning", "Generative AI", "Computer Vision",
+    "Natural Language Processing", "Conversational AI", "Robotics", "Automation",
+    "Analytics", "Big Data", "Big Data Analytics", "Business Intelligence",
+    # security
+    "Cybersecurity", "Security", "Data Privacy",
+    # vertical SaaS -- the tag itself means "software for X", not "an X company"
+    "Fintech", "Healthtech", "Telehealth", "Edtech", "HR Tech", "AdTech",
+    "Marketing Tech", "PropTech", "Legal Tech", "Biotech", "SEO",
+    # platforms / marketplaces / consumer tech
+    "eCommerce", "Payments", "Digital Media", "Social Media", "Gaming", "Esports",
+    "Blockchain", "Cryptocurrency", "Web3", "NFT", "Internet of Things",
+    "Virtual Reality", "Wearables", "On-Demand", "Asset Management + Discovery",
+    "3PL: Third Party Logistics",
+})
 
 
 # ── Slices ───────────────────────────────────────────────────────────────────
@@ -334,6 +411,24 @@ def fetch_sections(spec: dict, cards: list[dict], verbose=True) -> dict[int, dic
     return out
 
 
+def in_fit_space(card: dict) -> bool:
+    """Does this company build or sell technology, per BuiltIn's own industry tags?
+
+    The company-level gate. TARGET_FUNCTIONS asks whether a company is HIRING in a
+    support-ops function; this asks whether it is a company whose support-ops role is
+    worth surfacing at all. Both must hold.
+
+    FAILS OPEN on an untagged card. Every one of the 771 companies across the three
+    configured slices carried at least one tag on 2026-09-04, so an empty list means
+    `_INDUSTRIES` stopped matching, not that BuiltIn stopped tagging -- and a parser
+    regression must not silently empty the feeder. It shows up as an off_space count
+    of zero on a full page instead, which the run line makes visible.
+    """
+    if not card.get("industries"):
+        return True
+    return bool(set(card["industries"]) & INDUSTRY_ALLOW)
+
+
 def qualifying(sections: dict) -> dict[str, int]:
     """The TARGET_FUNCTIONS this company is hiring in, with counts."""
     return {f: n for f, n in (sections or {}).get("functions", {}).items()
@@ -437,7 +532,7 @@ def write_pending(entries: list[dict]) -> int:
 
 def run_slice(key: str, spec: dict, state: dict, wl: dict, enrollment: dict,
               today: dt.date, pages: int, all_pages: bool, seen: set,
-              verbose: bool, include_ambiguous: bool) -> dict:
+              verbose: bool, include_ambiguous: bool, fit_gate: bool = True) -> dict:
     st = state.setdefault("slices", {}).setdefault(
         key, {"next_page": 1, "cycles": 0, "last_run": None, "max_page": None})
     start = 1 if all_pages else st.get("next_page", 1)
@@ -445,7 +540,7 @@ def run_slice(key: str, spec: dict, state: dict, wl: dict, enrollment: dict,
     print(f"\n[{key}] {spec['label']}")
     leads, counters = [], {"pages": 0, "cards": 0, "unknown": 0, "qualified": 0,
                            "ambiguous": 0, "no_sections": 0, "filter_warnings": [],
-                           "ambiguous_names": []}
+                           "ambiguous_names": [], "off_space": 0, "off_space_names": []}
     page, last = start, None
     while True:
         if not all_pages and counters["pages"] >= pages:
@@ -471,16 +566,27 @@ def run_slice(key: str, spec: dict, state: dict, wl: dict, enrollment: dict,
             st["cycles"] = st.get("cycles", 0) + 1
             break
 
+        off_space_before = counters["off_space"]
         # Dedupe BEFORE the function lookup: local dict vs. a network round trip.
+        # The fit gate goes here too, for the same reason -- a company that is not in
+        # the fit space cannot become a lead however it is hiring, so it should never
+        # cost a JobSectionsEncoded round trip either.
         fresh = []
         for c in cards:
             if norm(c["name"]) in seen:
                 continue
             seen.add(norm(c["name"]))
-            if not lookup(c["name"], wl, enrollment):
-                fresh.append(c)
+            if lookup(c["name"], wl, enrollment):
+                continue
+            if fit_gate and not in_fit_space(c):
+                counters["off_space"] += 1
+                counters["off_space_names"].append(
+                    f"{c['name']} ({', '.join(c['industries']) or 'no tags'})")
+                continue
+            fresh.append(c)
         counters["unknown"] += len(fresh)
 
+        page_off_space = counters["off_space"] - off_space_before
         sections = fetch_sections(spec, fresh, verbose=verbose) if fresh else {}
         page_qualified = page_ambiguous = 0
         for c in fresh:
@@ -512,7 +618,8 @@ def run_slice(key: str, spec: dict, state: dict, wl: dict, enrollment: dict,
             leads.append(build_lead(c, funcs, s, spec, today))
 
         print(f"  page {page}/{last}: {len(cards)} cards, {len(fresh)} unknown, "
-              f"{page_qualified} qualified, {page_ambiguous} ambiguous")
+              f"{page_qualified} qualified, {page_ambiguous} ambiguous, "
+              f"{page_off_space} off-space")
         page = page + 1 if page < (last or page) else 1
         if page == 1:
             st["cycles"] = st.get("cycles", 0) + 1
@@ -541,6 +648,10 @@ def main() -> int:
                     help="also queue companies whose breakdown is truncated past the "
                          "four functions BuiltIn shows, so a target function cannot be "
                          "ruled out. Recall over precision; see hidden_roles().")
+    ap.add_argument("--no-fit-gate", action="store_true",
+                    help="skip the INDUSTRY_ALLOW company-level fit gate, so every "
+                         "company hiring in a TARGET_FUNCTION is considered. Use to "
+                         "re-measure what the gate costs in recall; not for daily runs.")
     ap.add_argument("--date", help="run date (YYYY-MM-DD); default today")
     ap.add_argument("--quiet", action="store_true", help="skip the per-company lines")
     args = ap.parse_args()
@@ -554,17 +665,18 @@ def main() -> int:
         enrollment = json.load(f)
     state = load_state()
 
-    all_leads, warnings, ambiguous_names = [], [], []
+    all_leads, warnings, ambiguous_names, off_space_names = [], [], [], []
     seen: set[str] = set()
     totals = {"pages": 0, "cards": 0, "unknown": 0, "qualified": 0, "ambiguous": 0,
-              "no_sections": 0}
+              "no_sections": 0, "off_space": 0}
     for key in keys:
         c = run_slice(key, SLICES[key], state, wl, enrollment, today,
                       args.max_pages, args.all_pages, seen, not args.quiet,
-                      args.include_ambiguous)
+                      args.include_ambiguous, not args.no_fit_gate)
         all_leads += c.pop("leads")
         warnings += [f"{key}: {w}" for w in c["filter_warnings"]]
         ambiguous_names += c["ambiguous_names"]
+        off_space_names += c["off_space_names"]
         for k in totals:
             totals[k] += c[k]
 
@@ -581,9 +693,19 @@ def main() -> int:
     deferred = all_leads[MAX_NEW_PER_RUN:]
 
     print(f"\npages={totals['pages']} cards={totals['cards']} "
+          f"off_space={totals['off_space']} "
           f"unknown={totals['unknown']} qualified={totals['qualified']} "
           f"ambiguous={totals['ambiguous']} "
           f"new_leads={len(capped)} cap_deferred={len(deferred)}")
+    if off_space_names:
+        print(f"off-space ({len(off_space_names)} dropped before the job-sections "
+              f"lookup) -- no INDUSTRY_ALLOW tag, so not a company whose support-ops "
+              f"role is worth surfacing:")
+        for o in off_space_names:
+            print("  - " + o)
+    elif not args.no_fit_gate and totals["cards"]:
+        print("off-space=0 on a non-empty walk; check that _INDUSTRIES still matches "
+              "(in_fit_space fails open on an untagged card)")
     if ambiguous_names:
         verb = "queued" if args.include_ambiguous else "NOT queued"
         print(f"ambiguous ({verb}) -- breakdown truncated at 4 functions, so a target "
