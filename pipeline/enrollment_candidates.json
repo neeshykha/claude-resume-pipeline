@@ -14,143 +14,7 @@
     "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced, [unpollable], [weekly_report_surfaced], [weekly_report_surfaced_date]}] — don't re-evaluate unless it resurfaces with new roles. unpollable=true (added 2026-08-14) means the reason is specifically 'no ATS board was ever found' (a genuine automation gap Aneesh could work around by hand), as opposed to a board being found and the company rejected for fit/geo/category reasons. Set this directly when rejecting for no-board (harvest_ats.py does; do the same by hand in Step 1d). weekly_channel_report.py surfaces unpollable=true entries once a week for manual review; weekly_report_surfaced=true (set by that script's --apply pass) stops an entry from repeating in future weekly reports once Aneesh has seen it."
   },
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry — for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards — their fit roles aren't US-reachable.",
-  "pending": [
-    {
-      "name": "Pie Insurance",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 350 employees; offices Fully Remote; 22 open positions incl. Customer Success & Experience (1), Operations & Support (13); builtin.com/company/pie-insurance",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Vetcove",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 65 employees; offices Fully Remote; 25 open positions incl. Customer Success & Experience (7); builtin.com/company/vetcove",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Teamworks",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 600 employees; offices Fully Remote, Noblesville; 19 open positions incl. Customer Success & Experience (6); builtin.com/company/teamworks",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "FULL Creative",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 825 employees; offices Fully Remote, United Kingdom, India, Canada; 9 open positions incl. Customer Success & Experience (2), Operations & Support (2); builtin.com/company/full-creative-1",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Dscout",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 180 employees; offices Fully Remote, London, Seattle, New York +2 more; 10 open positions incl. Customer Success & Experience (3); builtin.com/company/dscout",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Premier Bankcard",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 979 employees; offices Fully Remote; 13 open positions incl. Operations & Support (3); builtin.com/company/premier-bankcard",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Hermeus",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [Atlanta, 51-500 employees, hiring]: 270 employees; offices Atlanta, Los Angeles; 56 open positions incl. Operations & Support (2); builtin.com/company/hermeus",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Jasper",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 209 employees; offices Fully Remote, Australia, France; 9 open positions incl. Customer Success & Experience (2); builtin.com/company/jasper",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Solvd, Inc.",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 708 employees; offices Fully Remote; 19 open positions incl. Operations & Support (2); builtin.com/company/solvd-inc",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Vendavo",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 450 employees; offices Fully Remote; 6 open positions incl. Customer Success & Experience (1), Operations & Support (1); builtin.com/company/vendavo",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Apryse",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 665 employees; offices Fully Remote, South End, Vancouver, Zwijnaardse Dries +1 more; 15 open positions incl. Customer Success & Experience (1); builtin.com/company/apryse",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Doximity",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 501-1000 employees, hiring]: 740 employees; offices Fully Remote; 10 open positions incl. Customer Success & Experience (1); builtin.com/company/doximity",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Dragos",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 295 employees; offices Fully Remote, Subiaco, Riyadh, Dubai +2 more; 46 open positions incl. Customer Success & Experience (1); builtin.com/company/dragos",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "ECI Group",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [Atlanta, 51-500 employees, hiring]: 145 employees; offices Atlanta; 1 open positions incl. Operations & Support (1); builtin.com/company/eci-group",
-      "needs_ats_resolution": true
-    },
-    {
-      "name": "Moov",
-      "ats": null,
-      "slug": null,
-      "source": "BuiltIn directory",
-      "first_seen": "2026-09-03",
-      "why": "BuiltIn directory [US fully-remote, 51-500 employees, hiring]: 63 employees; offices Fully Remote, Los Angeles, Boston, Denver +5 more; 1 open positions incl. Operations & Support (1); builtin.com/company/moov-financial",
-      "needs_ats_resolution": true
-    }
-  ],
+  "pending": [],
   "enrolled": [
     {
       "name": "US Bank",
@@ -1835,6 +1699,83 @@
       "slug": "paymitto",
       "enrolled_date": "2026-09-03",
       "enrolled_via": "Unblocked by JazzHR support added 2026-09-03. Its rejected entry (2026-08-06) had already IDENTIFIED the board -- 'PayMitto uses JazzHR (paymitto.applytojob.com), not a poll_ats.py-supported ATS' -- so this was never a discovery failure, only a coverage one, and the role sat in the unpollable-backlog review queue for four weeks with the answer written next to it. Worth noting for the next unsupported-ATS decision: a rejection reason that names a specific ATS is a standing feature request, not a dead end."
+    },
+    {
+      "name": "Pie Insurance",
+      "ats": "greenhouse",
+      "slug": "pieinsurance",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Vetcove",
+      "ats": "ashby",
+      "slug": "vetcove",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Doximity",
+      "ats": "greenhouse",
+      "slug": "doximity",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Dragos",
+      "ats": "greenhouse",
+      "slug": "dragos",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Moov",
+      "ats": "rippling",
+      "slug": "moov",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "OpenSesame",
+      "ats": "greenhouse",
+      "slug": "opensesame",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Clipboard",
+      "ats": "ashby",
+      "slug": "clipboard",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "OfficeSpace Software",
+      "ats": "greenhouse",
+      "slug": "officespacesoftware",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Keyfactor",
+      "ats": "greenhouse",
+      "slug": "keyfactorinc",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Lob",
+      "ats": "greenhouse",
+      "slug": "lob",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "NPHub",
+      "ats": "lever",
+      "slug": "nphub",
+      "enrolled_date": "2026-09-04",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -5392,6 +5333,323 @@
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
+    },
+    {
+      "name": "Teamworks",
+      "ats": "ashby",
+      "slug": "teamworks",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (23 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Dscout",
+      "ats": "greenhouse",
+      "slug": "dscout",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (10 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Hermeus",
+      "ats": "lever",
+      "slug": "hermeus",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (86 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Solvd, Inc.",
+      "ats": "ashby",
+      "slug": "solvd",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (24 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Vendavo",
+      "ats": "lever",
+      "slug": "vendavo",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Apryse",
+      "ats": "lever",
+      "slug": "apryse",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (15 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Runway",
+      "ats": "ashby",
+      "slug": "runway",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Covius",
+      "ats": "workday",
+      "slug": "covius",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (7 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Homebase",
+      "ats": "ashby",
+      "slug": "homebase",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (19 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Mountfitchet Group",
+      "ats": "smartrecruiters",
+      "slug": "mountfitchetgroup",
+      "rejected_date": "2026-09-04",
+      "reason": "Board resolves and is live (77 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Slalom",
+      "ats": "workable",
+      "slug": "slalom",
+      "rejected_date": "2026-09-04",
+      "reason": "Board RESOLVED at workable/slalom but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/slalom.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false
+    },
+    {
+      "name": "NPAworldwide",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Technical Operations Manager [Atlanta, GA] -- tier1 title, Atlanta; LinkedIn job 4458360279"
+    },
+    {
+      "name": "SORACOM",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Caliber Car Wash",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Turaco",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "FULL Creative",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"FULL Creative\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/full-creative.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "Premier Bankcard",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Premier Bankcard\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "Jasper",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 74s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Jasper\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "ECI Group",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"ECI Group\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "Allstate",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Allstate\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "17a",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"17a\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/17a-llc, workable/17a-inc, workable/17aindustries, workable/17aai, workable/17a.ai, workable/17a.io, workable/17a.com, workable/17a-careers.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "Fisher Construction Group",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Fisher Construction Group\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "AHEAD",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"AHEAD\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/ahead.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "Molina Healthcare",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Molina Healthcare\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/molina-healthcare-inc.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "PhysiciansTrust AI",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"PhysiciansTrust AI\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "Yancey Bros. Co.",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Yancey Bros. Co.\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "University of Colorado",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 89s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"University of Colorado\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/university-of-colorado.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "GE Vernova",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"GE Vernova\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/ge-vernova.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "The Hain Celestial Group",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"The Hain Celestial Group\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "Hotwire Communications Ltd",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Hotwire Communications Ltd\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "Linc Education Services Pte Ltd",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Linc Education Services Pte Ltd\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "CHAGEE",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"CHAGEE\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "AI Digital",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"AI Digital\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/ai-digital.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
+    },
+    {
+      "name": "LifeLine Animal Project",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-04",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 67s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"LifeLine Animal Project\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true
     }
   ]
 }

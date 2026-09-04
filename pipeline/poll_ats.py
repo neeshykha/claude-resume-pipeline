@@ -2024,7 +2024,10 @@ def poll_all(run_date: date) -> dict:
             sibling_collapsed.append({
                 "company": job.get("company"),
                 "title": job.get("title"),
-                "url": job.get("url"),
+                # job dicts carry `apply_url`; reading `url` here silently
+                # emitted null for every row (fixed 2026-09-04), which broke
+                # the digest's no-exceptions apply-link rule for this section.
+                "url": job.get("apply_url"),
                 "location": job.get("location"),
                 "dedup_key": dk,
             })
@@ -2189,7 +2192,8 @@ def poll_all(run_date: date) -> dict:
             "location": j.get("location"),
             "pre_score": j.get("pre_score"),
             "title_tier": j.get("title_tier"),
-            "url": j.get("url"),
+            # see the sibling_collapsed note: the key is `apply_url`, not `url`
+            "url": j.get("apply_url"),
             "posted_date": j.get("posted_date"),
         }
         for j in matched if id(j) not in shortlisted_ids
