@@ -1916,11 +1916,21 @@ gitignored — never `git add -f`, never restore run state into `CLAUDE.md`.
 .venv/bin/python pipeline/repo_sync.py --stage
 ```
 ```bash
-git diff --cached --quiet || git commit -m "pipeline: daily run $(date +%F)"
+git commit -m "pipeline: daily run 2026-09-04"
 ```
 ```bash
 git push
 ```
+
+**Substitute today's literal date in that commit message.** This step used to
+read `git diff --cached --quiet || git commit -m "pipeline: daily run $(date
++%F)"`, and both halves of that line are now denied by `check_bash_safety.py`
+(widened 2026-09-04): `||` because chained commands can't be allow-listed, and
+`$(date +%F)` because command substitution raises a live permission prompt
+("Contains command_substitution") that hangs an unattended run. Nothing is lost.
+The `||` guard existed to skip the commit when nothing was staged, and a bare
+`git commit` against an empty index simply exits non-zero with "nothing to
+commit," which is an informative error rather than a hang.
 
 **`repo_sync.py --stage` replaced a bare `git add -A` on 2026-08-21, and the reason is a
 real incident, not tidiness.** `git add -A` stages the whole working tree, so an unattended
