@@ -48,6 +48,100 @@
       "needs_ats_resolution": false,
       "manual_review": true,
       "manual_review_why": "Enterprise Technical Account Manager -- exact tier2 title; location unconfirmed"
+    },
+    {
+      "name": "PagerDuty",
+      "ats": "greenhouse",
+      "slug": "pagerduty",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Technical Account Manager, reported by the search summary as one of several PagerDuty postings IN ATLANTA. tier2 exact title plus the scarcest location in the rubric, which makes this the strongest lead of the ten. Location came from a summarizing search backend, not the JD; confirm before scoring.",
+      "needs_ats_resolution": false,
+      "manual_review": true,
+      "manual_review_why": "Technical Account Manager [Atlanta, per search summary -- unconfirmed against the JD]"
+    },
+    {
+      "name": "ASG",
+      "ats": "greenhouse",
+      "slug": "asgjobs",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Technical Customer Success Manager. Summary states the company is hybrid-friendly with office hubs in Denver, ATLANTA, and Tampa, but that Denver is the preferred location -- so the Atlanta signal is real but weak, and this may fail the location gate on a JD read.",
+      "needs_ats_resolution": false,
+      "manual_review": true,
+      "manual_review_why": "Technical Customer Success Manager [Atlanta listed as an office hub, Denver preferred -- unconfirmed]"
+    },
+    {
+      "name": "Prophecy",
+      "ats": "greenhouse",
+      "slug": "prophecysimpledatalabs",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Customer Success Manager coordinating across CS, Sales, Engineering, Product, and Support. Data engineering platform. Location NOT confirmed from the snippet.",
+      "needs_ats_resolution": false
+    },
+    {
+      "name": "Veza",
+      "ats": "greenhouse",
+      "slug": "veza",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Customer Success / Technical Account Manager, described as a strategic technical advisor bridging business objectives and platform capabilities. Identity security platform, so a likely tooling vertical bonus at classification time. Location NOT confirmed.",
+      "needs_ats_resolution": false
+    },
+    {
+      "name": "SmarterDx",
+      "ats": "greenhouse",
+      "slug": "smarterdx",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Support Analyst I, Customer Success Operations. NOTE THE LEVEL: 'Analyst I' is junior and well below current scope, so this specific req is probably not a fit -- the company is worth watching, the role is not. Health-tech (clinical documentation), so the passion domain may apply. Also appeared in poll_builtin's deferred tail the same day. Location NOT confirmed.",
+      "needs_ats_resolution": false
+    },
+    {
+      "name": "Plenful",
+      "ats": "ashby",
+      "slug": "plenful",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Customer Experience Account Manager overseeing customer implementations and working with technical teams on configuration. Healthcare workflow automation, so the passion domain may apply. Location NOT confirmed.",
+      "needs_ats_resolution": false
+    },
+    {
+      "name": "Revin",
+      "ats": "ashby",
+      "slug": "revin",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Customer Success Manager supporting enterprise accounts through complex, multi-phase implementations. Location NOT confirmed.",
+      "needs_ats_resolution": false
+    },
+    {
+      "name": "Ambi Robotics",
+      "ats": "lever",
+      "slug": "ambirobotics",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Customer Success Account Manager. Robotics/physical-world company, which is adjacent to the IoT and connected-devices experience that is his strongest differentiator. Location NOT confirmed.",
+      "needs_ats_resolution": false
+    },
+    {
+      "name": "Total Expert",
+      "ats": "lever",
+      "slug": "totalexpert",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Director, Customer Success. Director-level, so check scope against the tier1 'Director of Support Operations' carve-out rather than assuming it is above level. Location NOT confirmed.",
+      "needs_ats_resolution": false
+    },
+    {
+      "name": "Everlywell",
+      "ats": "lever",
+      "slug": "everlywell",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07",
+      "why": "Senior Technical Implementation & Accounts Manager (Clinical Operations). tier2 implementation family plus the health-tech passion domain, which is a good combination. Location NOT confirmed.",
+      "needs_ats_resolution": false
     }
   ],
   "enrolled": [
