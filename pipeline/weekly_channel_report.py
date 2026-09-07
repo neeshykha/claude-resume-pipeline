@@ -16,6 +16,25 @@ Only aggregates days that actually have a channel_stats block -- older run
 files predate the schema and are skipped, not guessed at. The report says
 explicitly how many of the trailing 7 days had data.
 
+The per-channel `enrolled` counters inside `channel_stats` are SAME-RUN counts,
+and they are structurally near-zero. A channel discovers a company on one run;
+`harvest_ats.py` resolves its board and enrolls it on a later one, tomorrow at
+the earliest. So a channel that discovers well still reports 0 enrollments --
+which is how this report spent weeks saying "0 enrollments off 19 WebSearch
+source-runs" about a channel that had, in fact, been enrolling companies.
+
+The "Enrollment attribution" section (added 2026-09-07) is the honest answer.
+It reads `enrollment_candidates.json` directly and counts entries whose
+`enrolled_date` falls in the window, grouped by the `source` string carried over
+from `pending`. Because enrollment and discovery are different events, this
+section deliberately does NOT divide by the window's discovery counts: the
+companies enrolled this week were mostly found last week. It reports the lag
+instead, so the two numbers can be read against each other honestly.
+
+`source` has only been carried onto `enrolled`/`rejected` since 2026-09-07;
+everything filed before then is counted as "unattributed" rather than guessed
+at, and that bucket shrinks on its own as the backlog turns over.
+
 Also prints an "unpollable companies" section (added 2026-08-14, from Aneesh
 asking for a weekly punch list): pipeline/enrollment_candidates.json -> rejected
 entries tagged unpollable=true (a genuine "no ATS board was ever found" gap, not
@@ -49,6 +68,48 @@ import json
 from datetime import datetime, timedelta
 
 UNPOLLABLE_WEEKLY_CAP = 20
+
+WATCHLIST_PATH = "pipeline/watchlist_companies.json"
+
+# The first date on which every outcome entry SHOULD carry a source. The
+# carry-through landed 2026-09-07, so runs that had already fired that day wrote
+# source-less entries under the old code; dating the boundary to the day after
+# keeps those out of the "something is wrong" bucket. Entries filed before it
+# are unattributable by construction, not by a bug, and the report says so
+# instead of lumping them in with genuinely source-less ones.
+PROVENANCE_SINCE = "2026-09-08"
+
+# Source strings are freeform prose written by seven different producers, so
+# classification is by substring against a small vocabulary rather than by exact
+# match. Order matters: the explicit script labels below are unambiguous and are
+# tested before the configured WebSearch source names, which are broader.
+LINKEDIN_SOURCE_MARKERS = ("linkedin",)
+
+# Fixed labels emitted by the feeder scripts: poll_remotive.py ("Remotive API"),
+# poll_80k.py ("80K Hours Algolia API"), harvest_hn_hiring.py, poll_builtin.py
+# ("BuiltIn directory"), harvest_vc_portfolios.py.
+#
+# Two of these collide with retired WebSearch dorks of the same subject and the
+# distinction is real, not pedantic: "80,000 Hours Job Board" and "BuiltIn
+# Remote" were dorks BEFORE poll_80k.py and poll_builtin.py replaced them, so
+# those strings belong to the websearch channel and "80K Hours Algolia API" /
+# "BuiltIn directory" belong to feeders. Matching on "80k hours" and "algolia"
+# rather than on "80,000 hours", and on "builtin directory" rather than on
+# "builtin", is what keeps the two apart.
+FEEDER_SOURCE_MARKERS = (
+    "remotive", "80k hours", "algolia", "hn who is hiring",
+    "builtin directory", "portfolio harvest", "vc/accelerator",
+)
+
+WEBSEARCH_SOURCE_MARKERS = ("websearch", "dork", "board sweep")
+
+CHANNEL_LABELS = {
+    "websearch": "WebSearch discovery",
+    "linkedin_harvest": "LinkedIn harvest",
+    "feeders": "Discovery feeders",
+    "other": "Other / hand-added",
+}
+CHANNEL_ORDER = ("websearch", "linkedin_harvest", "feeders", "other")
 
 # Set by --all-unpollable. Off by default: see load_unpollable_batch for why the
 # ungated list was measured at zero yield and retired as a weekly chore.
@@ -102,6 +163,171 @@ def has_role_signal(entry: dict) -> bool:
     a name someone once encountered on a job board.
     """
     return bool(entry.get("manual_review_why") or entry.get("manual_review"))
+
+
+def websearch_source_heads(path=WATCHLIST_PATH):
+    """Configured WebSearch source names, trimmed to the part before " (".
+
+    Read from config rather than hardcoded so a newly added dork classifies
+    correctly without touching this file. The trim is what makes matching work
+    across renames: the source string on a queue entry is whatever the run wrote
+    that day -- "Atlanta Board Sweep (repaired dorks, first working run)" -- and
+    the configured name has since become "Atlanta Board Sweep (Greenhouse)".
+    The shared head, "atlanta board sweep", survives both.
+
+    Returns () if the watchlist is unreadable. That degrades classification to
+    the keyword markers rather than crashing a report whose other half works.
+    """
+    try:
+        with open(path) as f:
+            wl = json.load(f)
+    except Exception:
+        return ()
+    heads = []
+    for s in wl.get("_websearch_sources", {}).get("sources", []):
+        name = (s.get("name") or "").split(" (")[0].strip().lower()
+        if name:
+            heads.append(name)
+    return tuple(heads)
+
+
+def classify_source(source, heads=()):
+    """Map a freeform `source` string onto one of CHANNEL_ORDER.
+
+    Returns None for a missing/empty source -- the caller separates "we do not
+    know" from "we know it was none of the channels", because conflating those
+    is what made the old numbers unreadable in the first place.
+    """
+    if not source:
+        return None
+    s = source.lower()
+    if any(m in s for m in LINKEDIN_SOURCE_MARKERS):
+        return "linkedin_harvest"
+    if any(m in s for m in FEEDER_SOURCE_MARKERS):
+        return "feeders"
+    if any(h in s for h in heads):
+        return "websearch"
+    if any(m in s for m in WEBSEARCH_SOURCE_MARKERS):
+        return "websearch"
+    return "other"
+
+
+def load_attribution(cutoff, today):
+    """Group in-window enrolled/rejected queue entries by discovery channel.
+
+    Returns (channels, unattributed, legacy, total_enrolled), where `channels`
+    maps a channel key to {"enrolled": [...], "rejected": [...], "lags": [...]}.
+    `unattributed` counts in-window enrollments with no `source` that were filed
+    on or after PROVENANCE_SINCE (a real gap worth noticing -- typically a
+    hand-enrolled company or a `harvest_ats.py --names` run against a name that
+    was never queued); `legacy` counts those filed before it (expected, drains
+    on its own).
+    """
+    try:
+        with open(QUEUE_PATH) as f:
+            q = json.load(f)
+    except FileNotFoundError:
+        return {}, 0, 0, 0
+
+    heads = websearch_source_heads()
+    channels = {k: {"enrolled": [], "rejected": [], "lags": []} for k in CHANNEL_ORDER}
+    unattributed = legacy = 0
+    total_enrolled = 0
+
+    def in_window(value):
+        try:
+            d = datetime.strptime(value, "%Y-%m-%d").date()
+        except (TypeError, ValueError):
+            return False
+        return cutoff <= d <= today
+
+    for e in q.get("enrolled", []):
+        if not in_window(e.get("enrolled_date")):
+            continue
+        total_enrolled += 1
+        channel = classify_source(e.get("source"), heads)
+        if channel is None:
+            if (e.get("enrolled_date") or "") < PROVENANCE_SINCE:
+                legacy += 1
+            else:
+                unattributed += 1
+            continue
+        channels[channel]["enrolled"].append(e)
+        lag = enrollment_lag(e)
+        if lag is not None:
+            channels[channel]["lags"].append(lag)
+
+    for e in q.get("rejected", []):
+        if not in_window(e.get("rejected_date")):
+            continue
+        channel = classify_source(e.get("source"), heads)
+        if channel is not None:
+            channels[channel]["rejected"].append(e)
+
+    return channels, unattributed, legacy, total_enrolled
+
+
+def enrollment_lag(entry):
+    """Days from first sighting to enrollment, or None if either date is absent.
+
+    This is the number that explains the whole section: it is why a channel's
+    same-run `enrolled` counter reads zero, and it is how far back you have to
+    look to find the discovery runs that produced this week's enrollments.
+    """
+    try:
+        seen = datetime.strptime(entry["first_seen"], "%Y-%m-%d").date()
+        got = datetime.strptime(entry["enrolled_date"], "%Y-%m-%d").date()
+    except (KeyError, TypeError, ValueError):
+        return None
+    return (got - seen).days
+
+
+def print_attribution_section(channels, unattributed, legacy, total_enrolled,
+                              cutoff, today):
+    print()
+    print("=== Enrollment attribution (which channel found what enrolled this window) ===")
+    print(f"Counts enrollment_candidates.json entries with enrolled_date in {cutoff}..{today},")
+    print("grouped by the source carried over from `pending`. These are NOT the same-run")
+    print("`enrolled` counters above: a company found today is enrolled tomorrow at the")
+    print("earliest, so the two measure different events and must not be divided.")
+    print()
+
+    if not total_enrolled:
+        print("  No companies were enrolled in this window at all.")
+        return
+
+    attributed = sum(len(v["enrolled"]) for v in channels.values())
+    for key in CHANNEL_ORDER:
+        data = channels[key]
+        n_enrolled = len(data["enrolled"])
+        n_rejected = len(data["rejected"])
+        if not n_enrolled and not n_rejected:
+            continue
+        resolved = n_enrolled + n_rejected
+        rate = f"{100.0 * n_enrolled / resolved:.0f}%" if resolved else "n/a"
+        print(f"  {CHANNEL_LABELS[key]}: {n_enrolled} enrolled, {n_rejected} rejected "
+              f"({rate} of {resolved} resolved this window)")
+        lags = sorted(data["lags"])
+        if lags:
+            median = lags[len(lags) // 2]
+            print(f"      discovery-to-enrollment lag: median {median}d, "
+                  f"range {lags[0]}-{lags[-1]}d (n={len(lags)})")
+        for e in data["enrolled"][:5]:
+            lag = enrollment_lag(e)
+            when = f", found {lag}d earlier" if lag is not None else ""
+            print(f"      + {e.get('name', '?')}{when} — {e.get('source', '?')[:70]}")
+        if n_enrolled > 5:
+            print(f"      + ...and {n_enrolled - 5} more")
+
+    print()
+    print(f"  Attributed: {attributed} of {total_enrolled} enrollments this window.")
+    if legacy:
+        print(f"  Unattributable (enrolled before {PROVENANCE_SINCE}, when `source` started")
+        print(f"    being carried onto outcome buckets): {legacy}. Expected; drains on its own.")
+    if unattributed:
+        print(f"  No source despite being enrolled on/after {PROVENANCE_SINCE}: {unattributed}.")
+        print("    Usually hand-enrolled, or `harvest_ats.py --names` on a name that was never")
+        print("    queued. Worth a look only if this grows.")
 
 
 def load_unpollable_batch(cap=UNPOLLABLE_WEEKLY_CAP):
@@ -238,6 +464,10 @@ def main():
         print(f"Days in window without data: {', '.join(str(d) for d in missing)}")
     if not rows:
         print("No channel_stats data in the trailing window. Nothing to report yet.")
+        # Attribution reads the enrollment queue, not the run files, so it still
+        # has something to say on a week where every run file is missing its
+        # channel_stats block.
+        print_attribution_section(*load_attribution(cutoff, today), cutoff, today)
         batch, remaining, total_unsurfaced = load_unpollable_batch()
         print_unpollable_section(batch, remaining, total_unsurfaced)
         if args.apply:
@@ -275,10 +505,12 @@ def main():
     print(f"  jobs scanned: {ats_scanned}  |  title matches: {ats_matched}  |  shortlisted: {ats_shortlisted}")
     print()
     print(f"WebSearch discovery ({ws_sources} source-runs across {len(rows)} days):")
-    print(f"  new companies found: {ws_new}  |  enrolled: {ws_enrolled}")
+    print(f"  new companies found: {ws_new}  |  enrolled ON THE SAME RUN: {ws_enrolled}")
+    print(f"  (same-run enrollment is near-impossible by design — see Enrollment attribution below)")
     print()
     print(f"LinkedIn harvest ({li_threads} threads, {li_companies} companies extracted):")
-    print(f"  enrolled: {li_enrolled}  |  blind-spot real hits (unpollable but real): {li_blind_spot}")
+    print(f"  enrolled ON THE SAME RUN: {li_enrolled}  |  blind-spot real hits "
+          f"(unpollable but real): {li_blind_spot}")
     print()
     print(f"Discovery feeders:")
     print(f"  poll_remotive: DEGRADED on {remotive_degraded_days} of {len(rows)} tracked days, 0 leads possible while degraded")
@@ -292,6 +524,8 @@ def main():
     print(f"Tailored applications this window: {tailored_total}")
     print(f"  (all tailoring executes off the ATS-poll shortlist by design -- discovery channels")
     print(f"   feed the watchlist that ATS-poll scans, they don't produce same-day applications directly)")
+
+    print_attribution_section(*load_attribution(cutoff, today), cutoff, today)
 
     batch, remaining, total_unsurfaced = load_unpollable_batch()
     print_unpollable_section(batch, remaining, total_unsurfaced)

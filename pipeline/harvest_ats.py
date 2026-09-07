@@ -1295,6 +1295,33 @@ def main():
 
     pending_by_name = {e["name"].lower(): e for e in q.get("pending", []) if e.get("name")}
 
+    # PROVENANCE IS CARRIED ONTO EVERY OUTCOME BUCKET (added 2026-09-07).
+    # `source` and `first_seen` used to be dropped the moment an entry left
+    # `pending`, so nothing downstream could attribute an outcome back to the
+    # channel that found the company. Two things broke because of it:
+    # weekly_channel_report.py could only count enrollments recorded on the
+    # SAME run as the discovery -- and discovery-to-enrollment always spans at
+    # least one run, since this script enrolls what a previous run queued --
+    # so every discovery channel read as converting at zero; and the
+    # 2026-09-04 timeout attribution had to be reconstructed by replaying the
+    # walk from git history (see SESSION_STATE.md). Carrying two strings fixes
+    # both. Rejections carry it too: a channel's conversion rate is only
+    # meaningful against the companies it fed that actually got resolved.
+    PROVENANCE_FIELDS = ("source", "first_seen")
+
+    def with_provenance(entry, name):
+        """Copy provenance fields from the matching `pending` entry, if any.
+
+        No-ops for a name passed via --names that was never queued: it has no
+        discovery channel to attribute to, and the weekly report counts that
+        as unattributed rather than inventing a source.
+        """
+        origin = pending_by_name.get(name.lower(), {})
+        for field in PROVENANCE_FIELDS:
+            if origin.get(field):
+                entry[field] = origin[field]
+        return entry
+
     targets = list(args.names)
     if args.from_pending:
         targets += [e["name"] for e in q.get("pending", []) if e.get("name")]
@@ -1423,11 +1450,11 @@ def main():
             if k in res:
                 entry[k] = res[k]
         wl["companies"].append(entry)
-        q.setdefault("enrolled", []).append(
+        q.setdefault("enrolled", []).append(with_provenance(
             {"name": name, "ats": res["ats"], "slug": res["slug"],
-             "enrolled_date": today, "via": "harvest_ats.py"})
+             "enrolled_date": today, "via": "harvest_ats.py"}, name))
     for name, res in no_fit:
-        q.setdefault("rejected", []).append(
+        q.setdefault("rejected", []).append(with_provenance(
             {"name": name, "ats": res["ats"], "slug": res["slug"],
              "rejected_date": today,
              "reason": (f"Board resolves and is live ({res['total']} jobs) but ZERO "
@@ -1437,11 +1464,11 @@ def main():
                         f"company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US "
                         f"does NOT qualify, so this company may still have a Boston or SF "
                         f"CSM open; that is intended."),
-             "recheck_if_resurfaced": True})
+             "recheck_if_resurfaced": True}, name))
     for name, res in empty_board:
         # NOT unpollable: the board was found. A manual site: search cannot help
         # here, so this must never reach the weekly unpollable punch list.
-        q.setdefault("rejected", []).append(
+        q.setdefault("rejected", []).append(with_provenance(
             {"name": name, "ats": res["ats"], "slug": res["slug"],
              "rejected_date": today,
              "reason": (f"Board RESOLVED at {res['ats']}/{res['slug']} but returned ZERO "
@@ -1453,7 +1480,7 @@ def main():
                         f"(Slugs that resolved empty: "
                         f"{', '.join(a + '/' + s for a, s in res.get('empty_hits', []))}.)"),
              "recheck_if_resurfaced": True,
-             "unpollable": False})
+             "unpollable": False}, name))
     for name, _ in no_board:
         # The old wording here read "across Greenhouse/Ashby/Lever/Workable" long
         # after the probe list had grown past those four, and named a
@@ -1483,7 +1510,7 @@ def main():
         for field in ("manual_review", "manual_review_why", "manual_review_surfaced"):
             if field in pending_entry:
                 entry[field] = pending_entry[field]
-        q.setdefault("rejected", []).append(entry)
+        q.setdefault("rejected", []).append(with_provenance(entry, name))
 
     # A timeout is NOT a finding about the company, so it gets its own reason and
     # is explicitly not marked unpollable: nothing was learned about whether a
@@ -1494,7 +1521,7 @@ def main():
     # re-run is the cheap next step, not a manual search.
     for name, res in timed_out:
         found = ", ".join(a + "/" + s for a, s in res.get("empty_hits", []))
-        q.setdefault("rejected", []).append(
+        q.setdefault("rejected", []).append(with_provenance(
             {"name": name, "ats": None, "slug": None, "rejected_date": today,
              "reason": (f"UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the "
                         f"{res['budget']:g}s per-company wall-clock cap after "
@@ -1509,7 +1536,7 @@ def main():
                            if found else "")),
              "recheck_if_resurfaced": True,
              "unpollable": False,
-             "timed_out": True})
+             "timed_out": True}, name))
 
     handled = ({n.lower() for n, _ in enrollable} | {n.lower() for n, _ in no_fit}
                | {n.lower() for n, _ in empty_board} | {n.lower() for n, _ in no_board}

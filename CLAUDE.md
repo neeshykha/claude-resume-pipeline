@@ -525,8 +525,11 @@ hardcode a query count here (it drifts). As of 2026-06-25 the active set is:
    `daily_task_prompt.md` Step 1d). BuiltIn Atlanta stays active because it is not fully
    subsumed: the feeder yields companies that still need a resolvable board, so a live
    Atlanta role at a company whose board never resolves reaches the pipeline only through
-   the role-level dork. This is a judgement call — `channel_stats.websearch` has no
-   per-source attribution, so neither dork's actual yield is known. The feeder carries TWO
+   the role-level dork. This was a judgement call made without data: `channel_stats.websearch`
+   aggregates every dork into one counter. As of 2026-09-07 the raw `source` string is carried
+   from `pending` onto `enrolled`/`rejected`, so per-source yield becomes measurable off
+   `enrollment_candidates.json` once a few weeks of entries accumulate — re-test then whether
+   this dork earns its rotation slot. The feeder carries TWO
    company-level gates as of 2026-09-04: `TARGET_FUNCTIONS` (is it hiring in a support-ops
    function?) and `INDUSTRY_ALLOW` (is it a technology company at all?). The second was added
    after the first, alone, queued a car wash, an animal shelter, a bubble tea chain, and a
