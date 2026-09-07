@@ -17,11 +17,20 @@ files predate the schema and are skipped, not guessed at. The report says
 explicitly how many of the trailing 7 days had data.
 
 The per-channel `enrolled` counters inside `channel_stats` are SAME-RUN counts,
-and they are structurally near-zero. A channel discovers a company on one run;
-`harvest_ats.py` resolves its board and enrolls it on a later one, tomorrow at
-the earliest. So a channel that discovers well still reports 0 enrollments --
-which is how this report spent weeks saying "0 enrollments off 19 WebSearch
-source-runs" about a channel that had, in fact, been enrolling companies.
+and they systematically undercount. Measured 2026-09-07 over the 39 backfilled
+entries carrying both dates: 72% of enrollments lag discovery by at least a day
+(median 1d, max 11d) and only 28% resolve in the run that found them. Step 1d
+appends to `pending` and `harvest_ats.py` drains it in the same pass, so same-run
+enrollment is common -- it is the majority case that is NOT.
+
+That alone does not explain a zero. The other half is attribution: the
+`channel_stats` block is written by hand at Step 7, and until 2026-09-07 nothing
+recorded WHICH channel fed a given enrollment. LinkedIn could self-report,
+because Step 1d-2 knows the names it just appended; WebSearch could not, because
+its dorks feed the same undifferentiated queue. That is how this report spent
+weeks saying "0 enrollments off 19 WebSearch source-runs" about a channel that
+was in fact converting -- 2 enrolled against 2 rejected in the 09-01..09-07
+window alone, once the provenance existed to see it.
 
 The "Enrollment attribution" section (added 2026-09-07) is the honest answer.
 It reads `enrollment_candidates.json` directly and counts entries whose
@@ -288,8 +297,9 @@ def print_attribution_section(channels, unattributed, legacy, total_enrolled,
     print("=== Enrollment attribution (which channel found what enrolled this window) ===")
     print(f"Counts enrollment_candidates.json entries with enrolled_date in {cutoff}..{today},")
     print("grouped by the source carried over from `pending`. These are NOT the same-run")
-    print("`enrolled` counters above: a company found today is enrolled tomorrow at the")
-    print("earliest, so the two measure different events and must not be divided.")
+    print("`enrolled` counters above, and must not be divided by this window's discovery")
+    print("counts: 72% of enrollments lag discovery by a day or more (median 1d, max 11d),")
+    print("so most of what enrolled this week was found before it.")
     print()
 
     if not total_enrolled:
