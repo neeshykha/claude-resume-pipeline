@@ -29,7 +29,8 @@ Non-negotiables that have already been violated in shipped documents:
 
 Also read `.claude/skills/career-narrative/SKILL.md` (auto-triggers as a skill in
 interactive sessions; the daily pipeline reads it at Step 0). It owns Aneesh's
-POSITIONING: four signature frameworks, STAR story bank, transferable-parallel template.
+POSITIONING: five signature frameworks, STAR story bank, the Agent Operations evidence
+map, transferable-parallel template.
 Precedence: style guide + the voice rules below govern form; career narrative governs
 substance; `master_resume.md` is the only source of factual claims.
 
@@ -78,11 +79,12 @@ Before tailoring, apply these principles based on how modern ATS (Greenhouse, Le
 - **Terminology**: Swap synonyms to match JD language exactly (e.g., if JD says "stakeholder engagement", use that instead of "stakeholder management")
 - **Skills section**: Reorder skill categories so the most relevant ones appear first. Mirror the JD's skill language precisely.
 - **First bullet rule**: Apply the 6-second rule (see Step 2). The first iApts bullet must be the single most compelling, metrics-dense achievement relative to this JD. Choose from: Maven AGI 85% deflection, CES system implementation, Salesforce 25+ automations, 100% case volume scale, 8-person global team build. Which one leads depends entirely on what the JD weights most.
-- **Portfolio projects**: `portfolio_projects.md` lists public GitHub projects citable in resumes and cover letters, each with a "cite when" trigger and a resume-ready line. Check it during tailoring; when the JD matches a trigger (AI evaluation, deployment rigor, workflow automation), work the project in — a verifiable public repo is stronger evidence than a claim. Never embellish beyond what that file states. The Friday portfolio routine appends new entries after each build.
+- **Portfolio projects**: `portfolio_projects.md` lists public GitHub projects citable in resumes and cover letters, each with a "cite when" trigger and a resume-ready line. Check it during tailoring; when the JD matches a trigger (AI evaluation, deployment rigor, workflow automation), work the project in — a verifiable public repo is stronger evidence than a claim. Never embellish beyond what that file states. The Friday portfolio routine appends new entries after each build. As of 2026-09-07 the renderer has a dedicated `projects` array (see Step 4), so a cited project goes in its own SELECTED TECHNICAL PROJECTS section rather than being worked into an experience bullet. Pick 2-4 per role, not all eight: `portfolio_projects.md` governs WHEN to cite via its `Cite when:` triggers, `master_resume.md` governs the factual line itself, and the career-narrative skill's Agent Operations evidence map carries the recommended order for agent-operating roles. Omit the field entirely when the JD does not earn the space; it is optional and costs a page.
 - **Keep it honest**: Every claim must be backed by actual experience from the master resume
 
 ### 4. Save the Tailored Version
 - Save the tailored resume as `tailored/Aneesh_Khan_[Company]_[Role]_data.json` (schema: see `pipeline/pdf_helpers.py` docstring; e.g., `tailored/Aneesh_Khan_Datadog_TAM_data.json`). **The JSON is the single source of truth as of 2026-09-02**: the PDF renders from it and the coverage check reads it. Do not also write a markdown twin; every resume used to be authored twice and every coverage fix applied twice, and the two copies drifted (Cresta, 2026-09-02: 4 fixes as 8 edits, JSON at 11/15 where the markdown read 14/15 on the same phrases). Write a `.md` only if Aneesh asks for one.
+- `projects` is optional and guarded: omit the key and nothing renders. Include it as a list of strings, same shape as `community`, one repo per string. `check_coverage.py` counts it, so project text scores toward JD coverage like any other section.
 - Use `Aneesh_Khan_` prefix — recruiter inboxes and ATS systems often surface the filename; including the candidate name improves recognition and reduces the chance of misrouted files
 - Use TitleCase for company, short role abbreviation (TAM, CSM, SAM, SE, IC)
 
@@ -148,7 +150,15 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 
 **Close — be specific.** "I'd welcome the chance to discuss how my experience translates. Thank you for your consideration." adds nothing. The close must include at least one sentence specific to this role or company — a real question, an observation about the team structure, a practical note. Keep it short.
 
-**Honesty moments — keep them.** When there's a real technical gap, acknowledge it directly and without apology ("Python is a growing area for me," "I am not a software developer"). This is a distinctive voice feature that makes letters feel real. Don't suppress it.
+**Honesty moments — keep them, but verify the gap is still real.** When there's a genuine technical gap, acknowledge it directly and without apology. This is a distinctive voice feature that makes letters feel real, and suppressing it costs more than it saves. What it is not is a license to keep repeating a concession after it stops being true. Before conceding any technical gap, read `portfolio_projects.md`, not just `master_resume.md` — the public repos are where a lot of his evidence lives and none of them appear in the master resume.
+
+**Python is no longer one of these (corrected 2026-09-07).** This section previously quoted "Python is a growing area for me" and "I am not a software developer" as the model sentences, and five letters duly reproduced the first one: ElevenLabs 2026-04-30, Netomi 05-11, Regal 05-14, Vanta 06-29, Assembled 07-23. Every one predates the public repos. `skill-regression-harness` is 1,745 lines of Python with 60 unit tests, `deflection-audit` is 817 lines with 18, and `sf-caseops-mcp` is a working MCP server running daily against a live Salesforce org. "Not a strength yet" over that isn't modesty, it's an inaccurate claim about an artifact the reader can click and check.
+
+The replacement is scope, not volume. Claim: Python for tooling and evaluation harnesses, API clients, CLI utilities, unit-tested modules, an MCP server against a live org. Don't claim: software engineer as a role he has held, production application development, or shipping code in a team codebase; there's no code review, no CI, and no on-call for a service behind any of it. `master_resume.md` states exactly this scope under TECHNICAL SKILLS, so match it rather than improvising a fresh hedge per letter. The career-narrative skill's Language calibration paragraph arbitrates anything not covered here.
+
+"I am not a software developer" stays available, because it's still true and it's the right answer when a JD asks for an engineer. Just don't let it carry the Python question — it answers a different one, and pairing it with the repos reads as someone who hasn't looked at his own work.
+
+**Do not edit the five letters named above.** They're the record of what those employers read (see the sent-letter rule in the voice-gate section). This correction governs new letters only.
 
 **Always pair a named gap with a concrete ramp commitment (added 2026-08-20, Aneesh's direct ask).** Naming the gap is half the move; the other half is showing he intends to close it and can. A bare admission leaves the reader to decide how much it costs them. Do NOT write generic filler — "I'm a fast learner," "I pick things up quickly," "eager to grow" are exactly the vague fluff the style guide bans, and they read as padding. The commitment has to be specific enough to be checkable, and ideally starts before he's asked:
 
