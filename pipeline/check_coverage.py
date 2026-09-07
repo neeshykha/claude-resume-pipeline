@@ -25,9 +25,14 @@ from means what is measured is what ships. Markdown input is kept for the archiv
 older tailored versions, not for new work.
 
 What counts as resume text in the JSON: summary, core_competencies, every experience
-title / company line / bullet, education, skills, and community. Markup the renderer
-understands (<b>, &amp;, <br/>) is stripped before matching, so a phrase never fails
-on a tag.
+title / company line / bullet, projects, education, skills, and community. Markup the
+renderer understands (<b>, &amp;, <br/>) is stripped before matching, so a phrase never
+fails on a tag.
+
+`projects` was added 2026-09-07 alongside the renderer field, and it belongs here for the
+same reason the whole file points at the JSON rather than the markdown: a section that
+renders into the PDF but is invisible to the coverage check reopens the measured-vs-shipped
+gap the 2026-09-02 retro closed.
 """
 import html
 import json
@@ -49,6 +54,7 @@ def resume_text_from_data(data: dict) -> str:
         parts += list(job.get("bullets", []) or [])
     edu = data.get("education") or {}
     parts += [edu.get("degree", ""), edu.get("school", "")]
+    parts += list(data.get("projects", []) or [])
     parts += list(data.get("skills", []) or [])
     parts += list(data.get("community", []) or [])
     return "\n".join(_plain(p) for p in parts if p)
