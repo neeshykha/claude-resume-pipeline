@@ -1,5 +1,10 @@
 # Personal resume content — never publish
-master_resume.md
+# Widened to master_resume.md* on 2026-09-07: the bare name does not match a dated
+# backup sibling like `master_resume.md.bak.20260907-163500`, and this file is
+# gitignored precisely because it must not be public. Exactly the pipeline/*.bak gap
+# documented below, one directory up, on the one file whose whole point is privacy.
+# Found while committing; nothing was ever staged.
+master_resume.md*
 tailored/
 interview_prep/
 audits/

@@ -25,6 +25,9 @@ For 'both' mode, output filenames are derived from the JSON filenames.
             "bullets": ["bullet 1", "bullet 2"]
         }
     ],
+    "projects": [
+        "optional — <b>repo-name</b>: one line per public repo, drawn from portfolio_projects.md"
+    ],
     "education": {
         "degree": "Bachelor of Arts in Economics",
         "school": "University of North Carolina at Chapel Hill  |  2014"

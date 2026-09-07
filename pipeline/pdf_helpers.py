@@ -18,6 +18,10 @@ Usage:
         },
         ...
     ],
+    "projects": [                      # optional — omit unless the JD earns the space
+        "<b>repo-name</b>: what it does and what it found",
+        ...
+    ],
     "education": {
         "degree": "Bachelor of Arts in Economics",
         "school": "University of North Carolina at Chapel Hill  |  2014"
@@ -165,6 +169,17 @@ def build_resume_pdf(data: dict, output_path: str) -> None:
 
     _hr_thin(story)
 
+    # Selected Technical Projects (optional — the public repos, as plain strings)
+    # Deliberately NOT folded into `experience`: that array renders under the
+    # PROFESSIONAL EXPERIENCE heading as title / company / bullets, so a projects
+    # block placed there parses as an employer and lands in a real work-history
+    # autofill. Its own section is the only honest shape.
+    if data.get("projects"):
+        story.append(Paragraph("SELECTED TECHNICAL PROJECTS", s["section"]))
+        for item in data["projects"]:
+            story.append(Paragraph(f"•&nbsp;&nbsp;{item}", s["bullet"]))
+        _hr_thin(story)
+
     # Education
     story.append(Paragraph("EDUCATION", s["section"]))
     story.append(Paragraph(f"<b>{data['education']['degree']}</b>", s["body"]))
@@ -266,7 +281,8 @@ def build_ats_resume_pdf(data: dict, output_path: str) -> None:
     Note SKILLS rather than TECHNICAL SKILLS: the plain heading is the one in
     every ATS keyword list, and the styled template's "TECHNICAL SKILLS" is a
     small unnecessary risk. Category labels inside skill lines survive as plain
-    "Category: value" text.
+    "Category: value" text. PROJECTS rather than SELECTED TECHNICAL PROJECTS is
+    the same trade for the same reason.
     """
     s = _ats_styles()
     doc = SimpleDocTemplate(
@@ -294,6 +310,11 @@ def build_ats_resume_pdf(data: dict, output_path: str) -> None:
         story.append(Paragraph(_plain(job["company"]), s["company"]))
         for b in job["bullets"]:
             story.append(Paragraph("- " + _plain(b), s["bullet"]))
+
+    if data.get("projects"):
+        story.append(Paragraph("PROJECTS", s["section"]))
+        for item in data["projects"]:
+            story.append(Paragraph("- " + _plain(item), s["bullet"]))
 
     story.append(Paragraph("EDUCATION", s["section"]))
     story.append(Paragraph(_plain(data["education"]["degree"]), s["body"]))
