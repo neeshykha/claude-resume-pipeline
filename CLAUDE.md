@@ -351,6 +351,11 @@ produced, plus rows still carrying a bonus a later rule change retired. It runs 
 at `daily_task_prompt.md` Step 6 item 4 — the spec for it lives there, not here. Relevant when
 editing anything below: **changing a rule does not rescore the rows already recorded under
 it**, so a guardrail edit strands the existing queue until `--sweep-drift` reconciles it.
+**But `--sweep-drift` only ever SUBTRACTS a retired bonus** (see `sweep_drift()`), so a rule
+change that RAISES scores leaves the queue under-scored with nothing to reconcile it. The
+2026-09-07 freshness-band change is the first of that kind; it happened to strand zero rows,
+but only because just 6 of 265 rows record a parseable posting age in `notes` at all. Measure
+the affected rows by hand when a rule moves scores upward.
 
 1. **Count the vertical bonus ONCE.** A watchlist company's `score_bonus` in
    `watchlist_companies.json` IS that company's complete vertical bonus — do **not** add a

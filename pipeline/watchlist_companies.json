@@ -499,6 +499,18 @@
     "salary_floor_usd": 100000,
     "salary_comparison_basis": "midpoint",
     "notes_salary": "Compare the MIDPOINT of a listed base-salary range against salary_floor_usd — never the bottom or top. Single figure: use as-is. OTE-only: estimate base (80% for variable/sales roles, 100% otherwise). No salary listed: do not filter, treat as neutral in scoring. See SKILL Step 2b for the authoritative rule.",
+    "ic_scope_rule": {
+      "interest_floor_usd": 100000,
+      "non_interest_floor_usd": 125000,
+      "absolute_floor_usd": 90000,
+      "interest_categories": [
+        "passion_domains",
+        "ai_native",
+        "developer_infra_tooling"
+      ],
+      "scoring_penalty": 0,
+      "notes": "Added 2026-09-07 at Aneesh's direction. IC SCOPE IS NOT DISQUALIFYING AND CARRIES NO SCORING PENALTY -- `scoring_penalty` is 0 and must stay 0. This rule adjusts the SALARY FLOOR only; it never deducts points and never hides a role. In his own words: 'I don't know that I'm necessarily against IC roles, if the money is right. And if it's in something I'm interested in, either an interest category or the AI-specific stuff.' EITHER condition qualifies, not both. IC role in an interest category: the normal salary_floor_usd ($100K) applies, it competes like anything else. IC role outside one: the floor rises to non_interest_floor_usd ($125K) -- the premium is what buys the scope change from managing 8 people. Nothing clears below absolute_floor_usd ($90K), which is already near_miss_salary_floor_usd, so that bound needs no separate machinery. WHY THIS EXISTS: the anti-signal in the career-narrative skill is about ALTITUDE (narrow platform administration), not about individual contribution, and the two were collapsed on 2026-09-07 in a way that nearly dropped Linear's 'Customer Success Manager, Growth' -- ~94 uncapped, remote US, 3 days old, no hard-requirement cap, at a developer-tooling company. Set aside purely for having no reports, which was an inference rather than his stated preference. `developer_infra_tooling` COUNTS as an interest category (confirmed by Aneesh 2026-09-07): the career-narrative skill records tool creation and maintenance as his PRIMARY interest, and this config already pays tooling and AI an identical +20 vertical bonus. Apply the category test SEMANTICALLY at Step 2c, the same way passion_domains is applied -- a watchlist score_bonus/bonus_reason naming AI or tooling is sufficient evidence, but a non-watchlist company can qualify on its product. NOT A SENIORITY RULE and NOT the admin anti-signal: a narrow-administration role is still out on altitude at any salary, and this rule does not rescue one."
+    },
     "light_tailoring_steps": [
       "summary_rewrite",
       "skills_reorder"
@@ -511,7 +523,9 @@
     ],
     "freshness_bonus_2d": 10,
     "freshness_bonus_7d": 2,
-    "notes_freshness": "Add +10 for postings ≤2 days old, +2 for ≤7 days. Validated by empirical data: response rates fall sharply after 48 hours.",
+    "freshness_top_band_days": 2,
+    "freshness_top_band_tracks_run_gap": true,
+    "notes_freshness": "Add the top bonus (+10) for postings inside the TOP BAND, +2 for ≤7 days. Validated by empirical data: response rates fall sharply after 48 hours. THE TOP BAND IS NOT A FIXED 2 DAYS (changed 2026-09-07): it is max(freshness_top_band_days, days since the PREVIOUS run). The task runs `0 3 * * 1-5` and a posting is scored ONCE, on the first run that sees it (poll_ats.py dedups against seen_jobs.json for 30 days), so a Friday posting's only shot at the bonus is Monday's run, where the calendar has already made it 3 days old. That is a pipeline fact being charged to a role -- the same objection recorded against the Outreach miss in poll_ats.py's pre-score comment. Effective band: 3 on a Monday (Fri->Mon gap), 2 on Tue-Fri, and wider automatically after a holiday or a skipped run, because the postings in that gap genuinely were never seen fresher. Measured on 2026-09-07 (a Monday): of 45 shortlist entries, exactly one was ≤2d and SEVEN were exactly 3d -- an entire Friday cohort, including Linear's Customer Success Manager Growth, one day past a line drawn by the calendar rather than by the posting. Deliberately NOT done instead: raising the +10 (a score change pushes roles across the 88/110 tailoring thresholds and silently redefines what Priority means -- the same argument that chose MIN_TIER1_SLOTS over a title-score bump on 2026-08-02), and reserving shortlist slots for fresh roles (the 09-07 data shows freshness is not a VISIBILITY problem: all eight ≤7d roles were already on the shortlist, so reserved slots would reserve what is already there).",
     "small_company_bonus": {
       "1-50": 15,
       "51-200": 15,

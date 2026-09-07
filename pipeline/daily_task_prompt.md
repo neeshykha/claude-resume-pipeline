@@ -605,6 +605,11 @@ For each entry processed:
 3. Pass → add full watchlist entry **including `headcount_band`** (verify via web, don't
    guess), `enrolled_date`, `enrolled_via`, any `score_bonus`; move to `enrolled`.
    Fail → move to `rejected` with a one-line reason.
+   **Either way, copy `source` and `first_seen` across verbatim from the `pending` entry.**
+   `harvest_ats.py` does this automatically; a hand-processed entry that drops them becomes
+   permanently unattributable, because discovery and enrollment are different runs and
+   nothing else records which channel found the company. This is what
+   `weekly_channel_report.py`'s enrollment-attribution section reads — see Step 6.5.
 4. Bias toward sub-500 companies — this layer exists to catch the long tail.
 
 **Workday site-name resolution actually works; use it rather than deferring.** On 2026-07-29 all
@@ -1027,13 +1032,53 @@ Engineer - Customer Agent".
 
 Eliminate: crypto/web3/blockchain; VP/Head-of/Staff/Principal (EXCEPT exact Tier-1 titles
 like Head of Support / Director of Support Operations — those are true matches);
-clearance-required; postings >21 days old; salary below `_scoring_config →
-salary_floor_usd`.
+clearance-required; postings older than `poll_ats.py → MAX_POSTING_AGE_DAYS` (**40 days**);
+salary below `_scoring_config → salary_floor_usd`.
+
+**This line said 21 days until 2026-09-07 and had been stale since 2026-07-27**, when the funnel
+audit raised the poller's limit to 40. It was dead prose rather than a live second filter — the
+poller had already dropped everything over 40 before you ever saw it, and roles between 21 and 40
+were reaching full tailoring anyway (ApartmentIQ at 32 days on 08-23, Cato Networks at 32 on
+08-31). Corrected so a future run doesn't start enforcing the 21 for real and silently undo the
+widening. **The 21-day mark survives only as a provenance tag**
+(`age_Nd_over_old_21d_limit`), which is the point: those roles are meant to be visible and
+attributable, so that if Aneesh consistently ignores them the widening can be rolled back on
+evidence. Age still costs points at Step 2c — −3 source quality past 14 days, and no freshness
+bonus past 7 — so a stale role competes on a worse score rather than being hidden.
 
 **Salary comparison basis (deterministic, never eyeball):** range → compare the
 **midpoint**; single figure → that figure; OTE-only → estimate base (80% for
 variable/sales roles, 100% otherwise) then midpoint; no salary listed → do NOT filter,
 treat as neutral.
+
+**IC-scope salary floor (added 2026-09-07, Aneesh's rule — `_scoring_config →
+ic_scope_rule`).** A role that manages nobody is NOT eliminated for that, and it takes NO
+scoring penalty. What changes is which floor it has to clear:
+
+- **IC in an interest category → the normal `salary_floor_usd` ($100K).** It competes like
+  anything else.
+- **IC outside one → `non_interest_floor_usd` ($125K).** The premium is what buys the scope
+  change from managing 8 people.
+- Below `absolute_floor_usd` ($90K = `near_miss_salary_floor_usd`) nothing clears either way,
+  which the existing near-miss floor already handles.
+
+**Interest categories are `passion_domains`, AI-native, and developer/infra tooling.** Tooling
+counts — confirmed by Aneesh 2026-09-07 — because the career-narrative skill records tool
+creation as his primary interest and this config already pays tooling and AI an identical +20.
+Apply the test semantically, the same way `passion_domains` is: a watchlist `score_bonus` whose
+`bonus_reason` names AI or tooling settles it, and a non-watchlist company can qualify on its
+product.
+
+**Do not confuse this with the narrow-administration anti-signal**, which is about ALTITUDE and
+still eliminates a platform-administrator role at any salary. Collapsing the two on 2026-09-07
+nearly dropped Linear's "Customer Success Manager, Growth" — ~94 uncapped, remote US, 3 days
+old, no hard-req cap, at a developer-tooling company — purely for having no reports. A role
+that fails only this floor is a **salary near-miss**, not a silent drop.
+
+**IC + non-interest + no salary listed does not resolve here — it goes to Step 3.** The $125K
+bar cannot be evaluated against a missing number, and the general "no salary listed → treat as
+neutral" rule stays intact. Read the JD body for comp; if it genuinely discloses none, cap the
+role at **light tier** and flag it in the digest as IC scope with unverified comp.
 
 **Company cap:** companies with ≥3 entries where `applied=true AND outcome=null` need a
 score >110 to surface. Queued/unapplied roles do NOT count. Trust the poller's
@@ -1063,7 +1108,31 @@ score >110 to surface. Queued/unapplied roles do NOT count. Trust the poller's
   this line if the rent-the-house question resolves.
 - Salary (midpoint basis): ≥$140K +10 / ≥$120K +8 / ≥floor or unlisted +5 / below 0
 - Source quality: Greenhouse·Lever +10 / Ashby·BuiltIn +8 / aggregator +5; −3 if >14 days old
-- Freshness: `_scoring_config → freshness_bonus_2d` (≤2 days) / `freshness_bonus_7d` (≤7 days)
+- Freshness: `_scoring_config → freshness_bonus_2d` (+10, top band) / `freshness_bonus_7d`
+  (+2, ≤7 days)
+
+  **The top band is not a fixed 2 days (changed 2026-09-07).** It is
+  **`max(freshness_top_band_days, days since the PREVIOUS run)`** — so **3 on a Monday**, 2 on
+  Tue–Fri, and automatically wider after a holiday or a skipped run. Compute it from the run
+  dates, not from the weekday name: the previous run is the newest
+  `pipeline/jobs/ats_hits_*.json` dated before today, which is also what `poll_ats.py` now uses
+  for its own pre-score term.
+
+  Why: the task runs `0 3 * * 1-5`, and a posting is scored **once**, on the first run that sees
+  it (`poll_ats.py` dedups against `seen_jobs.json` for 30 days). So a Friday posting's only
+  shot at the +10 is Monday's run, where the calendar has already made it 3 days old. That
+  charges a pipeline fact to a role — the same objection already recorded against the Outreach
+  miss in `poll_ats.py`'s pre-score comment. Measured on 2026-09-07, a Monday: of 45 shortlist
+  entries exactly **one** was ≤2d, and **seven were exactly 3d** — an entire Friday cohort,
+  Linear's CSM Growth among them, one day past a line drawn by the calendar rather than by the
+  posting.
+
+  Two alternatives were considered and rejected. **Raising the +10** would push roles across the
+  88/110 tailoring thresholds and silently redefine what "Priority" means — the same argument
+  that chose `MIN_TIER1_SLOTS` over a title-score bump on 2026-08-02 — and freshness is urgency,
+  not fit, so it should not buy a deeper resume rewrite. **Reserving shortlist slots for fresh
+  roles** solves a problem the data says doesn't exist: on 09-07 all eight ≤7d roles were
+  already on the shortlist, so the reservation would reserve what was already there.
 
 **Company-level bonuses — capped at +30 combined (Scoring Guardrails in CLAUDE.md):**
 - **A watchlist company's config `score_bonus` IS its complete vertical bonus. Count it once,
@@ -1086,6 +1155,12 @@ score >110 to surface. Queued/unapplied roles do NOT count. Trust the poller's
   tech, agriculture/gardening/food). Apply SEMANTICALLY to the company's mission/product,
   once per job even if multiple domains hit; ignore keyword accidents ("patient rollout").
   Poller entries may carry a `passion_domain` tag as a hint — confirm it, don't trust it.
+
+**No IC penalty. Ever (added 2026-09-07).** A role with no direct reports takes zero points
+off (`_scoring_config → ic_scope_rule.scoring_penalty` is 0 and stays 0). IC scope is handled
+entirely by the salary floor at Step 2b and by a plain statement in the digest — never by the
+score. Do not improvise a "scope step down" deduction under the title-gap or seniority-mismatch
+penalties either; neither one is about headcount.
 
 **Penalties (small — reach is fine):** title gap −5 (named IC function Aneesh never held
 by exact title, once per job); seniority mismatch −5 (JD explicitly requires **any**
@@ -1251,6 +1326,25 @@ WITH a cover letter, when the same run correctly demoted LaunchDarkly to light t
 comparable hard gap (production coding) that happened to appear in the summarized output.
 Disclosing a gap honestly in the cover letter is not a substitute for scoring it correctly:
 the tier decision is what allocates Aneesh's limited application effort.
+
+**Read every JD for IC-vs-manages-people, and record it (added 2026-09-07).** The listing
+never says this and the title routinely lies about it — "Customer Success Manager" is usually a
+book of accounts, not a team. Decide from the JD body: direct reports, hiring/coaching/performance
+language, or "sole point of contact" and "you will own this account end to end" for the IC read.
+Linear's CSM Growth is the reference case: pure IC, sole point of contact, no reports, and only a
+human noticed on 2026-09-07.
+
+This is **not** a disqualifier and **not** a penalty — see Step 2b's IC-scope salary floor for
+what it actually changes. Two things follow from the read:
+
+1. If the role is IC and the company is **not** in an interest category (`passion_domains`,
+   AI-native, developer/infra tooling), the floor is $125K, so **pull the comp out of the JD
+   body**. `fetch_jd.py` already returns compensation, and on 2026-09-07 the body — not the
+   listing — is what killed Lob, Motorola R68440, and Paylocity 46546 on salary. If the body
+   discloses nothing, cap the role at **light tier** and say so in the digest; do not guess a
+   number and do not silently drop it.
+2. Carry the answer into Step 5 and Step 6 either way. An IC role that clears its floor is a
+   normal pick — it just gets told plainly that it carries no reports.
 
 **Do NOT report a poller-vs-JD posting-date difference as drift without checking the field
 (added 2026-08-25, after it was reported as a bug twice in two days).** `fetch_jd.py` and
@@ -1642,6 +1736,13 @@ re-examines it.
   `stats.provenance_counts` summary in the digest housekeeping section too. If Aneesh
   consistently ignores roles carrying one particular tag, roll THAT change back rather than
   reverting the whole widening.
+- **Say plainly when a role carries no reports (added 2026-09-07, Aneesh's rule).** Every IC
+  role in the picks table gets an explicit "IC — no direct reports" note; do not leave him to
+  infer scope from the title. Where the IC-scope floor at Step 2b was the deciding factor, say
+  which branch applied ("IC, developer tooling → $100K floor" / "IC, non-interest → $125K
+  floor"). If comp was unverifiable and the role was capped at light tier for it, that goes in
+  the same line. This is a statement of fact, not a warning: the point of the rule is that IC
+  scope is his call to make, and he can only make it if the digest tells him.
 - Per-job tailoring diff below the table
 - **"Below the cutoff (ranks 41+)" section (added 2026-09-01):** the poller's `near_window`
   list as one-liners — `[pre_score] Company: Title | location | link`. Collapse obvious
@@ -1702,12 +1803,12 @@ re-examines it.
    ```json
    {"run_date": "YYYY-MM-DD", "jobs": [{"dedup_key": "...", "company": "...",
      "title": "...", "url": "...", "score": 0, "jd_coverage_pct": 0, "notes": "",
-     "unmet_hard_reqs": 0, "vendor_tool_named_in_jd": ""}]}
+     "unmet_hard_reqs": 0, "vendor_tool_named_in_jd": "", "ic_scope": ""}]}
    ```
    (surfaced top 3-4 only, not near-misses)
 
-   **`unmet_hard_reqs`, `vendor_tool_named_in_jd`, and `hard_req_cap_trigger` are all
-   required.** You already identify each during tailoring; these fields just stop them
+   **`unmet_hard_reqs`, `vendor_tool_named_in_jd`, `hard_req_cap_trigger`, and `ic_scope`
+   are all required.** You already identify each during tailoring; these fields just stop them
    from being trapped in prose where nothing can count them.
    - `hard_req_cap_trigger` (added 2026-08-21): the requirement that fires the
      HARD-REQUIREMENT TIER CAP, quoted verbatim from the JD — or the literal string
@@ -1723,6 +1824,13 @@ re-examines it.
      honestly claimed from `master_resume.md`. Count the same gaps you disclose in the
      cover letter and report at Step 4. Nice-to-haves don't count; only requirements a
      screener would treat as disqualifying. `0` is a legitimate value, empty is not.
+   - `ic_scope` (added 2026-09-07, a real column as of the same day): `ic` or `manages`,
+     from the Step 3 JD read. Empty means **not recorded** and is the correct value only for
+     the 266 rows that predate the column — do not backfill it by assumption, because "nobody
+     checked" and "checked, has no reports" are different facts. Same three-state rule as
+     `hard_req_cap_trigger` and `furthest_stage`. When the IC-scope salary floor decided the
+     outcome, put the branch in `notes` alongside it, e.g.
+     `IC, developer tooling -> $100K floor`.
    - `vendor_tool_named_in_jd`: the incumbent AI/support/CX tool the JD names, verbatim
      (`Intercom/Fin`, `Forethought AI`, `Zendesk`, `Ada`). Empty string when the JD names
      none. Record what the JD says, not whether Aneesh has used it.
@@ -1738,7 +1846,8 @@ re-examines it.
    ```
    This updates `seen_jobs.json`, `seen_urls.json`, and `pipeline/outcomes.csv`
    (canonical header: `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,
-   outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd`)
+   outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,
+   hard_req_cap_trigger,furthest_stage,ic_scope` — 16 columns as of 2026-09-07)
    atomically. `surfaced_date` is written automatically from the run date; never set it
    by hand and never update it on an existing row. **Never hand-edit `seen_jobs.json`** —
    hand edits corrupted it on 2026-06-30. NOTE: `pipeline/jobs/outcomes.csv` is a stale
@@ -1800,9 +1909,13 @@ re-examines it.
    harvest_hn_hiring_status, harvest_hn_hiring_leads), plus a top-level
    `tailored_count`. The two `poll_builtin_*` keys were added 2026-09-03 with that
    feeder; `weekly_channel_report.py` tolerates absent keys, so runs before that date
-   simply lack them — do not backfill. This is the ONLY thing `pipeline/weekly_channel_report.py` reads —
-   every run must write it, in this exact shape, or that day silently drops out of the
-   weekly rollup. Do not backfill historical runs by guessing; the source data isn't
+   simply lack them — do not backfill. Every run must write it, in this exact shape, or that day
+   silently drops out of the weekly rollup. It is not the report's only input: the report
+   also reads `enrollment_candidates.json` for the unpollable punch list and, since
+   2026-09-07, for enrollment attribution by discovery channel. The `enrolled` counters
+   inside `channel_stats` are SAME-RUN counts and are near-zero by construction — a company
+   found today is enrolled tomorrow at the earliest — so write them honestly and read the
+   attribution section for conversion, not these. Do not backfill historical runs by guessing; the source data isn't
    consistently structured that far back (checked 2026-08-10: zero of ~45 prior run files
    had usable per-channel data in a common shape).
 
@@ -1828,6 +1941,18 @@ not folded into the daily digest.
    breakdown (ATS poll, WebSearch, LinkedIn harvest, feeders) plus how many days in the window
    actually had data. Early on, most of the window will be missing (schema only exists from
    2026-08-10 forward) — the report says so explicitly; don't treat that as an error.
+
+   It then prints an **"Enrollment attribution"** section (added 2026-09-07). The `enrolled`
+   counters inside `channel_stats` are same-run counts, and same-run enrollment is close to
+   impossible: a channel discovers a company on one run and `harvest_ats.py` resolves its
+   board on a later one. That is why the report spent weeks saying **"0 enrollments off 19
+   WebSearch source-runs"** about a channel that was in fact enrolling companies. The new
+   section counts `enrollment_candidates.json → enrolled` entries whose `enrolled_date` falls
+   in the window, grouped by the `source` carried over from `pending`, and reports the
+   discovery-to-enrollment lag alongside. **Do not divide one by the other** — the companies
+   enrolled this week were mostly found last week, so the window's discovery counts are not
+   that population's denominator. Entries filed before 2026-09-07 carry no `source` and are
+   reported as unattributed rather than guessed at; that backlog drains on its own.
 
    It also prints an **"Unpollable companies with a role worth chasing"** section (added
    2026-08-14, from Aneesh asking for a weekly punch list of companies the automated layer

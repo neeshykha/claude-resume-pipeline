@@ -16,6 +16,7 @@ Output:
 """
 
 import argparse
+import glob
 import html
 import json
 import os
@@ -68,6 +69,45 @@ MIN_SALARY = None        # ← _scoring_config.salary_floor_usd
 # that a wider window would drag in. Justified by Aneesh's search being
 # opportunistic rather than urgent — a five-week-old req is usually still open.
 MAX_POSTING_AGE_DAYS = 40
+
+# Top freshness band, run-cadence aware (added 2026-09-07).
+# _scoring_config -> freshness_bonus_2d pays its top bonus for "fresh" postings,
+# but the band was a fixed 2 calendar days while the task runs `0 3 * * 1-5` and
+# a posting is scored ONCE, on the first run that sees it (the seen_jobs dedup
+# below). So a Friday posting's only shot at the bonus is Monday's run, where the
+# calendar has already made it 3 days old -- a pipeline fact charged to a role,
+# the same objection recorded in pre_score_job's freshness comment about
+# Outreach. Measured 2026-09-07 (a Monday): of 45 shortlist entries exactly one
+# was <=2d and SEVEN were exactly 3d, an entire Friday cohort one day past a line
+# drawn by the calendar rather than by the posting.
+#
+# The band is max(FRESH_TOP_BAND_DAYS, gap since the previous run): 3 on a
+# Monday, 2 on Tue-Fri, and wider automatically after a holiday or a skipped run,
+# because postings inside that gap genuinely were never seen fresher. Derived
+# from the ats_hits_*.json run files rather than from the weekday name, so an
+# off-schedule run gets the right answer instead of a hardcoded assumption.
+FRESH_TOP_BAND_DAYS = 2
+
+
+def previous_run_date(run_date: date):
+    """Newest ats_hits_*.json dated strictly before run_date, or None."""
+    prior = []
+    for name in glob.glob(os.path.join(SCRIPT_DIR, "jobs", "ats_hits_*.json")):
+        stem = os.path.basename(name)[len("ats_hits_"):-len(".json")]
+        try:
+            d = date.fromisoformat(stem)
+        except ValueError:
+            continue  # not a plain YYYY-MM-DD run file; ignore
+        if d < run_date:
+            prior.append(d)
+    return max(prior) if prior else None
+
+
+def fresh_top_band(run_date: date) -> int:
+    """Effective top freshness band in days for a run on `run_date`."""
+    prev = previous_run_date(run_date)
+    gap = (run_date - prev).days if prev else FRESH_TOP_BAND_DAYS
+    return max(FRESH_TOP_BAND_DAYS, gap)
 COMPANY_CAP = None       # ← _scoring_config.company_cap_max_applied_pending
 CAP_PENDING_MAX_AGE_DAYS = None  # ← _scoring_config.company_cap_pending_max_age_days
 SMALL_COMPANY_BONUS = {}  # ← _scoring_config.small_company_bonus
@@ -1489,6 +1529,7 @@ def poll_all(run_date: date) -> dict:
     seen_jobs = load_seen_jobs()
     unapplied_counts = count_unapplied_by_company(seen_jobs)
     ever_surfaced, recent_surfaced = company_surface_stats(seen_jobs, run_date)
+    fresh_band = fresh_top_band(run_date)
 
     matched = []
     borderline = []
@@ -1910,9 +1951,11 @@ def poll_all(run_date: date) -> dict:
         # direct ATS sources" is a judgment for full scoring where Claude can
         # see the posting; granting points here for absent data would let an
         # ATS with no date field outrank one that publishes it.
+        # Band tracks the run cadence -- see fresh_top_band(). On a Monday this
+        # is 3, so the Friday cohort stops losing the bonus to the weekend.
         age = job.get("posting_age_days")
         if age is not None:
-            if age <= 2:
+            if age <= fresh_band:
                 score += 8
             elif age <= 7:
                 score += 3
