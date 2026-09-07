@@ -259,9 +259,44 @@ def location_component(notes):
     return (0, 20), "not parseable from notes"
 
 
-def freshness_component(notes):
-    """+10 if <=2 days old, +2 if <=7. Also the -3 staleness hit past 14 days."""
+# Top freshness band, run-cadence aware (changed 2026-09-07 — see
+# daily_task_prompt.md Step 2c and poll_ats.py's fresh_top_band()). The band is
+# max(2, days since the previous run), so it is 3 on a Monday and 2 on Tue-Fri.
+# The auditor cannot see the run files a row was scored against, but the run day
+# IS recoverable from surfaced_date, and the schedule is `0 3 * * 1-5`, so a
+# Monday row gets the 3-day band and everything else gets 2. A row surfaced on a
+# weekend or after a holiday gap is the one case this under-estimates; it widens
+# the band to a RANGE there rather than pinning it, so the envelope stays legal
+# instead of producing a false ENVELOPE finding.
+FRESH_TOP_BAND_DEFAULT = 2
+FRESH_TOP_BAND_AFTER_WEEKEND = 3
+
+
+def _top_band(row_date):
+    """(band, pinned) for a row surfaced on `row_date` (an ISO string or None)."""
+    if not row_date:
+        return FRESH_TOP_BAND_AFTER_WEEKEND, False  # unknown run day: assume the widest
+    try:
+        d = date.fromisoformat(str(row_date).strip())
+    except ValueError:
+        return FRESH_TOP_BAND_AFTER_WEEKEND, False
+    if d.weekday() == 0:                      # Monday: previous run was Friday
+        return FRESH_TOP_BAND_AFTER_WEEKEND, True
+    if d.weekday() in (5, 6):                 # weekend row: off-schedule, don't pin
+        return FRESH_TOP_BAND_AFTER_WEEKEND, False
+    return FRESH_TOP_BAND_DEFAULT, True
+
+
+def freshness_component(notes, row_date=None):
+    """+10 inside the top band, +2 if <=7. Also the -3 staleness hit past 14 days.
+
+    The top band is not a fixed 2 days; it tracks the run cadence, so a Monday
+    run pays the top bonus for a 3-day-old Friday posting that never had a
+    chance to be seen fresher. `row_date` is the row's surfaced_date, which is
+    what tells us which run day scored it.
+    """
     n = notes or ""
+    band, pinned = _top_band(row_date)
     m = re.search(r"posted (?:~)?(\d+)\s*days? ago", n, re.I)
     if not m:
         m = re.search(r"posted (\d+)d\b", n, re.I)
@@ -269,9 +304,23 @@ def freshness_component(notes):
         return (10, 10), (0, 0), "posted <=2 days (+10)"
     if m:
         d = int(m.group(1))
-        fresh = 10 if d <= 2 else (2 if d <= 7 else 0)
         stale = -3 if d > 14 else 0
-        return (fresh, fresh), (stale, stale), f"posted {d}d ago (+{fresh}, staleness {stale})"
+        if d <= FRESH_TOP_BAND_DEFAULT:
+            fresh = (10, 10)
+            label = f"posted {d}d ago (+10, staleness {stale})"
+        elif d <= band:
+            # Inside the widened band only because of the run gap. Pin it when
+            # the run day is known, otherwise leave both values legal.
+            fresh = (10, 10) if pinned else (2, 10)
+            label = (f"posted {d}d ago (+10 under the Monday 3-day band, "
+                     f"staleness {stale})" if pinned else
+                     f"posted {d}d ago (+2..+10, run day unknown so the top band "
+                     f"is not pinned, staleness {stale})")
+        else:
+            f = 2 if d <= 7 else 0
+            fresh = (f, f)
+            label = f"posted {d}d ago (+{f}, staleness {stale})"
+        return fresh, (stale, stale), label
     return (0, 10), (-3, 0), "posting age not parseable from notes"
 
 
@@ -445,7 +494,8 @@ def audit_row(row, matcher, idx, cfg):
     c_rng, c_parts = company_bonus_component(entry, notes)
     sal_rng, sal_label = salary_component(notes)
     loc_rng, loc_label = location_component(notes)
-    fr_rng, st_rng, fr_label = freshness_component(notes)
+    fr_rng, st_rng, fr_label = freshness_component(
+        notes, row.get("surfaced_date") or row.get("applied_date"))
 
     pinned = [t_rng, s_rng, c_rng, sal_rng, loc_rng, fr_rng, st_rng]
     lo = sum(a for a, _ in pinned) + KEYWORD_OVERLAP[0] + PENALTIES[0]

@@ -74,6 +74,48 @@ def validate_watchlist(data) -> tuple[list, list]:
     if not isinstance(scb, dict) or not set(scb) == VALID_BANDS:
         errors.append(f"watchlist: _scoring_config.small_company_bonus must map exactly the bands {sorted(VALID_BANDS)}")
 
+    # Run-cadence-aware freshness band (added 2026-09-07). poll_ats.fresh_top_band()
+    # takes max(freshness_top_band_days, run gap), so a band above the nominal 2
+    # would silently widen every run day, not just the post-weekend one.
+    ftb = sc.get("freshness_top_band_days")
+    if not isinstance(ftb, int) or not 1 <= ftb <= 3:
+        errors.append("watchlist: _scoring_config.freshness_top_band_days must be an int 1-3")
+    if not isinstance(sc.get("freshness_top_band_tracks_run_gap"), bool):
+        errors.append("watchlist: _scoring_config.freshness_top_band_tracks_run_gap must be true/false")
+
+    # IC-scope rule (added 2026-09-07). scoring_penalty is checked explicitly:
+    # the whole point of the rule is that IC scope costs no points, so a nonzero
+    # value here is a misreading of it, not a tuning choice.
+    ic = sc.get("ic_scope_rule")
+    if not isinstance(ic, dict):
+        errors.append("watchlist: _scoring_config.ic_scope_rule missing or not an object")
+    else:
+        for key in ("interest_floor_usd", "non_interest_floor_usd", "absolute_floor_usd"):
+            if not isinstance(ic.get(key), (int, float)):
+                errors.append(f"watchlist: _scoring_config.ic_scope_rule.{key} missing or not a number")
+        if ic.get("scoring_penalty") != 0:
+            errors.append("watchlist: _scoring_config.ic_scope_rule.scoring_penalty must be 0 -- "
+                          "IC scope adjusts the salary floor, it never deducts points")
+        cats = ic.get("interest_categories")
+        if not isinstance(cats, list) or not cats:
+            errors.append("watchlist: _scoring_config.ic_scope_rule.interest_categories must be a non-empty list")
+        floors = [ic.get("absolute_floor_usd"), ic.get("interest_floor_usd"),
+                  ic.get("non_interest_floor_usd")]
+        if all(isinstance(f, (int, float)) for f in floors) and not floors[0] <= floors[1] <= floors[2]:
+            errors.append("watchlist: _scoring_config.ic_scope_rule floors must be ordered "
+                          "absolute <= interest <= non_interest")
+        if isinstance(ic.get("interest_floor_usd"), (int, float)) \
+                and isinstance(sc.get("salary_floor_usd"), (int, float)) \
+                and ic["interest_floor_usd"] != sc["salary_floor_usd"]:
+            warnings.append("watchlist: ic_scope_rule.interest_floor_usd differs from "
+                            "salary_floor_usd; the rule says an IC role in an interest "
+                            "category takes the NORMAL floor")
+        if isinstance(ic.get("absolute_floor_usd"), (int, float)) \
+                and isinstance(sc.get("near_miss_salary_floor_usd"), (int, float)) \
+                and ic["absolute_floor_usd"] != sc["near_miss_salary_floor_usd"]:
+            warnings.append("watchlist: ic_scope_rule.absolute_floor_usd differs from "
+                            "near_miss_salary_floor_usd; they are meant to be the same bound")
+
     tiers = data["_title_scoring_tiers"]
     for tier in ("tier1_true_match", "tier2_strong_overlap",
                  "tier3_reasonable_stretch", "tier4_weak_stretch"):

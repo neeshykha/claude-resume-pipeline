@@ -57,7 +57,7 @@ OUTCOMES_HEADER = ["applied_date", "company", "title", "url", "fit_score",
                    "jd_coverage_pct", "stage", "outcome", "notes",
                    "source_channel", "surfaced_date", "unmet_hard_reqs",
                    "vendor_tool_named_in_jd", "hard_req_cap_trigger",
-                   "furthest_stage"]
+                   "furthest_stage", "ic_scope"]
 
 
 def load_json(path, default):
@@ -183,7 +183,22 @@ def main() -> int:
                         # Empty is CORRECT here and must stay empty: per
                         # CLAUDE.md, "" means not recorded, which is what a
                         # freshly surfaced row is. It is not "never interviewed".
-                        ""])
+                        "",
+                        # ic_scope: added 2026-09-07 alongside the IC-scope
+                        # salary floor (_scoring_config -> ic_scope_rule).
+                        # Values: "ic", "manages", or "" for NOT RECORDED --
+                        # the same three-state rule as hard_req_cap_trigger and
+                        # furthest_stage. Empty is correct for the ~265 rows
+                        # that predate the column and must NOT be backfilled by
+                        # assumption: "nobody checked" and "checked, has no
+                        # reports" are different facts.
+                        #
+                        # ADDED TO THE HEADER AND TO THIS WRITEROW IN THE SAME
+                        # COMMIT, deliberately. furthest_stage was added to
+                        # OUTCOMES_HEADER on 2026-08-27 and NOT here, so every
+                        # row appended for a month came out one column short and
+                        # mark_applied.py silently skipped all of them.
+                        j.get("ic_scope", "")])
             appended += 1
 
     print(f"seen_jobs: +{len(added)} new, {len(touched)} re-touched, "

@@ -139,7 +139,16 @@ LEGACY_V3 = LEGACY_V2 + ["hard_req_cap_trigger"]
 # `outcome`, the other four surviving as free text in `notes`. This column
 # records the furthest point a role ever reached and is never overwritten
 # downward. Vocabulary in FURTHEST_STAGES below.
-CANONICAL = LEGACY_V3 + ["furthest_stage"]
+# Schema in force 2026-08-27 through 2026-09-07. Recognized input shape:
+# shape "P" widens these rows by one column.
+LEGACY_V4 = LEGACY_V3 + ["furthest_stage"]
+# Added 2026-09-07 alongside the IC-scope salary floor (_scoring_config ->
+# ic_scope_rule). Records whether a role manages people: "ic", "manages", or ""
+# for NOT RECORDED. Empty is the correct value for every row that predates the
+# column and must not be backfilled by assumption -- same three-state rule as
+# hard_req_cap_trigger and furthest_stage. IC scope is decided from the JD body
+# at daily_task_prompt.md Step 3, because the title routinely lies about it.
+CANONICAL = LEGACY_V4 + ["ic_scope"]
 DEFAULT_CHANNEL = "pipeline"
 
 # Ordered weakest to strongest. `furthest_stage` only ever moves right.
@@ -199,6 +208,8 @@ def classify(row):
 
     if len(row) == len(CANONICAL) and row[9].strip() in KNOWN_CHANNELS:
         return "ok", row
+    if len(row) == len(LEGACY_V4) and row[9].strip() in KNOWN_CHANNELS:
+        return "P", pad(row)
     if len(row) == len(LEGACY_V3) and row[9].strip() in KNOWN_CHANNELS:
         return "O", pad(row)
     if len(row) == len(LEGACY_V2) and row[9].strip() in KNOWN_CHANNELS:
@@ -238,12 +249,13 @@ def main():
     with open(OUTCOMES, newline="", encoding="utf-8") as f:
         raw = list(csv.reader(f))
     header, rows = raw[0], raw[1:]
-    if header not in (CANONICAL, LEGACY_V3, LEGACY_V2, LEGACY_V1, CORE):
+    if header not in (CANONICAL, LEGACY_V4, LEGACY_V3, LEGACY_V2, LEGACY_V1, CORE):
         print(f"header is not a recognized schema: {header}", file=sys.stderr)
         return 2
 
     out = []
-    counts = {"ok": 0, "A": 0, "B": 0, "C": 0, "L": 0, "M": 0, "N": 0, "O": 0}
+    counts = {"ok": 0, "A": 0, "B": 0, "C": 0, "L": 0, "M": 0, "N": 0, "O": 0,
+              "P": 0}
     unknown = []
     for i, row in enumerate(rows, start=2):
         shape, repaired = classify(row)
@@ -255,13 +267,13 @@ def main():
         out.append(repaired)
 
     total_fixed = (counts["A"] + counts["B"] + counts["C"] + counts["L"]
-                   + counts["M"] + counts["N"] + counts["O"])
+                   + counts["M"] + counts["N"] + counts["O"] + counts["P"])
     print(f"rows: {len(rows)} | already canonical: {counts['ok']}")
     print(f"repairable: {total_fixed} "
           f"(A trailing-pdf: {counts['A']}, B transposed: {counts['B']}, "
           f"C shifted: {counts['C']}, L legacy-9col: {counts['L']}, "
           f"M widen-v1: {counts['M']}, N widen-v2: {counts['N']}, "
-          f"O widen-v3: {counts['O']})")
+          f"O widen-v3: {counts['O']}, P widen-v4: {counts['P']})")
     if unknown:
         print(f"UNRECOGNIZED, left untouched: {len(unknown)}")
         for ln, n, head in unknown:
