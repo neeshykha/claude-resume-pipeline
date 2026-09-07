@@ -86,7 +86,13 @@ MAX_POSTING_AGE_DAYS = 40
 # because postings inside that gap genuinely were never seen fresher. Derived
 # from the ats_hits_*.json run files rather than from the weekday name, so an
 # off-schedule run gets the right answer instead of a hardcoded assumption.
-FRESH_TOP_BAND_DAYS = 2
+# Both are populated by _init_config() from _scoring_config. They are NOT
+# defaulted here on purpose: validate_config.py already errors when either key
+# is missing or the wrong type, so a hardcoded fallback could only ever disagree
+# with the JSON, which is the divergence the config-plumbing note above exists to
+# prevent.
+FRESH_TOP_BAND_DAYS = None            # ← _scoring_config.freshness_top_band_days
+FRESH_TOP_BAND_TRACKS_RUN_GAP = None  # ← _scoring_config.freshness_top_band_tracks_run_gap
 
 
 def previous_run_date(run_date: date):
@@ -104,7 +110,18 @@ def previous_run_date(run_date: date):
 
 
 def fresh_top_band(run_date: date) -> int:
-    """Effective top freshness band in days for a run on `run_date`."""
+    """Effective top freshness band in days for a run on `run_date`.
+
+    Reads the band from config rather than a module constant. Setting
+    `freshness_top_band_tracks_run_gap` false pins the band to
+    `freshness_top_band_days` and gives back the pre-2026-09-07 fixed-window
+    behaviour, which is the only way to A/B the change without editing code.
+    """
+    if FRESH_TOP_BAND_DAYS is None:
+        raise RuntimeError("fresh_top_band() called before _init_config(); "
+                           "the freshness band lives in _scoring_config")
+    if not FRESH_TOP_BAND_TRACKS_RUN_GAP:
+        return FRESH_TOP_BAND_DAYS
     prev = previous_run_date(run_date)
     gap = (run_date - prev).days if prev else FRESH_TOP_BAND_DAYS
     return max(FRESH_TOP_BAND_DAYS, gap)
@@ -162,6 +179,7 @@ def jazzhr_board_live(resp) -> bool:
 def _init_config(watchlist: dict):
     """Load all shared knobs from the parsed watchlist JSON into module globals."""
     global MIN_SALARY, COMPANY_CAP, CAP_PENDING_MAX_AGE_DAYS, MATCHER
+    global FRESH_TOP_BAND_DAYS, FRESH_TOP_BAND_TRACKS_RUN_GAP
     ATS_ENDPOINTS.clear()
     ATS_ENDPOINTS.update({k: v for k, v in watchlist["_endpoints"].items()
                           if not v.startswith("POST")})
@@ -169,6 +187,11 @@ def _init_config(watchlist: dict):
     MIN_SALARY = sc["salary_floor_usd"]
     COMPANY_CAP = sc["company_cap_max_applied_pending"]
     CAP_PENDING_MAX_AGE_DAYS = sc.get("company_cap_pending_max_age_days", 60)
+    # Direct indexing, like salary_floor_usd above: validate_config.py makes both
+    # keys mandatory, so a missing one is a broken config and should say so here
+    # rather than silently fall back to a number the JSON does not carry.
+    FRESH_TOP_BAND_DAYS = sc["freshness_top_band_days"]
+    FRESH_TOP_BAND_TRACKS_RUN_GAP = sc["freshness_top_band_tracks_run_gap"]
     SMALL_COMPANY_BONUS.clear()
     SMALL_COMPANY_BONUS.update(sc["small_company_bonus"])
     HARD_EXCLUDE_TERMS.clear()
