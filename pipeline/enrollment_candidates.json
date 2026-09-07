@@ -11,8 +11,8 @@
   },
   "_schema": {
     "pending": "[{name, ats, slug, source, first_seen, why, [needs_ats_resolution], [manual_review], [manual_review_why]}] \u2014 verify board live + has US-reachable fit-space roles, then enroll or reject. If needs_ats_resolution=true, name-only: resolve the ATS first (site:greenhouse.io OR ashby OR lever <company>). manual_review=true (set by Step 1d-2 when a LinkedIn card carried a tier1/tier2/tier2c title in Atlanta or Remote US) means: if this entry is rejected for having no pollable board, surface it once in the digest under 'Manual channel \u2014 no pollable board' before it disappears, then set manual_review_surfaced=true.",
-    "enrolled": "[{name, ats, slug, enrolled_date, headcount_band, source, first_seen}] \u2014 audit log; the live entry lives in watchlist_companies.json. Carries `source` and `first_seen` forward from the `pending` entry (added 2026-09-07): without them nothing downstream can attribute an outcome back to the channel that found the company, because discovery and resolution always happen on different runs. Absent on entries filed before that date, and on companies harvested by `harvest_ats.py --names` that were never queued; weekly_channel_report.py counts those as unattributed rather than guessing.",
-    "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced, source, first_seen, [unpollable], [weekly_report_surfaced], [weekly_report_surfaced_date]}] \u2014 don't re-evaluate unless it resurfaces with new roles. unpollable=true (added 2026-08-14) means the reason is specifically 'no ATS board was ever found' (a genuine automation gap Aneesh could work around by hand), as opposed to a board being found and the company rejected for fit/geo/category reasons. Set this directly when rejecting for no-board (harvest_ats.py does; do the same by hand in Step 1d). weekly_channel_report.py surfaces unpollable=true entries once a week for manual review; weekly_report_surfaced=true (set by that script's --apply pass) stops an entry from repeating in future weekly reports once Aneesh has seen it. Carries `source` and `first_seen` forward from the `pending` entry (added 2026-09-07): without them nothing downstream can attribute an outcome back to the channel that found the company, because discovery and resolution always happen on different runs. Absent on entries filed before that date, and on companies harvested by `harvest_ats.py --names` that were never queued; weekly_channel_report.py counts those as unattributed rather than guessing."
+    "enrolled": "[{name, ats, slug, enrolled_date, headcount_band, source, first_seen}] \u2014 audit log; the live entry lives in watchlist_companies.json. Carries `source` and `first_seen` forward from the `pending` entry (added 2026-09-07): without them nothing downstream can attribute an outcome back to the channel that found the company, because discovery and resolution always happen on different runs. Absent on entries filed before that date, and on companies harvested by `harvest_ats.py --names` that were never queued; weekly_channel_report.py counts those as unattributed rather than guessing. `source_backfilled` (added 2026-09-07) marks provenance RECONSTRUCTED after the fact rather than recorded at the time, and names the method: \"git-replay\" (the entry's `pending` record was recovered from an earlier revision of this file) or \"watchlist enrolled_via\" (taken from the watchlist entry, which often names the discovery source outright). 187 of 689 outcome entries were recoverable; the rest never sat in `pending` at a commit boundary, because a feeder appends and harvest_ats.py drains within a single run. Absence of `source` on an old entry is therefore expected, not a defect.",
+    "rejected": "[{name, ats, slug, rejected_date, reason, recheck_if_resurfaced, source, first_seen, [unpollable], [weekly_report_surfaced], [weekly_report_surfaced_date]}] \u2014 don't re-evaluate unless it resurfaces with new roles. unpollable=true (added 2026-08-14) means the reason is specifically 'no ATS board was ever found' (a genuine automation gap Aneesh could work around by hand), as opposed to a board being found and the company rejected for fit/geo/category reasons. Set this directly when rejecting for no-board (harvest_ats.py does; do the same by hand in Step 1d). weekly_channel_report.py surfaces unpollable=true entries once a week for manual review; weekly_report_surfaced=true (set by that script's --apply pass) stops an entry from repeating in future weekly reports once Aneesh has seen it. Carries `source` and `first_seen` forward from the `pending` entry (added 2026-09-07): without them nothing downstream can attribute an outcome back to the channel that found the company, because discovery and resolution always happen on different runs. Absent on entries filed before that date, and on companies harvested by `harvest_ats.py --names` that were never queued; weekly_channel_report.py counts those as unattributed rather than guessing. `source_backfilled` (added 2026-09-07) marks provenance RECONSTRUCTED after the fact rather than recorded at the time, and names the method: \"git-replay\" (the entry's `pending` record was recovered from an earlier revision of this file) or \"watchlist enrolled_via\" (taken from the watchlist entry, which often names the discovery source outright). 187 of 689 outcome entries were recoverable; the rest never sat in `pending` at a commit boundary, because a feeder appends and harvest_ats.py drains within a single run. Absence of `source` on an old entry is therefore expected, not a defect."
   },
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
   "pending": [
@@ -150,21 +150,27 @@
       "ats": "workday",
       "slug": "usbank",
       "enrolled_date": "2026-08-18",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "Workday Boards - Target Roles WebSearch dork 2026-08-18",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Zillow",
       "ats": "workday",
       "slug": "zillow",
       "enrolled_date": "2026-08-18",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "Workday Boards - Target Roles WebSearch dork 2026-08-18",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "NVIDIA",
       "ats": "workday",
       "slug": "nvidia",
       "enrolled_date": "2026-08-03",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "LinkedIn alert (Step 1d-2) 2026-08-03, manual_review flag",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "AlertMedia",
@@ -178,28 +184,36 @@
       "ats": "workday",
       "slug": "harriscomputer",
       "enrolled_date": "2026-08-03",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "Workday Boards - Target Roles WebSearch dork 2026-08-03",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Workiva",
       "ats": "workday",
       "slug": "workiva",
       "enrolled_date": "2026-08-03",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "Workday Boards - Target Roles WebSearch dork 2026-08-03",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Automation Anywhere",
       "ats": "workday",
       "slug": "automationanywhere",
       "enrolled_date": "2026-08-03",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "Workday Boards - Target Roles WebSearch dork 2026-08-03",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "101 VOICE",
       "ats": "smartrecruiters",
       "slug": "itmanagementcorpdba101voice",
       "enrolled_date": "2026-08-03",
-      "headcount_band": "1-50"
+      "headcount_band": "1-50",
+      "source": "SmartRecruiters Boards - Target Roles WebSearch dork 2026-08-03",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Zoom",
@@ -208,7 +222,9 @@
       "enrolled_date": "2026-07-31",
       "headcount_band": "2000+",
       "enrolled_via": "LinkedIn alert (Step 1d-2) 2026-07-31 -- surfacing title (Strategic Onboarding Manager) had no US-reachable posting, but CXS verification found real tier2c fits: Business Systems Analyst, Anaplan (Remote US) and Business Systems Analyst, New Product Offerings (Remote US).",
-      "notes": "wd_host=zoom.wd5.myworkdayjobs.com wd_tenant=zoom wd_site=Zoom. Most of the board is EMEA/APAC sales or SF/Seattle-onsite engineering -- monitor for CS/TAM titles specifically, tooling/systems roles are the current fit."
+      "notes": "wd_host=zoom.wd5.myworkdayjobs.com wd_tenant=zoom wd_site=Zoom. Most of the board is EMEA/APAC sales or SF/Seattle-onsite engineering -- monitor for CS/TAM titles specifically, tooling/systems roles are the current fit.",
+      "source": "LinkedIn alert (Step 1d-2) 2026-07-31",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Fireworks AI",
@@ -217,7 +233,9 @@
       "enrolled_date": "2026-07-30",
       "headcount_band": "51-200",
       "enrolled_via": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
-      "notes": "AI inference platform. Technical Account Manager, Enterprise is the live fit-space role."
+      "notes": "AI inference platform. Technical Account Manager, Enterprise is the live fit-space role.",
+      "source": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Vercel",
@@ -226,7 +244,9 @@
       "enrolled_date": "2026-07-30",
       "headcount_band": "501-2000",
       "enrolled_via": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
-      "notes": "Frontend cloud/dev infra platform. Developer Success Engineer, Senior Technical Account Manager, and Technical Account Manager all live."
+      "notes": "Frontend cloud/dev infra platform. Developer Success Engineer, Senior Technical Account Manager, and Technical Account Manager all live.",
+      "source": "Greenhouse Boards - Target Roles WebSearch dork 2026-07-30",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Cambium Learning Group",
@@ -235,7 +255,9 @@
       "enrolled_date": "2026-07-28",
       "headcount_band": "2000+",
       "enrolled_via": "Workday Boards - Target Roles, pending since 2026-07-22, resolved 2026-07-28",
-      "notes": "EdTech K-12 assessment/learning software. Live fit-space role: Customer Success Manager (Remote), REQ-4271."
+      "notes": "EdTech K-12 assessment/learning software. Live fit-space role: Customer Success Manager (Remote), REQ-4271.",
+      "source": "Workday Boards - Target Roles WebSearch dork, pending since 2026-07-22, resolved 2026-07-28",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Pluralsight",
@@ -244,7 +266,10 @@
       "enrolled_date": "2026-07-28",
       "headcount_band": "2000+",
       "enrolled_via": "Workday Boards - Target Roles, pending since 2026-07-22, resolved 2026-07-28",
-      "notes": "Tech skills/learning platform, Dallas TX HQ. Live fit-space role: Customer Success Manager (Remote, hybrid option near Dallas), R0014258."
+      "notes": "Tech skills/learning platform, Dallas TX HQ. Live fit-space role: Customer Success Manager (Remote, hybrid option near Dallas), R0014258.",
+      "source": "Workday Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Commure",
@@ -253,7 +278,9 @@
       "enrolled_date": "2026-07-28",
       "headcount_band": "501-2000",
       "enrolled_via": "Tier-1 Manager-Title Sweep 2026-07-28",
-      "notes": "Healthcare operations/AI software, ~1,200 employees. Health tech passion domain. Live fit-space role: Clinical Implementation Specialist (United States, Remote)."
+      "notes": "Healthcare operations/AI software, ~1,200 employees. Health tech passion domain. Live fit-space role: Clinical Implementation Specialist (United States, Remote).",
+      "source": "Tier-1 Manager-Title Sweep WebSearch dork, first seen 2026-07-28",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Boulevard",
@@ -262,7 +289,9 @@
       "enrolled_date": "2026-07-28",
       "headcount_band": "501-2000",
       "enrolled_via": "Tier-1 Manager-Title Sweep 2026-07-28",
-      "notes": "Salon/spa client experience platform, ~575 employees, LA HQ. Live fit-space role: Technical Account Manager (Remote - USA), exact Tier-2 title match."
+      "notes": "Salon/spa client experience platform, ~575 employees, LA HQ. Live fit-space role: Technical Account Manager (Remote - USA), exact Tier-2 title match.",
+      "source": "Tier-1 Manager-Title Sweep WebSearch dork, first seen 2026-07-28",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "QGenda",
@@ -271,7 +300,9 @@
       "enrolled_date": "2026-07-22",
       "headcount_band": "501-2000",
       "enrolled_via": "BuiltIn Atlanta 2026-07-22",
-      "notes": "Healthcare workforce scheduling/management platform, Atlanta HQ, 800+ employees. Health-tech passion domain + Atlanta-enterprise bonus both apply. Live fit-space roles: Technical Account Manager, Technical Account Manager (Credentialing), Customer Support Specialist x2, Implementation Consultant (New Grad)."
+      "notes": "Healthcare workforce scheduling/management platform, Atlanta HQ, 800+ employees. Health-tech passion domain + Atlanta-enterprise bonus both apply. Live fit-space roles: Technical Account Manager, Technical Account Manager (Credentialing), Customer Support Specialist x2, Implementation Consultant (New Grad).",
+      "source": "BuiltIn Atlanta discovery source, first seen 2026-07-22",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Truv",
@@ -280,7 +311,9 @@
       "enrolled_date": "2026-07-22",
       "headcount_band": "51-200",
       "enrolled_via": "BuiltIn Atlanta 2026-07-22",
-      "notes": "Payroll/income-verification API platform, Las Vegas HQ, 68 employees per web search (headcount backfill same run). Live fit-space roles: Customer Success Manager (Miami) and Senior Technical Account Manager, Public Sector (Remote) -- verify the public-sector role doesn't require clearance before tailoring."
+      "notes": "Payroll/income-verification API platform, Las Vegas HQ, 68 employees per web search (headcount backfill same run). Live fit-space roles: Customer Success Manager (Miami) and Senior Technical Account Manager, Public Sector (Remote) -- verify the public-sector role doesn't require clearance before tailoring.",
+      "source": "BuiltIn Atlanta discovery source, first seen 2026-07-22",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Relay Payments",
@@ -289,7 +322,9 @@
       "enrolled_date": "2026-07-23",
       "headcount_band": "51-200",
       "enrolled_via": "Atlanta Board Sweep 2026-07-23",
-      "notes": "Atlanta-HQ fintech, ~129 employees. Enterprise Solutions Engineer + Enterprise Technical Account Manager, both Atlanta, GA."
+      "notes": "Atlanta-HQ fintech, ~129 employees. Enterprise Solutions Engineer + Enterprise Technical Account Manager, both Atlanta, GA.",
+      "source": "Atlanta Board Sweep discovery source, first seen 2026-07-23",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "UpKeep",
@@ -307,7 +342,9 @@
       "enrolled_date": "2026-07-22",
       "headcount_band": "201-500",
       "enrolled_via": "BuiltIn Atlanta 2026-07-22",
-      "notes": "Cybersecurity exposure-validation/breach-attack-simulation platform, NY/Tel Aviv HQ, ~260 employees. Live fit-space role: Technical Account Manager (United States). Not blockchain/crypto -- cybersecurity SaaS, passes hard filter."
+      "notes": "Cybersecurity exposure-validation/breach-attack-simulation platform, NY/Tel Aviv HQ, ~260 employees. Live fit-space role: Technical Account Manager (United States). Not blockchain/crypto -- cybersecurity SaaS, passes hard filter.",
+      "source": "BuiltIn Atlanta discovery source, first seen 2026-07-22",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Zocdoc",
@@ -352,7 +389,9 @@
       "enrolled_date": "2026-07-19",
       "headcount_band": "201-500",
       "enrolled_via": "Greenhouse board dork 2026-07-19",
-      "notes": "AI claims-guidance platform (~242 employees, CCC-owned). Surfacing role (Technical Engagement Manager / Account Manager) had closed by verification; Agentic Solutions Consultant + Solutions Engineer live."
+      "notes": "AI claims-guidance platform (~242 employees, CCC-owned). Surfacing role (Technical Engagement Manager / Account Manager) had closed by verification; Agentic Solutions Consultant + Solutions Engineer live.",
+      "source": "Greenhouse board dork, first seen 2026-07-19",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "AssetWatch",
@@ -361,7 +400,9 @@
       "enrolled_date": "2026-07-18",
       "headcount_band": "51-200",
       "enrolled_via": "Industrial IoT / Physical-World Hardware discovery source, first seen 2026-07-18",
-      "notes": "Industrial condition-monitoring platform. Senior Manager of Implementation (Remote) and Team Lead, Customer Success were the surfacing roles."
+      "notes": "Industrial condition-monitoring platform. Senior Manager of Implementation (Remote) and Team Lead, Customer Success were the surfacing roles.",
+      "source": "Industrial IoT / Physical-World Hardware discovery source, first seen 2026-07-18",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "LiveKit",
@@ -370,7 +411,9 @@
       "enrolled_date": "2026-07-17",
       "headcount_band": "51-200",
       "enrolled_via": "Ashby board dork, first seen 2026-07-17",
-      "notes": "Real-time voice/video/agentic AI infrastructure. Technical Account Manager (Remote US) was the surfacing role."
+      "notes": "Real-time voice/video/agentic AI infrastructure. Technical Account Manager (Remote US) was the surfacing role.",
+      "source": "Ashby board dork, first seen 2026-07-17",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Sigma Computing",
@@ -379,7 +422,9 @@
       "enrolled_date": "2026-07-17",
       "headcount_band": "501-2000",
       "enrolled_via": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
-      "notes": "BI/analytics platform. Technical Support Manager was the surfacing role (San Francisco)."
+      "notes": "BI/analytics platform. Technical Support Manager was the surfacing role (San Francisco).",
+      "source": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Lumimeds",
@@ -397,7 +442,9 @@
       "enrolled_date": "2026-07-17",
       "headcount_band": "1-50",
       "enrolled_via": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
-      "notes": "Creator-economy subscription platform. Support Operations Manager (Los Angeles, on-site) was the surfacing role."
+      "notes": "Creator-economy subscription platform. Support Operations Manager (Los Angeles, on-site) was the surfacing role.",
+      "source": "Tier-1 Manager-Title Sweep, first seen 2026-07-17",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Availity",
@@ -406,7 +453,10 @@
       "enrolled_date": "2026-07-14",
       "headcount_band": "2000+",
       "enrolled_via": "Pending since 2026-07-07, unstuck via WebSearch (found the real site name Availity_Careers_US, which verify_workday.py's guess-list never tried) + Browser pane confirmation",
-      "notes": "Healthcare data exchange platform, health-tech passion domain. wd_host=availity.wd1.myworkdayjobs.com wd_tenant=availity wd_site=Availity_Careers_US. 21 jobs live, 0 current fit-space hits -- monitor for openings."
+      "notes": "Healthcare data exchange platform, health-tech passion domain. wd_host=availity.wd1.myworkdayjobs.com wd_tenant=availity wd_site=Availity_Careers_US. 21 jobs live, 0 current fit-space hits -- monitor for openings.",
+      "source": "Workday board dork 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "NCR Voyix",
@@ -415,7 +465,10 @@
       "enrolled_date": "2026-07-14",
       "headcount_band": "2000+",
       "enrolled_via": "Pending since 2026-07-03, unstuck via WebSearch (found the real site name ext_us, which verify_workday.py's guess-list never tried) + Browser pane confirmation",
-      "notes": "Atlanta HQ digital commerce (retail/restaurant tech). wd_host=ncr.wd1.myworkdayjobs.com wd_tenant=ncr wd_site=ext_us. 147 jobs live, 4 fit hits incl. AI Enablement Coach (the role that originally surfaced this company) and Senior Technical Implementation Specialist."
+      "notes": "Atlanta HQ digital commerce (retail/restaurant tech). wd_host=ncr.wd1.myworkdayjobs.com wd_tenant=ncr wd_site=ext_us. 147 jobs live, 4 fit hits incl. AI Enablement Coach (the role that originally surfaced this company) and Senior Technical Implementation Specialist.",
+      "source": "Workday board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Cengage",
@@ -424,7 +477,10 @@
       "enrolled_date": "2026-07-14",
       "headcount_band": "2000+",
       "enrolled_via": "Pending since 2026-07-06, unstuck via WebSearch (found the real site name CengageNorthAmericaCareers, which verify_workday.py's guess-list never tried) + Browser pane confirmation",
-      "notes": "EdTech (Higher Ed/School/Work/ELL). wd_host=cengage.wd5.myworkdayjobs.com wd_tenant=cengage wd_site=CengageNorthAmericaCareers. 105 jobs live, 7 fit hits incl. 2x Customer Success Consultant."
+      "notes": "EdTech (Higher Ed/School/Work/ELL). wd_host=cengage.wd5.myworkdayjobs.com wd_tenant=cengage wd_site=CengageNorthAmericaCareers. 105 jobs live, 7 fit hits incl. 2x Customer Success Consultant.",
+      "source": "Workday board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "vCluster Labs",
@@ -451,7 +507,10 @@
       "enrolled_date": "2026-07-10",
       "headcount_band": "2000+",
       "enrolled_via": "pending queue verified 2026-07-10 via verify_workday.py (112 jobs, 5 title hits)",
-      "notes": "Atlanta HQ background screening company. Customer Success Partner (HealthCare Vertical), Sr./Lead Customer Success Partner roles."
+      "notes": "Atlanta HQ background screening company. Customer Success Partner (HealthCare Vertical), Sr./Lead Customer Success Partner roles.",
+      "source": "BuiltIn Atlanta 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Inorsa",
@@ -469,7 +528,9 @@
       "enrolled_date": "2026-07-10",
       "headcount_band": "501-2000",
       "enrolled_via": "User-surfaced (LinkedIn job alert) -- WitnessAI-class miss, pollable board invisible to every discovery source",
-      "notes": "Container/supply-chain security. Customer Support Manager (Tier-1 exact title) + 3 Senior CSM roles + Senior Manager CS Management, all Remote US."
+      "notes": "Container/supply-chain security. Customer Support Manager (Tier-1 exact title) + 3 Senior CSM roles + Senior Manager CS Management, all Remote US.",
+      "source": "User-surfaced (LinkedIn job alert) 2026-07-10 -- pollable board was invisible to every discovery source",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Expel",
@@ -478,7 +539,9 @@
       "enrolled_date": "2026-07-10",
       "headcount_band": "201-500",
       "enrolled_via": "User-surfaced (LinkedIn job alert) -- WitnessAI-class miss, pollable board invisible to every discovery source",
-      "notes": "MDR security operations. Manager, Technical Support Engineering + Customer Success Manager + Senior CSM + Technical Account Manager, all Remote."
+      "notes": "MDR security operations. Manager, Technical Support Engineering + Customer Success Manager + Senior CSM + Technical Account Manager, all Remote.",
+      "source": "User-surfaced (LinkedIn job alert) 2026-07-10 -- pollable board was invisible to every discovery source",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Wispr Flow",
@@ -487,7 +550,9 @@
       "enrolled_date": "2026-07-02",
       "headcount_band": "51-200",
       "enrolled_via": "Ashby board dork 2026-07-02",
-      "notes": "Voice AI dictation startup. Customer Engagement Manager (Remote US) is a direct fit."
+      "notes": "Voice AI dictation startup. Customer Engagement Manager (Remote US) is a direct fit.",
+      "source": "WebSearch Ashby board dork (Step 1c) -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Swiftly",
@@ -496,7 +561,9 @@
       "enrolled_date": "2026-07-02",
       "headcount_band": "51-200",
       "enrolled_via": "Lever board dork 2026-07-02",
-      "notes": "Transit data SaaS platform. Implementation Manager (SaaS, US) and Customer Training & Adoption Specialist are direct fits."
+      "notes": "Transit data SaaS platform. Implementation Manager (SaaS, US) and Customer Training & Adoption Specialist are direct fits.",
+      "source": "WebSearch Lever board dork (Step 1c) -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "FAR.AI",
@@ -505,7 +572,9 @@
       "enrolled_date": "2026-07-02",
       "headcount_band": "1-50",
       "enrolled_via": "AI-Native & AI-Safety Orgs discovery source 2026-07-02",
-      "notes": "AI safety research nonprofit, Berkeley. Current roles are ops-adjacent (Business Operations Associate, Senior Programs & Strategy Manager, both Remote US) but not strong title matches \u2014 mostly research/eng heavy. Enrolled per the explicit 'FAR.AI-type org' callout in _websearch_sources; watch for better title fits as new reqs post."
+      "notes": "AI safety research nonprofit, Berkeley. Current roles are ops-adjacent (Business Operations Associate, Senior Programs & Strategy Manager, both Remote US) but not strong title matches \u2014 mostly research/eng heavy. Enrolled per the explicit 'FAR.AI-type org' callout in _websearch_sources; watch for better title fits as new reqs post.",
+      "source": "AI-Native & AI-Safety Orgs discovery source (Step 1c) -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Nimble Gravity",
@@ -514,91 +583,117 @@
       "enrolled_date": "2026-07-02",
       "headcount_band": "201-500",
       "enrolled_via": "AI-Titled Roles discovery source 2026-07-02",
-      "notes": "AI growth consultancy (Denver HQ, LATAM+US remote team). AI Enablement & Adoption Manager and Client Engagement Manager (both US Remote) are strong fits."
+      "notes": "AI growth consultancy (Denver HQ, LATAM+US remote team). AI Enablement & Adoption Manager and Client Engagement Manager (both US Remote) are strong fits.",
+      "source": "AI-Titled Roles discovery source (Step 1c) -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "CodeRabbit",
       "ats": "ashby",
       "slug": "coderabbit",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "51-200"
+      "headcount_band": "51-200",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Siena AI",
       "ats": "ashby",
       "slug": "siena",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "51-200"
+      "headcount_band": "51-200",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Replicant",
       "ats": "ashby",
       "slug": "replicant",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "51-200"
+      "headcount_band": "51-200",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "PolyAI",
       "ats": "greenhouse",
       "slug": "polyai",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "201-500"
+      "headcount_band": "201-500",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Parloa",
       "ats": "greenhouse",
       "slug": "parloa",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "201-500"
+      "headcount_band": "201-500",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Ema",
       "ats": "ashby",
       "slug": "ema",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "51-200"
+      "headcount_band": "51-200",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Baseten",
       "ats": "ashby",
       "slug": "baseten",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "51-200"
+      "headcount_band": "51-200",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Modal",
       "ats": "ashby",
       "slug": "modal",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "51-200"
+      "headcount_band": "51-200",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Replit",
       "ats": "ashby",
       "slug": "replit",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "201-500"
+      "headcount_band": "201-500",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Mintlify",
       "ats": "ashby",
       "slug": "mintlify",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "51-200"
+      "headcount_band": "51-200",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Antithesis",
       "ats": "ashby",
       "slug": "antithesis",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "51-200"
+      "headcount_band": "51-200",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "PermitFlow",
       "ats": "ashby",
       "slug": "permitflow",
       "enrolled_date": "2026-06-30",
-      "headcount_band": "51-200"
+      "headcount_band": "51-200",
+      "source": "discovery dork + board verification (sub-500 push)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Weave Bio",
@@ -619,14 +714,18 @@
       "ats": "lever",
       "slug": "upguard",
       "enrolled_date": "2026-07-01",
-      "headcount_band": "201-500"
+      "headcount_band": "201-500",
+      "source": "WebSearch Lever board dork (Step 1c) -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Smile Digital Health",
       "ats": "lever",
       "slug": "smiledigitalhealth",
       "enrolled_date": "2026-07-01",
-      "headcount_band": "201-500"
+      "headcount_band": "201-500",
+      "source": "WebSearch Lever board dork (Step 1c) -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Bland",
@@ -634,7 +733,9 @@
       "slug": "bland",
       "enrolled_date": "2026-07-06",
       "headcount_band": "1-50",
-      "enrolled_via": "Ashby board dork 2026-07-03 -> verified 2026-07-06"
+      "enrolled_via": "Ashby board dork 2026-07-03 -> verified 2026-07-06",
+      "source": "Ashby board dork 2026-07-03 -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Temporal Technologies",
@@ -642,7 +743,9 @@
       "slug": "temporal",
       "enrolled_date": "2026-07-06",
       "headcount_band": "501-2000",
-      "enrolled_via": "Ashby board dork 2026-07-03 -> verified 2026-07-06"
+      "enrolled_via": "Ashby board dork 2026-07-03 -> verified 2026-07-06",
+      "source": "Ashby board dork 2026-07-03 -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "6sense",
@@ -650,7 +753,9 @@
       "slug": "6sense",
       "enrolled_date": "2026-07-06",
       "headcount_band": "501-2000",
-      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified 2026-07-06"
+      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified 2026-07-06",
+      "source": "Greenhouse board dork 2026-07-03 -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Leapwork",
@@ -658,7 +763,9 @@
       "slug": "leapwork",
       "enrolled_date": "2026-07-06",
       "headcount_band": "201-500",
-      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified 2026-07-06"
+      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified 2026-07-06",
+      "source": "Greenhouse board dork 2026-07-03 -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Contentful",
@@ -666,7 +773,9 @@
       "slug": "contentful",
       "enrolled_date": "2026-07-06",
       "headcount_band": "501-2000",
-      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified 2026-07-06"
+      "enrolled_via": "Greenhouse board dork 2026-07-03 -> verified 2026-07-06",
+      "source": "Greenhouse board dork 2026-07-03 -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Contentsquare",
@@ -674,7 +783,9 @@
       "slug": "contentsquare",
       "enrolled_date": "2026-07-06",
       "headcount_band": "501-2000",
-      "enrolled_via": "Lever board dork 2026-07-03 -> verified 2026-07-06"
+      "enrolled_via": "Lever board dork 2026-07-03 -> verified 2026-07-06",
+      "source": "Lever board dork 2026-07-03 -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Clerky",
@@ -682,7 +793,9 @@
       "slug": "clerky",
       "enrolled_date": "2026-07-06",
       "headcount_band": "1-50",
-      "enrolled_via": "Remotive API 2026-07-06 -> verified"
+      "enrolled_via": "Remotive API 2026-07-06 -> verified",
+      "source": "Remotive API 2026-07-06 -> verified",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Deepgram",
@@ -690,7 +803,10 @@
       "slug": "Deepgram",
       "enrolled_date": "2026-07-07",
       "headcount_band": "201-500",
-      "enrolled_via": "pending queue verified 2026-07-07"
+      "enrolled_via": "pending queue verified 2026-07-07",
+      "source": "Ashby board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Macroscope",
@@ -698,7 +814,10 @@
       "slug": "macroscope",
       "enrolled_date": "2026-07-07",
       "headcount_band": "1-50",
-      "enrolled_via": "pending queue verified 2026-07-07"
+      "enrolled_via": "pending queue verified 2026-07-07",
+      "source": "Ashby board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Sprig",
@@ -706,7 +825,10 @@
       "slug": "sprig",
       "enrolled_date": "2026-07-07",
       "headcount_band": "51-200",
-      "enrolled_via": "pending queue verified 2026-07-07"
+      "enrolled_via": "pending queue verified 2026-07-07",
+      "source": "Ashby board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "FourKites",
@@ -714,7 +836,10 @@
       "slug": "fourkites",
       "enrolled_date": "2026-07-07",
       "headcount_band": "501-2000",
-      "enrolled_via": "pending queue verified 2026-07-07"
+      "enrolled_via": "pending queue verified 2026-07-07",
+      "source": "Greenhouse board dork 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Cato Networks",
@@ -722,7 +847,10 @@
       "slug": "catonetworks",
       "enrolled_date": "2026-07-07",
       "headcount_band": "501-2000",
-      "enrolled_via": "pending queue verified 2026-07-07"
+      "enrolled_via": "pending queue verified 2026-07-07",
+      "source": "BuiltIn Atlanta/Remote 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Highspot",
@@ -730,7 +858,10 @@
       "slug": "highspot",
       "enrolled_date": "2026-07-07",
       "headcount_band": "501-2000",
-      "enrolled_via": "pending queue verified 2026-07-07"
+      "enrolled_via": "pending queue verified 2026-07-07",
+      "source": "BuiltIn Remote 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Confido",
@@ -748,7 +879,9 @@
       "enrolled_date": "2026-07-07",
       "headcount_band": null,
       "enrolled_via": "Lever board dork 2026-07-07",
-      "notes": "Java/JVM platform vendor. Customer Success Manager AND Technical Account Manager both US-Remote -- strong double fit. Headcount unconfirmed via WebSearch (conflicting/stale sources) -- left null rather than guessed."
+      "notes": "Java/JVM platform vendor. Customer Success Manager AND Technical Account Manager both US-Remote -- strong double fit. Headcount unconfirmed via WebSearch (conflicting/stale sources) -- left null rather than guessed.",
+      "source": "Lever board dork 2026-07-07",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Epsilon3",
@@ -757,7 +890,9 @@
       "enrolled_date": "2026-07-07",
       "headcount_band": "1-50",
       "enrolled_via": "Lever board dork 2026-07-07",
-      "notes": "AI-powered ERP/MES/test software for aerospace manufacturing (YC, ~31-33 employees). Senior Customer Success Account Manager, Los Angeles (not confirmed remote)."
+      "notes": "AI-powered ERP/MES/test software for aerospace manufacturing (YC, ~31-33 employees). Senior Customer Success Account Manager, Los Angeles (not confirmed remote).",
+      "source": "Lever board dork 2026-07-07",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Oden Technologies",
@@ -766,7 +901,9 @@
       "enrolled_date": "2026-07-08",
       "headcount_band": "51-200",
       "enrolled_via": "Ashby board dork 2026-07-08",
-      "notes": "Industrial manufacturing analytics (~50 employees). Solutions Engineer AND Customer Success Engineer both list Atlanta among hybrid-eligible cities."
+      "notes": "Industrial manufacturing analytics (~50 employees). Solutions Engineer AND Customer Success Engineer both list Atlanta among hybrid-eligible cities.",
+      "source": "Ashby board dork 2026-07-08",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Crusoe",
@@ -775,7 +912,9 @@
       "enrolled_date": "2026-07-08",
       "headcount_band": "501-2000",
       "enrolled_via": "AI-Native & AI-Safety Orgs discovery source 2026-07-08",
-      "notes": "AI infra + clean/stranded energy provider (~500-1500 employees). Senior Customer Success Manager, San Francisco (hybrid)."
+      "notes": "AI infra + clean/stranded energy provider (~500-1500 employees). Senior Customer Success Manager, San Francisco (hybrid).",
+      "source": "AI-Native & AI-Safety Orgs discovery source 2026-07-08",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Mixpanel",
@@ -784,7 +923,9 @@
       "enrolled_date": "2026-07-08",
       "headcount_band": "501-2000",
       "enrolled_via": "Greenhouse board dork 2026-07-08",
-      "notes": "Product analytics platform. Customer Success Architect + Senior Customer Strategy & Operations Manager, both SF/NYC hybrid."
+      "notes": "Product analytics platform. Customer Success Architect + Senior Customer Strategy & Operations Manager, both SF/NYC hybrid.",
+      "source": "Greenhouse board dork 2026-07-08",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Propelus",
@@ -793,28 +934,40 @@
       "enrolled_date": "2026-07-08",
       "headcount_band": null,
       "enrolled_via": "BuiltIn Atlanta 2026-07-07 -> verified 2026-07-08",
-      "notes": "Healthcare workforce compliance platform, Boulder CO/Jacksonville Beach FL, remote-first. Sr. Customer Success Manager - Government AND Manager, Customer Success both Remote US. Health-tech passion domain applies."
+      "notes": "Healthcare workforce compliance platform, Boulder CO/Jacksonville Beach FL, remote-first. Sr. Customer Success Manager - Government AND Manager, Customer Success both Remote US. Health-tech passion domain applies.",
+      "source": "BuiltIn Atlanta 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Harness",
       "ats": "greenhouse",
       "slug": "harnessinc",
       "enrolled_date": "2026-07-13",
-      "headcount_band": "501-2000"
+      "headcount_band": "501-2000",
+      "source": "BuiltIn Atlanta 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Scandit",
       "ats": "greenhouse",
       "slug": "scandit",
       "enrolled_date": "2026-07-13",
-      "headcount_band": "201-500"
+      "headcount_band": "201-500",
+      "source": "BuiltIn Remote 2026-07-10",
+      "first_seen": "2026-07-10",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Acceldata",
       "ats": "lever",
       "slug": "acceldata",
       "enrolled_date": "2026-07-13",
-      "headcount_band": "201-500"
+      "headcount_band": "201-500",
+      "source": "Lever board dork 2026-07-10",
+      "first_seen": "2026-07-10",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "LangChain",
@@ -831,7 +984,9 @@
       "slug": "second-nature",
       "enrolled_date": "2026-07-27",
       "headcount_band": "201-500",
-      "enrolled_via": "Greenhouse/Ashby/Lever Boards - Target Roles WebSearch dork 2026-07-27"
+      "enrolled_via": "Greenhouse/Ashby/Lever Boards - Target Roles WebSearch dork 2026-07-27",
+      "source": "Greenhouse/Ashby/Lever Boards - Target Roles WebSearch dork, first seen 2026-07-27",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Miovision",
@@ -839,7 +994,9 @@
       "slug": "miovision",
       "enrolled_date": "2026-07-27",
       "headcount_band": "501-2000",
-      "enrolled_via": "Ashby Boards - Target Roles WebSearch dork 2026-07-27"
+      "enrolled_via": "Ashby Boards - Target Roles WebSearch dork 2026-07-27",
+      "source": "Ashby Boards - Target Roles WebSearch dork, first seen 2026-07-27",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Zendesk",
@@ -854,70 +1011,100 @@
       "ats": "ashby",
       "slug": "windfall",
       "enrolled_date": "2026-07-29",
-      "headcount_band": null
+      "headcount_band": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-28",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "HiddenLayer",
       "ats": "greenhouse",
       "slug": "hiddenlayer",
       "enrolled_date": "2026-07-29",
-      "headcount_band": null
+      "headcount_band": null,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-28",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Toast",
       "ats": "greenhouse",
       "slug": "toast",
       "enrolled_date": "2026-07-29",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-07-29",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "CopilotIQ",
       "ats": "greenhouse",
       "slug": "copilotiq",
       "enrolled_date": "2026-07-29",
-      "headcount_band": null
+      "headcount_band": null,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-07-29",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Red Hat",
       "ats": "workday",
       "slug": "redhat",
       "enrolled_date": "2026-07-29",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "BuiltIn Remote 2026-07-22",
+      "first_seen": "2026-07-22",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Finastra",
       "ats": "workday",
       "slug": "finastra",
       "enrolled_date": "2026-07-29",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-07-29",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "CrowdStrike",
       "ats": "workday",
       "slug": "crowdstrike",
       "enrolled_date": "2026-07-29",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "Workday Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Trimble",
       "ats": "workday",
       "slug": "trimble",
       "enrolled_date": "2026-07-29",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-07-29",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Motorola Solutions",
       "ats": "workday",
       "slug": "motorolasolutions",
       "enrolled_date": "2026-07-29",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "BuiltIn Remote 2026-07-22",
+      "first_seen": "2026-07-22",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Rackspace",
       "ats": "workday",
       "slug": "rackspace",
       "enrolled_date": "2026-07-29",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "Workday Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Airbnb",
@@ -931,19 +1118,25 @@
       "ats": "workday",
       "slug": "humana",
       "enrolled_date": "2026-07-30",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "LinkedIn harvest (Step 1d-2) 2026-07-30, processed by hand after the run skipped the step",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "ButterflyMX",
       "ats": "ashby",
       "slug": "butterflymx",
-      "enrolled_date": "2026-07-30"
+      "enrolled_date": "2026-07-30",
+      "source": "LinkedIn alert audit 2026-07-30 (company-scoped alert he was running by hand)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Hawk-Eye Innovations",
       "ats": "workable",
       "slug": "hawk-eye-innovations",
-      "enrolled_date": "2026-07-30"
+      "enrolled_date": "2026-07-30",
+      "source": "LinkedIn alert audit 2026-07-30",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Databricks",
@@ -1181,14 +1374,18 @@
       "ats": "ashby",
       "slug": "hercules",
       "enrolled_date": "2026-08-06",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "User-surfaced (Aneesh spotted 'AI Operations Lead' directly in the LinkedIn app Jobs feed, not a forwarded alert email -- confirmed the harvest layer's auto-enrollment same run)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Headway",
       "ats": "ashby",
       "slug": "headway",
       "enrolled_date": "2026-08-06",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "User-surfaced (Aneesh spotted 'Applied AI Lead, Rev Ops', $121K-$190K, in the LinkedIn app Jobs feed) + harvest_ats.py auto-enrollment same run",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Mercury",
@@ -1293,7 +1490,10 @@
       "ats": "greenhouse",
       "slug": "veeamsoftware",
       "enrolled_date": "2026-08-14",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "StubHub",
@@ -1426,14 +1626,20 @@
       "ats": "greenhouse",
       "slug": "helloheart",
       "enrolled_date": "2026-08-21",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-20",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Aspire",
       "ats": "rippling",
       "slug": "aspire",
       "enrolled_date": "2026-08-21",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-21",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Britive",
@@ -1567,14 +1773,18 @@
       "slug": "abnormalsecurity",
       "enrolled_date": "2026-08-23",
       "headcount_band": "501-2000",
-      "note": "harvest_ats rejected this the same day for 'no board resolved from name variants'. The board is live; the slug is the company's FORMER name (Abnormal Security), which deterministic variants of 'Abnormal AI' can never generate. Verified via the Greenhouse API: 80 jobs, incl. Salesforce Administrator, Senior Salesforce Administrator (GTM Systems), Customer Solutions Engineer, and several CSM reqs."
+      "note": "harvest_ats rejected this the same day for 'no board resolved from name variants'. The board is live; the slug is the company's FORMER name (Abnormal Security), which deterministic variants of 'Abnormal AI' can never generate. Verified via the Greenhouse API: 80 jobs, incl. Salesforce Administrator, Senior Salesforce Administrator (GTM Systems), Customer Solutions Engineer, and several CSM reqs.",
+      "source": "LinkedIn alert (Step 1d-2) -> manual slug correction after harvest_ats name-variant miss",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Jackson Healthcare",
       "ats": "workday",
       "slug": "jacksonhealthcare",
       "enrolled_date": "2026-08-23",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "Step 1c Workday board dork",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Fieldguide",
@@ -1609,7 +1819,9 @@
       "ats": "rippling",
       "slug": "cbts",
       "enrolled_date": "2026-08-24",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "LinkedIn alert 2026-08-24 ('AI Solutions Manager', up to $150K), enrolled by hand after harvest_ats rejected it",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Incode Technologies",
@@ -1637,14 +1849,20 @@
       "ats": "ashby",
       "slug": "odyssey",
       "enrolled_date": "2026-08-27",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-27",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Flexport",
       "ats": "greenhouse",
       "slug": "flexport",
       "enrolled_date": "2026-08-27",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-27",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Aprio",
@@ -1665,7 +1883,9 @@
       "ats": "workday",
       "slug": "bbinsurance",
       "enrolled_date": "2026-08-28",
-      "headcount_band": "2000+"
+      "headcount_band": "2000+",
+      "source": "User-surfaced (LinkedIn Jobs feed screenshot) + Workday WebSearch fallback (2026-08-28)",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Reputation",
@@ -1729,7 +1949,9 @@
       "slug": "choa",
       "enrolled_date": "2026-09-01",
       "headcount_band": "2000+",
-      "note": "Promoted from rejected. The 2026-08-31 rejection reason asked for exactly this manual site:myworkdayjobs.com search; it resolved to choa.wd12 / site 'externalcareers' on the first try."
+      "note": "Promoted from rejected. The 2026-08-31 rejection reason asked for exactly this manual site:myworkdayjobs.com search; it resolved to choa.wd12 / site 'externalcareers' on the first try.",
+      "source": "Manual site:myworkdayjobs.com resolution during Step 1d-2 LinkedIn harvest follow-up; was rejected 2026-08-31 as 'no board resolved from name variants'.",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Vultr",
@@ -1750,35 +1972,49 @@
       "ats": "greenhouse",
       "slug": "cloudbeds",
       "enrolled_date": "2026-09-02",
-      "note": "Re-opened from rejected after a tier1 Director of Customer Support (North America) surfaced in a LinkedIn alert body."
+      "note": "Re-opened from rejected after a tier1 Director of Customer Support (North America) surfaced in a LinkedIn alert body.",
+      "source": "LinkedIn job-alert harvest 2026-09-02 -> re-opened from `rejected`. Rejected 2026-08-21 for zero qualifying fit-titles with recheck_if_resurfaced=true; resurfaced today.",
+      "source_backfilled": "watchlist enrolled_via"
     },
     {
       "name": "Veriff",
       "ats": "greenhouse",
       "slug": "veriff",
       "enrolled_date": "2026-09-02",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "RSA Security",
       "ats": "rippling",
       "slug": "rsa-security",
       "enrolled_date": "2026-09-02",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "UiPath",
       "ats": "ashby",
       "slug": "uipath",
       "enrolled_date": "2026-09-02",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "WebSearch board dork",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "JumpCloud",
       "ats": "lever",
       "slug": "jumpcloud",
       "enrolled_date": "2026-09-02",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "WebSearch board dork",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Airship",
@@ -1834,35 +2070,50 @@
       "ats": "greenhouse",
       "slug": "pieinsurance",
       "enrolled_date": "2026-09-04",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Vetcove",
       "ats": "ashby",
       "slug": "vetcove",
       "enrolled_date": "2026-09-04",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Doximity",
       "ats": "greenhouse",
       "slug": "doximity",
       "enrolled_date": "2026-09-04",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Dragos",
       "ats": "greenhouse",
       "slug": "dragos",
       "enrolled_date": "2026-09-04",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Moov",
       "ats": "rippling",
       "slug": "moov",
       "enrolled_date": "2026-09-04",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "OpenSesame",
@@ -2004,7 +2255,10 @@
       "slug": "ferguson",
       "rejected_date": "2026-07-31",
       "reason": "wd_host=ferguson.wd1.myworkdayjobs.com wd_tenant=ferguson wd_site=Ferguson_Experienced. Board live and pollable (552 total jobs) but zero CS/TAM/implementation/support-ops/AI-titled roles currently -- board is retail branch/warehouse/sales-support staffing for a plumbing/HVAC/industrial distributor. The 'Lead AI Enablement Operations Project Manager' listing that originally surfaced it via Remotive has closed.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "AI-Titled Roles WebSearch dork 2026-07-30",
+      "first_seen": "2026-07-30",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Perimeter",
@@ -2055,7 +2309,10 @@
       "slug": "ecovadis",
       "rejected_date": "2026-07-28",
       "reason": "Board live (31 postings) but zero US-reachable fit-space roles -- all customer-facing roles are Warsaw/London/Barcelona/Paris. Prior pending note flagged a Mexico City Customer Success Coordinator, also non-US.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "SmartRecruiters Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Momentus Technologies",
@@ -2063,7 +2320,10 @@
       "slug": "MomentusTechnologies",
       "rejected_date": "2026-07-28",
       "reason": "Board live (200 OK) but zero open postings currently (totalFound=0). The Singapore CS Manager role that originally surfaced it has closed.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "SmartRecruiters Boards - Target Roles 2026-07-22",
+      "first_seen": "2026-07-22",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Antavo",
@@ -2323,7 +2583,10 @@
       "slug": "resolution",
       "rejected_date": "2026-07-14",
       "reason": "Board live (5 jobs) but zero CS/TAM/implementation/support-ops titled roles; the 'Operations Staff' listing that surfaced it is a high-comp ($198K-437K) technical-staff role, not a support-ops manager fit.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "SL5 Task Force",
@@ -2331,7 +2594,10 @@
       "slug": "security-level-5",
       "rejected_date": "2026-07-14",
       "reason": "Board live (4 jobs) but zero CS/TAM/implementation/support-ops titled roles; generic 'Operations Generalist' at a tiny AI-safety research shop doesn't clear the title-tier bar.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Eleos AI Research",
@@ -2339,7 +2605,10 @@
       "slug": "eleos",
       "rejected_date": "2026-07-14",
       "reason": "Board live (2 jobs) but zero CS/TAM/implementation/support-ops titled roles; 'Head of Operations' is general-ops, not support-specific.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Kairos",
@@ -2347,7 +2616,10 @@
       "slug": "kairos-project",
       "rejected_date": "2026-07-14",
       "reason": "Board live (8 jobs) but zero CS/TAM/implementation/support-ops titled roles.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Valthos",
@@ -2355,7 +2627,10 @@
       "slug": "valthos",
       "rejected_date": "2026-07-14",
       "reason": "Board live (7 jobs); only fit-adjacent role is 'Member of Technical Staff - Forward Deployed Engineer' (NYC) -- production coding role, not an ops/support fit.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Goodfire",
@@ -2363,7 +2638,10 @@
       "slug": "goodfire",
       "rejected_date": "2026-07-14",
       "reason": "Board live (25 jobs) but the 'Business Operations Manager' listing that surfaced it is gone; remaining fit-adjacent role is Forward Deployed Research Scientist (Biology), a research title.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Metronome",
@@ -2406,7 +2684,10 @@
       "slug": "thoughtspot",
       "rejected_date": "2026-07-10",
       "reason": "verify_workday.py resolved the working site (thoughtspot.wd5.myworkdayjobs.com/thoughtspot/careers) but the CXS jobs API returned total=0 -- no open roles at all as of 2026-07-10, including the Customer Success Operations Manager that originally surfaced it.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn Remote 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Hopper",
@@ -2605,7 +2886,10 @@
       "slug": "talonone",
       "rejected_date": "2026-07-07",
       "reason": "Board live (resolved via greenhouse.io/talonone) but every posting is Australia/Berlin/London/Singapore-based, including the Customer Success Manager and Technical Account Manager Lead roles \u2014 no US-reachable role.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn Atlanta 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Centre for the Governance of AI (GovAI)",
@@ -2616,7 +2900,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "80,000 Hours job board 2026-07-06",
+      "first_seen": "2026-07-06",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Middesk",
@@ -2640,7 +2927,10 @@
       "slug": "rescale",
       "rejected_date": "2026-07-08",
       "reason": "The Customer Success Engineer role that surfaced it appears closed. Remaining customer-facing role, 'Engagement Manager, Defense & National Security' (Remote US), is defense/national-security scoped and likely implies clearance -- not a fit.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Uptycs",
@@ -2648,7 +2938,10 @@
       "slug": "uptycs",
       "rejected_date": "2026-07-08",
       "reason": "Direct Lever API probe (api.lever.co/v0/postings/uptycs) 404'd despite a live jobs.lever.co/uptycs/... listing appearing in search (Go Language Developer only). The Customer Success Manager role that surfaced it via BuiltIn was not found; board may use a different slug.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "HumanSignal",
@@ -2656,7 +2949,10 @@
       "slug": "humansignal",
       "rejected_date": "2026-07-08",
       "reason": "Board live (49 jobs) but the Solutions Architect (Post-Sales) role that surfaced it is gone. Remaining board is data-labeling ops/eng/SDR roles -- zero fit-space titles.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "DFIN",
@@ -2667,7 +2963,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "DTEX Systems",
@@ -2678,7 +2977,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Coursedog",
@@ -2689,7 +2991,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "AI-Titled Roles discovery 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Frame",
@@ -2711,7 +3016,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "80,000 Hours job board 2026-07-10",
+      "first_seen": "2026-07-10",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Principles of Intelligence",
@@ -2719,7 +3027,10 @@
       "slug": null,
       "rejected_date": "2026-07-15",
       "reason": "Salary $55,000-$75,000 (Belgrade, Serbia remote) is well below the $100K salary floor.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Impact Ops",
@@ -2727,7 +3038,10 @@
       "slug": null,
       "rejected_date": "2026-07-15",
       "reason": "Salary $80,000-$95,000 (Remote USA) is below the $100K salary floor.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Encode",
@@ -2738,7 +3052,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "High Impact Athletes",
@@ -2746,7 +3063,10 @@
       "slug": null,
       "rejected_date": "2026-07-15",
       "reason": "Salary 'up to $80,000' (Remote, Global) is below the $100K salary floor.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Constellation",
@@ -2757,7 +3077,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Google DeepMind",
@@ -2768,7 +3091,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Pax Sapiens",
@@ -2779,7 +3105,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "CivAI",
@@ -2790,7 +3119,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17"
+      "weekly_report_surfaced_date": "2026-08-17",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Clerky, Inc.",
@@ -2825,7 +3157,10 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-24"
+      "weekly_report_surfaced_date": "2026-08-24",
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-07-28",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Gainsight",
@@ -2833,7 +3168,10 @@
       "slug": null,
       "rejected_date": "2026-07-29",
       "reason": "Pending since 2026-07-03 (26 days). Real Workday site name was resolved (Gainsight_External_Careers) but the direct CXS POST has returned 403 on every recheck: 2026-07-19, 07-20, 07-21, 07-22, 07-23, 07-27, 07-28, and again today. That is a genuine block, not a wrong site name. Rejecting to stop it consuming a Step 1d slot every run; it was the oldest thing in the queue and never resolvable by the documented fallback.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "Workday board dork 2026-07-03",
+      "first_seen": "2026-07-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Microsoft",
@@ -3473,7 +3811,10 @@
       "rejected_date": "2026-08-10",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Alteryx",
@@ -3483,7 +3824,10 @@
       "wd_site": "AlteryxCareers",
       "rejected_date": "2026-08-10",
       "reason": "Manual site:myworkdayjobs.com follow-up resolved the real tenant (alteryx.wd108.myworkdayjobs.com/AlteryxCareers) and CXS API confirmed live (50 postings), but zero US-reachable tier1/tier2/tier2c fit-titles -- board is sales/marketing/engineering heavy; the one Customer Success role found (Associate, Digital Customer Success Programs) is Bangalore, India.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "State Street",
@@ -3493,7 +3837,10 @@
       "wd_site": "Global",
       "rejected_date": "2026-08-10",
       "reason": "Manual site:myworkdayjobs.com follow-up resolved the real tenant (statestreet.wd1.myworkdayjobs.com/Global) and CXS API confirmed live (673 postings). Found the exact LinkedIn-alert title, 'Global Operational Excellence Lead' (Quincy MA + 6 other locations, R-795457) -- but title doesn't map cleanly to any _title_scoring_tiers entry (not Support/CS/TAM-shaped) and the board is otherwise finance/risk/audit dominated at 2000+ headcount. Not enrolling the whole company for one ambiguous-fit req; flagged in this run's digest as a one-off blind-spot FYI instead.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-07",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Pendo.io",
@@ -3949,7 +4296,10 @@
       "rejected_date": "2026-08-14",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): real Workday tenant found and queried directly via CXS API (customer success manager / technical account manager / support operations manager / implementation manager searches) -- zero tier1/tier2/tier2c fit-space titles. Genuine no-fit, not a slug-guessing miss.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "RK&K",
@@ -3958,7 +4308,10 @@
       "rejected_date": "2026-08-14",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-13",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Dili",
@@ -3967,7 +4320,10 @@
       "rejected_date": "2026-08-14",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "Recent Funding (Passion/Tooling Verticals)",
+      "first_seen": "2026-08-12",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Ore Energy",
@@ -3976,7 +4332,10 @@
       "rejected_date": "2026-08-14",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "Recent Funding (Passion/Tooling Verticals)",
+      "first_seen": "2026-08-12",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Rentable",
@@ -4452,7 +4811,10 @@
       "slug": "founderspledge",
       "rejected_date": "2026-08-21",
       "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-08-20",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Robots and Pencils",
@@ -4460,7 +4822,10 @@
       "slug": "robotsandpencils",
       "rejected_date": "2026-08-21",
       "reason": "Board resolves and is live (36 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "user_surfaced",
+      "first_seen": "2026-08-20",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Blitzy",
@@ -4468,7 +4833,10 @@
       "slug": "blitzy",
       "rejected_date": "2026-08-21",
       "reason": "Board resolves and is live (46 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "user_surfaced",
+      "first_seen": "2026-08-20",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Reputation",
@@ -4480,7 +4848,10 @@
       "unpollable": false,
       "manual_review": true,
       "manual_review_why": "Sr. Manager, Technical Support \u2014 tier-1 loose match on 'Technical Support Manager'. Location not stated in the alert subject.",
-      "superseded_by_enrollment": "2026-08-28"
+      "superseded_by_enrollment": "2026-08-28",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-19",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Stefanini North America and APAC",
@@ -4489,7 +4860,10 @@
       "rejected_date": "2026-08-21",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-19",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Astralis Foundation",
@@ -4498,7 +4872,10 @@
       "rejected_date": "2026-08-21",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-08-20",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "NextGen Healthcare",
@@ -4510,7 +4887,10 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "tier2c title 'Salesforce Administrator/Manager' (Enterprise Applications Manager); location not stated in alert subject, unverified",
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-20",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "SPAR Solutions",
@@ -4519,7 +4899,10 @@
       "rejected_date": "2026-08-21",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-20",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Ascension",
@@ -4528,7 +4911,10 @@
       "rejected_date": "2026-08-21",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-20",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Avalara",
@@ -4538,7 +4924,10 @@
       "known_live_fit_roles_2026_08_21": "Business Systems Analyst - AI Automation (Remote US, careers.avalara.com/careers-home/jobs/16932) and AI GTM Systems Engineer (US). Surfaced by a LinkedIn push notification to Aneesh, not by any pipeline channel.",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. RESOLVED SAME DAY (2026-08-21), do not re-run the suggested search: the site:myworkdayjobs.com fallback WAS run and failed in the platform-vendor pattern, returning only Avalara's CUSTOMERS hiring for Avalara tax-software skills (Logicalis, Global Partners, Zillow, Inmar) rather than an Avalara tenant. Third confirmation of that pattern in one day, after AppFolio and Yardi. Avalara's real board is careers.avalara.com, served by CareerPuck (app.careerpuck.com/job-board/avalara). Five candidate CareerPuck JSON endpoints were probed and all returned a ~2KB HTML SPA shell with no job data, so this is not a quick new ATS integration. Avalara is genuinely unpollable for now. Revisit only if CareerPuck's internal API is identified, which would unlock every company on that platform at once rather than just this one.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-21",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "EthosEnergy",
@@ -4550,7 +4939,10 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Operations Support Manager (tier1 loose match); location not read from the alert body this run (budget-capped), verify at resolution.",
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-21",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Xplor Technologies",
@@ -4673,7 +5065,10 @@
       "manual_review": true,
       "manual_review_why": "Manager, Advanced Support Consulting, United States (remote-US). Tier-adjacent support-consulting management title; surface it if no pollable board is found.",
       "manual_review_surfaced": true,
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "source": "LinkedIn jobs-noreply digest BODY (Step 1d-2 subject-only bug, found 2026-08-21)",
+      "first_seen": "2026-08-21",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "JLL",
@@ -4682,7 +5077,10 @@
       "rejected_date": "2026-08-23",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn jobs-noreply digest BODY (Step 1d-2 subject-only bug, found 2026-08-21)",
+      "first_seen": "2026-08-21",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "US Government, Cybersecurity and Infrastructure Security Agency",
@@ -4722,7 +5120,10 @@
       "rejected_date": "2026-08-23",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "Step 1c Workday board dork",
+      "first_seen": "2026-08-23",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Spiro",
@@ -4968,7 +5369,10 @@
       "rejected_date": "2026-08-27",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-27",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "NetApp",
@@ -4977,7 +5381,10 @@
       "rejected_date": "2026-08-27",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-27",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Inspire",
@@ -4986,7 +5393,10 @@
       "rejected_date": "2026-08-27",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-27",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "The Jed Foundation",
@@ -4995,7 +5405,10 @@
       "rejected_date": "2026-08-27",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-27",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "LiftOne",
@@ -5007,7 +5420,10 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Implementation Project Manager, zip 30349 (Atlanta GA) -- tier2 title in Atlanta.",
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-27",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "CrossCountry Consulting",
@@ -5231,7 +5647,10 @@
       "slug": "intelligence-security-laboratories",
       "rejected_date": "2026-09-02",
       "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Centre for Effective Altruism",
@@ -5239,7 +5658,10 @@
       "slug": "centreforeffectivealtruism",
       "rejected_date": "2026-09-02",
       "reason": "Board resolves and is live (5 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Forescout",
@@ -5247,7 +5669,10 @@
       "slug": "forescout",
       "rejected_date": "2026-09-02",
       "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Better Impact",
@@ -5255,7 +5680,10 @@
       "slug": "better-impact",
       "rejected_date": "2026-09-02",
       "reason": "Board resolves and is live (9 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Element451",
@@ -5263,7 +5691,10 @@
       "slug": "element451",
       "rejected_date": "2026-09-02",
       "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "WebSearch board dork",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "AlgoSec",
@@ -5272,7 +5703,10 @@
       "rejected_date": "2026-09-02",
       "reason": "Board RESOLVED at workable/algosec but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/algosec.)",
       "recheck_if_resurfaced": true,
-      "unpollable": false
+      "unpollable": false,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Nscale",
@@ -5281,7 +5715,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Stord",
@@ -5290,7 +5727,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "TeleTracking",
@@ -5299,7 +5739,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Personetics",
@@ -5308,7 +5751,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Zycus",
@@ -5317,7 +5763,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Palo Alto Networks",
@@ -5326,7 +5775,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Worldwide Clinical Trials",
@@ -5335,7 +5787,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "MRO",
@@ -5344,7 +5799,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Tandem Ventures",
@@ -5353,7 +5811,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Crunchtime",
@@ -5362,7 +5823,10 @@
       "rejected_date": "2026-09-02",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "source": "WebSearch board dork",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Guild",
@@ -5504,7 +5968,10 @@
       "slug": "teamworks",
       "rejected_date": "2026-09-04",
       "reason": "Board resolves and is live (23 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Dscout",
@@ -5512,7 +5979,10 @@
       "slug": "dscout",
       "rejected_date": "2026-09-04",
       "reason": "Board resolves and is live (10 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Hermeus",
@@ -5520,7 +5990,10 @@
       "slug": "hermeus",
       "rejected_date": "2026-09-04",
       "reason": "Board resolves and is live (86 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Solvd, Inc.",
@@ -5528,7 +6001,10 @@
       "slug": "solvd",
       "rejected_date": "2026-09-04",
       "reason": "Board resolves and is live (24 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Vendavo",
@@ -5536,7 +6012,10 @@
       "slug": "vendavo",
       "rejected_date": "2026-09-04",
       "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Apryse",
@@ -5544,7 +6023,10 @@
       "slug": "apryse",
       "rejected_date": "2026-09-04",
       "reason": "Board resolves and is live (15 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Runway",
@@ -5633,7 +6115,10 @@
       "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"FULL Creative\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/full-creative.",
       "recheck_if_resurfaced": true,
       "unpollable": false,
-      "timed_out": true
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Premier Bankcard",
@@ -5643,7 +6128,10 @@
       "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Premier Bankcard\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
       "recheck_if_resurfaced": true,
       "unpollable": false,
-      "timed_out": true
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Jasper",
@@ -5653,7 +6141,10 @@
       "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 74s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Jasper\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
       "recheck_if_resurfaced": true,
       "unpollable": false,
-      "timed_out": true
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "ECI Group",
@@ -5663,7 +6154,10 @@
       "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"ECI Group\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
       "recheck_if_resurfaced": true,
       "unpollable": false,
-      "timed_out": true
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-03",
+      "source_backfilled": "git-replay"
     },
     {
       "name": "Allstate",
