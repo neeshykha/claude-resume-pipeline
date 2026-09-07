@@ -1943,10 +1943,15 @@ not folded into the daily digest.
    2026-08-10 forward) — the report says so explicitly; don't treat that as an error.
 
    It then prints an **"Enrollment attribution"** section (added 2026-09-07). The `enrolled`
-   counters inside `channel_stats` are same-run counts, and same-run enrollment is close to
-   impossible: a channel discovers a company on one run and `harvest_ats.py` resolves its
-   board on a later one. That is why the report spent weeks saying **"0 enrollments off 19
-   WebSearch source-runs"** about a channel that was in fact enrolling companies. The new
+   counters inside `channel_stats` are same-run counts and they undercount, but NOT because
+   same-run enrollment is impossible — Step 1d appends to `pending` and `harvest_ats.py`
+   drains it in the same pass, and 28% of enrollments do resolve that day (measured 09-07
+   over the 39 backfilled entries carrying both dates; the other 72% lag by a median of 1
+   day, max 11). The zero came from ATTRIBUTION, not timing: until 2026-09-07 nothing
+   recorded which channel fed an enrollment, so LinkedIn could self-report at Step 1d-2
+   while WebSearch, whose dorks feed the same undifferentiated queue, could not. That is why
+   the report spent weeks saying **"0 enrollments off 19 WebSearch source-runs"** about a
+   channel that was in fact converting. The new
    section counts `enrollment_candidates.json → enrolled` entries whose `enrolled_date` falls
    in the window, grouped by the `source` carried over from `pending`, and reports the
    discovery-to-enrollment lag alongside. **Do not divide one by the other** — the companies
