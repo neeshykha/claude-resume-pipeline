@@ -673,6 +673,10 @@
         "AI Operations Lead",
         "AI Operations Manager",
         "Support Process Excellence Manager",
+        "Escalation Manager",
+        "Incident Manager",
+        "Problem Manager",
+        "Service Delivery Manager",
         "Engagement Director",
         "AI Program Manager",
         "Implementation Specialist",
@@ -732,7 +736,7 @@
     },
     "tier2b_ai_wildcard": {
       "title_match_score": 18,
-      "description": "Catch-all for novel AI-prefixed roles companies are coining in 2025-2026. Apply when a title is NOT matched by tier1 or tier2 BUT satisfies: (1) 'AI' appears as a word-boundary token, AND (2) title contains ANY of: customer, deployment, implementation, engagement, outcomes, adoption, success, transformation, strategy, value, delivery, operations, solutions. Score as +18 (between T2 +22 and T3 +15). Flag for manual review in email digest. Do NOT apply to 'AI Engineer' or 'AI Architect' titles (those are IC/coding roles).",
+      "description": "Catch-all for novel AI-prefixed roles companies are coining in 2025-2026. Apply when a title is NOT matched by tier1 or tier2 BUT satisfies: (1) 'AI' appears as a word-boundary token, AND (2) the title contains ANY signal word from the list below. Score as +18 (between T2 +22 and T3 +15). Flag for manual review in email digest. Do NOT apply to 'AI Engineer' or 'AI Architect' titles (those are IC/coding roles); the exclude_if_contains list is what enforces that and it must survive any signal-word addition. EVALUATION VOCABULARY ADDED 2026-09-08 (evaluation, eval, quality, benchmark, agent, audit), from a blind-spot scan that found 'AI Evaluation Manager', 'AI Quality Manager', 'AI Benchmarking Manager', and 'Agent Performance Manager' failing all three of the poller's nets -- exact tier, AI-wildcard, and the fragment-count borderline list -- so they were not merely unscored, they were never seen. That vocabulary is precisely Aneesh's public portfolio (agent-ops-bench, deflection-audit, claude-eval-kit, skill-regression-harness are all labeled-set evaluation work), which made it the most expensive gap in the scan. Verified after the change: all six now score via tier2b, while 'AI Evaluation Engineer', 'AI Agent Engineer', 'AI Quality Architect', and 'AI Evals Developer' remain invisible, so the FDE guard is intact. 'quality' is safe to include despite being a common word because the word-bounded AI requirement gates it: 'Food Quality Manager' and 'Quality Assurance Manager' both stay invisible.",
       "signal_words": [
         "customer",
         "deployment",
@@ -754,7 +758,13 @@
         "knowledge",
         "copilot",
         "conversation",
-        "program"
+        "program",
+        "evaluation",
+        "eval",
+        "quality",
+        "benchmark",
+        "agent",
+        "audit"
       ],
       "exclude_if_contains": [
         "engineer",
@@ -971,8 +981,11 @@
         "Strategy and Operations Lead",
         "Operations Lead",
         "Founding Operations",
-        "Chief of Staff"
+        "Chief of Staff",
+        "Incident Manager",
+        "Service Delivery Manager"
       ],
+      "escalation_cluster_flag_note": "Added 2026-09-08 alongside the escalation cluster in tier2_strong_overlap, and note that only TWO of the four new titles are flagged. That is deliberate. 'Escalation Manager' and 'Problem Manager' are strongly predictive of function: an escalation manager runs escalations, which is Aneesh's single strongest evidence (Tier 3 Support Lead at ~1,000 escalations/month, and 'Owned escalation management' leads his Resideo block). Flagging those two would cost him twice over, because flagged titles also YIELD to a company's non-flagged titles when the 2-per-company diversity cap bites -- so his best-matching title would lose tiebreaks to weaker ones at the same company. 'Incident Manager' and 'Service Delivery Manager' genuinely split by domain and are flagged for that reason: Incident Manager divides between support/ITIL incident command (a fit) and SECURITY incident response (not one), and Service Delivery Manager divides between customer-facing service delivery (the OCHIN shape, a fit) and internal IT service delivery. Only the JD separates those. CONFIRMED rather than predicted, measured the same day: 'Security Incident Response Manager' and 'Incident Response Manager' both now score tier2 +22 off the bare 'Incident Manager' entry. That is the flag earning its place on its first test. If security-incident reqs become a recurring share of the shortlist, replace the bare entry with the qualified forms ('Customer Incident Manager', 'Major Incident Manager') rather than deleting the cluster. Four bare entries were enough because stemmed-token-SUBSET matching covers the qualified variants for free: all fifteen real-world forms tested match, including plurals ('Technical Escalations Manager'), seniority prefixes ('Staff', 'Major', 'Senior', 'IT', 'Client'), and inversions ('Senior Manager, Escalations', 'Problem Management Lead'). Adding those explicitly would have been redundant config.",
       "generalist_flag_note": "All ten tier2d_generalist_ops titles are flagged here in the SAME edit that created that tier, which is the pattern this file has settled on for any family whose title cannot predict the job (FDE 2026-07-09, AI Operations 2026-08-10, AgentOps 2026-09-07). The specific ambiguity: 'generalist' and 'operations lead' describe SCOPE, not altitude. At a 60-person startup the role owns a function end to end, which is the half of tier2c that survived the 2026-08-28 narrow-admin demotion and is squarely what Aneesh wants. At a badly-run company the same words mean an undifferentiated catch-all a rung below his current job, and the salary floor will not catch it because these roles are often paid well regardless (Mechanize's Operations Generalist is $200K). 'Chief of Staff' is the highest-variance entry and the one most likely to need demoting first: it splits between genuine ops ownership and pure executive support, and only the JD says which. If this family produces a run of catch-all or exec-support reqs, demote the family rather than removing the flag.",
       "agentops_flag_note": "The four Agent/LLMOps titles were flagged 2026-09-07 in the SAME edit that added them to tier2_strong_overlap, deliberately mirroring the AI Operations Lead/Manager pattern from 2026-08-10. Rationale is the FDE lesson at one remove: a title minted by the AI-infra market can drift within months to mean 'customer-facing engineer who ships production code', and AgentOps is described in the wild as SRE adapted to non-deterministic systems, which is an engineering discipline. THERE IS A SPECIFIC INTERACTION WORTH UNDERSTANDING BEFORE ANYONE 'FIXES' IT. function_mismatch_titles.protected_tiers includes tier2_strong_overlap, so a title whose BEST tier match is tier2 is never demoted. Promoting 'AgentOps' to tier2 therefore means 'Engineering Manager, AgentOps' -- Scale AI's actual title for this role -- now resolves to tier2 +22 and is PROTECTED from the Engineering Manager demotion, so it reaches the shortlist rather than a digest FYI line. That is intended: the whole point of the addition is visibility into a forming category. It also means engineering-flavoured AgentOps reqs will now flow onto the shortlist, which is exactly how FDE went wrong at tier2 in June-July 2026. This flag is the control that makes the tradeoff survivable -- the JD gets read before anything is tailored, and flagged roles yield to a company's non-flagged titles when the 2-per-company diversity cap bites. If these produce a run of engineering-manager reqs with production-coding bars, demote the family rather than removing the flag.",
       "notes": "Titles with a documented history of JD-level mismatch despite matching the gate (see tier4 forward_deployed_engineer_note). The poller tags matches jd_verification_required=true, and when filling the per-company diversity cap it takes a company's NON-flagged roles first, so a risky top pick can't crowd out a safer second-best title from the same company (the Confido 2026-07-09 failure mode). Flagged roles still surface when slots remain. ALWAYS read the full JD before tailoring one of these, regardless of score. 'AI Enablement Program Manager' added 2026-07-15 after Klaviyo's posting under that exact title (tier2_strong_overlap, pre_score 53, looked like a strong fit) turned out to be an Engineering-department developer-experience/onboarding role requiring 5-8+ years of software engineering and Git/CI/CD proficiency -- zero overlap with support/CS-flavored AI enablement work. The title alone is not a reliable signal for this company category; some orgs use 'AI Enablement' for internal engineering tooling, not customer/adoption-facing AI rollout. 'AI Operations Lead'/'AI Operations Manager' added 2026-08-10 in the SAME edit that promoted them to tier2: at Hercules and Clutch the title means support/CX AI operations (a true fit), but at an infra or ML-platform company 'AI Operations' can mean MLOps/model-serving, which is not. Promoting the title to +22 is what makes it surface; flagging it here is what stops it being tailored blind."
