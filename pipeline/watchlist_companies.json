@@ -5403,6 +5403,76 @@
       "score_bonus": 0,
       "bonus_reason": "No vertical bonus (classified 2026-09-08). Web hosting and small-business website platform (Newfold Digital). Neither AI-native nor developer/infra tooling under the curated definitions: hosting is infrastructure sold to small businesses, not a tool sold to developers.",
       "reason": "Enrolled after harvest_ats.py burned its full 60s cap on this name without resolving it. The tenant is 'web' and the site is 'ExternalCareerSite', neither derivable from 'Bluehost', which is exactly the non-derivable-site-name class the spec says needs one manual search. Surfacing role: 'Enterprise Technical Account Manager', United States - Remote, posted 2026-07-24 (tier2, remote-US)."
+    },
+    {
+      "name": "Cognition",
+      "ats": "ashby",
+      "slug": "cognition",
+      "priority": "low",
+      "enrolled_date": "2026-09-08",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (91 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Applied AI Transformation Manager' [San Francisco]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Mistral",
+      "ats": "ashby",
+      "slug": "mistral.ai",
+      "priority": "low",
+      "enrolled_date": "2026-09-08",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (186 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Applied AI, Technical Lead - Forward Deployed AI Engineer' [New York]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Synthesia",
+      "ats": "ashby",
+      "slug": "synthesia",
+      "priority": "low",
+      "enrolled_date": "2026-09-08",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (56 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Director, Customer Success Strategy and Operations ' [New York City]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Suno",
+      "ats": "ashby",
+      "slug": "suno",
+      "priority": "low",
+      "enrolled_date": "2026-09-08",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (65 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Director of Customer Support' [Boston]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Figure",
+      "ats": "greenhouse",
+      "slug": "figure",
+      "priority": "low",
+      "enrolled_date": "2026-09-08",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (11 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Senior Manager of SEC Reporting & Technical Accounting ' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Thinking Machines",
+      "ats": "ashby",
+      "slug": "thinkingmachines",
+      "priority": "low",
+      "enrolled_date": "2026-09-08",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (37 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Product Manager - Deployment' [San Francisco]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "World Labs",
+      "ats": "greenhouse",
+      "slug": "worldlabs",
+      "priority": "low",
+      "enrolled_date": "2026-09-08",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Sr Business Development & Ops Lead, Robotics & Physical AI' [San Francisco]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
