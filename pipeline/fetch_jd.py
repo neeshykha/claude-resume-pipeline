@@ -39,6 +39,13 @@ Each ATS is hit at the endpoint that returns structured data:
   Paylocity  https://{host}/Recruiting/Jobs/Details/{id}
              (no API at all; the detail page is server-rendered HTML and is
              scraped directly. See fetch_paylocity.)
+  Workable   https://apply.workable.com/api/v1/accounts/{account}/jobs/{shortcode}
+             (Description and Requirements are SEPARATE fields, and comp is
+             often prose inside `benefits`. See fetch_workable.)
+  UKG Pro    https://{tenant}.rec.pro.ukg.net/{code}/JobBoard/{board}/OpportunityDetail
+             (Knockout page, but the server renders the whole opportunity object
+             inline; carries a pay range even when hidden from the posting, and
+             two different posting dates. See fetch_ukg.)
 
 Prints title, location, remote flag, posting date, compensation, and the FULL
 description text. Read the requirements yourself rather than asking a summarizing
@@ -219,6 +226,183 @@ def fetch_smartrecruiters(url):
         "remote": loc.get("remote"),
         "posted": d.get("releasedDate"),
         "salary": None,
+        "body": body,
+    }
+
+
+UKG_RE = re.compile(
+    r"https?://([A-Za-z0-9-]+)\.rec\.pro\.ukg\.net/([A-Za-z0-9]+)/JobBoard/"
+    r"([0-9a-f-]{36})/OpportunityDetail", re.I)
+
+
+def _balanced_obj(text, from_idx):
+    """Return the JSON object starting at the first '{' at or after from_idx.
+
+    Same reasoning as fetch_paylocity's bracket-balancing: Description strings
+    carry braces and escaped quotes, so a regex cannot find the end of the
+    object. Counts depth while skipping over string literals and escapes.
+    """
+    start = text.find("{", from_idx)
+    if start == -1:
+        return None
+    depth, i, in_str, esc = 0, start, False, False
+    while i < len(text):
+        ch = text[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+        elif ch == '"':
+            in_str = True
+        elif ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:i + 1]
+        i += 1
+    return None
+
+
+def fetch_ukg(url):
+    """UKG Pro Recruiting (`*.rec.pro.ukg.net`), by reading the page's own payload.
+
+    Added 2026-09-08 from a user-surfaced role (TASI Measurement / Mission
+    Communications, Customer Experience and Technical Support Manager). The page
+    LOOKS client-rendered -- it is Knockout, and `<title data-bind="text: title()">`
+    is empty in the raw HTML, which is exactly the shape that gets an ATS written
+    off as needing a browser. It is not: the server renders the COMPLETE
+    opportunity object inline into a `US.Opportunity.CandidateOpportunityDetail({...})`
+    call, so a plain GET has everything. The board listing page does the same thing
+    through `US.Opportunity.OpportunitiesViewModel(...)`, which means this ATS is
+    pollable too, not merely readable. Generalize the Comeet lesson: an empty
+    rendered page is not evidence about the payload behind it.
+
+    THREE FIELDS THAT WILL MISLEAD IF READ NAIVELY, all found on the first live req:
+
+    - **`PayRange` is populated even when `PayRangeVisible` is false.** TASI's req
+      renders no salary anywhere on the page and carries
+      `PayRangeMinimum 100000 / PayRangeMaximum 145000` in the payload. Scoring
+      should use it, since a real disclosed range beats treating the role as
+      salary-neutral. Do not quote an undisclosed range back to the employer.
+    - **`PostedDate` is requisition CREATION, not publication.** TASI reads
+      2026-06-03 there and `JobBoardMemberships[].ExternalPostedDate` 2026-07-22:
+      97 days versus 48. The external date is the one that answers "how long has a
+      candidate been able to see this", and it is the field MAX_POSTING_AGE_DAYS
+      should be measured against. Same class as the Greenhouse
+      `first_published`-vs-`updated_at` trap, in the opposite direction.
+    - **`JobLocationType`** carries the on-site/remote answer (0 = on-site on the
+      reqs seen so far) and the address lives in `Locations[].Address`, so location
+      never has to be guessed from a display string.
+
+    `OpportunityIsClosed` distinguishes a filled req from a live one.
+    """
+    m = UKG_RE.search(url)
+    if not m:
+        return None
+    raw = get(url).text
+    anchor = raw.find("CandidateOpportunityDetail(")
+    if anchor == -1:
+        return {"ats": "ukg", "error":
+                "no CandidateOpportunityDetail payload on the page "
+                "(wrong opportunityId, or the req was removed)"}
+    blob = _balanced_obj(raw, anchor)
+    if blob is None:
+        return {"ats": "ukg", "error": "CandidateOpportunityDetail object never closed"}
+    d = json.loads(blob)
+
+    loc = (d.get("Locations") or [{}])[0]
+    addr = loc.get("Address") or {}
+    state = (addr.get("State") or {}).get("Code")
+    where = ", ".join(filter(None, [addr.get("City"), state,
+                                    (addr.get("Country") or {}).get("Code")]))
+
+    memberships = d.get("JobBoardMemberships") or [{}]
+    external = memberships[0].get("ExternalPostedDate")
+    created = d.get("PostedDate")
+
+    pay = d.get("PayRange") or {}
+    salary = None
+    if pay.get("PayRangeMinimum") or pay.get("PayRangeMaximum"):
+        cur = d.get("PayRangeCurrencyCode") or ""
+        hidden = "" if d.get("PayRangeVisible") else "  [NOT shown on the posting]"
+        salary = (f"{pay.get('PayRangeMinimum')} - {pay.get('PayRangeMaximum')} "
+                  f"{cur}{hidden}").strip()
+
+    notes = []
+    if d.get("OpportunityIsClosed"):
+        notes.append("REQ IS CLOSED")
+    if created and external and created[:10] != external[:10]:
+        notes.append(f"requisition created {created[:10]}, "
+                     f"published externally {external[:10]} -- age from the latter")
+    if d.get("TravelDescription"):
+        notes.append(f"travel: {d['TravelDescription']}")
+    if d.get("JobLocationType") == 0:
+        notes.append("JobLocationType=0 (on-site)")
+
+    body = strip_html(d.get("Description"))
+    if notes:
+        body = "===== FETCHER NOTES =====\n" + "\n".join(f" - {n}" for n in notes) + "\n\n" + body
+
+    return {
+        "ats": "ukg",
+        "title": d.get("Title"),
+        "location": where or loc.get("LocalizedName"),
+        "remote": "on-site" if d.get("JobLocationType") == 0 else d.get("JobLocationType"),
+        "posted": (external or created or "")[:10] or None,
+        "salary": salary,
+        "body": body,
+    }
+
+
+def fetch_workable(url):
+    """Workable, via the public per-posting account API.
+
+    Added 2026-09-08 from a user-surfaced role (Seeq, Technical Account Manager).
+    This was the same shape of gap Paylocity had until 2026-09-03: poll_ats.py has
+    read Workable boards since 2026-07-27 and harvest_ats.py probes Workable slugs,
+    so a Workable req could reach the shortlist while Step 3 had nothing to read it
+    with and fell back to WebFetch.
+
+    `https://apply.workable.com/api/v1/accounts/<account>/jobs/<shortcode>` returns
+    the posting as JSON with no auth. Two things make it worth having:
+
+    - **Description and Requirements are SEPARATE fields**, and the requirements
+      block is where the years-of-experience bar lives. A Description-only read
+      returns a JD with no requirements in it, silently, looking complete -- the
+      exact defect fetch_paylocity was built to avoid on tenants that split the
+      posting the same way.
+    - **Compensation is often prose inside `benefits`, not a structured field.**
+      Seeq states "$130,000 USD" in a perks list. poll_ats treats Workable hits as
+      salary-neutral, so the number only exists here; `benefits` is therefore
+      appended to the body rather than dropped.
+
+    `remote` is a real boolean and `location` is a dict, unlike Ashby's isRemote,
+    which lies in both directions. The account slug comes from the URL path, so a
+    tenant that renames itself 404s loudly rather than resolving to someone else.
+    """
+    m = re.search(r"apply\.workable\.com/([^/]+)/j/([0-9A-Za-z]+)", url)
+    if not m:
+        return None
+    account, shortcode = m.group(1), m.group(2)
+    api = f"https://apply.workable.com/api/v1/accounts/{account}/jobs/{shortcode}"
+    d = get(api).json()
+    body = "\n\n".join(
+        f"===== {k.upper()} =====\n{strip_html(d.get(k))}"
+        for k in ("description", "requirements", "benefits") if d.get(k))
+    loc = d.get("location") or {}
+    where = ", ".join(filter(None, [loc.get("city"), loc.get("region"),
+                                    loc.get("country")]))
+    return {
+        "ats": "workable",
+        "title": d.get("title"),
+        "location": where or None,
+        "remote": d.get("workplace") or d.get("remote"),
+        "posted": (d.get("published") or "")[:10] or None,
+        "salary": d.get("salary"),
         "body": body,
     }
 
@@ -523,7 +707,8 @@ def fetch_paylocity(url):
 
 
 FETCHERS = (fetch_ashby, fetch_workday, fetch_greenhouse, fetch_lever,
-            fetch_smartrecruiters, fetch_comeet, fetch_paylocity)
+            fetch_smartrecruiters, fetch_comeet, fetch_paylocity, fetch_workable,
+            fetch_ukg)
 
 
 def fetch(url):
@@ -535,9 +720,9 @@ def fetch(url):
         if out is not None:
             return out
     return {"error": "no fetcher matched this URL. Supported: Ashby, Workday, "
-                     "Greenhouse, Lever, SmartRecruiters, Comeet, Paylocity. "
-                     "Pinpoint/Rippling have no per-posting JSON endpoint; use "
-                     "WebSearch for those."}
+                     "Greenhouse, Lever, SmartRecruiters, Comeet, Paylocity, "
+                     "Workable, UKG Pro Recruiting. Pinpoint/Rippling have no per-posting JSON "
+                     "endpoint; use WebSearch for those."}
 
 
 def render(url, rec, limit):

@@ -522,7 +522,7 @@ def write_pending(entries: list[dict]) -> int:
         added += 1
     tmp = QUEUE + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(q, f, indent=2, ensure_ascii=False)
+        json.dump(q, f, indent=2)
         f.write("\n")
     os.replace(tmp, QUEUE)
     return added
