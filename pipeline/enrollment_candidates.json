@@ -17,131 +17,60 @@
   "_run_instructions": "Each daily run, in Step 1b after reading ATS hits: (1) process every `pending` entry \u2014 for name-only leads resolve the ATS first; verify the board (direct ATS API check, or pipeline/verify_workday.py for Workday) is live with US-reachable fit-space roles; look up an approximate headcount_band; then either add it to watchlist_companies.json + move to `enrolled`, or move it to `rejected` with a reason. (2) Run the feeders (harvest_hn_hiring.py monthly, poll_remotive.py and poll_80k.py daily) + board dorks; append any UNFAMILIAR company (not in watchlist_companies.json, `enrolled`, or `rejected`) to `pending`. (3) Prefer sub-500. Reject Europe/APAC-only boards \u2014 their fit roles aren't US-reachable.",
   "pending": [
     {
-      "name": "Adobe",
-      "ats": "workday",
-      "slug": "adobe",
-      "source": "WebSearch dork (SmartRecruiters/Rippling rotation, 2026-09-07)",
-      "first_seen": "2026-09-07",
-      "why": "RESOLVED TENANT, do not re-guess: adobe.wd5.myworkdayjobs.com, site name 'external_experienced'. Seen running 'Manager, Technical Account Management' (R168678). Non-derivable site name, which is the class harvest_ats.py structurally cannot produce from a company name. Verify live + set headcount_band, then enroll.",
-      "needs_ats_resolution": false,
-      "manual_review": true,
-      "manual_review_why": "Manager, Technical Account Management -- exact tier2 title; location unconfirmed, check before enrolling"
-    },
-    {
-      "name": "Magnite",
-      "ats": "workday",
-      "slug": "osv-rubicon",
-      "source": "WebSearch dork (Workday rotation via Cox blind-spot query, 2026-09-07)",
-      "first_seen": "2026-09-07",
-      "why": "RESOLVED TENANT, do not re-guess: osv-rubicon.wd5.myworkdayjobs.com, site name 'MagniteCareers'. Note the tenant is the pre-merger Rubicon Project name, which no variant of 'Magnite' would ever generate. Seen running 'Customer Success Engineer (Technical Account Manager)' (R-00805). Ad-tech platform. Verify live + set headcount_band, then enroll.",
-      "needs_ats_resolution": false,
-      "manual_review": true,
-      "manual_review_why": "Customer Success Engineer (Technical Account Manager) -- tier2 title; location unconfirmed"
-    },
-    {
-      "name": "Bluehost",
-      "ats": "workday",
-      "slug": "web",
-      "source": "WebSearch dork (Workday rotation via Cox blind-spot query, 2026-09-07)",
-      "first_seen": "2026-09-07",
-      "why": "RESOLVED TENANT, do not re-guess: web.wd1.myworkdayjobs.com, site name 'ExternalCareerSite'. The tenant is 'web' (Newfold Digital's shared instance), which no variant of 'Bluehost' would generate. Seen running 'Enterprise Technical Account Manager' (R14831-1), described as onboarding + technical guidance + customer success for cloud deployments. Verify live + set headcount_band, then enroll.",
-      "needs_ats_resolution": false,
-      "manual_review": true,
-      "manual_review_why": "Enterprise Technical Account Manager -- exact tier2 title; location unconfirmed"
-    },
-    {
-      "name": "PagerDuty",
+      "name": "Vonage",
       "ats": "greenhouse",
-      "slug": "pagerduty",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Technical Account Manager, reported by the search summary as one of several PagerDuty postings IN ATLANTA. tier2 exact title plus the scarcest location in the rubric, which makes this the strongest lead of the ten. Location came from a summarizing search backend, not the JD; confirm before scoring.",
-      "needs_ats_resolution": false,
-      "manual_review": true,
-      "manual_review_why": "Technical Account Manager [Atlanta, per search summary -- unconfirmed against the JD]"
+      "slug": "vonage",
+      "source": "WebSearch board dork (Step 1c rotation, AgentOps + Atlanta Greenhouse/Ashby/Lever)",
+      "first_seen": "2026-09-08",
+      "why": "Atlanta Greenhouse dork: 'Technical Customer Success Manager - Contact Center'. Contact-center CX platform, which is squarely his function."
     },
     {
-      "name": "ASG",
+      "name": "Lantern",
       "ats": "greenhouse",
-      "slug": "asgjobs",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Technical Customer Success Manager. Summary states the company is hybrid-friendly with office hubs in Denver, ATLANTA, and Tampa, but that Denver is the preferred location -- so the Atlanta signal is real but weak, and this may fail the location gate on a JD read.",
-      "needs_ats_resolution": false,
-      "manual_review": true,
-      "manual_review_why": "Technical Customer Success Manager [Atlanta listed as an office hub, Denver preferred -- unconfirmed]"
+      "slug": "employerdirecthealthcare",
+      "source": "WebSearch board dork (Step 1c rotation, AgentOps + Atlanta Greenhouse/Ashby/Lever)",
+      "first_seen": "2026-09-08",
+      "why": "AgentOps dork: 'Senior AI Engineer' naming agent observability, trace logging, and LLMOps practice ownership. Engineering IC, so the ROLE is not a fit; queued for the COMPANY. Slug is 'employerdirecthealthcare' and no name-variant probe would ever produce it."
     },
     {
-      "name": "Prophecy",
+      "name": "Sumo Logic",
       "ats": "greenhouse",
-      "slug": "prophecysimpledatalabs",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Customer Success Manager coordinating across CS, Sales, Engineering, Product, and Support. Data engineering platform. Location NOT confirmed from the snippet.",
-      "needs_ats_resolution": false
+      "slug": "sumologic",
+      "source": "WebSearch board dork (Step 1c rotation, AgentOps + Atlanta Greenhouse/Ashby/Lever)",
+      "first_seen": "2026-09-08",
+      "why": "AgentOps dork: 'AI Tech Lead' naming LLMOps, eval harnesses, and agent observability. Observability vendor, so a likely tooling +20 if it enrolls."
     },
     {
-      "name": "Veza",
+      "name": "Culture Amp",
       "ats": "greenhouse",
-      "slug": "veza",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Customer Success / Technical Account Manager, described as a strategic technical advisor bridging business objectives and platform capabilities. Identity security platform, so a likely tooling vertical bonus at classification time. Location NOT confirmed.",
-      "needs_ats_resolution": false
+      "slug": "cultureamp",
+      "source": "WebSearch board dork (Step 1c rotation, AgentOps + Atlanta Greenhouse/Ashby/Lever)",
+      "first_seen": "2026-09-08",
+      "why": "AgentOps dork: 'Staff Applied AI Scientist' naming evaluation and observability tooling for agentic systems."
     },
     {
-      "name": "SmarterDx",
+      "name": "Caylent",
       "ats": "greenhouse",
-      "slug": "smarterdx",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Support Analyst I, Customer Success Operations. NOTE THE LEVEL: 'Analyst I' is junior and well below current scope, so this specific req is probably not a fit -- the company is worth watching, the role is not. Health-tech (clinical documentation), so the passion domain may apply. Also appeared in poll_builtin's deferred tail the same day. Location NOT confirmed.",
-      "needs_ats_resolution": false
+      "slug": "caylent",
+      "source": "WebSearch board dork (Step 1c rotation, AgentOps + Atlanta Greenhouse/Ashby/Lever)",
+      "first_seen": "2026-09-08",
+      "why": "AgentOps dork: 'AI/ML Engineering Manager' advising customers on MLOps and LLMOps. Cloud consultancy, so expect a services board."
     },
     {
-      "name": "Plenful",
+      "name": "3Cloud",
+      "ats": "greenhouse",
+      "slug": "3cloud",
+      "source": "WebSearch board dork (Step 1c rotation, AgentOps + Atlanta Greenhouse/Ashby/Lever)",
+      "first_seen": "2026-09-08",
+      "why": "AgentOps dork: 'Principal Architect - AI Product Engineering' naming MLOps/LLMOps across delivery engagements."
+    },
+    {
+      "name": "MeridianLink",
       "ats": "ashby",
-      "slug": "plenful",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Customer Experience Account Manager overseeing customer implementations and working with technical teams on configuration. Healthcare workflow automation, so the passion domain may apply. Location NOT confirmed.",
-      "needs_ats_resolution": false
-    },
-    {
-      "name": "Revin",
-      "ats": "ashby",
-      "slug": "revin",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Customer Success Manager supporting enterprise accounts through complex, multi-phase implementations. Location NOT confirmed.",
-      "needs_ats_resolution": false
-    },
-    {
-      "name": "Ambi Robotics",
-      "ats": "lever",
-      "slug": "ambirobotics",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Customer Success Account Manager. Robotics/physical-world company, which is adjacent to the IoT and connected-devices experience that is his strongest differentiator. Location NOT confirmed.",
-      "needs_ats_resolution": false
-    },
-    {
-      "name": "Total Expert",
-      "ats": "lever",
-      "slug": "totalexpert",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Director, Customer Success. Director-level, so check scope against the tier1 'Director of Support Operations' carve-out rather than assuming it is above level. Location NOT confirmed.",
-      "needs_ats_resolution": false
-    },
-    {
-      "name": "Everlywell",
-      "ats": "lever",
-      "slug": "everlywell",
-      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
-      "first_seen": "2026-09-07",
-      "why": "Senior Technical Implementation & Accounts Manager (Clinical Operations). tier2 implementation family plus the health-tech passion domain, which is a good combination. Location NOT confirmed.",
-      "needs_ats_resolution": false
+      "slug": "meridianlink",
+      "source": "WebSearch board dork (Step 1c rotation, AgentOps + Atlanta Greenhouse/Ashby/Lever)",
+      "first_seen": "2026-09-08",
+      "why": "Atlanta Ashby dork: 'Principal Program Manager, Customer Success Enablement', explicitly about client support efficiency, response times, and case resolution quality."
     }
   ],
   "enrolled": [
@@ -2162,7 +2091,9 @@
       "ats": "jazzhr",
       "slug": "bambooworks",
       "enrolled_date": "2026-09-07",
-      "via": "harvest_ats.py"
+      "via": "harvest_ats.py",
+      "unenrolled_date": "2026-09-08",
+      "unenrolled_reason": "REMOVED from the watchlist 2026-09-08: Bamboo Works is a staffing/recruitment agency, not an employer. Its 'AI Systems & Automation Consultant (Claude Code & Business Automation)' req reached the shortlist as an ai_wildcard, and reading it showed the agency placing an independent contractor with a private investor client at $800-1,200/month for 20 hours a week on Perth or Manila hours. The 17 'fit-titles' harvest_ats.py scored are other companies' reqs. Same class the LinkedIn step blocks by name (Swooped, Jobot, Dice, ZipRecruiter, Talentify, Lensa); harvest_ats.py has no equivalent guard, which is the gap worth fixing. Do not re-enroll."
     },
     {
       "name": "AlayaCare",
@@ -2191,6 +2122,95 @@
       "slug": "paynearmeinc",
       "enrolled_date": "2026-09-07",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Affirm",
+      "ats": "greenhouse",
+      "slug": "affirm",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "PagerDuty",
+      "ats": "greenhouse",
+      "slug": "pagerduty",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "SmarterDx",
+      "ats": "greenhouse",
+      "slug": "smarterdx",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Plenful",
+      "ats": "ashby",
+      "slug": "plenful",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Total Expert",
+      "ats": "lever",
+      "slug": "totalexpert",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Everlywell",
+      "ats": "lever",
+      "slug": "everlywell",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py",
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Cobalt",
+      "ats": "greenhouse",
+      "slug": "cobaltio",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Nebius",
+      "ats": "greenhouse",
+      "slug": "nebius",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "NISC",
+      "ats": "greenhouse",
+      "slug": "nisc",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Bluehost",
+      "ats": "workday",
+      "slug": "web",
+      "enrolled_date": "2026-09-08",
+      "headcount_band": "501-2000",
+      "source": "WebSearch dork (Workday/SmartRecruiters rotation, 2026-09-07)",
+      "first_seen": "2026-09-07",
+      "via": "hand-enrolled after harvest_ats.py timed out on the name"
     }
   ],
   "rejected": [
@@ -2918,8 +2938,9 @@
       "ats": "greenhouse",
       "slug": "affirm",
       "rejected_date": "2026-07-07",
-      "reason": "Senior Technical Account Manager is Remote Canada -- not US-reachable. No other fit-space role found.",
-      "recheck_if_resurfaced": true
+      "reason": "SUPERSEDED 2026-09-08: re-probed and ENROLLED on the watchlist (greenhouse/affirm, 205 jobs, 3 US-reachable fit-titles incl. tier2 'Lead, Technical Account Management (SMB Merchants)' Remote US). The original reason -- 'Senior Technical Account Manager is Remote Canada -- not US-reachable. No other fit-space role found.' -- was correct when written and expired later; three Atlanta/remote-US fit-space roles contradicted it between 2026-09-01 and 2026-09-04. This entry is kept as the record, not as a live rejection.",
+      "recheck_if_resurfaced": false,
+      "superseded_by_enrollment": "2026-09-08"
     },
     {
       "name": "Rescale",
@@ -6549,6 +6570,411 @@
       "recheck_if_resurfaced": true,
       "unpollable": false,
       "timed_out": true
+    },
+    {
+      "name": "ASG",
+      "ats": "greenhouse",
+      "slug": "asg",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Revin",
+      "ats": "ashby",
+      "slug": "revin",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (13 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Ambi Robotics",
+      "ats": "lever",
+      "slug": "ambirobotics",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (5 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Metlang",
+      "ats": "jazzhr",
+      "slug": "metlang",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (19 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "BM Digital",
+      "ats": "jazzhr",
+      "slug": "bmdigital",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (83 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Securly",
+      "ats": "pinpoint",
+      "slug": "securly",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (5 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Foundry for Good",
+      "ats": "ashby",
+      "slug": "foundry-for-good",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (26 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Zapier",
+      "ats": "ashby",
+      "slug": "zapier",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (7 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "AlixaRx, LLC",
+      "ats": "smartrecruiters",
+      "slug": "alixarx",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (167 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Efficiently",
+      "ats": "jazzhr",
+      "slug": "efficiently",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Fay",
+      "ats": "greenhouse",
+      "slug": "fay",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (2 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Prophecy",
+      "ats": "workable",
+      "slug": "prophecy",
+      "rejected_date": "2026-09-08",
+      "reason": "Board RESOLVED at workable/prophecy but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/prophecy.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Visa",
+      "ats": "workable",
+      "slug": "visahq",
+      "rejected_date": "2026-09-08",
+      "reason": "Board RESOLVED at workable/visahq but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/visahq.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Nutrient",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Elutions",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "RaceTrac",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Adobe",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Adobe\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/adobe. RE-CHECKED 2026-09-08: the tenant and site ARE known -- adobe.wd5.myworkdayjobs.com / external_experienced, running 'Manager, Technical Account Management' (R168678). The CXS endpoint returns HTTP 403 Forbidden, so this is a bot block like Gainsight's, not a wrong site name. Do NOT spend another timeout budget on name variants; the blocker is access.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "WebSearch dork (SmartRecruiters/Rippling rotation, 2026-09-07)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Magnite",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 76s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Magnite\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. RE-CHECKED 2026-09-08: the tenant and site ARE known -- osv-rubicon.wd5.myworkdayjobs.com / MagniteCareers, surfacing 'Customer Success Engineer (Technical Account Manager)' (R-00805). The CXS DETAIL endpoint returns HTTP 422 for that req, which usually means the posting closed rather than that the site is wrong. Worth one board-level check before re-running the slug walk.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "WebSearch dork (Workday rotation via Cox blind-spot query, 2026-09-07)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Bluehost",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Bluehost\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/bluehost.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "WebSearch dork (Workday rotation via Cox blind-spot query, 2026-09-07)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "Veza",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Veza\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "Atlanta Board Sweep (repaired dorks, first working run)",
+      "first_seen": "2026-09-07"
+    },
+    {
+      "name": "MATS Research",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"MATS Research\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Click (clickdimensions)",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Click (clickdimensions)\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Smile.io",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Smile.io\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Astra Security",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Astra Security\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Bonami Software Private Limited",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Bonami Software Private Limited\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Disruptive Technologies",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Disruptive Technologies\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "QXO",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"QXO\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Bolster AI",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Bolster AI\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Alignment Health",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Alignment Health\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/alignment-health.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "IST Management",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"IST Management\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Tungsten Automation",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Tungsten Automation\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Confluent Health",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Confluent Health\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Wellspring Worldwide",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 104s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Wellspring Worldwide\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Baker Tilly US",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 66s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Baker Tilly US\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Chamberlain Group",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 61s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Chamberlain Group\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "FirstKey Homes",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"FirstKey Homes\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
     }
   ]
 }
