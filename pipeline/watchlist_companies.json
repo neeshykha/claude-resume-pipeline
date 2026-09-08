@@ -5383,10 +5383,12 @@
       "name": "NISC",
       "ats": "greenhouse",
       "slug": "nisc",
-      "priority": "low",
+      "priority": "medium",
+      "headcount_band": "501-2000",
       "enrolled_date": "2026-09-08",
-      "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
+      "enrolled_via": "harvest_ats.py automated slug resolution off a LinkedIn alert card the same morning",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus (classified 2026-09-08, day of enrollment). National Information Solutions Cooperative: a member-owned software cooperative building billing, CIS, GIS, and accounting systems for utility and telecom cooperatives across North America. Vertical enterprise software for a specific industry, so neither AI-native nor developer/infra tooling under the curated definitions; the audience is utility back-office staff. Headcount verified 2026-09-08 at 1,300-1,400 across Mandan ND, Lake Saint Louis MO, Cedar Rapids IA, and Blacksburg VA plus virtual sites, so band 501-2000 and the small-company bonus is 0. Priority raised from the auto-enrolled LOW to MEDIUM by hand: this is an ATLANTA employer running a tier1 exact-title req, which is the scarcest combination in the whole watchlist.",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (29 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Manager, Product Support' [Atlanta, GA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     },
     {
