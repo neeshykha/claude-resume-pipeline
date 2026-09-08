@@ -813,6 +813,23 @@
         "Applications Administrator",
         "Support Systems Lead"
       ]
+    },
+    "tier2d_generalist_ops": {
+      "title_match_score": 22,
+      "description": "Broad-scope operations roles that own a function without naming it in the title: Operations Generalist, BizOps, Chief of Staff, Founding Operations, Strategy & Operations. Added 2026-09-08 after Aneesh surfaced Mechanize's 'Operations Generalist' ($200K, SF in person) and said the generalist shape itself appealed to him, independent of that company. Scored at tier2 weight (+22) for the same reason tier2c is: the function overlap is real and the title distance is what costs the tier1 points.",
+      "notes": "MEASURED BLIND SPOT, not a speculative addition. On 2026-09-08 all thirteen of these title shapes returned NO match and not even a borderline score against the live TitleMatcher, while the tier1/tier2/tier2c controls matched normally. That includes 'Business Operations Manager', 'Operations Lead', and 'Strategy & Operations Manager', which are mainstream titles rather than exotic ones. This family concentrates at 50-500 person startups, which is precisely the segment the small_company_bonus was built to reach, so the gap was compounding: the scoring rubric was paying a premium for a company size whose most common ops title the matcher could not see. EVERY TITLE HERE IS ALSO IN jd_verification_required_titles, and that is the load-bearing half of this addition. The altitude test cuts both ways for 'generalist': at a good company it means broad scope, real autonomy, and owning a function, which is exactly the half of tier2c that survived the 2026-08-28 narrow-admin demotion; at a bad one it means 'do whatever needs doing', which is a junior catch-all and the opposite of what he wants. The title cannot distinguish those, so the JD must. Same treatment and same reasoning as the FDE family. 'Chief of Staff' is the highest-variance entry: it can be a genuine ops-ownership role at a startup or a pure exec-support role, and the salary floor will not separate them because both pay well. VERIFIED FALSE-POSITIVE BEHAVIOUR, measured 2026-09-08 rather than guessed: because matching is stemmed-token-SUBSET, bare 'Operations Lead' and 'Operations Generalist' also hit 'Warehouse Operations Lead' and 'Culinary Operations Generalist'. That is real and was accepted knowingly, for one reason that bounds it: the poller only ever sees titles on the ~386 ENROLLED companies, which are overwhelmingly technology employers, so a warehouse or culinary ops req is a rare shape in the population this matcher is actually applied to. The two controls that would matter if that changes are already in place (the jd_verification flag, and non-flagged titles winning the 2-per-company diversity cap). If a run of non-tech operations reqs does appear, drop the bare 'Operations Lead' entry first: it is the loosest of the ten and the qualified forms ('Business Operations Lead', 'Strategy and Operations Lead') carry the meaning that is actually wanted.",
+      "titles": [
+        "Operations Generalist",
+        "Business Operations Generalist",
+        "BizOps Generalist",
+        "Business Operations Manager",
+        "Business Operations Lead",
+        "Strategy and Operations Manager",
+        "Strategy and Operations Lead",
+        "Operations Lead",
+        "Founding Operations",
+        "Chief of Staff"
+      ]
     }
   },
   "_poller_config": {
@@ -944,8 +961,19 @@
         "AgentOps",
         "LLMOps",
         "AI Agent Operations",
-        "AI Agent Evaluation"
+        "AI Agent Evaluation",
+        "Operations Generalist",
+        "Business Operations Generalist",
+        "BizOps Generalist",
+        "Business Operations Manager",
+        "Business Operations Lead",
+        "Strategy and Operations Manager",
+        "Strategy and Operations Lead",
+        "Operations Lead",
+        "Founding Operations",
+        "Chief of Staff"
       ],
+      "generalist_flag_note": "All ten tier2d_generalist_ops titles are flagged here in the SAME edit that created that tier, which is the pattern this file has settled on for any family whose title cannot predict the job (FDE 2026-07-09, AI Operations 2026-08-10, AgentOps 2026-09-07). The specific ambiguity: 'generalist' and 'operations lead' describe SCOPE, not altitude. At a 60-person startup the role owns a function end to end, which is the half of tier2c that survived the 2026-08-28 narrow-admin demotion and is squarely what Aneesh wants. At a badly-run company the same words mean an undifferentiated catch-all a rung below his current job, and the salary floor will not catch it because these roles are often paid well regardless (Mechanize's Operations Generalist is $200K). 'Chief of Staff' is the highest-variance entry and the one most likely to need demoting first: it splits between genuine ops ownership and pure executive support, and only the JD says which. If this family produces a run of catch-all or exec-support reqs, demote the family rather than removing the flag.",
       "agentops_flag_note": "The four Agent/LLMOps titles were flagged 2026-09-07 in the SAME edit that added them to tier2_strong_overlap, deliberately mirroring the AI Operations Lead/Manager pattern from 2026-08-10. Rationale is the FDE lesson at one remove: a title minted by the AI-infra market can drift within months to mean 'customer-facing engineer who ships production code', and AgentOps is described in the wild as SRE adapted to non-deterministic systems, which is an engineering discipline. THERE IS A SPECIFIC INTERACTION WORTH UNDERSTANDING BEFORE ANYONE 'FIXES' IT. function_mismatch_titles.protected_tiers includes tier2_strong_overlap, so a title whose BEST tier match is tier2 is never demoted. Promoting 'AgentOps' to tier2 therefore means 'Engineering Manager, AgentOps' -- Scale AI's actual title for this role -- now resolves to tier2 +22 and is PROTECTED from the Engineering Manager demotion, so it reaches the shortlist rather than a digest FYI line. That is intended: the whole point of the addition is visibility into a forming category. It also means engineering-flavoured AgentOps reqs will now flow onto the shortlist, which is exactly how FDE went wrong at tier2 in June-July 2026. This flag is the control that makes the tradeoff survivable -- the JD gets read before anything is tailored, and flagged roles yield to a company's non-flagged titles when the 2-per-company diversity cap bites. If these produce a run of engineering-manager reqs with production-coding bars, demote the family rather than removing the flag.",
       "notes": "Titles with a documented history of JD-level mismatch despite matching the gate (see tier4 forward_deployed_engineer_note). The poller tags matches jd_verification_required=true, and when filling the per-company diversity cap it takes a company's NON-flagged roles first, so a risky top pick can't crowd out a safer second-best title from the same company (the Confido 2026-07-09 failure mode). Flagged roles still surface when slots remain. ALWAYS read the full JD before tailoring one of these, regardless of score. 'AI Enablement Program Manager' added 2026-07-15 after Klaviyo's posting under that exact title (tier2_strong_overlap, pre_score 53, looked like a strong fit) turned out to be an Engineering-department developer-experience/onboarding role requiring 5-8+ years of software engineering and Git/CI/CD proficiency -- zero overlap with support/CS-flavored AI enablement work. The title alone is not a reliable signal for this company category; some orgs use 'AI Enablement' for internal engineering tooling, not customer/adoption-facing AI rollout. 'AI Operations Lead'/'AI Operations Manager' added 2026-08-10 in the SAME edit that promoted them to tier2: at Hercules and Clutch the title means support/CX AI operations (a true fit), but at an infra or ML-platform company 'AI Operations' can mean MLOps/model-serving, which is not. Promoting the title to +22 is what makes it surface; flagging it here is what stops it being tailored blind."
     }
