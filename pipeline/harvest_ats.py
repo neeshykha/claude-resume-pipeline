@@ -1338,14 +1338,61 @@ def main():
     # way to name the company that was stuck. The `-> name` line goes out BEFORE
     # the probing starts, so whatever company is on the last printed line is the
     # one currently in flight.
+    # AGGREGATOR GATE (added 2026-09-08). Reads the SAME
+    # _poller_config.linkedin_aggregator_blocklist that harvest_linkedin.py uses,
+    # with the same check_company.hit() matcher, so the two layers cannot drift.
+    #
+    # Why this layer needed it too. On 2026-09-07 this script auto-enrolled Bamboo
+    # Works off "jazzhr/bambooworks, 90 jobs, 17 fit-titles (10 tier2, 7 tier3)",
+    # which is a textbook enrollable board by every measure here. Bamboo Works is a
+    # staffing agency. The 17 fit-titles are OTHER companies' reqs, and the one that
+    # reached the next day's shortlist was a contractor placement at $800-1,200 a
+    # MONTH on Perth or Manila hours. Step 1d-2 has blocked exactly this class by
+    # name since 2026-07-30 (Swooped); nothing taught this script about it, so the
+    # front door was shut and the side door was open.
+    #
+    # A reposter is the one company type where a HIGH fit-title count is evidence
+    # AGAINST enrolling, because the score measures other employers' hiring. That
+    # inverts the whole scoring premise below, which is why this is a hard gate at
+    # the top rather than a penalty inside _score_board.
+    #
+    # Deliberately placed BEFORE assess(): it costs no network time, and a name
+    # that should never be polled should never be probed either. --names overrides
+    # it (same escape hatch as the already-known skip) so a false positive can be
+    # forced through by hand after a look.
+    sys.path.insert(0, SCRIPT_DIR)
+    from check_company import hit as _name_hit
+    aggregators = list(
+        (P.CONFIG.get("_poller_config") or {}).get("linkedin_aggregator_blocklist", {}).get("names", [])
+        if hasattr(P, "CONFIG") else []
+    ) or list(
+        (wl.get("_poller_config") or {}).get("linkedin_aggregator_blocklist", {}).get("names", [])
+    )
+    if not aggregators:
+        print("WARNING: _poller_config.linkedin_aggregator_blocklist is empty or "
+              "unreadable; no name will be gated as an aggregator", file=sys.stderr)
+
+    def aggregator_match(company: str):
+        for a in aggregators:
+            if _name_hit(company, a):
+                return a
+        return None
+
     enrollable, no_board, no_fit, empty_board, skipped = [], [], [], [], []
-    timed_out = []
+    timed_out, aggregator_blocked = [], []
     run_started = time.monotonic()
     total_targets = len(targets)
     for idx, name in enumerate(targets, 1):
         if name.lower() in known_names and not args.names:
             skipped.append(name)
             print(f"  [{idx}/{total_targets}] -> {name:24s} already known, skipped",
+                  flush=True)
+            continue
+        blocked_by = None if args.names else aggregator_match(name)
+        if blocked_by:
+            aggregator_blocked.append((name, blocked_by))
+            print(f"  [{idx}/{total_targets}] -> {name:24s} 0.0s BLOCKED: job-board "
+                  f"aggregator (matched {blocked_by!r} in the blocklist); not probed",
                   flush=True)
             continue
         print(f"  [{idx}/{total_targets}] -> {name}", flush=True)
@@ -1393,16 +1440,43 @@ def main():
     print(f"\nenrollable={len(enrollable)} no_fit={len(no_fit)} "
           f"empty_board={len(empty_board)} no_board={len(no_board)} "
           f"timed_out={len(timed_out)} already_known_skipped={len(skipped)} "
+          f"aggregator_blocked={len(aggregator_blocked)} "
           f"[{time.monotonic() - run_started:.0f}s total]", flush=True)
     if timed_out:
         print("TIMED OUT (unresolved, safe to re-run individually): "
               + ", ".join(n for n, _ in timed_out), flush=True)
+    if aggregator_blocked:
+        print("AGGREGATORS BLOCKED (never probed, never enrollable): "
+              + ", ".join(f"{n} ~ {a}" for n, a in aggregator_blocked), flush=True)
 
     if not args.apply:
         print("dry run; re-run with --apply to enroll", flush=True)
         return 0
 
     today = __import__("datetime").date.today().isoformat()
+    # Aggregators are rejected, not left pending: otherwise the name sits in the
+    # queue and is re-gated (cheaply, but noisily) on every future run. unpollable
+    # is FALSE on purpose -- the claim is "should not be polled", not "cannot be",
+    # and the weekly punch list exists to surface companies a human could reach by
+    # hand. A reposter is not one of those.
+    for name, matched in aggregator_blocked:
+        q.setdefault("rejected", []).append(with_provenance(
+            {"name": name, "ats": None, "slug": None,
+             "rejected_date": today,
+             "reason": (
+                 f"Job-board aggregator / reposter: name matched {matched!r} in "
+                 f"_poller_config.linkedin_aggregator_blocklist, so it was blocked "
+                 f"before any probe ran. These platforms repost other companies' "
+                 f"listings, so a board here scores well on fit-titles while "
+                 f"containing no reqs the company is actually hiring for -- the "
+                 f"one case where a HIGH fit-title count is evidence against "
+                 f"enrolling. Enrolling one pollutes the watchlist with duplicated "
+                 f"third-party reqs (Bamboo Works, 2026-09-07). If this is a false "
+                 f"positive and the company is a real employer, re-run it "
+                 f"explicitly with --names, which bypasses this gate."),
+             "recheck_if_resurfaced": False,
+             "unpollable": False,
+             "aggregator_blocked": True}, name))
     for name, res in enrollable:
         entry = {
             "name": name, "ats": res["ats"], "slug": res["slug"],
@@ -1544,9 +1618,14 @@ def main():
     q["pending"] = [e for e in q.get("pending", [])
                     if str(e.get("name", "")).lower() not in handled]
 
+    # Escaping is per-file and deliberate: enrollment_candidates.json is stored
+    # escaped, watchlist_companies.json raw. Writers must not flip either one --
+    # a mismatched writer rewrites every non-ASCII line in a 400KB public file.
     for path, data in ((WATCHLIST, wl), (QUEUE, q)):
         tmp = path + ".tmp"
-        json.dump(data, open(tmp, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=(path == QUEUE))
+            f.write("\n")
         os.replace(tmp, path)
     print(f"\nenrolled {len(enrollable)}, "
           f"rejected {len(no_fit) + len(empty_board) + len(no_board)}, "

@@ -67,6 +67,76 @@ CONTACT_LINE = (
     '<a href="https://www.linkedin.com/in/aneesh-khan-1820b6b5/" color="{accent}">LinkedIn</a>'
 )
 
+# --------------------------------------------------------------------------
+# Schema guard
+#
+# Every reader here uses data.get(), so an unrecognized top-level key is not an
+# error, it is silence: the section simply never renders. check_coverage.py has
+# the same shape, so a mistyped key produces a coverage score computed over a
+# document that is missing a whole block, and the two agree with each other
+# while both being wrong.
+#
+# That is not hypothetical. On 2026-09-08 the Workday resume was written with
+# `competencies` instead of `core_competencies`. check_coverage.py scored it
+# 14/15 and the PDF rendered with no CORE COMPETENCIES section at all. It was
+# caught only because a phrase that obviously should have matched did not, which
+# is luck rather than a control. The measured-vs-shipped gap that the 2026-09-02
+# retro closed for FILES reopens here for KEYS.
+#
+# So: unknown keys are a hard error, and the message names the nearest known key.
+# Adding a real new field means adding it to the set below in the same edit that
+# teaches a renderer to read it -- which is the point, because that is exactly
+# the edit where the reader and the writer are supposed to be reconciled.
+# --------------------------------------------------------------------------
+
+RESUME_KEYS = frozenset({
+    "summary", "core_competencies", "experience",
+    "projects", "education", "skills", "community",
+})
+RESUME_REQUIRED = ("summary", "experience")
+
+COVER_KEYS = frozenset({"date", "recipient", "paragraphs", "closing", "name"})
+COVER_REQUIRED = ("recipient", "paragraphs")
+
+
+def _validate(data, known, required, kind, path=None):
+    """Reject unknown or missing top-level keys before anything renders."""
+    import difflib
+
+    where = f" in {path}" if path else ""
+    if not isinstance(data, dict):
+        raise ValueError(f"{kind} data{where} must be a JSON object, got {type(data).__name__}")
+
+    unknown = sorted(set(data) - set(known))
+    if unknown:
+        lines = []
+        for key in unknown:
+            near = difflib.get_close_matches(key, sorted(known), n=1, cutoff=0.6)
+            hint = f"  (did you mean {near[0]!r}?)" if near else ""
+            lines.append(f"    {key!r}{hint}")
+        raise ValueError(
+            f"unrecognized top-level key(s) in {kind} data{where}:\n"
+            + "\n".join(lines)
+            + f"\n  known keys: {', '.join(sorted(known))}\n"
+            "  Nothing renders from an unknown key and check_coverage.py cannot see it,\n"
+            "  so this would have shipped a PDF with a section silently missing."
+        )
+
+    missing = [k for k in required if not data.get(k)]
+    if missing:
+        raise ValueError(
+            f"missing required key(s) in {kind} data{where}: {', '.join(missing)}"
+        )
+
+
+def validate_resume_data(data, path=None) -> None:
+    _validate(data, RESUME_KEYS, RESUME_REQUIRED, "resume", path)
+
+
+def validate_cover_data(data, path=None) -> None:
+    _validate(data, COVER_KEYS, COVER_REQUIRED, "cover letter", path)
+
+
 def _resume_styles():
     base = getSampleStyleSheet()
     return {
@@ -133,6 +203,7 @@ def _hr_thin(story):
 
 def build_resume_pdf(data: dict, output_path: str) -> None:
     """Generate a tailored resume PDF from structured data."""
+    validate_resume_data(data)
     s = _resume_styles()
 
     doc = SimpleDocTemplate(
@@ -284,6 +355,7 @@ def build_ats_resume_pdf(data: dict, output_path: str) -> None:
     "Category: value" text. PROJECTS rather than SELECTED TECHNICAL PROJECTS is
     the same trade for the same reason.
     """
+    validate_resume_data(data)
     s = _ats_styles()
     doc = SimpleDocTemplate(
         output_path, pagesize=letter,
@@ -335,6 +407,7 @@ def build_ats_resume_pdf(data: dict, output_path: str) -> None:
 
 def build_cover_pdf(data: dict, output_path: str) -> None:
     """Generate a tailored cover letter PDF from structured data."""
+    validate_cover_data(data)
     s = _cover_styles()
 
     doc = SimpleDocTemplate(

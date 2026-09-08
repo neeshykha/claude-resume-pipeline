@@ -36,8 +36,12 @@ gap the 2026-09-02 retro closed.
 """
 import html
 import json
+import os
 import re
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pdf_helpers import validate_resume_data  # noqa: E402  (schema is defined there)
 
 
 def _plain(s) -> str:
@@ -67,6 +71,15 @@ def load_resume_text(path: str) -> str:
         data = json.loads(raw)
         if not isinstance(data, dict) or "experience" not in data:
             print(f"{path} is not a resume data file (no 'experience' key)", file=sys.stderr)
+            sys.exit(2)
+        # Fail on a mistyped key HERE rather than reporting coverage over a
+        # document that is quietly missing a section. This check runs before
+        # render_pdf.py in the Step 4 order, so it is the first place the
+        # mistake can surface. See the schema guard in pdf_helpers.py.
+        try:
+            validate_resume_data(data, path)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
             sys.exit(2)
         return resume_text_from_data(data)
     return raw
