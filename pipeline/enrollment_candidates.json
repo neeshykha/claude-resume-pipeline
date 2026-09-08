@@ -2211,6 +2211,55 @@
       "source": "WebSearch dork (Workday/SmartRecruiters rotation, 2026-09-07)",
       "first_seen": "2026-09-07",
       "via": "hand-enrolled after harvest_ats.py timed out on the name"
+    },
+    {
+      "name": "Cognition",
+      "ats": "ashby",
+      "slug": "cognition",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Mistral",
+      "ats": "ashby",
+      "slug": "mistral.ai",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Synthesia",
+      "ats": "ashby",
+      "slug": "synthesia",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Suno",
+      "ats": "ashby",
+      "slug": "suno",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Figure",
+      "ats": "greenhouse",
+      "slug": "figure",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Thinking Machines",
+      "ats": "ashby",
+      "slug": "thinkingmachines",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "World Labs",
+      "ats": "greenhouse",
+      "slug": "worldlabs",
+      "enrolled_date": "2026-09-08",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -6050,12 +6099,35 @@
       "source_backfilled": "git-replay"
     },
     {
-      "name": "Runway",
+      "name": "Runway Financial",
       "ats": "ashby",
       "slug": "runway",
       "rejected_date": "2026-09-04",
-      "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. RENAMED 2026-09-08 FROM 'Runway' AFTER A CONFIRMED SLUG COLLISION. This entry was filed as plain 'Runway' and jobs.ashbyhq.com/runway is Runway FINANCIAL, the FP&A planning platform (its 4 reqs are Platform Engineer, Product Engineer, Engineering Manager, and 'Forward Deployed Finance Partner', all Remote North America). It is NOT Runway AI, the video-generation company, which is what a reader would assume from the bare name and which is filed separately below as unpollable. The rejection itself was correct FOR RUNWAY FINANCIAL and is left standing; only the name was wrong. Caught when Aneesh asked about Runway after a Bloomberg piece and check_company.py returned this entry, which would have told him the AI company had been assessed and passed on when it had never been looked at.",
+      "recheck_if_resurfaced": true,
+      "renamed_from": "Runway"
+    },
+    {
+      "name": "Runway AI",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "UNPOLLABLE, and distinct from the 'Runway Financial' entry above -- see that entry's note for the collision that made this one necessary. Runway AI (runwayml.com) is the video-generation research company. It runs no Greenhouse, Ashby, or Lever board: ashby/runwayml, greenhouse/runwayml, greenhouse/runway and lever/runway all 404, and its own talent site (talent.runwayml.com/job-board) reads 'Coming Soon', with live listings appearing only on aggregators and investor job boards (Wellfound, Amplify Partners, Compound). Roles are SF and NYC weighted. Worth a manual look if Aneesh wants it, but there is nothing here for the poller to watch.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "user-surfaced (Bloomberg article, 2026-09-08)",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Forus",
+      "ats": "ashby",
+      "slug": "forus",
+      "rejected_date": "2026-09-08",
+      "reason": "NOT a pollability problem and NOT a fit-space problem: a LOCATION problem, and worth revisiting if either side of that changes. Forus (formerly Tandem) is a New York healthcare-AI company that raised $150M at a $3B valuation on 2026-09-08, tripling its valuation in four months; it uses AI agents to navigate insurance coverage and prescription fulfillment. It would carry BOTH the AI-native +20 and the health_tech passion domain +10 if it ever scored. Board is live with 48 open reqs and real fit-space in it -- 'Customer Success Manager', 'Clinical Partner Success Manager', 'AI Operations', 'Revenue Operations Lead' -- but ALL 48 are tagged 'New York office' with no remote option anywhere on the board, so nothing clears the Atlanta-plus-remote-US rule set on 2026-08-02. harvest_ats.py reported 0 US fit-titles for exactly this reason: tier3 titles like CSM only qualify in Atlanta or remote-US. RECHECK TRIGGER: any remote-US req appearing on this board, or a change to the location scope while Aneesh looks into renting his house. Also note 'AI Operations' (bare) matches no tier -- tier2 carries 'AI Operations Manager' and 'AI Operations Lead', and stemmed-subset matching needs every stem of the config title, so the unqualified form is invisible. That is a config gap, not a Forus fact.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "user-surfaced (Bloomberg article, 2026-09-08)",
+      "first_seen": "2026-09-08"
     },
     {
       "name": "Covius",
@@ -6975,6 +7047,41 @@
       "timed_out": true,
       "source": "LinkedIn alert",
       "first_seen": "2026-09-08"
+    },
+    {
+      "name": "Cerebras",
+      "ats": "ashby",
+      "slug": "cerebras",
+      "rejected_date": "2026-09-08",
+      "reason": "Board resolves and is live (112 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Groq",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; Workday was NOT probed (--skip-workday); no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Captions",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; Workday was NOT probed (--skip-workday); no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
+    },
+    {
+      "name": "Skild AI",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-08",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; Workday was NOT probed (--skip-workday); no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true
     }
   ]
 }
