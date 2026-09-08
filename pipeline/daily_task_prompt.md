@@ -1252,13 +1252,25 @@ with the identical conclusion in every digest from 07-15 through 07-19.)
 .venv/bin/python pipeline/fetch_jd.py --from-hits pipeline/jobs/ats_hits_[date].json --match "<title fragment>"
 ```
 
-It hits the ATS's own JSON API (Ashby, Workday, Greenhouse, Lever, SmartRecruiters, **Comeet**) —
+It hits the ATS's own JSON API (Ashby, Workday, Greenhouse, Lever, SmartRecruiters, **Comeet**,
+**Workable**) —
 or, for **Paylocity**, scrapes its server-rendered detail page — and prints title, location,
 remote flag, posting date, compensation, and the **full description text** for you to read
 directly. Accepts bare URLs as positional args too, and `--match` is repeatable. Only fall back to
 WebFetch for an ATS it does not cover (Pinpoint and Rippling have no per-posting JSON endpoint),
 then to WebSearch for a cached or mirrored copy. If the JD is
 unreachable two runs in a row, drop it to the near-miss list with a note rather than stalling.
+
+**Workable got a fetcher on 2026-09-08 (user-surfaced: Seeq, Technical Account Manager).** Same
+gap shape as Paylocity's below and Comeet's before it: `poll_ats.py` has read Workable boards since
+2026-07-27 and `harvest_ats.py` probes Workable slugs, so a Workable req could reach the shortlist
+with nothing here able to read it. `fetch_workable` uses the public per-posting account API. Two
+things it does that a WebFetch summary would not: it takes **Description and Requirements as
+separate fields** (the years-of-experience bar lives in Requirements, and a Description-only read
+returns a JD with no requirements in it, silently, looking complete), and it appends **`benefits`**,
+because Workable postings routinely state comp as prose in a perks list rather than in a structured
+field. Seeq's $130,000 exists nowhere else, which matters because `poll_ats.py` treats every
+Workable hit as salary-neutral.
 
 **Paylocity got a fetcher on 2026-09-03; do not WebFetch it any more.** The poller gained its
 Paylocity adapter on 2026-08-28, so reqs reached the shortlist for six days with no fetcher to

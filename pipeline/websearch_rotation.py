@@ -53,7 +53,9 @@ def load():
 def save(data):
     tmp = WATCHLIST + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+        # watchlist_companies.json is stored raw; escaping it here would rewrite
+        # every non-ASCII line in the file. enrollment_candidates.json is escaped.
+        json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
     os.replace(tmp, WATCHLIST)
 
