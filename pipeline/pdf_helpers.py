@@ -83,6 +83,23 @@ CONTACT_LINE = (
 # is luck rather than a control. The measured-vs-shipped gap that the 2026-09-02
 # retro closed for FILES reopens here for KEYS.
 #
+# A sweep of the archive the same day found 14 tailored resumes carrying the same
+# typo, so 14 PDFs had shipped with no CORE COMPETENCIES section and 14 coverage
+# scores had been computed over a document missing that block. All 14 were fixed.
+# EXACTLY ONE had actually been sent: Glean "AI Success Manager East", still open
+# at outcome=pending. Its as-sent PDF is preserved as
+# tailored/Aneesh_Khan_Glean_ASM_as_sent_2026-05-15.pdf and its outcomes.csv row
+# says so, because a sent artifact is the record of what the employer received.
+#
+# Worth carrying forward from that sweep, because it cost a wrong number in a
+# pushed commit message: the script that produced it matched data files to
+# outcomes.csv rows by SUBSTRING on the filename stem, and the stems nest --
+# Aneesh_Khan_Glean_ASM inside Aneesh_Khan_Glean_ASMEast, Aneesh_Khan_NICE_AIS
+# inside Aneesh_Khan_NICE_AIS2. That reported 2 sent resumes when the truth was 1
+# (the NICE row names AIS2, which was clean). It is the same false-positive class
+# check_company.hit() was rewritten on 2026-09-01 to eliminate. Match filenames
+# whole, not by containment, and prefer the exact path recorded in the row.
+#
 # So: unknown keys are a hard error, and the message names the nearest known key.
 # Adding a real new field means adding it to the set below in the same edit that
 # teaches a renderer to read it -- which is the point, because that is exactly
