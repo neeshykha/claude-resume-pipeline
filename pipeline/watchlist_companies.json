@@ -3327,7 +3327,8 @@
       "enrolled_via": "Step 1d backlog drain 2026-07-29 (queue had stalled)",
       "headcount_band_note": "checked 2026-09-04: no usable source. LinkedIn returns several unrelated 'Windfall' companies and none is confirmably this one. Left absent per the never-guess rule rather than banded.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): AI-economics policy accelerator and research nonprofit (global endowment, scenario modeling, distributional research). Board read 2026-09-09: economists and a project manager. It works ON AI policy rather than building AI or tooling, and it is the same low-yield class as the other AI-policy nonprofits already noted in the weekly report."
+      "bonus_reason": "Neither (+0): AI-economics policy accelerator and research nonprofit (global endowment, scenario modeling, distributional research). Board read 2026-09-09: economists and a project manager. It works ON AI policy rather than building AI or tooling, and it is the same low-yield class as the other AI-policy nonprofits already noted in the weekly report.",
+      "headcount_band": "1-50"
     },
     {
       "name": "HiddenLayer",
@@ -3912,7 +3913,9 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (19 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Deployment Strategist'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). HR, people-operations, and talent consultancy. Services firm rather than a product company. NOTE: its single harvested fit-title, 'Deployment Strategist', is very likely a FALSE POSITIVE for a staffing/consulting business, where 'deployment' means placing people, not deploying software."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). HR, people-operations, and talent consultancy. Services firm rather than a product company. NOTE: its single harvested fit-title, 'Deployment Strategist', is very likely a FALSE POSITIVE for a staffing/consulting business, where 'deployment' means placing people, not deploying software.",
+      "headcount_band": "1-50",
+      "headcount_band_note": "A talent/recruiting partner firm, not a product employer. Flagged for review against the aggregator blocklist -- same class as Bamboo Works, removed 2026-09-08."
     },
     {
       "name": "Orbital",
@@ -3934,7 +3937,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Salesforce Administrator'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Field service management software for pest control, lawn care, HVAC, and similar trades: scheduling, dispatch, routing, billing. Vertical SaaS. Its one fit-title is a Senior Salesforce Administrator role, which is direct platform overlap for Aneesh even without a bonus."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Field service management software for pest control, lawn care, HVAC, and similar trades: scheduling, dispatch, routing, billing. Vertical SaaS. Its one fit-title is a Senior Salesforce Administrator role, which is direct platform overlap for Aneesh even without a bonus.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Render",
@@ -3956,7 +3960,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (117 jobs) with 8 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'AI Engagement Manager '. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Grocery delivery marketplace plus retail media and enterprise e-commerce software. Not AI-native, not tooling. Do NOT stretch the agriculture/food passion domain to cover it: that domain is about agriculture and food production, not delivery logistics. 8 US fit-titles at harvest incl. 'AI Engagement Manager', which is a genuinely interesting title on its own merits."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Grocery delivery marketplace plus retail media and enterprise e-commerce software. Not AI-native, not tooling. Do NOT stretch the agriculture/food passion domain to cover it: that domain is about agriculture and food production, not delivery logistics. 8 US fit-titles at harvest incl. 'AI Engagement Manager', which is a genuinely interesting title on its own merits.",
+      "headcount_band": "2000+"
     },
     {
       "name": "Hercules",
@@ -3978,7 +3983,8 @@
       "enrolled_via": "User-surfaced (Aneesh spotted 'Applied AI Lead, Rev Ops', $121K-$190K, in the LinkedIn app Jobs feed) + harvest_ats.py auto-enrollment same run",
       "reason": "Mental health care marketplace/EHR platform. Auto-enrolled by the ATS harvest layer: board verified live (69 jobs) with 1 US-reachable tier1/tier2/tier2c fit-title at harvest time ('Program Manager, Talent & AI Enablement'). NOTE: the specific req Aneesh saw ('Applied AI Lead, Rev Ops') is NOT present on the live board as of 2026-08-06 -- either already closed, or a stale/duplicate LinkedIn listing. Not tailored; flagged as a discrepancy rather than silently dropped. Enrolled at LOW priority so the poller watches for it (or its replacement) going forward.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Mental health care marketplace and practice/EHR platform connecting therapists with insurance. SCORING NOTE: health_tech passion domain (+10) applies at scoring time and was already applied to the Scheduling Lead role surfaced 2026-08-21 -- that role scored 98 and was fully tailored, so this company is performing well without any vertical bonus."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Mental health care marketplace and practice/EHR platform connecting therapists with insurance. SCORING NOTE: health_tech passion domain (+10) applies at scoring time and was already applied to the Scheduling Lead role surfaced 2026-08-21 -- that role scored 98 and was fully tailored, so this company is performing well without any vertical bonus.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Philips",
@@ -4004,7 +4010,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (55 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager - Product Partner Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Business banking and financial stack for startups. Fintech, not developer tooling -- adjacent to a developer-heavy customer base is not the same as being a developer tool."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Business banking and financial stack for startups. Fintech, not developer tooling -- adjacent to a developer-heavy customer base is not the same as being a developer tool.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "AlphaSense",
@@ -4072,7 +4079,9 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (17 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Manager, Revenue Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Distributed energy resource management (DERMS) for utilities: demand response, EV charging, and thermostat/battery grid programs. Not an AI platform and not dev tooling. SCORING NOTE: electrification_ev passion domain (+10) applies at scoring time, and the DER/thermostat/connected-device angle overlaps genuinely with Aneesh's smart-home IoT background."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Distributed energy resource management (DERMS) for utilities: demand response, EV charging, and thermostat/battery grid programs. Not an AI platform and not dev tooling. SCORING NOTE: electrification_ev passion domain (+10) applies at scoring time, and the DER/thermostat/connected-device angle overlaps genuinely with Aneesh's smart-home IoT background.",
+      "headcount_band": "201-500",
+      "headcount_band_note": "LinkedIn's self-declared bucket says 51-200 but its own live member count is ~266-285. Took the member count; also the conservative direction."
     },
     {
       "name": "Sprout Social",
@@ -4083,7 +4092,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'FP&A Systems and AI Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. CORRECTION 2026-08-12 (full JD read): the surfacing role is genuinely a Finance-department FP&A systems role requiring deep hands-on Pigment (enterprise planning software) experience -- not a support/CS-AI role despite the 'AI Manager' title-match. Do not tailor for it; the title-tier match was real but the substance is a hard mismatch. Keep the company enrolled in case a real support/CS-titled role posts later.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Social media management: publishing, engagement, listening, analytics. Martech vertical SaaS. Consistent with its 'FP&A Systems and AI Manager' role scoring 71 and being correctly passed over on 2026-08-21 -- no bonus would have rescued it, since the gap was function, not score."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Social media management: publishing, engagement, listening, analytics. Martech vertical SaaS. Consistent with its 'FP&A Systems and AI Manager' role scoring 71 and being correctly passed over on 2026-08-21 -- no bonus would have rescued it, since the gap was function, not score.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Appian",
@@ -4139,7 +4149,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Technical Account Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus -- UNRESOLVED, LOW CONFIDENCE (2026-08-21). Could not identify this company: 4-posting Rippling board, no public product information found, and the Rippling board payload is not readable the way Ashby's is. Recorded as 0 rather than guessed, because a wrong 0 only suppresses a 4-job board while a wrong +20 would inflate it permanently. Its one fit-title is 'Technical Account Manager'. RE-OPEN THIS if the company ever surfaces a role worth scoring."
+      "bonus_reason": "No vertical bonus -- UNRESOLVED, LOW CONFIDENCE (2026-08-21). Could not identify this company: 4-posting Rippling board, no public product information found, and the Rippling board payload is not readable the way Ashby's is. Recorded as 0 rather than guessed, because a wrong 0 only suppresses a 4-job board while a wrong +20 would inflate it permanently. Its one fit-title is 'Technical Account Manager'. RE-OPEN THIS if the company ever surfaces a role worth scoring.",
+      "headcount_band": "1-50"
     },
     {
       "name": "Routeware",
@@ -4150,7 +4161,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 4 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Product Manager – Business Operations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Software and hardware for waste, recycling, and municipal fleet operations: routing, in-cab devices, customer portals. Vertical SaaS."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Software and hardware for waste, recycling, and municipal fleet operations: routing, in-cab devices, customer portals. Vertical SaaS.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Kion",
@@ -4217,7 +4229,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (20 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director, Global Customer Success'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Secondary-market ticketing marketplace for live events. Consumer marketplace."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Secondary-market ticketing marketplace for live events. Consumer marketplace.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Podium",
@@ -4253,7 +4266,8 @@
       "enrolled_via": "Hand-enrolled at Aneesh's direction after harvest_ats rejected it on fit-space.",
       "reason": "Multifamily property management platform; direct adjacency to iApartments. harvest_ats resolved lever/entrata live with 11 jobs but ZERO qualifying fit-titles on 2026-08-21, which under the normal rule is a rejection. Enrolled anyway on an explicit policy call: for a company in Aneesh's own industry with a confirmed live board, enroll-on-live-board beats enroll-on-fit-title, because the poller then scans the whole roster daily and catches a fit role the day it opens, whereas a rejection makes the company invisible until something re-surfaces it by accident. Marginal daily cost is one board fetch. Prune via --prune if the board dies.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): multifamily property management. Direct domain adjacency to iApartments belongs in keyword overlap."
+      "bonus_reason": "Neither (+0): multifamily property management. Direct domain adjacency to iApartments belongs in keyword overlap.",
+      "headcount_band": "2000+"
     },
     {
       "name": "Latch",
@@ -4264,7 +4278,8 @@
       "enrolled_via": "Hand-enrolled at Aneesh's direction after harvest_ats rejected it on fit-space.",
       "reason": "Smart-lock and smart-building hardware for multifamily, now trading as DOOR. The closest hardware analogue to iApartments on the whole watchlist: in-unit device support, property-manager stakeholders, and resident-facing workflows are literally his day job, so fit-space roles here should score unusually well on keyword overlap. Same enrollment rationale as Entrata: lever/latch resolved live with only 2 jobs and 0 fit-titles on 2026-08-21, enrolled anyway because a live board in his exact vertical is worth polling daily. Small board, so expect long stretches of nothing. Prune via --prune if it dies.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): smart-lock and smart-building hardware. IoT (+15) applies at scoring."
+      "bonus_reason": "Neither (+0): smart-lock and smart-building hardware. IoT (+15) applies at scoring.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Workday",
@@ -4290,7 +4305,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Support Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Document workflow and e-signature: proposals, quotes, contracts. Business-productivity SaaS with an API, which is not the same as being an API platform. Its fit-title 'Senior Support Operations Manager' is a tier1 exact match though, so watch the board."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Document workflow and e-signature: proposals, quotes, contracts. Business-productivity SaaS with an API, which is not the same as being an API platform. Its fit-title 'Senior Support Operations Manager' is a tier1 exact match though, so watch the board.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Amira Learning",
@@ -4323,7 +4339,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Product Operations Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). K-12 education software: library management, digital content, and classroom resource platforms. EdTech vertical SaaS."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). K-12 education software: library management, digital content, and classroom resource platforms. EdTech vertical SaaS.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Directive",
@@ -4334,7 +4351,9 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (72 jobs) with 2 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Senior Revenue Operations Manager (Remote Canada)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). B2B performance-marketing and demand-generation agency (paid search, SEO, RevOps services). Services firm, not a product company. Moderate confidence on the identity; if a future run finds this is a different 'Directive', re-open. Its fit-titles are RevOps roles, several Canada-remote."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). B2B performance-marketing and demand-generation agency (paid search, SEO, RevOps services). Services firm, not a product company. Moderate confidence on the identity; if a future run finds this is a different 'Directive', re-open. Its fit-titles are RevOps roles, several Canada-remote.",
+      "headcount_band": "51-200",
+      "headcount_band_note": "Directive Consulting, a B2B marketing agency. Worth a look at whether this belongs on the watchlist at all -- see the 2026-09-08 Bamboo Works precedent on agencies."
     },
     {
       "name": "Optro",
@@ -4356,7 +4375,9 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Operations Senior Manager, AI'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Consumer credit cards for near-prime and subprime borrowers. Fintech/lending. Its one fit-title is 'Operations Senior Manager, AI', which is a real title match but does not make the company AI-native."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Consumer credit cards for near-prime and subprime borrowers. Fintech/lending. Its one fit-title is 'Operations Senior Manager, AI', which is a real title match but does not make the company AI-native.",
+      "headcount_band": "501-2000",
+      "headcount_band_note": "LinkedIn bucket 501-1,000; some trackers read ~450-474. Took the higher, which is the conservative direction (0 rather than +8)."
     },
     {
       "name": "Wiz",
@@ -4379,7 +4400,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (49 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Salesforce Administrator - Contract'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Tech-enabled property services and renovation management for single-family rental and commercial portfolios. SCORING NOTE: this is PropTech, Aneesh's own current industry, so domain expertise transfers through ordinary keyword overlap even with no bonus attached."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Tech-enabled property services and renovation management for single-family rental and commercial portfolios. SCORING NOTE: this is PropTech, Aneesh's own current industry, so domain expertise transfers through ordinary keyword overlap even with no bonus attached.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Integrate",
@@ -4390,7 +4412,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director of Customer Success'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). B2B demand-generation and marketing data orchestration (lead capture, validation, routing to MAP/CRM). Martech vertical."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). B2B demand-generation and marketing data orchestration (lead capture, validation, routing to MAP/CRM). Martech vertical.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Ashby",
@@ -4401,7 +4424,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (61 jobs) with 3 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Manager of Dedicated Implementations - EMEA'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Recruiting/ATS software for talent teams: pipeline management, analytics, scheduling. HR SaaS, not developer or infra tooling. (Mild irony: this is the ATS vendor whose API the pipeline polls all day.)"
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Recruiting/ATS software for talent teams: pipeline management, analytics, scheduling. HR SaaS, not developer or infra tooling. (Mild irony: this is the ATS vendor whose API the pipeline polls all day.)",
+      "headcount_band": "201-500"
     },
     {
       "name": "Cribl",
@@ -4434,7 +4458,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Director, Customer Implementations'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product this session). Chemical and product regulatory compliance: SDS management, a 20M+ safety-data-sheet library, hazard screening, and regulatory content/analytics for EHS teams. Markets 'purpose-built AI for regulatory compliance', but the core asset is curated regulatory CONTENT, not an AI system. It is a data platform in the literal sense, yet vertical EHS content rather than horizontal data infrastructure -- same reasoning applied to Benchling. Admitting vertical data SaaS would make the tooling bonus meaningless."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product this session). Chemical and product regulatory compliance: SDS management, a 20M+ safety-data-sheet library, hazard screening, and regulatory content/analytics for EHS teams. Markets 'purpose-built AI for regulatory compliance', but the core asset is curated regulatory CONTENT, not an AI system. It is a data platform in the literal sense, yet vertical EHS content rather than horizontal data infrastructure -- same reasoning applied to Benchling. Admitting vertical data SaaS would make the tooling bonus meaningless.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Clariti Cloud",
@@ -4445,7 +4470,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 5 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Engagement Manager II'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product this session). Permitting and licensing software for state and local government: case management, inspections, workflow automation, citizen portals. GovTech vertical SaaS. SCORING NOTE worth keeping: it is a commercial off-the-shelf product BUILT ON THE SALESFORCE PLATFORM, and Aneesh is a Service Cloud admin, so its 5 fit-titles (incl. 'Engagement Manager II') carry unusually direct platform overlap despite earning no bonus."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product this session). Permitting and licensing software for state and local government: case management, inspections, workflow automation, citizen portals. GovTech vertical SaaS. SCORING NOTE worth keeping: it is a commercial off-the-shelf product BUILT ON THE SALESFORCE PLATFORM, and Aneesh is a Service Cloud admin, so its 5 fit-titles (incl. 'Engagement Manager II') carry unusually direct platform overlap despite earning no bonus.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Snorkel AI",
@@ -4479,14 +4505,15 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (5 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Implementation Manager'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Creator and influencer marketing platform (Aspire.io): campaign management, creator discovery, affiliate workflows. Marketing SaaS. Enrolled 2026-08-21 off a LinkedIn alert; its live tier2 'Implementation Manager, Remote US' stands on ordinary keyword overlap, not a bonus."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, confident from established product knowledge, no search). Creator and influencer marketing platform (Aspire.io): campaign management, creator discovery, affiliate workflows. Marketing SaaS. Enrolled 2026-08-21 off a LinkedIn alert; its live tier2 'Implementation Manager, Remote US' stands on ordinary keyword overlap, not a bonus.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Evident ID",
       "ats": "lever",
       "slug": "evidentid",
       "priority": "medium",
-      "headcount_band": null,
+      "headcount_band": "51-200",
       "score_bonus": 0,
       "bonus_reason": "No vertical bonus (classified 2026-08-21). Business identity, credential, and insurance-certificate verification. Not AI-native, not developer tooling. The value here is LOCATION, not vertical: Atlanta-HQ VC-backed startup, so the Atlanta bonuses apply at scoring time.",
       "enrolled_date": "2026-08-21",
@@ -4524,7 +4551,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (31 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Customer Success Manager- US (Mid West and West Coast - Span' [US Remote & Travel]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21). Warehouse robotics and inventory intelligence (autonomous scanning robots plus a digital-twin view). Robotics/logistics hardware rather than an AI platform or dev tooling; same reasoning applied to Zoox. Arguable, flagged."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Warehouse robotics and inventory intelligence (autonomous scanning robots plus a digital-twin view). Robotics/logistics hardware rather than an AI platform or dev tooling; same reasoning applied to Zoox. Arguable, flagged.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Quora",
@@ -4557,7 +4585,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 3 fit-titles at harvest time (3 tier3(location-gated)), e.g. 'Principal Customer Success Manager, Email ' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21). SMS marketing platform for Shopify e-commerce brands. Martech vertical SaaS."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). SMS marketing platform for Shopify e-commerce brands. Martech vertical SaaS.",
+      "headcount_band": "201-500"
     },
     {
       "name": "TensorWave",
@@ -4590,7 +4619,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Customer Success Manager' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21). Subscription and recurring-billing management for e-commerce. Commerce vertical SaaS."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Subscription and recurring-billing management for e-commerce. Commerce vertical SaaS.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Arrive",
@@ -4601,7 +4631,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (55 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Account Manager' [Atlanta]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21). Urban mobility: parking, transportation, and automotive/data services; parent of ParkMobile. Not AI-native and not developer tooling. The value is LOCATION -- Atlanta -- not vertical. PROMOTED OUT OF _blind_spot_companies 2026-08-21: it was listed there as having no pollable ATS, but ashby/arrive is live (55 jobs) and carries a tier2 'Technical Account Manager | Atlanta' reporting to the Head of Customer Success. Per the routine, polling beats searching, so the blind-spot entry was deleted."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Urban mobility: parking, transportation, and automotive/data services; parent of ParkMobile. Not AI-native and not developer tooling. The value is LOCATION -- Atlanta -- not vertical. PROMOTED OUT OF _blind_spot_companies 2026-08-21: it was listed there as having no pollable ATS, but ashby/arrive is live (55 jobs) and carries a tier2 'Technical Account Manager | Atlanta' reporting to the Head of Customer Success. Per the routine, polling beats searching, so the blind-spot entry was deleted.",
+      "headcount_band": "2000+"
     },
     {
       "name": "Metropolis Technologies",
@@ -4612,7 +4643,9 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (76 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Customer Success Manager' [Remote USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21). Computer-vision checkout for parking and mobility facilities. The CV is real but the product is parking payment infrastructure, not an AI platform sold to customers. Same category as Arrive; arguable, flagged."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21). Computer-vision checkout for parking and mobility facilities. The CV is real but the product is parking payment infrastructure, not an AI platform sold to customers. Same category as Arrive; arguable, flagged.",
+      "headcount_band": "2000+",
+      "headcount_band_note": "Figures span ~1.7K to 20,000+ (the larger reflects the SP+ acquisition). Every reading is above 500, so the small-company bonus is 0 regardless."
     },
     {
       "name": "Akuity",
@@ -4634,7 +4667,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (19 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier2c), e.g. 'Director of Product, Customer Experience' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product). Voltus is a distributed energy resource aggregator and virtual power plant operator: it enrolls commercial and industrial sites into demand-response and grid-services markets and pays them for load flexibility. That is an energy marketplace, not an AI/ML platform and not developer or infra tooling, so neither +20 applies. It DOES sit in the electrification/clean-energy passion domain, which is worth +10 at scoring time from _scoring_config.passion_domains; that is computed per role, not stored here."
+      "bonus_reason": "No vertical bonus (classified 2026-08-21, verified from product). Voltus is a distributed energy resource aggregator and virtual power plant operator: it enrolls commercial and industrial sites into demand-response and grid-services markets and pays them for load flexibility. That is an energy marketplace, not an AI/ML platform and not developer or infra tooling, so neither +20 applies. It DOES sit in the electrification/clean-energy passion domain, which is worth +10 at scoring time from _scoring_config.passion_domains; that is computed per role, not stored here.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Apptegy",
@@ -4645,7 +4679,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 2 fit-titles at harvest time (2 tier2c), e.g. 'Senior Product Manager, Internal  AI & Automation' [Remote US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0). K-12 school/district communications and branding SaaS. The product is a comms platform for schools, not an AI/ML system and not developer/infra tooling. Its 'Internal AI & Automation' PM req describes internal tool use, which is not a product signal. Classified 2026-08-25."
+      "bonus_reason": "Neither (+0). K-12 school/district communications and branding SaaS. The product is a comms platform for schools, not an AI/ML system and not developer/infra tooling. Its 'Internal AI & Automation' PM req describes internal tool use, which is not a product signal. Classified 2026-08-25.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Cursor",
@@ -4667,7 +4702,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (104 jobs) with 4 fit-titles at harvest time (4 tier2c), e.g. 'Senior Business Systems Analyst, Enterprise Planning (Pigmen' [Remote - United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0). Smart-ring health wearable: hardware plus consumer health analytics. Not an AI/ML platform product and not developer/infra tooling. The health-tech passion domain (+10) still applies at scoring time and is computed there, not here. Classified 2026-08-25."
+      "bonus_reason": "Neither (+0). Smart-ring health wearable: hardware plus consumer health analytics. Not an AI/ML platform product and not developer/infra tooling. The health-tech passion domain (+10) still applies at scoring time and is computed there, not here. Classified 2026-08-25.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Maven Clinic",
@@ -4678,7 +4714,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (29 jobs) with 2 fit-titles at harvest time (1 tier2c, 1 tier3(location-gated)), e.g. 'Revenue Operations Manager (Payments and Reconciliation)' [New York, NY; Remote, US (Hub cities)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0). Virtual clinic and care-navigation platform for women's and family health. Healthcare services delivery, not an AI/ML product and not developer/infra tooling. The health-tech passion domain (+10) still applies at scoring time. Classified 2026-08-25."
+      "bonus_reason": "Neither (+0). Virtual clinic and care-navigation platform for women's and family health. Healthcare services delivery, not an AI/ML product and not developer/infra tooling. The health-tech passion domain (+10) still applies at scoring time. Classified 2026-08-25.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Pantheon",
@@ -4758,7 +4795,9 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (27 jobs) with 4 fit-titles at harvest time (1 tier2, 3 tier3(location-gated)), e.g. 'Customer Sales Engineer' [Boston, Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): design review collaboration for mechanical engineering teams. Engineering collaboration, not developer/infra tooling."
+      "bonus_reason": "Neither (+0): design review collaboration for mechanical engineering teams. Engineering collaboration, not developer/infra tooling.",
+      "headcount_band": "201-500",
+      "headcount_band_note": "LinkedIn's self-declared bucket says 51-200 but its own live member count is ~269. Took the member count; also the conservative direction (+8 rather than +15)."
     },
     {
       "name": "CBTS",
@@ -4803,7 +4842,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 3 fit-titles at harvest time (2 tier2, 1 tier3(location-gated)), e.g. 'Solutions Engineer' [Remote (Atlanta, Austin, Chicago, Dallas]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): homebuilding design and automation software."
+      "bonus_reason": "Neither (+0): homebuilding design and automation software.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Odyssey",
@@ -4815,7 +4855,8 @@
       "score_bonus": 0,
       "bonus_reason": "No vertical bonus (classified 2026-08-27, day of enrollment). Odyssey builds and operates the platform states use to run Education Savings Account and school-choice programs: GovTech plus EdTech plus FinTech. Not AI-native, and not developer/infra tooling, since the users are state agency staff, vendors, and families. Education is not currently a passion domain either, so this company earns the watchlist +10 and nothing else.",
       "headcount_band_note": "UNRESOLVED as of 2026-08-27. Two WebSearches failed to return an employee count; Built In and ZoomInfo profiles exist but neither surfaced a number in snippets. Founded 2021, NYC (Hudson Square), a16z and Tusk backed, 6 open roles at harvest time, which all points at 51-200. Deliberately NOT set, per the rubric's 'absent band = 0, never guess' rule. This costs a real +15 and is the entire reason the 2026-08-27 Technical Implementation Manager scored 87 rather than 102, one point under the full-tailoring threshold. Worth resolving by hand: check the LinkedIn company page for withodyssey.",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (6 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'Implementation Manager' [Remote, US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Sourced 2026-08-27 from the BODY of a LinkedIn 'Jobs You Might Be Interested In' digest, not its subject line."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (6 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'Implementation Manager' [Remote, US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Sourced 2026-08-27 from the BODY of a LinkedIn 'Jobs You Might Be Interested In' digest, not its subject line.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Flexport",
@@ -4862,7 +4903,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (16 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Customer Success Operations Manager' [Remote - Nationwide]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): construction equipment fleet telematics. IoT (+15) applies at scoring."
+      "bonus_reason": "Neither (+0): construction equipment fleet telematics. IoT (+15) applies at scoring.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Pinterest",
@@ -4873,7 +4915,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (210 jobs) with 4 fit-titles at harvest time (2 tier1, 2 tier2), e.g. 'Manager II, Config Deployments' [Seattle, WA, US; Remote, US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): consumer social platform."
+      "bonus_reason": "Neither (+0): consumer social platform.",
+      "headcount_band": "2000+"
     },
     {
       "name": "Lyra Health",
@@ -4884,7 +4927,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (546 jobs) with 2 fit-titles at harvest time (2 tier2c), e.g. 'Health Systems Business Development Manager (Philadelphia, P' [Philadelphia, Pennsylvania]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): mental health benefits provider. Health-tech passion domain applies separately."
+      "bonus_reason": "Neither (+0): mental health benefits provider. Health-tech passion domain applies separately.",
+      "headcount_band": "2000+"
     },
     {
       "name": "Rad AI",
@@ -4918,7 +4962,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (26 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Client Success Manager' [Remote - United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): ticketing marketplace."
+      "bonus_reason": "Neither (+0): ticketing marketplace.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Equifax",
@@ -5014,7 +5059,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Senior Manager, Customer Service Operations' [New York City]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): crypto/stablecoin infrastructure. Roles here are hard-filtered as crypto/web3 regardless of this value."
+      "bonus_reason": "Neither (+0): crypto/stablecoin infrastructure. Roles here are hard-filtered as crypto/web3 regardless of this value.",
+      "headcount_band": "1-50"
     },
     {
       "name": "Cloudbeds",
@@ -5027,7 +5073,8 @@
       "vertical_flag_added": "2026-09-02",
       "score_bonus": 0,
       "bonus_reason": "Hospitality management platform (hotel PMS, booking engine, channel manager). Vertical SaaS: neither AI-native nor developer/infra tooling. Classified 2026-09-02.",
-      "vertical_classified": "2026-09-02"
+      "vertical_classified": "2026-09-02",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Veriff",
@@ -5082,7 +5129,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (11 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Senior Technical Account Manager' [Remote - U.S.]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): mobile customer engagement and messaging."
+      "bonus_reason": "Neither (+0): mobile customer engagement and messaging.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Sisense",
@@ -5104,7 +5152,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (44 jobs) with 3 fit-titles at harvest time (3 tier2), e.g. 'Technical Account Manager, Public Sector' [Remote USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): learning management system."
+      "bonus_reason": "Neither (+0): learning management system.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Wonderful",
@@ -5164,7 +5213,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (22 jobs) with 1 fit-titles at harvest time (1 tier2c), e.g. 'Claims Business Systems Analyst' [United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): small-business insurance."
+      "bonus_reason": "Neither (+0): small-business insurance.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Vetcove",
@@ -5186,7 +5236,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (10 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier3(location-gated)), e.g. 'Client Success Manager, Hospital Solutions' [San Francisco, CA or Remote (U.S.)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): medical professional network. Health-tech passion domain applies separately."
+      "bonus_reason": "Neither (+0): medical professional network. Health-tech passion domain applies separately.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Dragos",
@@ -5219,7 +5270,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (20 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Customer Success Manager' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): e-learning course marketplace."
+      "bonus_reason": "Neither (+0): e-learning course marketplace.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Clipboard",
@@ -5230,7 +5282,9 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (36 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'AI Tooling Program Manager' [Remote (Non-U.S.)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): healthcare workforce marketplace (Clipboard Health)."
+      "bonus_reason": "Neither (+0): healthcare workforce marketplace (Clipboard Health).",
+      "headcount_band": "501-2000",
+      "headcount_band_note": "Sources disagree (LinkedIn ~600-700 vs RocketReach ~2,900), but every reading is above 500, so the small-company bonus is 0 either way and the disagreement cannot move a score."
     },
     {
       "name": "OfficeSpace Software",
@@ -5241,7 +5295,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (16 jobs) with 3 fit-titles at harvest time (1 tier2c, 2 tier3(location-gated)), e.g. 'Client Success Manager, Enterprise Accounts' [Remote, United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): workplace and space management SaaS."
+      "bonus_reason": "Neither (+0): workplace and space management SaaS.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Keyfactor",
@@ -5274,7 +5329,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (5 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Customer Success Manager' [Atlanta, GA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): clinical rotation marketplace for nurse practitioners."
+      "bonus_reason": "Neither (+0): clinical rotation marketplace for nurse practitioners.",
+      "headcount_band": "51-200"
     },
     {
       "name": "AlayaCare",
@@ -5285,7 +5341,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "score_bonus": 0,
       "bonus_reason": "No vertical bonus (classified 2026-09-08, Step 1e-2). Home- and community-care management software for care agencies: scheduling, EMR, billing, visit verification. Vertical healthcare SaaS, so neither AI-native nor developer/infra tooling under the curated definitions. It does sit in the health-tech passion domain, which is scored separately at scoring time from _scoring_config -> passion_domains and must NOT be baked in here.",
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (19 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'Implementation Specialist' [United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (19 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'Implementation Specialist' [United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "DataGrail",
@@ -5318,7 +5375,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Client Success Manager' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): payments platform."
+      "bonus_reason": "Neither (+0): payments platform.",
+      "headcount_band": "201-500"
     },
     {
       "name": "OCHIN",
@@ -5341,7 +5399,8 @@
       "bonus_reason": "No vertical bonus (classified 2026-09-08, day of enrollment). Seeq sells advanced analytics for industrial process data: the audience is process and reliability engineers at manufacturers, not developers, so it fails the developer/infra-tooling audience test, and its thesis is time-series insight rather than an AI/ML platform. It sits in the Industrial IoT vertical. SCORING NOTE: the IoT company-level bonus (+15) APPLIES here, added at Step 2c and never stored in score_bonus, the same convention Samsara and Axon use. Aneesh resolved the long-deferred industrial/physical-world question on 2026-09-08 and chose the EXISTING IoT +15 rather than a new passion domain; this entry is the case that settled it, and the Technical Account Manager req went 76 to 91 on it.",
       "reason": "Enrolled 2026-09-08 from a user-surfaced role: 'Technical Account Manager' (remote US, $130,000, posted 2026-08-26). PURE ENROLLMENT GAP, not a structural one: Workable has been a supported poller ATS since 2026-07-27 and harvest_ats.py probes Workable slugs, so 'seeq' would have resolved on the first sweep that ever tried it. Board verified live with real fit-space density: two Technical Account Manager reqs, 'Customer Support Operations Intelligence Engineer', 'Director of Customer Success, APAC - Industrial', 'Salesforce & GTM Applications Technical Lead', and 'Senior Solutions Consultant - Oil & Gas'. Remote-first (only) company.",
       "enrolled_date": "2026-09-08",
-      "enrolled_via": "user-surfaced posting; slug confirmed against the Workable widget API"
+      "enrolled_via": "user-surfaced posting; slug confirmed against the Workable widget API",
+      "headcount_band": "201-500"
     },
     {
       "name": "Affirm",
@@ -5352,7 +5411,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (205 jobs) with 3 fit-titles at harvest time (2 tier2, 1 tier3(location-gated)), e.g. 'Director, Customer Operations Vendor Strategy & Execution' [Remote US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): buy-now-pay-later consumer fintech."
+      "bonus_reason": "Neither (+0): buy-now-pay-later consumer fintech.",
+      "headcount_band": "2000+"
     },
     {
       "name": "PagerDuty",
@@ -5396,7 +5456,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier3(location-gated)), e.g. 'Associate Customer Success Manager' [Remote, US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): mortgage and banking CRM/marketing."
+      "bonus_reason": "Neither (+0): mortgage and banking CRM/marketing.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Everlywell",
@@ -5407,7 +5468,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (19 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Senior Technical Implementation & Accounts Manager (Clinical' [Austin, TX]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): at-home lab testing. Health-tech passion domain applies separately."
+      "bonus_reason": "Neither (+0): at-home lab testing. Health-tech passion domain applies separately.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Cobalt",
@@ -5511,7 +5573,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (11 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Senior Manager of SEC Reporting & Technical Accounting ' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): Figure Lending -- blockchain-based consumer lending and digital assets. Board read 2026-09-09 resolves the name ambiguity: this is Figure Technologies, not Figure AI. Crypto adjacency also means most roles here are hard-filtered at Step 2b regardless."
+      "bonus_reason": "Neither (+0): Figure Lending -- blockchain-based consumer lending and digital assets. Board read 2026-09-09 resolves the name ambiguity: this is Figure Technologies, not Figure AI. Crypto adjacency also means most roles here are hard-filtered at Step 2b regardless.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Thinking Machines",
@@ -5555,7 +5618,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (85 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'Forward Deployed AI Lead' [USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): AWS cloud consulting and professional services. A services business, not a tooling product."
+      "bonus_reason": "Neither (+0): AWS cloud consulting and professional services. A services business, not a tooling product.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "MeridianLink",
@@ -5566,7 +5630,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (25 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Implementation Project Manager - Mortgage' [US Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): lending origination and banking software."
+      "bonus_reason": "Neither (+0): lending origination and banking software.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Charta Health",
@@ -5610,7 +5675,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (36 jobs) with 4 fit-titles at harvest time (2 tier2, 2 tier2c), e.g. 'CRM Administrator' [Boston, Massachusetts, United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): programmatic advertising DSP."
+      "bonus_reason": "Neither (+0): programmatic advertising DSP.",
+      "headcount_band": "201-500"
     }
   ]
 }
