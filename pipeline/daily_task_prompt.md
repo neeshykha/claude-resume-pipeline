@@ -1971,6 +1971,48 @@ not folded into the daily digest.
    that population's denominator. Entries filed before 2026-09-07 carry no `source` and are
    reported as unattributed rather than guessed at; that backlog drains on its own.
 
+   It then prints **"LinkedIn alerts: what was in them and where it went"** (added
+   2026-09-10, from Aneesh: *"I'm seeing a lot of cool stuff that isn't seeming to make the
+   cut. That job leads pull, I kind of want that validated."*). **The `linkedin_harvest`
+   counters in `channel_stats` are volume, not validation** — threads seen, companies
+   extracted, same-run enrollments — and none of them can say whether a good role reached
+   him. This section reads the daily `pipeline/jobs/linkedin_cards_<date>.json` files,
+   dedupes by LinkedIn job id (the same role recurs across days and saved searches, roughly
+   doubling the raw count), isolates the STRONG roles — tier1/tier2/tier2c/tier2d **and** a
+   qualifying Atlanta or remote-US location — and gives each one a disposition by joining
+   against `outcomes.csv` and the card's own `company_status`.
+
+   tier3 is excluded from "strong" on purpose: it is a stretch title that only earns
+   tailoring above 88, so a tier3 card going nowhere is the rubric working, not a leak.
+
+   **The first run answered the question, and the answer is uncomfortable.** Window
+   2026-09-04..09-10: 568 cards, 304 unique roles, 60 strong. Of those 60, **47% were at
+   companies the poller structurally cannot reach** (no ATS board, or a named blind-spot
+   employer), 20% were at companies not yet enrolled when the alert landed, 13% were at
+   pollable companies and still never scored in, and 20% converted (12% this exact role
+   tailored, 8% a sibling role at the same company). So the harvester is grading correctly
+   and the loss is almost entirely reachability. Do not "fix" this by loosening the grading.
+
+   Two lists are printed, and they mean different things:
+   - **Unreachable strong roles**, with LinkedIn links, capped at
+     `LINKEDIN_PUNCHLIST_CAP` (20) oldest-first. Each needs a hand decision: chase the
+     company's own careers page, or let it drop. Expect overlap with the unpollable punch
+     list below; that one is company-level and drains a standing backlog, this one is
+     role-level and windowed, so a company can honestly appear in both.
+   - **Pollable but never picked.** Smaller and more diagnostic: the board WAS scanned and
+     the role still lost, usually on location scoring or the shortlist rank cutoff. If
+     Aneesh consistently likes these better than what did surface, that is a scoring
+     signal, not a discovery one.
+
+   No state is written and nothing needs a surfaced-flag: the window advances on its own,
+   so a role cannot repeat across reports the way an unpollable company can.
+
+   **A bug this section exposed, fixed 2026-09-10:** `tailored_count` is a TOP-LEVEL key of
+   `run_*.json`, not part of `channel_stats` (Step 6 item 7 says so), but `sum_field` only
+   walks inside `channel_stats`. The report had printed `Tailored applications this window:
+   0` every week since the schema landed. It now reads the right key; the 09-04..09-10
+   window shows 10.
+
    It also prints an **"Unpollable companies with a role worth chasing"** section (added
    2026-08-14, from Aneesh asking for a weekly punch list of companies the automated layer
    structurally can't reach): a capped batch (`UNPOLLABLE_WEEKLY_CAP` = 20, oldest
@@ -2021,6 +2063,10 @@ not folded into the daily digest.
      WebSearch calls a day for a handful of already-known companies). Include the full
      unpollable-companies batch as its own section, one line per company (name, rejected date,
      reason) — this is the part Aneesh actually acts on, don't compress it away.
+   - **Include the LinkedIn disposition section in full, links and all.** It is the answer to
+     a question he asked directly, and the unreachable list is the actionable half. Keep the
+     LinkedIn job links live in the HTML; a punch list he cannot click is a punch list he
+     will not work.
 4. **Only after the draft is confirmed created**, re-run with `--apply` to mark the printed
    unpollable batch as surfaced so it doesn't repeat next week:
    ```bash

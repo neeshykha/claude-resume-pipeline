@@ -55,6 +55,25 @@ tenant name, or deciding it's not worth chasing). Capped at UNPOLLABLE_WEEKLY_CA
 per report, oldest rejected_date first, so a backlog drains gradually instead of
 dumping 100+ companies into one email.
 
+Also prints a "LinkedIn alerts: what was in them and where it went" section
+(added 2026-09-10, from Aneesh: "I'm seeing a lot of cool stuff that isn't seeming
+to make the cut. That job leads pull, I kind of want that validated."). The four
+`linkedin_harvest` counters above it are self-reported VOLUME and cannot answer
+that; they say how much came in, never what happened to it. This section joins the
+daily `linkedin_cards_<date>.json` files against outcomes.csv and gives every
+strong role a disposition, which is auditable.
+
+Measured on the first run (window 2026-09-04..09-10, 568 cards, 304 unique roles,
+60 strong): 12% became a tailored application, 8% were at a company that produced
+other work, 13% were at pollable companies and still never scored in, and **47%
+were at companies the poller structurally cannot reach**. His instinct was right,
+and the leak is reachability rather than grading -- the harvester found these
+roles and correctly graded them tier1/tier2; there was simply no board to watch.
+
+Note the deliberate overlap with the unpollable punch list below: that one is
+company-level and drains a standing backlog, this one is role-level and windowed.
+A company can honestly appear in both.
+
 Usage:
     .venv/bin/python pipeline/weekly_channel_report.py           # preview only
     .venv/bin/python pipeline/weekly_channel_report.py --apply   # preview + mark
@@ -125,6 +144,47 @@ CHANNEL_ORDER = ("websearch", "linkedin_harvest", "feeders", "other")
 INCLUDE_ALL_UNPOLLABLE = False
 QUEUE_PATH = "pipeline/enrollment_candidates.json"
 
+# --- LinkedIn card funnel (added 2026-09-10, Aneesh's ask) -------------------
+#
+# The four `linkedin_harvest` counters in channel_stats are self-reported volume:
+# threads seen, companies extracted, same-run enrollments. They cannot answer the
+# question he actually asked, which is "the alerts are full of roles that look
+# good and none of them become picks -- is this channel working?"
+#
+# harvest_linkedin.py already writes every graded card to
+# pipeline/jobs/linkedin_cards_<date>.json. Joining those against outcomes.csv
+# turns the channel from a volume counter into a funnel with a disposition for
+# each strong role, which is auditable.
+#
+# Measured over 2026-09-02..09-09 (6 card files, 743 cards, 335 unique roles, 70
+# strong): 15% of strong roles became a tailored application, 34% were at
+# companies the poller structurally cannot reach, and 30% were at companies not
+# yet enrolled when the alert arrived. His instinct was right, and the leak is
+# almost entirely reachability rather than grading.
+LINKEDIN_CARDS_GLOB = "pipeline/jobs/linkedin_cards_*.json"
+
+# A card is STRONG if the title hit a real scoring tier AND the location clears
+# the Atlanta / remote-US gate. tier3 is deliberately excluded: it is a stretch
+# title that only earns tailoring above 88, so a tier3 card going nowhere is the
+# rubric working rather than a leak.
+STRONG_CARD_TIERS = {"tier1", "tier2", "tier2c", "tier2d"}
+
+# How many unreachable strong roles to name per report before collapsing to a
+# count. Same reasoning as UNPOLLABLE_WEEKLY_CAP: a punch list nobody reads is
+# worse than a short one somebody acts on.
+LINKEDIN_PUNCHLIST_CAP = 20
+
+CARD_BUCKETS = (
+    ("tailored", "Became a tailored application"),
+    ("company_worked", "Different role at that company was tailored"),
+    ("pollable_not_picked", "Company IS pollable, this role never scored in"),
+    ("queued", "Company queued, not pollable yet when the alert landed"),
+    ("unknown", "Company new or unclassified"),
+    ("unpollable", "Company REJECTED, no ATS board exists"),
+    ("blind_spot", "Named blind-spot employer, structurally unpollable"),
+)
+UNREACHABLE_BUCKETS = ("unpollable", "blind_spot")
+
 
 def load_window(days=7):
     cutoff = datetime.now().date() - timedelta(days=days - 1)
@@ -144,6 +204,15 @@ def load_window(days=7):
             continue
         cs = d.get("channel_stats")
         if cs:
+            # `tailored_count` is a TOP-LEVEL key of run_*.json, not part of the
+            # channel_stats block (daily_task_prompt.md Step 6 item 7 says so
+            # explicitly). sum_field only walks inside channel_stats, so the
+            # report summed a path that never existed and printed
+            # "Tailored applications this window: 0" every single week since the
+            # schema landed. Caught 2026-09-10. Copy it inside under a private
+            # key rather than changing load_window's return signature.
+            cs = dict(cs)
+            cs["_tailored_count"] = d.get("tailored_count", 0)
             found.append((run_date, cs))
         else:
             missing_dates.append(run_date)
@@ -449,6 +518,163 @@ def print_unpollable_section(batch, remaining, total_unsurfaced):
         print(f"      {reason}")
 
 
+def _norm(s):
+    return "".join(ch for ch in (s or "").lower() if ch.isalnum())
+
+
+def _status_text(card):
+    """company_status is a list on some cards and a string on others."""
+    raw = card.get("company_status") or ""
+    return (",".join(raw) if isinstance(raw, list) else str(raw)).lower()
+
+
+def load_linkedin_cards(cutoff, today):
+    """Every graded card in the window, deduped by LinkedIn job id.
+
+    LinkedIn re-sends the same role across days and across saved searches, so the
+    raw card count overstates reach by roughly 2x. Dedupe by job id and keep the
+    first sighting; `seen_times` records the recurrence so a role that alerted six
+    days running is visibly different from one that appeared once.
+    """
+    unique, raw_total, files = {}, 0, 0
+    for path in sorted(glob.glob(LINKEDIN_CARDS_GLOB)):
+        try:
+            with open(path) as fh:
+                doc = json.load(fh)
+        except (OSError, json.JSONDecodeError):
+            continue
+        run_date = doc.get("run_date") or ""
+        if not (cutoff.isoformat() <= run_date <= today.isoformat()):
+            continue
+        files += 1
+        for card in doc.get("cards", []):
+            raw_total += 1
+            key = card.get("job_id") or (_norm(card.get("company")) + _norm(card.get("title")))
+            if key in unique:
+                unique[key]["seen_times"] += 1
+            else:
+                card = dict(card)
+                card["seen_times"] = 1
+                unique[key] = card
+    return list(unique.values()), raw_total, files
+
+
+def classify_card(card, tailored_pairs, tailored_companies):
+    company, title = _norm(card.get("company")), _norm(card.get("title"))
+    status = _status_text(card)
+    if (company, title) in tailored_pairs:
+        return "tailored"
+    if company in tailored_companies:
+        return "company_worked"
+    if card.get("blind_spot"):
+        return "blind_spot"
+    if "reject" in status:
+        return "unpollable"
+    if "watchlist" in status or "enrolled" in status:
+        return "pollable_not_picked"
+    if "pending" in status:
+        return "queued"
+    return "unknown"
+
+
+def load_tailored_index(path="pipeline/outcomes.csv"):
+    """Company/title pairs that ever reached outcomes.csv, at any stage."""
+    import csv
+    pairs, companies = set(), set()
+    try:
+        with open(path, newline="") as fh:
+            for row in csv.DictReader(fh):
+                c, t = _norm(row.get("company")), _norm(row.get("title"))
+                if c:
+                    companies.add(c)
+                    pairs.add((c, t))
+    except OSError:
+        pass
+    return pairs, companies
+
+
+def print_linkedin_cards_section(cards, raw_total, files, cutoff, today):
+    print()
+    print("=== LinkedIn alerts: what was in them and where it went ===")
+    if not files:
+        print("No linkedin_cards_*.json files in this window. Either Step 1d-2 did not run,")
+        print("or it ran before harvest_linkedin.py started writing card files (2026-09-02).")
+        return
+
+    pairs, companies = load_tailored_index()
+    strong = [c for c in cards
+              if c.get("title_tier") in STRONG_CARD_TIERS
+              and (c.get("location_points") or 0) > 0
+              and not c.get("hard_excluded")]
+
+    print(f"{raw_total} cards across {files} day(s), {len(cards)} unique roles after deduping")
+    print(f"by LinkedIn job id. LinkedIn re-sends the same role across days and saved searches,")
+    print(f"so the raw count roughly doubles the real reach; the unique number is the honest one.")
+    print()
+    print(f"STRONG roles (tier1/tier2/tier2c/tier2d AND Atlanta or remote-US): {len(strong)}")
+    print("tier3 is excluded on purpose: it is a stretch title that only earns tailoring above")
+    print("88, so a tier3 card going nowhere is the rubric working rather than a leak.")
+    if not strong:
+        print("\nNo strong roles in the window. Nothing to validate.")
+        return
+
+    buckets = {}
+    for card in strong:
+        buckets.setdefault(classify_card(card, pairs, companies), []).append(card)
+
+    print()
+    print("Where the strong ones went:")
+    for key, label in CARD_BUCKETS:
+        hits = buckets.get(key, [])
+        if not hits:
+            continue
+        print(f"  {label:<52} {len(hits):>3}  ({round(100 * len(hits) / len(strong))}%)")
+
+    unreachable = [c for k in UNREACHABLE_BUCKETS for c in buckets.get(k, [])]
+    if unreachable:
+        pct = round(100 * len(unreachable) / len(strong))
+        print()
+        print(f"--- {len(unreachable)} of {len(strong)} strong roles ({pct}%) were at companies the "
+              f"poller cannot reach ---")
+        print("These are the ones you are noticing. The grading found them; the pipeline had no")
+        print("board to watch, so they were never scored and never competed for a slot. Each needs")
+        print("a hand decision: chase the company's own careers page, or let it drop.")
+        print("Some names also appear in the unpollable punch list further down. That list is")
+        print("company-level and drains a standing backlog; this one is role-level and only covers")
+        print("this window, so the overlap is expected rather than a duplicate.")
+        print()
+        shown = sorted(unreachable, key=lambda c: (c.get("title_tier") or "", c.get("company") or ""))
+        for card in shown[:LINKEDIN_PUNCHLIST_CAP]:
+            recur = f" x{card['seen_times']}" if card.get("seen_times", 1) > 1 else ""
+            print(f"  [{card.get('title_tier','?'):<6} | {card.get('location_verdict','?'):<11}] "
+                  f"{(card.get('company') or '?')[:26]:<26} {(card.get('title') or '?')[:44]}{recur}")
+            print(f"      {card.get('url') or 'no link captured'}")
+        if len(shown) > LINKEDIN_PUNCHLIST_CAP:
+            print(f"  ... and {len(shown) - LINKEDIN_PUNCHLIST_CAP} more, held back to keep this readable.")
+
+    missed = buckets.get("pollable_not_picked", [])
+    if missed:
+        print()
+        print(f"--- {len(missed)} strong roles at companies the poller DOES watch, "
+              f"never picked ---")
+        print("A different problem, and a more interesting one: the board was scanned and the role")
+        print("still lost. Usually location scoring or the shortlist rank cutoff. Worth a look if")
+        print("any of these read better to you than what did surface that week.")
+        print()
+        for card in sorted(missed, key=lambda c: c.get("company") or ""):
+            recur = f" x{card['seen_times']}" if card.get("seen_times", 1) > 1 else ""
+            print(f"  [{card.get('title_tier','?'):<6} | {card.get('location_verdict','?'):<11}] "
+                  f"{(card.get('company') or '?')[:26]:<26} {(card.get('title') or '?')[:44]}{recur}")
+            print(f"      {card.get('url') or 'no link captured'}")
+
+    queued = len(buckets.get("queued", [])) + len(buckets.get("unknown", []))
+    if queued:
+        print()
+        print(f"{queued} more were at companies not yet enrolled when the alert arrived. Those are a")
+        print("timing cost rather than a structural one: the company gets enrolled within a day or")
+        print("two and the poller watches it from then on, but that specific requisition may be gone.")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true",
@@ -507,7 +733,7 @@ def main():
         1 for _, cs in rows if cs.get("feeders", {}).get("poll_remotive_status") == "degraded"
     )
 
-    tailored_total = sum_field(rows, "tailored_count")
+    tailored_total = sum_field(rows, "_tailored_count")
 
     print()
     print(f"ATS poll (execution layer, runs every day):")
@@ -521,6 +747,8 @@ def main():
     print(f"LinkedIn harvest ({li_threads} threads, {li_companies} companies extracted):")
     print(f"  enrolled ON THE SAME RUN: {li_enrolled}  |  blind-spot real hits "
           f"(unpollable but real): {li_blind_spot}")
+    print(f"  (volume only -- see 'LinkedIn alerts: what was in them and where it went' below")
+    print(f"   for the per-role disposition, which is the part that says whether this works)")
     print()
     print(f"Discovery feeders:")
     print(f"  poll_remotive: DEGRADED on {remotive_degraded_days} of {len(rows)} tracked days, 0 leads possible while degraded")
@@ -536,6 +764,8 @@ def main():
     print(f"   feed the watchlist that ATS-poll scans, they don't produce same-day applications directly)")
 
     print_attribution_section(*load_attribution(cutoff, today), cutoff, today)
+
+    print_linkedin_cards_section(*load_linkedin_cards(cutoff, today), cutoff, today)
 
     batch, remaining, total_unsurfaced = load_unpollable_batch()
     print_unpollable_section(batch, remaining, total_unsurfaced)
