@@ -1091,6 +1091,47 @@ def _score_board(jobs, matcher, hard_excluded):
     return strong
 
 
+def _norm_title(t) -> str:
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", str(t or "").lower()).split())
+
+
+_WHY_TITLE = re.compile(r"^LinkedIn alert [0-9-]+: (.+?) \[")
+
+
+def card_title_of(entry: dict):
+    """The LinkedIn card title that queued this company, if it came from one.
+
+    harvest_linkedin.py stores it as `card_title` since 2026-09-10. Older pending
+    entries only carry it inside `why` ("LinkedIn alert <date>: <title> [<loc>] ..."),
+    so fall back to parsing that instead of skipping the check for the backlog.
+    """
+    if not entry:
+        return None
+    if entry.get("card_title"):
+        return entry["card_title"]
+    m = _WHY_TITLE.match(entry.get("why") or "")
+    return m.group(1) if m else None
+
+
+def board_has_title(titles, card_title) -> bool:
+    """True if the LinkedIn card's role appears on the resolved board.
+
+    Compared after normalizing case, punctuation, and whitespace, in either
+    direction, because LinkedIn republishes the ATS title nearly verbatim but
+    sometimes trims a suffix such as '(Remote)'. A miss is not proof of a
+    collision -- the req may simply have closed -- which is why the caller routes
+    it to the Manual channel for a human look instead of silently rejecting it.
+    """
+    want = _norm_title(card_title)
+    if not want:
+        return True
+    for t in titles or ():
+        have = _norm_title(t)
+        if have and (want in have or have in want):
+            return True
+    return False
+
+
 def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
            skip_comeet=False, budget_seconds=PER_COMPANY_BUDGET):
     """Resolve a company to (ats, slug, strong_hits, total_jobs) or a reason.
@@ -1127,6 +1168,22 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
     # different reasons because they need different actions: the first is one
     # cheap API re-check, the second is human research.
     empty_hits = []
+    # NAME-COLLISION GUARD (added 2026-09-10). A board that answered with jobs but
+    # ZERO fit-titles used to end the walk on the spot. That is right when it
+    # answered on the company's own full name, and wrong when it answered on a
+    # REDUCED form: slug_variants strips "technologies"/"inc"/etc., so "Bark
+    # Technologies" probes plain `bark` before `bark-technologies-inc`, and
+    # greenhouse/bark (a different company, one job) answered first. The real
+    # board, rippling/bark-technologies-inc, carried a tier1 Head of AI Support
+    # Operations and was never reached. Now a no-fit answer on a reduced form is
+    # HELD while the cheap walk continues: the first board WITH fit-titles wins,
+    # and the held board is returned only if nothing better turns up. A no-fit
+    # answer on a full-name form is still trusted immediately, so a company whose
+    # own board simply has nothing open costs no extra probes.
+    _n = re.sub(r"[''`]", "", name.strip().lower())
+    _words = re.sub(r"[^a-z0-9 ]+", " ", _n).split()
+    full_forms = {"".join(_words), "-".join(_words), re.sub(r"[^a-z0-9]+", "", _n)}
+    nofit_hit = None
     for slug in slug_variants(name):
         # SmartRecruiters runs LAST of the cheap probes. It is as cheap as any of
         # them (one JSON GET), so this is a collision-risk ordering, not a cost
@@ -1136,7 +1193,10 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
         for ats in ("greenhouse", "ashby", "lever", "workable", "pinpoint",
                     "rippling", "jazzhr", "smartrecruiters"):
             if budget is not None and budget.expired():
-                return timed_out("cheap-ATS slug walk")
+                # A held no-fit board is a real finding; return it rather than
+                # discard it for a timeout. The pre-2026-09-10 code would have
+                # returned it before the clock ran out anyway.
+                return nofit_hit or timed_out("cheap-ATS slug walk")
             if (ats, slug) in known_pairs:
                 continue
             jobs = probe(ats, slug, budget)
@@ -1151,8 +1211,19 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
                 if _confirm_empty(ats, slug, budget):
                     empty_hits.append((ats, slug))
                 continue
-            return {"ats": ats, "slug": slug, "total": len(jobs),
-                    "strong": _score_board(jobs, matcher, hard_excluded)}
+            res = {"ats": ats, "slug": slug, "total": len(jobs),
+                   "strong": _score_board(jobs, matcher, hard_excluded),
+                   "titles": [t for t, _ in jobs]}
+            if res["strong"]:
+                if nofit_hit is not None:
+                    res["passed_over"] = f"{nofit_hit['ats']}/{nofit_hit['slug']}"
+                return res
+            if slug.lower() in full_forms:
+                return res
+            if nofit_hit is None:
+                nofit_hit = res
+    if nofit_hit is not None:
+        return nofit_hit
 
     # COMEET, after every slug-addressable ATS has failed and before Workday.
     #
@@ -1173,7 +1244,8 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
             slug = comeet_slug(name)
             if ("comeet", slug) not in known_pairs:
                 res = {"ats": "comeet", "slug": slug, "total": meta["total"],
-                       "strong": _score_board(jobs, matcher, hard_excluded)}
+                       "strong": _score_board(jobs, matcher, hard_excluded),
+                       "titles": [t for t, _ in jobs]}
                 res.update({k: meta[k] for k in
                             ("comeet_uid", "comeet_token", "comeet_careers_url")})
                 return res
@@ -1223,7 +1295,8 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
         if not jobs:
             continue
         res = {"ats": "workday", "slug": slug, "total": meta["total"],
-               "strong": _score_board(jobs, matcher, hard_excluded)}
+               "strong": _score_board(jobs, matcher, hard_excluded),
+               "titles": [t for t, _ in jobs]}
         res.update({k: meta[k] for k in ("wd_host", "wd_tenant", "wd_site")})
         return res
 
@@ -1308,6 +1381,10 @@ def main():
     # both. Rejections carry it too: a channel's conversion rate is only
     # meaningful against the companies it fed that actually got resolved.
     PROVENANCE_FIELDS = ("source", "first_seen")
+    # Review and card fields that must survive every move out of `pending`
+    # (added 2026-09-10; the timeout path used to drop them).
+    CARRY_FIELDS = ("manual_review", "manual_review_why", "manual_review_surfaced",
+                    "card_title", "card_job_id", "card_url")
 
     def with_provenance(entry, name):
         """Copy provenance fields from the matching `pending` entry, if any.
@@ -1320,6 +1397,19 @@ def main():
         for field in PROVENANCE_FIELDS:
             if origin.get(field):
                 entry[field] = origin[field]
+        # SUPERSEDE EARLIER TIMEOUTS (added 2026-09-10). A timed-out name is drained
+        # from pending into `rejected`, so a later `--names` re-run has no pending
+        # entry to copy from and used to APPEND a second rejected record with no
+        # source, no first_seen, and no review flags (P-1 AI, Gainwell, and Rising
+        # Medical each ended 2026-09-10 with two). Fold the stale timeout record's
+        # fields into the new entry and drop it, so each company keeps one record.
+        stale = [r for r in q.get("rejected", [])
+                 if r.get("timed_out") and str(r.get("name", "")).lower() == name.lower()]
+        for old in stale:
+            for field in PROVENANCE_FIELDS + CARRY_FIELDS:
+                if old.get(field) and not entry.get(field):
+                    entry[field] = old[field]
+            q["rejected"].remove(old)
         return entry
 
     targets = list(args.names)
@@ -1379,7 +1469,7 @@ def main():
         return None
 
     enrollable, no_board, no_fit, empty_board, skipped = [], [], [], [], []
-    timed_out, aggregator_blocked = [], []
+    timed_out, aggregator_blocked, collision = [], [], []
     run_started = time.monotonic()
     total_targets = len(targets)
     for idx, name in enumerate(targets, 1):
@@ -1418,6 +1508,17 @@ def main():
                   f"board resolves but returns 0 jobs", flush=True)
             continue
         if not res["strong"]:
+            # Card-title check (added 2026-09-10): a LinkedIn-sourced company whose
+            # resolved board does not carry the card's role most likely resolved to
+            # a DIFFERENT company. See the collision writer below.
+            card_title = card_title_of(pending_by_name.get(name.lower(), {}))
+            if card_title and "titles" in res and not board_has_title(res["titles"], card_title):
+                collision.append((name, res, card_title))
+                print(f"  [??] {name:24s} {took} {res['ats']}/{res['slug']:20s} "
+                      f"{res['total']:>4} jobs, 0 fit-titles, and the LinkedIn card's role "
+                      f"{card_title[:40]!r} is not on this board: probable NAME COLLISION, "
+                      f"routed to the Manual channel", flush=True)
+                continue
             no_fit.append((name, res))
             print(f"  [..] {name:24s} {took} {res['ats']}/{res['slug']:20s} "
                   f"{res['total']:>4} jobs, 0 US fit-titles", flush=True)
@@ -1439,12 +1540,16 @@ def main():
 
     print(f"\nenrollable={len(enrollable)} no_fit={len(no_fit)} "
           f"empty_board={len(empty_board)} no_board={len(no_board)} "
-          f"timed_out={len(timed_out)} already_known_skipped={len(skipped)} "
+          f"timed_out={len(timed_out)} collision={len(collision)} "
+          f"already_known_skipped={len(skipped)} "
           f"aggregator_blocked={len(aggregator_blocked)} "
           f"[{time.monotonic() - run_started:.0f}s total]", flush=True)
     if timed_out:
         print("TIMED OUT (unresolved, safe to re-run individually): "
               + ", ".join(n for n, _ in timed_out), flush=True)
+    if collision:
+        print("PROBABLE NAME COLLISIONS (routed to the Manual channel): "
+              + ", ".join(f"{n} -> {r['ats']}/{r['slug']}" for n, r, _ in collision), flush=True)
     if aggregator_blocked:
         print("AGGREGATORS BLOCKED (never probed, never enrollable): "
               + ", ".join(f"{n} ~ {a}" for n, a in aggregator_blocked), flush=True)
@@ -1539,6 +1644,42 @@ def main():
                         f"does NOT qualify, so this company may still have a Boston or SF "
                         f"CSM open; that is intended."),
              "recheck_if_resurfaced": True}, name))
+    # PROBABLE NAME COLLISIONS (added 2026-09-10). A board resolved and had jobs,
+    # but none of them is the role the LinkedIn card named. The likeliest reading
+    # is that a name variant reached a DIFFERENT company's board (Bark vs.
+    # greenhouse/bark), so the company's real board is still unfound. That is an
+    # unpollable-until-resolved state, not a fit verdict, and the card's role is
+    # exactly what the Manual channel exists to surface. So the entry carries the
+    # review fields (forced on: the card was real by construction) and
+    # unpollable=True, which reaches both the digest's Manual channel and the
+    # weekly punch list. Before this, the same case was written as a routine
+    # no_fit reject and the role vanished with no trace in either place.
+    for name, res, card_title in collision:
+        pending_entry = pending_by_name.get(name.lower(), {})
+        entry = {"name": name, "ats": None, "slug": None,
+                 "rejected_date": today,
+                 "reason": (f"PROBABLE NAME COLLISION. A name variant resolved to "
+                            f"{res['ats']}/{res['slug']} ({res['total']} jobs, zero "
+                            f"fit-titles), but the LinkedIn card that queued this company "
+                            f"was for {card_title!r} and no title on that board matches it, "
+                            f"so the board most likely belongs to a different company with "
+                            f"a similar name. The real board is unfound: open the posting's "
+                            f"own apply link, then enroll with the exact slug via --names. "
+                            f"(If the req merely closed, this is an ordinary no-fit and can "
+                            f"be dismissed.)"),
+                 "collision_board": f"{res['ats']}/{res['slug']}",
+                 "collision_suspected": True,
+                 "recheck_if_resurfaced": True,
+                 "unpollable": True,
+                 "manual_review": True,
+                 "manual_review_why": (pending_entry.get("manual_review_why")
+                                       or f"{card_title} -- LinkedIn card role; board "
+                                          f"resolved to a different company")}
+        for field in ("card_title", "card_job_id", "card_url", "manual_review_surfaced"):
+            if field in pending_entry:
+                entry[field] = pending_entry[field]
+        entry.setdefault("card_title", card_title)
+        q.setdefault("rejected", []).append(with_provenance(entry, name))
     for name, res in empty_board:
         # NOT unpollable: the board was found. A manual site: search cannot help
         # here, so this must never reach the weekly unpollable punch list.
@@ -1581,7 +1722,7 @@ def main():
                   "recheck_if_resurfaced": True,
                   "unpollable": True}
         pending_entry = pending_by_name.get(name.lower(), {})
-        for field in ("manual_review", "manual_review_why", "manual_review_surfaced"):
+        for field in CARRY_FIELDS:
             if field in pending_entry:
                 entry[field] = pending_entry[field]
         q.setdefault("rejected", []).append(with_provenance(entry, name))
@@ -1610,11 +1751,17 @@ def main():
                            if found else "")),
              "recheck_if_resurfaced": True,
              "unpollable": False,
-             "timed_out": True}, name))
+             "timed_out": True,
+             # Carry the review and card fields (fixed 2026-09-10): this move used to
+             # drop them, so a timed-out LinkedIn lead lost its Manual-channel role
+             # and a later --names re-run could no longer surface it.
+             **{f: pending_by_name[name.lower()][f] for f in CARRY_FIELDS
+                if f in pending_by_name.get(name.lower(), {})}}, name))
 
     handled = ({n.lower() for n, _ in enrollable} | {n.lower() for n, _ in no_fit}
                | {n.lower() for n, _ in empty_board} | {n.lower() for n, _ in no_board}
-               | {n.lower() for n, _ in timed_out})
+               | {n.lower() for n, _ in timed_out}
+               | {n.lower() for n, _, _ in collision})
     q["pending"] = [e for e in q.get("pending", [])
                     if str(e.get("name", "")).lower() not in handled]
 
@@ -1628,7 +1775,7 @@ def main():
             f.write("\n")
         os.replace(tmp, path)
     print(f"\nenrolled {len(enrollable)}, "
-          f"rejected {len(no_fit) + len(empty_board) + len(no_board)}, "
+          f"rejected {len(no_fit) + len(empty_board) + len(no_board) + len(collision)}, "
           f"unresolved-on-timeout {len(timed_out)}; "
           f"watchlist now {len(wl['companies'])}", flush=True)
     return 0

@@ -639,6 +639,18 @@ def digest_line(card: dict) -> str:
     return line + (f"  ({'; '.join(tags)})" if tags else "")
 
 
+def digest_html_line(card: dict) -> str:
+    """digest_line() with the LinkedIn job id as a tappable link (added 2026-09-10).
+
+    The plain-text block went into the digest inside <pre>, so every card named a
+    job id nobody could tap; acting on one meant searching LinkedIn by hand.
+    """
+    text = html.escape(digest_line(card))
+    jid = html.escape(str(card["job_id"]))
+    url = card.get("url") or f"https://www.linkedin.com/jobs/view/{card['job_id']}/"
+    return text.replace(f"| {jid} |", f'| <a href="{html.escape(url)}">{jid}</a> |', 1)
+
+
 # ── Orchestration ────────────────────────────────────────────────────────────
 
 def resolve_alias() -> str | None:
@@ -725,6 +737,12 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
                     f"(graded {best['title_tier']} / {best['location_verdict']}; "
                     f"linkedin job {best['job_id']})"),
             "needs_ats_resolution": True,
+            # Structured card fields (added 2026-09-10) so harvest_ats.py can check
+            # that the board it resolves actually carries this role; see
+            # harvest_ats.board_has_title for the name-collision case this catches.
+            "card_title": best["title"],
+            "card_job_id": best["job_id"],
+            "card_url": best.get("url"),
         }
         if best["manual_review"]:
             entry["manual_review"] = True
@@ -773,6 +791,7 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
         "unknown_companies": [e["name"] for e in ordered_unknown],
         "pending_entries": pending_entries,
         "digest_lines": [digest_line(c) for c in graded_sorted],
+        "digest_html_lines": [digest_html_line(c) for c in graded_sorted],
     }
 
 
@@ -868,6 +887,13 @@ def main() -> int:
         f.write("\n")
     with open(txt_path, "w", encoding="utf-8") as f:
         f.write("LinkedIn alert cards, graded\n" + block + "\n")
+    # HTML twin of the block (added 2026-09-10): same lines, job ids as tappable
+    # LinkedIn links. This is the version that goes into the digest; the .txt stays
+    # for grep and for the weekly report.
+    html_path = os.path.join(args.out_dir, f"linkedin_cards_{today.isoformat()}.html")
+    html_block = "\n".join(result["digest_html_lines"]) or "(no cards parsed)"
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write('<pre style="white-space:pre-wrap;font-size:12px">\n' + html_block + "\n</pre>\n")
 
     print(f"window {c['window_used']} | input {c['input_mode']}")
     print(f"threads_returned={c['threads_returned']} job_alert_threads_seen="
@@ -891,7 +917,7 @@ def main() -> int:
         print("manual_review:", "; ".join(c["manual_review_flagged"]))
     if c["blind_spot_qualifying"]:
         print("blind-spot qualifying (Step 1d-2 3b):", "; ".join(c["blind_spot_qualifying"]))
-    print(f"\nwrote {json_path}\nwrote {txt_path}")
+    print(f"\nwrote {json_path}\nwrote {txt_path}\nwrote {html_path}")
 
     if not args.apply:
         print("dry run; re-run with --apply to append the UNKNOWN companies to pending")
