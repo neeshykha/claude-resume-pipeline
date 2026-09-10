@@ -4039,7 +4039,7 @@
       "name": "GitLab",
       "ats": "greenhouse",
       "slug": "gitlab",
-      "priority": "low",
+      "priority": "high",
       "headcount_band": "2000+",
       "enrolled_date": "2026-08-11",
       "enrolled_via": "harvest_ats.py automated slug resolution",
