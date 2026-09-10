@@ -2302,6 +2302,13 @@
       "via": "harvest_ats.py",
       "source": "LinkedIn alert",
       "first_seen": "2026-09-10"
+    },
+    {
+      "name": "Bark Technologies Inc",
+      "ats": "rippling",
+      "slug": "bark-technologies-inc",
+      "enrolled_date": "2026-09-10",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [

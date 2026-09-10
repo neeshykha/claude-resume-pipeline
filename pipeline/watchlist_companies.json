@@ -5724,6 +5724,18 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "needs_vertical_classification": true,
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (42 jobs) with 7 fit-titles at harvest time (5 tier2, 2 tier3(location-gated)), e.g. 'Applied AI Solutions Architect' [US - Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Bark Technologies Inc",
+      "ats": "rippling",
+      "slug": "bark-technologies-inc",
+      "priority": "medium",
+      "headcount_band": "51-200",
+      "headcount_note": "51-200 set 2026-09-10 from PitchBook (144 employees); single source, no conflicting figure found. Atlanta HQ, so the Atlanta-startup bonus applies at Step 2c.",
+      "enrolled_date": "2026-09-10",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (5 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Head of AI Support Operations' [Remote (United States)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
