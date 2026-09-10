@@ -7650,19 +7650,6 @@
       "first_seen": "2026-09-10"
     },
     {
-      "name": "Gainwell Technologies",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-10",
-      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Gainwell Technologies\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/gainwell-technologies.",
-      "recheck_if_resurfaced": true,
-      "unpollable": false,
-      "timed_out": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-10",
-      "manual_review_surfaced": true
-    },
-    {
       "name": "AI Engineer",
       "ats": null,
       "slug": null,
@@ -7685,32 +7672,6 @@
       "timed_out": true,
       "source": "LinkedIn alert",
       "first_seen": "2026-09-10"
-    },
-    {
-      "name": "Rising Medical Solutions",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-10",
-      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Rising Medical Solutions\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
-      "recheck_if_resurfaced": true,
-      "unpollable": false,
-      "timed_out": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-10",
-      "manual_review_surfaced": true
-    },
-    {
-      "name": "P-1 AI",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-10",
-      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 73s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"P-1 AI\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
-      "recheck_if_resurfaced": true,
-      "unpollable": false,
-      "timed_out": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-10",
-      "manual_review_surfaced": true
     },
     {
       "name": "Circular Action Alliance",
@@ -7864,7 +7825,14 @@
       "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-10",
+      "card_title": "AI Deployment Manager",
+      "card_job_id": "4454679324",
+      "card_url": "https://www.linkedin.com/jobs/view/4454679324/",
+      "manual_review": true,
+      "manual_review_why": "AI Deployment Manager [United States] -- LinkedIn job 4454679324 (restored 2026-09-10; the timeout path had dropped it)"
     },
     {
       "name": "Gainwell Technologies",
@@ -7874,7 +7842,14 @@
       "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-10",
+      "card_title": "Experienced System Operations Manager",
+      "card_job_id": "4446660146",
+      "card_url": "https://www.linkedin.com/jobs/view/4446660146/",
+      "manual_review": true,
+      "manual_review_why": "Experienced System Operations Manager [Georgia, United States] -- LinkedIn job 4446660146 (restored 2026-09-10; the timeout path had dropped it)"
     },
     {
       "name": "Rising Medical Solutions",
@@ -7884,7 +7859,14 @@
       "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-10",
+      "card_title": "Implementation/Project Manager",
+      "card_job_id": "4464660565",
+      "card_url": "https://www.linkedin.com/jobs/view/4464660565/",
+      "manual_review": true,
+      "manual_review_why": "Implementation/Project Manager [United States] -- LinkedIn job 4464660565 (restored 2026-09-10; the timeout path had dropped it)"
     }
   ]
 }

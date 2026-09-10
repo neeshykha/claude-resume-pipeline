@@ -588,6 +588,19 @@ For each entry processed:
    for Aneesh; this is the one path where a strong-title Atlanta/Remote role would otherwise
    vanish silently. Do not tailor it and do not score it: the digest line is the deliverable,
    and he decides whether to pursue it by hand.
+
+   **Probable name collisions get the same treatment (added 2026-09-10).** `harvest_ats.py` now
+   writes a `collision_suspected: true` reject, printed as `[??]`, when a LinkedIn-sourced
+   company resolves to a board that has jobs but none matching the card's title (`card_title`,
+   stored on the pending entry by `harvest_linkedin.py`; older entries are parsed from `why`).
+   Those entries carry `manual_review`, `unpollable: true`, and `collision_board`. Surface each
+   one in the same "Manual channel" section, name the board it wrongly resolved to, and set
+   `manual_review_surfaced: true`. Found via Bark Technologies: "Bark" resolved to an unrelated
+   `greenhouse/bark` board, so a tier1 remote Head of AI Support Operations on
+   `rippling/bark-technologies-inc` would have been rejected as a routine no-fit, invisible to
+   both the Manual channel and the weekly punch list. The same fix also stops a no-fit answer on
+   a REDUCED name form ("bark" from "Bark Technologies") from ending the slug walk, which is
+   what kept the resolver from ever reaching `bark-technologies-inc`.
 2. Verify the board is live (direct API check; `verify_workday.py` for Workday) with
    US-reachable fit-space roles. Europe/APAC-only → reject.
    **Workday-specific fallback (added 2026-07-14):** if `verify_workday.py`'s
@@ -708,8 +721,9 @@ d. Record: copy the script's `counters` object into `run_[date].json ->
    (`job_alert_threads_seen`, `bodies_read`, `companies_extracted`, `newly_queued`,
    `cap_deferred`, the legacy pair, the aggregators dropped, the review and blind-spot
    lists). If it prints `SHORTFALL`, name the shortfall in the digest.
-e. Digest: the `.txt` block goes in verbatim as its own section, **"LinkedIn alert cards,
-   graded"** (Step 5). Every card, one line, in the script's order. Do not trim it to the
+e. Digest: the `.html` block (`linkedin_cards_[date].html`: the same lines as the `.txt`,
+   with each LinkedIn job id as a tappable link since 2026-09-10) goes in verbatim as its own
+   section, **"LinkedIn alert cards, graded"** (Step 5). Every card, one line, in the script's order. Do not trim it to the
    good ones; Aneesh asked to see what the alerts contained and how each was scored.
 f. Item 3b below still applies by hand: the script lists the qualifying cards under
    `blind_spot_qualifying`; you decide which of them (max 3) get a verification search.
@@ -1762,8 +1776,8 @@ re-examines it.
   LinkedIn alert inbox; no scoring, no tailoring diffs. If an entry was promoted to full
   scoring under the Step 1a exception, say so where it appears in the main table instead.
   Report `stats.tier1_guaranteed` alongside the other provenance counts in housekeeping.
-- **"LinkedIn alert cards, graded"** section (added 2026-09-02): the `.txt` block written by
-  `harvest_linkedin.py` at Step 1d-2, verbatim, one line per card in the script's order:
+- **"LinkedIn alert cards, graded"** section (added 2026-09-02): the `.html` block written by
+  `harvest_linkedin.py` at Step 1d-2 (job ids are tappable links since 2026-09-10), verbatim, one line per card in the script's order:
   `[tier | location] Company: Title | linkedin job id | status  (flags)`. Status is `new` or
   the surface the company already sits on (watchlist, pending, rejected, blind_spot);
   flags are `review`, a seniority term, or `loose:tierN`. FYI parity with the alert inbox,
