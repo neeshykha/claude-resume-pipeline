@@ -729,8 +729,12 @@ def main():
     feeder_hn_leads = sum_field(rows, "feeders", "harvest_hn_hiring_leads")
     feeder_builtin_leads = sum_field(rows, "feeders", "poll_builtin_leads")
     feeder_builtin_ambiguous = sum_field(rows, "feeders", "poll_builtin_ambiguous")
+    # Matched exact-lowercase "degraded" until 2026-09-10, but the runs write prose
+    # ("DEGRADED (self-reported; queue untouched)"), so a permanently degraded feeder
+    # reported as healthy on 0 of N days. Match by case-insensitive prefix instead.
     remotive_degraded_days = sum(
-        1 for _, cs in rows if cs.get("feeders", {}).get("poll_remotive_status") == "degraded"
+        1 for _, cs in rows
+        if str(cs.get("feeders", {}).get("poll_remotive_status") or "").strip().lower().startswith("degraded")
     )
 
     tailored_total = sum_field(rows, "_tailored_count")

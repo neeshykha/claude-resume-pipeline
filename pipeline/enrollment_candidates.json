@@ -3956,7 +3956,9 @@
       "manual_review": true,
       "manual_review_why": "Senior Product Operations Manager, Remote US, $124K-$329K \u2014 tier1-adjacent 'Operations Manager' title, genuinely remote per WebSearch confirmation.",
       "manual_review_surfaced": true,
-      "unpollable": true
+      "unpollable": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Ensemble Health Partners",
@@ -3987,7 +3989,9 @@
       "manual_review_why": "Manager Technical Operations (Implementation and Support), fully remote US per WebSearch confirmation \u2014 exact tier1 'Technical Operations Manager' title match. Alert repeated twice (2026-08-09).",
       "manual_review_surfaced": true,
       "unpollable": true,
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Ripple Property Management",
@@ -4550,7 +4554,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "'Manager, Technical Support' \u2014 Alpharetta GA (Hybrid), tier-1 word-order variant; LinkedIn job 4446133973; apply resolves to app.jobvite.com (ATS unsupported by poller). NOTE: harvest_ats.py's auto-rejection path dropped this flag from the pending entry on rejection -- restored by hand 2026-08-17, flagged as a real script gap worth fixing."
+      "manual_review_why": "'Manager, Technical Support' \u2014 Alpharetta GA (Hybrid), tier-1 word-order variant; LinkedIn job 4446133973; apply resolves to app.jobvite.com (ATS unsupported by poller). NOTE: harvest_ats.py's auto-rejection path dropped this flag from the pending entry on rejection -- restored by hand 2026-08-17, flagged as a real script gap worth fixing.",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Mission Communications LLC",
@@ -4561,7 +4567,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "'Customer Experience and Technical Support Manager' \u2014 Norcross GA (Hybrid), tier-1 loose match; LinkedIn job 4423044898. NOTE: harvest_ats.py's auto-rejection path dropped this flag from the pending entry on rejection -- restored by hand 2026-08-17, flagged as a real script gap worth fixing."
+      "manual_review_why": "'Customer Experience and Technical Support Manager' \u2014 Norcross GA (Hybrid), tier-1 loose match; LinkedIn job 4423044898. NOTE: harvest_ats.py's auto-rejection path dropped this flag from the pending entry on rejection -- restored by hand 2026-08-17, flagged as a real script gap worth fixing.",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Global-e",
@@ -4736,7 +4744,9 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Senior Manager, AI Performance & Operations -- United States (likely remote-eligible)",
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "IDEXX",
@@ -4966,7 +4976,9 @@
       "sweep_checked_2026_08_28": true,
       "source": "LinkedIn alert",
       "first_seen": "2026-08-20",
-      "source_backfilled": "git-replay"
+      "source_backfilled": "git-replay",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "SPAR Solutions",
@@ -5018,7 +5030,9 @@
       "sweep_checked_2026_08_28": true,
       "source": "LinkedIn alert",
       "first_seen": "2026-08-21",
-      "source_backfilled": "git-replay"
+      "source_backfilled": "git-replay",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Xplor Technologies",
@@ -5144,7 +5158,9 @@
       "sweep_checked_2026_08_28": true,
       "source": "LinkedIn jobs-noreply digest BODY (Step 1d-2 subject-only bug, found 2026-08-21)",
       "first_seen": "2026-08-21",
-      "source_backfilled": "git-replay"
+      "source_backfilled": "git-replay",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "JLL",
@@ -5178,7 +5194,9 @@
       "manual_review": true,
       "manual_review_why": "'Support & Operations Lead - AI-First', Remote - Americas (stated in the alert snippet). Tier1-adjacent support-operations title with an explicit AI-first mandate.",
       "manual_review_surfaced": true,
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Lavazza Group",
@@ -5302,7 +5320,9 @@
       "manual_review": true,
       "manual_review_why": "Technical Delivery Manager (tier2 delivery/deployment family), Atlanta",
       "careers_url": "https://www.cgi.com/en/careers",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Syncron",
@@ -5316,7 +5336,9 @@
       "manual_review_why": "Project Manager - Software Implementation (tier2 implementation family), Atlanta",
       "careers_url": "https://careers.syncron.com/jobs/7575925-project-manager-software-implementation",
       "manual_review_surfaced": true,
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Jacoby & Meyers Accident & Injury Lawyers",
@@ -5338,7 +5360,9 @@
       "manual_review_why": "Director of Product Support and Perfection, Atlanta GA (in-office), $93.5K-$115K. Tier-1 title, Atlanta, 51-person company. Apply via https://insperity.avature.net/careers/JobDetails?jobId=22078",
       "recheck_if_resurfaced": true,
       "gap_class": "peo_hosted_board",
-      "gap_note": "NEW DISCOVERY-GAP CLASS, first identified 2026-08-25. Small companies that outsource HR to a PEO (Insperity, TriNet, Justworks, Gusto, Sequoia) frequently post reqs on the PEO's ATS instance rather than a company-owned board. Those reqs carry the PEO's domain, so they are invisible to every company-name-keyed discovery source AND to harvest_ats.py's slug-variant probing, which only ever tries the company's own name. This is structurally different from the Origami Risk/iCIMS case: there the company had its own board on an unsupported ATS; here there is no company board at all to find. The segment it hides is exactly the one the small-company bonus was built to surface, and Atlanta is full of it. Worth considering a PEO-host dork (site:insperity.avature.net, site:jobs.trinet.com, etc.) as a discovery source."
+      "gap_note": "NEW DISCOVERY-GAP CLASS, first identified 2026-08-25. Small companies that outsource HR to a PEO (Insperity, TriNet, Justworks, Gusto, Sequoia) frequently post reqs on the PEO's ATS instance rather than a company-owned board. Those reqs carry the PEO's domain, so they are invisible to every company-name-keyed discovery source AND to harvest_ats.py's slug-variant probing, which only ever tries the company's own name. This is structurally different from the Origami Risk/iCIMS case: there the company had its own board on an unsupported ATS; here there is no company board at all to find. The segment it hides is exactly the one the small-company bonus was built to surface, and Atlanta is full of it. Worth considering a PEO-host dork (site:insperity.avature.net, site:jobs.trinet.com, etc.) as a discovery source.",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Outcapped",
@@ -5402,7 +5426,9 @@
       "manual_review_why": "Salesforce Administrator \u2014 exact tier2c title; location unconfirmed, check before discarding.",
       "manual_review_surfaced": true,
       "manual_review_surfaced_date": "2026-08-26",
-      "sweep_checked_2026_08_28": true
+      "sweep_checked_2026_08_28": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "LP Building Solutions",
@@ -5413,7 +5439,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": false,
-      "manual_review_why": "Checked 2026-08-26 and cleared: the req is Nashville TN HYBRID (posted 2026-07-23, 3-5 yrs Salesforce admin). Tier2c title, but hybrid outside metro Atlanta scores 0 for location under the 2026-08-02 rule, so it fails the Atlanta-or-Remote-US gate this flag requires."
+      "manual_review_why": "Checked 2026-08-26 and cleared: the req is Nashville TN HYBRID (posted 2026-07-23, 3-5 yrs Salesforce admin). Tier2c title, but hybrid outside metro Atlanta scores 0 for location under the 2026-08-02 rule, so it fails the Atlanta-or-Remote-US gate this flag requires.",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Brown & Brown",
@@ -5499,7 +5527,9 @@
       "sweep_checked_2026_08_28": true,
       "source": "LinkedIn alert",
       "first_seen": "2026-08-27",
-      "source_backfilled": "git-replay"
+      "source_backfilled": "git-replay",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "CrossCountry Consulting",
@@ -5580,7 +5610,9 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Implementation Manager (tier2 exact; location not read from the alert body)",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Parallels",
@@ -5592,7 +5624,9 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Technical Account Manager (tier2 exact; alert copy suggests remote)",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Seeq Corporation",
@@ -5604,7 +5638,9 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Technical Account Manager, up to $130K (tier2 exact; location not read from the alert body)",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "OnTrac",
@@ -5660,7 +5696,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "SERVICE DELIVERY MANAGER, United States (remote). Health-IT nonprofit (EHR/data services for community health centers), so the health-tech passion domain would apply."
+      "manual_review_why": "SERVICE DELIVERY MANAGER, United States (remote). Health-IT nonprofit (EHR/data services for community health centers), so the health-tech passion domain would apply.",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Resource Innovations",
@@ -5715,7 +5753,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Solution Implementation Lead (Connected Devices) -- tier2 Implementation family plus the IoT/connected-devices domain overlap, which is his strongest differentiator."
+      "manual_review_why": "Solution Implementation Lead (Connected Devices) -- tier2 Implementation family plus the IoT/connected-devices domain overlap, which is his strongest differentiator.",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-10"
     },
     {
       "name": "Intelligence Security Laboratories",
