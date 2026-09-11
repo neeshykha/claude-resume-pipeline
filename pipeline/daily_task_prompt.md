@@ -511,6 +511,18 @@ Atlanta carries +20 in-office and a further +20 Atlanta-startup, remote-US carri
 that swing is the difference between a tier3 role scoring ~80 and ~105. A CSM in Boston is the
 stretch title without the premium, so it still does not qualify. `tier3_location_ok()` is
 deliberately much narrower than `us_reachable()`; do not "simplify" them into one predicate.
+
+**Neither predicate reads a bare "remote" as evidence of the US (fixed 2026-09-11).**
+`us_reachable()` used to return True on any string containing "remote" or "anywhere" and never
+consulted `NON_US_MARKERS`, so Trustonic was enrollable on three tier2 TAM titles that were all
+Bangkok or Mexico City — SmartRecruiters folds its remote flag into the location string, which
+makes that ATS the likeliest place to hit it. A non-US marker now disqualifies a string unless it
+also names the US outright ("Remote - US or Canada"), the dual-region rescue
+`poll_ats.location_relevant()` already applied. Two traps to know before editing the lists: the
+markers are matched as SUBSTRINGS, so `US_LOOKALIKES` has to blank out US places that contain one
+("india" inside "Indiana", "mexico" inside "New Mexico"), and `poll_ats.LOCATION_EXCLUDE` is a
+SEPARATE list that nothing syncs — it had the same hole and needed the same countries added by
+hand. Cases for all three gates live in `pipeline/test_tier3_gate.py`; run it after any edit here.
 On the first live run it flipped Britive and Sonatype (real remote-US tier3 roles) while
 correctly leaving Nylas and Placemakr rejected. Auto-enrolls at LOW
 priority (auto-enrollment must never outrank hand-vetted companies), rejects with a specific
