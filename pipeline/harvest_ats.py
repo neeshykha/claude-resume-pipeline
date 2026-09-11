@@ -137,13 +137,19 @@ class Budget:
 
 # Location strings that count as US-reachable. Mirrors the intent of the
 # poller's location handling: we only want fit-titles Aneesh could actually take.
-US_HINTS = (
-    "united states", "usa", "u.s.", "remote", "anywhere", "north america",
+# The generic hints also turn up in non-US strings ("Remote Bangkok, , Thailand"),
+# so us_reachable() trusts them only when no NON_US_MARKERS entry is present.
+# "usa"/"us" live in US_TOKEN rather than here because as a substring "usa"
+# fires inside "Jerusalem".
+US_GENERIC_HINTS = ("remote", "anywhere", "north america")
+US_PLACE_HINTS = (
+    "united states", "u.s.",
     "california", "new york", "texas", "washington", "massachusetts", "illinois",
     "colorado", "georgia", "florida", "utah", "oregon", "arizona", "virginia",
     "boston", "chicago", "atlanta", "denver", "austin", "seattle", "nyc",
     "san francisco", "los angeles", "san diego", "miami", "philadelphia",
 )
+US_TOKEN = re.compile(r"\b(?:usa|us)\b")
 
 # Tiers that count as real fit-space for auto-enrollment ANYWHERE US-reachable.
 # tier4/supplemental stay excluded outright: a company whose only match is a weak
@@ -190,11 +196,19 @@ NON_US_MARKERS = (
     "portugal", "romania", "indonesia", "thailand", "vietnam", "south africa",
     "london", "dublin", "berlin", "paris", "amsterdam", "sydney", "toronto",
     "vancouver", "bangalore", "tel aviv",
+    # Canadian cities, for strings that name the city and never the country.
+    # Comeet locations are built from city + state, so Dot Compliance's Canada
+    # role reads "Montreal, Remote" (found 2026-09-11).
+    "montreal", "montréal", "quebec", "québec", "ottawa", "calgary",
 )
 NON_US_CODES = frozenset((
     "can", "uk", "gb", "eu", "ca-on", "ca-bc", "mex", "bra", "deu", "fra",
     "nld", "esp", "swe", "isr", "ind", "aus", "nzl", "sgp", "jpn", "irl", "pol",
 ))
+# US places whose names contain a marker: "india" fires inside "Indiana" and
+# "Indianapolis", "mexico" inside "New Mexico". Blanked out before the marker
+# scan. harvest_linkedin.py hit the Indianapolis case on 2026-09-02.
+US_LOOKALIKES = ("indiana", "new mexico")
 
 
 _LEADING_STOPWORDS = {"the", "a", "an"}
@@ -1017,8 +1031,32 @@ def comeet_slug(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
 
 
+def _names_non_us(loc: str) -> bool:
+    """True if a lowercased location string carries a non-US country, region,
+    or city marker. Shared by us_reachable() and tier3_location_ok()."""
+    for place in US_LOOKALIKES:
+        loc = loc.replace(place, " ")
+    if any(m in loc for m in NON_US_MARKERS):
+        return True
+    return bool(NON_US_CODES & set(re.split(r"[^a-z0-9-]+", loc)))
+
+
 def us_reachable(loc: str) -> bool:
-    return any(h in (loc or "").lower() for h in US_HINTS)
+    """Any US place, or a remote/anywhere string with no non-US marker.
+
+    Broad on purpose (tier3_location_ok is the narrow one), but a bare "remote"
+    is not evidence of the US. SmartRecruiters folds its remote flag into the
+    string, so Trustonic's Bangkok and Mexico City TAM roles read "Remote
+    Bangkok, , Thailand" and made the company enrollable on zero US titles
+    (found 2026-09-11). A non-US marker disqualifies the string unless it also
+    names the US outright ("Remote - US or Canada", "New York; London"), the
+    same dual-region rescue poll_ats.location_relevant() applies.
+    """
+    loc = (loc or "").lower()
+    names_us = bool(US_TOKEN.search(loc)) or any(h in loc for h in US_PLACE_HINTS)
+    if _names_non_us(loc):
+        return names_us
+    return names_us or any(h in loc for h in US_GENERIC_HINTS)
 
 
 def tier3_location_ok(loc: str) -> bool:
@@ -1031,9 +1069,7 @@ def tier3_location_ok(loc: str) -> bool:
     strict; loosening it to any US city silently restores the ungated behaviour.
     """
     loc = (loc or "").lower()
-    if any(m in loc for m in NON_US_MARKERS):
-        return False
-    if NON_US_CODES & set(re.split(r"[^a-z0-9-]+", loc)):
+    if _names_non_us(loc):
         return False
     if any(h in loc for h in ATLANTA_HINTS):
         return True

@@ -447,6 +447,15 @@ LOCATION_EXCLUDE = [
     "canada", "toronto", "vancouver", "brazil", "mexico",
     "israel", "tel aviv", "china", "korea", "spain",
     "italy", "netherlands", "ireland", "dublin",
+    # Added 2026-09-11 to close the gap to harvest_ats.NON_US_MARKERS. "remote"
+    # is an include term, so any country missing here passed as US-relevant:
+    # SmartRecruiters' "Remote Bangkok, , Thailand" and "Remote Johannesburg, ,
+    # South Africa", and Comeet's "Montreal, Remote", which names no country.
+    # The two lists are separate and nothing syncs them.
+    "thailand", "south africa", "philippines", "indonesia", "vietnam",
+    "new zealand", "sydney", "latin america", "colombia", "argentina",
+    "poland", "sweden", "portugal", "romania", "great britain",
+    "montreal", "montréal", "quebec", "québec", "ottawa", "calgary",
     "mandarin", "cantonese",  # language-specific roles
 ]
 

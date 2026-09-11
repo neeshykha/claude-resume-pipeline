@@ -1,9 +1,15 @@
-"""Unit-check tier3_location_ok against real location strings seen in this repo."""
+"""Unit-check the location gates against real location strings seen in this repo.
+
+  tier3_location_ok  (harvest_ats)  Atlanta or remote-US only
+  us_reachable       (harvest_ats)  any US place, or remote with no non-US marker
+  location_relevant  (poll_ats)     the daily poller's US filter
+"""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harvest_ats import tier3_location_ok as ok, us_reachable
+from harvest_ats import tier3_location_ok, us_reachable
+from poll_ats import location_relevant
 
-CASES = [
+TIER3_CASES = [
     # (location, expected, why)
     ("Atlanta, GA", True, "Evident ID CSM -- the case that motivated this"),
     ("Atlanta, GEORGIA, United States", True, "ServiceNow-style Atlanta string"),
@@ -33,19 +39,72 @@ CASES = [
     ("Remote, CAN", False, "bare CAN token is Canada"),
     ("Remote (UK)", False, "bare UK token"),
     ("Remote - Vatican City", True, "'can' inside Vatican must not fire (contrived, guards the tokenizer)"),
+    # 2026-09-11: remote strings from SmartRecruiters and Comeet boards.
+    ("Remote Bangkok, , Thailand", False, "Trustonic TAM, SmartRecruiters folds remote in"),
+    ("Remote Mexico City, , Mexico", False, "Trustonic Sr. TAM"),
+    ("Montreal, Remote", False, "Dot Compliance Comeet: names the city, never the country"),
+    ("Remote - Indiana", True, "'india' inside Indiana must not disqualify"),
+    ("Remote - New Mexico", True, "'mexico' inside New Mexico must not disqualify"),
 ]
 
-fails = 0
-for loc, want, why in CASES:
-    got = ok(loc)
-    flag = "ok " if got == want else "FAIL"
-    if got != want:
-        fails += 1
-    print(f"  [{flag}] {str(got):5s} (want {str(want):5s})  {loc!r:34s} {why}")
+US_CASES = [
+    # Trustonic, 2026-09-11: all three tier2 titles that made it enrollable were
+    # outside the US, passing only because "remote" was a US hint.
+    ("Remote Bangkok, , Thailand", False, "Trustonic TAM"),
+    ("Remote Mexico City, , Mexico", False, "Trustonic Sr. TAM"),
+    ("Remote Johannesburg, , South Africa", False, "SmartRecruiters remote, non-US"),
+    ("Montreal, Remote", False, "Dot Compliance Comeet: names the city, never the country"),
+    ("Remote CAN", False, "Absorb style"),
+    ("Remote - EMEA", False, "region marker"),
+    ("Remote (UK)", False, "bare UK token"),
+    ("Jerusalem, Israel", False, "'usa' inside Jerusalem must not read as the US"),
+    ("Remote", True, "bare remote stays US-reachable"),
+    ("Remote - USA", True, "explicit remote US"),
+    ("US", True, "bare US token"),
+    ("Remote U.S.", True, "Vanta style"),
+    ("North America East Coast Remote", True, "Dot Compliance's real US role"),
+    ("Boston, MA", True, "US city on-site: this gate admits it, tier3 does not"),
+    ("San Francisco, CA", True, "US city on-site"),
+    ("Atlanta, GA", True, "Atlanta"),
+    ("Remote - Indiana", True, "'india' inside Indiana"),
+    ("Remote - New Mexico", True, "'mexico' inside New Mexico"),
+    ("Remote - Duncan, Oklahoma", True, "'can' inside Duncan"),
+    ("Remote, US or Canada", True, "dual-region string that names the US outright"),
+    ("New York; London", True, "multi-location with a US city"),
+]
 
-print(f"\n{len(CASES) - fails}/{len(CASES)} passed")
+POLL_CASES = [
+    ("Remote Bangkok, , Thailand", False, "Trustonic TAM"),
+    ("Remote Mexico City, , Mexico", False, "Trustonic Sr. TAM"),
+    ("Remote Johannesburg, , South Africa", False, "SmartRecruiters remote, non-US"),
+    ("Montreal, Remote", False, "Dot Compliance Comeet"),
+    ("Remote", True, "bare remote"),
+    ("Remote - USA", True, "explicit remote US"),
+    ("Remote - New York", True, "remote, US city"),
+    ("North America East Coast Remote", True, "Dot Compliance's real US role"),
+    ("Remote, US or Canada", True, "dual-region rescue"),
+]
+
+
+def run(name, fn, cases):
+    print(f"{name}:")
+    fails = 0
+    for loc, want, why in cases:
+        got = fn(loc)
+        if got != want:
+            fails += 1
+        flag = "ok " if got == want else "FAIL"
+        print(f"  [{flag}] {str(got):5s} (want {str(want):5s})  {loc!r:40s} {why}")
+    print(f"  {len(cases) - fails}/{len(cases)} passed\n")
+    return fails
+
+
+fails = run("tier3_location_ok", tier3_location_ok, TIER3_CASES)
+fails += run("us_reachable", us_reachable, US_CASES)
+fails += run("poll_ats.location_relevant", lambda loc: location_relevant(loc, ""), POLL_CASES)
 
 # Guard the key property: the tier3 gate must be strictly narrower than us_reachable.
-wider = [loc for loc, _, _ in CASES if ok(loc) and not us_reachable(loc)]
+every = [loc for loc, _, _ in TIER3_CASES + US_CASES]
+wider = [loc for loc in every if tier3_location_ok(loc) and not us_reachable(loc)]
 print("tier3 gate admits nothing us_reachable rejects:", "yes" if not wider else f"NO -> {wider}")
-sys.exit(1 if fails else 0)
+sys.exit(1 if fails or wider else 0)
