@@ -2363,18 +2363,142 @@
       "via": "harvest_ats.py",
       "source": "WebSearch: Atlanta Board Sweep (Greenhouse)",
       "first_seen": "2026-09-11"
+    },
+    {
+      "name": "Ambient",
+      "ats": "ashby",
+      "slug": "ambient.ai",
+      "enrolled_date": "2026-08-31",
+      "via": "already on the watchlist as 'Ambient.ai' (enrolled 2026-08-31), polling ashby/ambient.ai; the stale unpollable rejection was retired by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5)"
+    },
+    {
+      "name": "Seeq Corporation",
+      "ats": "workable",
+      "slug": "seeq",
+      "enrolled_date": "2026-09-08",
+      "via": "already on the watchlist as 'Seeq' (enrolled 2026-09-08), polling workable/seeq; the stale unpollable rejection was retired by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5)",
+      "manual_review": true,
+      "manual_review_why": "Technical Account Manager, up to $130K (tier2 exact; location not read from the alert body)",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Institute for AI Policy and Strategy",
+      "ats": "pinpoint",
+      "slug": "rethinkpriorities",
+      "enrolled_date": "2026-08-27",
+      "via": "covered by the existing 'Rethink Priorities' watchlist entry: IAPS roles post to its fiscal sponsor's Pinpoint board (careers.rethinkpriorities.org), polled as pinpoint/rethinkpriorities since 2026-08-27; the stale unpollable rejection was retired by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5)"
+    },
+    {
+      "name": "Procure Analytics",
+      "ats": "paylocity",
+      "slug": "37f1fc46-3c9a-4802-995e-eebd78e096d7",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page",
+      "manual_review": true,
+      "manual_review_why": "Implementation Manager (tier2 exact; location not read from the alert body)",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Steno",
+      "ats": "rippling",
+      "slug": "steno-careers-page",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page",
+      "manual_review": true,
+      "manual_review_why": "Revenue Operations Manager [United States] -- tier2c title, US (unspecified); LinkedIn job 4460082249"
+    },
+    {
+      "name": "Devoted Health",
+      "ats": "workday",
+      "slug": "devoted",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page",
+      "manual_review": true,
+      "manual_review_why": "Senior Manager, AI Performance & Operations -- United States (likely remote-eligible)"
+    },
+    {
+      "name": "Illumia",
+      "ats": "greenhouse",
+      "slug": "illumiallc",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page"
+    },
+    {
+      "name": "TeleTracking",
+      "ats": "greenhouse",
+      "slug": "teletrackingtechnologiesinc",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
+    },
+    {
+      "name": "Neuron7.ai",
+      "ats": "lever",
+      "slug": "neuron7",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page"
+    },
+    {
+      "name": "Pendo.io",
+      "ats": "greenhouse",
+      "slug": "pendo",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page"
+    },
+    {
+      "name": "RaceTrac",
+      "ats": "workday",
+      "slug": "racetrac",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-08"
+    },
+    {
+      "name": "REPAY",
+      "ats": "workday",
+      "slug": "repay",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page"
+    },
+    {
+      "name": "Stord",
+      "ats": "workday",
+      "slug": "stord",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
+    },
+    {
+      "name": "Palo Alto Networks",
+      "ats": "workday",
+      "slug": "paloaltonetworks",
+      "enrolled_date": "2026-09-11",
+      "via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5), board read off the careers page",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
+    },
+    {
+      "name": "ChargeAfter",
+      "ats": "comeet",
+      "slug": "chargeafter",
+      "enrolled_date": "2026-09-11",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Dot Compliance",
+      "ats": "comeet",
+      "slug": "dot-compliance",
+      "enrolled_date": "2026-09-11",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
-    {
-      "name": "Neuron7.ai",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-17",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
     {
       "name": "Lucid Software",
       "ats": "greenhouse",
@@ -2689,17 +2813,6 @@
       "rejected_date": "2026-07-21",
       "reason": "SmartRecruiters board dork hit ('Technical Account Manager'). Board live but only 2 total postings, both zombie/evergreen (releasedDate 2019-07-12 and 2021-04-29), both Sales-function, Orem UT onsite. Not a live opening.",
       "recheck_if_resurfaced": true
-    },
-    {
-      "name": "Institute for AI Policy and Strategy",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-07-21",
-      "reason": "80K Hours lead ('People Operations Manager', Remote US/UK, $105K-$115K). Apply link is careers.rethinkpriorities.org (fiscal-sponsor custom career site), not Greenhouse/Ashby/Lever/Workday/SmartRecruiters -- not pollable.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-24"
     },
     {
       "name": "Augment CXM",
@@ -3142,34 +3255,6 @@
       "source_backfilled": "git-replay"
     },
     {
-      "name": "DTEX Systems",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-07-08",
-      "reason": "No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17",
-      "source": "BuiltIn Remote 2026-07-07",
-      "first_seen": "2026-07-07",
-      "source_backfilled": "git-replay"
-    },
-    {
-      "name": "Coursedog",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-07-08",
-      "reason": "No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-17",
-      "source": "AI-Titled Roles discovery 2026-07-07",
-      "first_seen": "2026-07-07",
-      "source_backfilled": "git-replay"
-    },
-    {
       "name": "Frame",
       "ats": null,
       "slug": null,
@@ -3439,17 +3524,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "Alice (formerly ActiveFence)",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-07-30",
-      "reason": "Trust/safety/security vendor for the AI era (rebranded from ActiveFence). NO supported ATS: probed Greenhouse (alice, activefence, activefenceltd, alice-io), Ashby (alice, activefence, alice-io), Lever (alice, activefence), Comeet, and Workable on 2026-07-30 -- all 404 or empty. Careers run on a proprietary site (alice.io/careers, position IDs like position-CC_B57). NOT added to _blind_spot_companies because the fit-space is genuinely thin: their open roles are GenAI Safety Tech Lead, GenAI Team Lead, GenAI Safety Analyst, and VP of AI Security Research -- adversarial red-teaming RESEARCH, not support/customer operations. Adding it would dilute a 17-company rotation that runs only 3 per run. User-surfaced by Aneesh 2026-07-30; miss cause is the same class as Google/Netflix/Docusign (real company, structurally unpollable), not a config gap in discovery.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-24"
-    },
-    {
       "name": "Rippling",
       "ats": null,
       "slug": null,
@@ -3553,18 +3627,6 @@
       "weekly_report_surfaced_date": "2026-08-24"
     },
     {
-      "name": "Trustonic",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-01",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). No board on Greenhouse, Ashby, Lever, Workday, or Workable; searches surface only same-name confusions (Trustly, Trust Automation, Trustpilot, TrustOne). Device/IoT security, which is a real adjacency to the First Alert and Luma years, so worth a look at trustonic.com/careers by hand. RETRACTION 2026-08-31: a same-day harvest run reported workable/trustonic as a resolved-but-empty board and that was recorded here. It was WRONG. Re-probed slowly and in isolation, workable/trustonic returns 404. Workable returns spurious HTTP 200 with an empty jobs array under burst load, which _get() cannot distinguish from a real empty board. Trustonic remains genuinely unpollable. See harvest_ats.py _confirm_empty for the guard added as a result.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-31",
-      "manual_search_done": "2026-08-31"
-    },
-    {
       "name": "SoundHound AI",
       "ats": null,
       "slug": null,
@@ -3581,18 +3643,6 @@
       "slug": null,
       "rejected_date": "2026-08-01",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). Nothing found on any supported ATS and no careers page surfaced; the name is too generic to search effectively. Treat as dead unless it resurfaces with more identifying detail.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-31",
-      "manual_search_done": "2026-08-31"
-    },
-    {
-      "name": "Pave",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-01",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). BOARD FOUND AND LIVE: greenhouse/paveakatroveinformationtechnologies, 18 jobs. THAT SLUG IS NOT DERIVABLE FROM THE COMPANY NAME BY ANY GENERATOR ('Pave aka Trove Information Technologies') -- this is the clearest possible case for the manual search. Rejected on LOCATION: the fit-shaped roles ('Customer Success Engineer', 'Account Manager') are all San Francisco / New York on-site, none remote-US, so tier3 fails the location gate. ~160 employees. Slug now known; re-check costs one API call.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
@@ -3620,18 +3670,6 @@
       "unpollable": true,
       "weekly_report_surfaced": true,
       "weekly_report_surfaced_date": "2026-08-31"
-    },
-    {
-      "name": "Dot Compliance",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-03",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). No supported ATS: runs a custom careers page at dotcompliance.com/careers/. ~180 employees, Phoenix AZ, AI-powered eQMS for life sciences. Notable adjacency: their platform is Salesforce-based (Apex/LWC), so their roles skew Salesforce-heavy. Genuinely unpollable, not a slug miss.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-31",
-      "manual_search_done": "2026-08-31"
     },
     {
       "name": "Avanos Medical",
@@ -3749,18 +3787,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "Illumia",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-04",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). No supported ATS: custom careers page at illumiatech.com/about/careers. Higher education, healthcare, and senior-living solutions. NOTE: distinct from Illumio (zero-trust security) and Illumina (genomics) -- do not conflate on a future search.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-31",
-      "manual_search_done": "2026-08-31"
-    },
-    {
       "name": "AiDOOS",
       "ats": null,
       "slug": null,
@@ -3818,29 +3844,6 @@
       "weekly_report_surfaced": true,
       "weekly_report_surfaced_date": "2026-08-31",
       "manual_search_done": "2026-08-31"
-    },
-    {
-      "name": "AppOmni",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-04",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). BOARD FOUND: greenhouse/appomni, but the API returns ZERO live jobs (search results showing a 'Lead Customer Success Manager' are stale cache). Same shape as the Fireworks AI case: board resolves, board is empty. Rejected on empty-board, not pollability. Security tooling, +20 vertical if it repopulates. Slug now known; re-check costs one API call.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-31",
-      "manual_search_done": "2026-08-31"
-    },
-    {
-      "name": "Ambient",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-04",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-31"
     },
     {
       "name": "The Scion Group",
@@ -3914,15 +3917,6 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-06",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
-      "name": "Oleria Security",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-21",
       "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "recheck_if_resurfaced": true,
       "unpollable": true
@@ -4014,15 +4008,6 @@
       "source": "LinkedIn alert",
       "first_seen": "2026-08-07",
       "source_backfilled": "git-replay"
-    },
-    {
-      "name": "Pendo.io",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-10",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
     },
     {
       "name": "Pinnacle",
@@ -4161,15 +4146,6 @@
     },
     {
       "name": "FlowCandy",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-12",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
-      "name": "ChargeAfter",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-12",
@@ -4832,20 +4808,6 @@
       "unpollable": true
     },
     {
-      "name": "Devoted Health",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-18",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): smartrecruiters/'devotedhealth' is live but carries only 2 nurse-practitioner postings and 0 fit-titles: a fragment board, not the company's main careers system. Left rejected.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "manual_review": true,
-      "manual_review_why": "Senior Manager, AI Performance & Operations -- United States (likely remote-eligible)",
-      "sweep_checked_2026_08_28": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-09-10"
-    },
-    {
       "name": "IDEXX",
       "ats": null,
       "slug": null,
@@ -4909,15 +4871,6 @@
     },
     {
       "name": "Financial Cents",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-18",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
-      "name": "Groundfloor",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-18",
@@ -5260,18 +5213,6 @@
       "weekly_report_surfaced_date": "2026-09-10"
     },
     {
-      "name": "JLL",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-23",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "source": "LinkedIn jobs-noreply digest BODY (Step 1d-2 subject-only bug, found 2026-08-21)",
-      "first_seen": "2026-08-21",
-      "source_backfilled": "git-replay"
-    },
-    {
       "name": "US Government, Cybersecurity and Infrastructure Security Agency",
       "ats": null,
       "slug": null,
@@ -5342,16 +5283,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "Ketch",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-24",
-      "reason": "CORRECTED 2026-08-27: the original 'no board resolved' was wrong. Board is live at lever/Ketch (CAPITAL K) -- a slug_variants() case-sensitivity artifact, fixed the same day. Rejection STANDS on fit rather than pollability: only 4 open roles and the single fit-title (Customer Experience Engineer) is Bengaluru, not US-reachable. Data-privacy/governance tooling company, so recheck if the board grows US roles.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "reason_corrected_date": "2026-08-27"
-    },
-    {
       "name": "Crunchbase",
       "ats": null,
       "slug": null,
@@ -5372,15 +5303,6 @@
     },
     {
       "name": "Lightcone Infrastructure",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-25",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
-      "name": "Center for AI Safety",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-25",
@@ -5664,15 +5586,6 @@
       "unpollable": true
     },
     {
-      "name": "Fleet Data Centers",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-28",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
       "name": "Rentokil Pest Control North America",
       "ats": null,
       "slug": null,
@@ -5698,20 +5611,6 @@
       "recheck_if_resurfaced": true
     },
     {
-      "name": "Procure Analytics",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "manual_review": true,
-      "manual_review_why": "Implementation Manager (tier2 exact; location not read from the alert body)",
-      "manual_review_surfaced": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-09-10"
-    },
-    {
       "name": "Parallels",
       "ats": null,
       "slug": null,
@@ -5721,20 +5620,6 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Technical Account Manager (tier2 exact; alert copy suggests remote)",
-      "manual_review_surfaced": true,
-      "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-09-10"
-    },
-    {
-      "name": "Seeq Corporation",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-08-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "manual_review": true,
-      "manual_review_why": "Technical Account Manager, up to $130K (tier2 exact; location not read from the alert body)",
       "manual_review_surfaced": true,
       "weekly_report_surfaced": true,
       "weekly_report_surfaced_date": "2026-09-10"
@@ -5817,15 +5702,6 @@
     },
     {
       "name": "Sundayy",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-01",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
-      "name": "Aidoc",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-09-01",
@@ -5934,67 +5810,7 @@
       "source_backfilled": "git-replay"
     },
     {
-      "name": "Stord",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-02",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-02",
-      "source_backfilled": "git-replay"
-    },
-    {
-      "name": "TeleTracking",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-02",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-02",
-      "source_backfilled": "git-replay"
-    },
-    {
-      "name": "Personetics",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-02",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-02",
-      "source_backfilled": "git-replay"
-    },
-    {
       "name": "Zycus",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-02",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-02",
-      "source_backfilled": "git-replay"
-    },
-    {
-      "name": "Palo Alto Networks",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-02",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-02",
-      "source_backfilled": "git-replay"
-    },
-    {
-      "name": "Worldwide Clinical Trials",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-09-02",
@@ -6026,18 +5842,6 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "source": "LinkedIn alert",
-      "first_seen": "2026-09-02",
-      "source_backfilled": "git-replay"
-    },
-    {
-      "name": "Crunchtime",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-02",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "source": "WebSearch board dork",
       "first_seen": "2026-09-02",
       "source_backfilled": "git-replay"
     },
@@ -6101,17 +5905,6 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Project Manager [Atlanta, GA] -- loose:tier2 title, Atlanta; LinkedIn job 4460065479"
-    },
-    {
-      "name": "Steno",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-03",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "manual_review": true,
-      "manual_review_why": "Revenue Operations Manager [United States] -- tier2c title, US (unspecified); LinkedIn job 4460082249"
     },
     {
       "name": "Pixel Machinery",
@@ -6315,15 +6108,6 @@
       "unpollable": true,
       "manual_review": true,
       "manual_review_why": "Technical Operations Manager [Atlanta, GA] -- tier1 title, Atlanta; LinkedIn job 4458360279"
-    },
-    {
-      "name": "SORACOM",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-04",
-      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
     },
     {
       "name": "Caliber Car Wash",
@@ -6597,15 +6381,6 @@
     },
     {
       "name": "Verition Fund Management",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-07",
-      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
-    },
-    {
-      "name": "REPAY",
       "ats": null,
       "slug": null,
       "rejected_date": "2026-09-07",
@@ -6938,17 +6713,6 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "source": "BuiltIn directory",
-      "first_seen": "2026-09-08"
-    },
-    {
-      "name": "RaceTrac",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-08",
-      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "source": "LinkedIn alert",
       "first_seen": "2026-09-08"
     },
     {
@@ -8263,6 +8027,164 @@
       "card_job_id": "4463518923",
       "card_url": "https://www.linkedin.com/jobs/view/4463518923/",
       "manual_review_surfaced": true
+    },
+    {
+      "name": "Aidoc",
+      "ats": "greenhouse",
+      "slug": "aidocmedical",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (32 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.aidoc.com/about/careers/) links it; the name-variant harvest never derived it. Supersedes the 2026-09-01 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Crunchtime",
+      "ats": "greenhouse",
+      "slug": "zenput",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (12 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.crunchtime.com/careers) links it; the name-variant harvest never derived it. Supersedes the 2026-09-02 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "source": "WebSearch board dork",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
+    },
+    {
+      "name": "Fleet Data Centers",
+      "ats": "greenhouse",
+      "slug": "fleet",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (41 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://fleetdatacenters.com/careers/) links it; the name-variant harvest never derived it. Supersedes the 2026-08-28 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Groundfloor",
+      "ats": "greenhouse",
+      "slug": "groundfloorfinance",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (1 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://groundfloor.com/careers/) links it; the name-variant harvest never derived it. Supersedes the 2026-08-18 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Ketch",
+      "ats": "greenhouse",
+      "slug": "ketch",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (4 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.ketch.com/careers) links it; the name-variant harvest never derived it. Supersedes the 2026-08-24 rejection, which was tagged unpollable=true and read: CORRECTED 2026-08-27: the original 'no board resolved' was wrong. Board is live at lever/Ketch (CAPITAL K) -- a slug_variants() case-sensitivity artifact, fixed the same day. Rejection STANDS on fit rather than pollability: only 4 open roles and the single fit-title (Customer Experience Engineer) is Bengaluru, not US-reachable. Data-privacy/governance tooling company, so recheck if the board grows US roles.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Pave",
+      "ats": "greenhouse",
+      "slug": "paveakatroveinformationtechnologies",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (17 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.pave.com/company/careers) links it; the name-variant harvest never derived it. Supersedes the 2026-08-01 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). BOARD FOUND AND LIVE: greenhouse/paveakatroveinformationtechnologies, 18 jobs. THAT SLUG IS NOT DERIVABLE FROM THE COMPANY NAME BY ANY GENERATOR ('Pave aka Trove Information Technologies') -- this is the clearest possible case for the manual search. Rejected on LOCATION: the fit-shaped roles ('Customer Success Engineer', 'Account Manager') are all San Francisco / New York on-site, none remote-US, so tier3 fails the location gate. ~160 employees. Slug now known; re-check costs one API call.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "SORACOM",
+      "ats": "workable",
+      "slug": "soracom",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (14 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://soracom.io/careers) links it; the name-variant harvest never derived it. Supersedes the 2026-09-04 rejection, which was tagged unpollable=true and read: No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "JLL",
+      "ats": "workday",
+      "slug": "jll",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (2000 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.jll.com/en-us/careers) links it; the name-variant harvest never derived it. Workday address: jll.wd1.myworkdayjobs.com / jll / jllcareers. NOTE: scored on all 2000 postings; poll_ats.fetch_workday currently stops after 40 on this tenant (Workday returns `total` only on the first page; flagged 2026-09-11), so reqs past position 40 stay invisible to the daily poll until that is fixed. Supersedes the 2026-08-23 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn jobs-noreply digest BODY (Step 1d-2 subject-only bug, found 2026-08-21)",
+      "first_seen": "2026-08-21",
+      "source_backfilled": "git-replay"
+    },
+    {
+      "name": "Worldwide Clinical Trials",
+      "ats": "workday",
+      "slug": "worldwide",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (217 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.worldwide.com/careers/) links it; the name-variant harvest never derived it. Workday address: worldwide.wd1.myworkdayjobs.com / worldwide / External. NOTE: scored on all 217 postings; poll_ats.fetch_workday currently stops after 40 on this tenant (Workday returns `total` only on the first page; flagged 2026-09-11), so reqs past position 40 stay invisible to the daily poll until that is fixed. Supersedes the 2026-09-02 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
+    },
+    {
+      "name": "Personetics",
+      "ats": "comeet",
+      "slug": "personetics",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (13 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Supersedes the 2026-09-02 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-02",
+      "source_backfilled": "git-replay"
+    },
+    {
+      "name": "DTEX Systems",
+      "ats": "jazzhr",
+      "slug": "dtexsystems",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (8 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Supersedes the 2026-07-08 rejection, which was tagged unpollable=true and read: No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn Remote 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
+    },
+    {
+      "name": "Alice (formerly ActiveFence)",
+      "ats": "comeet",
+      "slug": "alice-formerly-activefence",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (39 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://alice.io/careers) links it; the name-variant harvest never derived it. Comeet credentials read by hand from https://alice.io/careers (company-uid D5.005): the page uses a quoted 'company-uid' key that comeet_credentials() does not match yet. Supersedes the 2026-07-30 rejection, which was tagged unpollable=true and read: Trust/safety/security vendor for the AI era (rebranded from ActiveFence). NO supported ATS: probed Greenhouse (alice, activefence, activefenceltd, alice-io), Ashby (alice, activefence, alice-io), Lever (alice, activefence), Comeet, and Workable on 2026-07-30 -- all 404 or empty. Careers run on a proprietary site (alice.io/careers, position IDs like position-CC_B57). NOT added to _blind_spot_companies because the fit-space is genuinely thin: their open roles are GenAI Safety Tech Lead, GenAI Team Lead, GenAI Safety Analyst, and VP of AI Security Research -- adversarial red-teaming RESEARCH, not support/customer operations. Adding it would dilute a 17-company rotation that runs only 3 per run. User-surfaced by Aneesh 2026-07-30; miss cause is the same class as Google/Netflix/Docusign (real company, structurally unpollable), not a config gap in discovery.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "Trustonic",
+      "ats": "smartrecruiters",
+      "slug": "trustonic",
+      "rejected_date": "2026-09-11",
+      "reason": "Board resolves and is live (16 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended. OVERRIDE: harvest_ats._score_board reported 3 fit-titles (3 tier2), but every one is outside the US (Senior Technical Account Manager [Remote Bangkok, , Thailand]; Technical Account Manager [Remote Bangkok, , Thailand]; Senior Technical Account Manager [Remote Mexico City, , Mexico]). us_reachable() counts any location containing 'remote' as US-reachable, so 'Remote Bangkok, Thailand' passes. Recorded as no_fit on Aneesh's call 2026-09-11 until that is fixed. Supersedes the 2026-08-01 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). No board on Greenhouse, Ashby, Lever, Workday, or Workable; searches surface only same-name confusions (Trustly, Trust Automation, Trustpilot, TrustOne). Device/IoT security, which is a real adjacency to the First Alert and Luma years, so worth a look at trustonic.com/careers by hand. RETRACTION 2026-08-31: a same-day harvest run reported workable/trustonic as a resolved-but-empty board and that was recorded here. It was WRONG. Re-probed slowly and in isolation, workable/trustonic returns 404. Workable returns spurious HTTP 200 with an empty jobs array under burst load, which _get() cannot distinguish from a real empty board. Trustonic remains genuinely unpollable. See harvest_ats.py _confirm_empty for the guard added as a result.",
+      "recheck_if_resurfaced": true
+    },
+    {
+      "name": "AppOmni",
+      "ats": "greenhouse",
+      "slug": "appomni",
+      "rejected_date": "2026-09-11",
+      "reason": "Board RESOLVED at greenhouse/appomni but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: greenhouse/appomni.) Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://appomni.com/careers/) links it; the name-variant harvest never derived it. Supersedes the 2026-08-04 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). BOARD FOUND: greenhouse/appomni, but the API returns ZERO live jobs (search results showing a 'Lead Customer Success Manager' are stale cache). Same shape as the Fireworks AI case: board resolves, board is empty. Rejected on empty-board, not pollability. Security tooling, +20 vertical if it repopulates. Slug now known; re-check costs one API call.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false
+    },
+    {
+      "name": "Center for AI Safety",
+      "ats": "lever",
+      "slug": "aisafety",
+      "rejected_date": "2026-09-11",
+      "reason": "Board RESOLVED at lever/aisafety but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: lever/aisafety.) Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://safe.ai/) links it; the name-variant harvest never derived it. Supersedes the 2026-08-25 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false
+    },
+    {
+      "name": "Oleria Security",
+      "ats": "lever",
+      "slug": "oleria-security",
+      "rejected_date": "2026-09-11",
+      "reason": "Board RESOLVED at lever/oleria-security but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: lever/oleria-security.) Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.oleria.com/company/careers) links it; the name-variant harvest never derived it. Supersedes the 2026-08-21 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false
+    },
+    {
+      "name": "Coursedog",
+      "ats": "pinpoint",
+      "slug": "coursedog",
+      "rejected_date": "2026-09-11",
+      "reason": "Board RESOLVED at pinpoint/coursedog but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: pinpoint/coursedog.) Board found by the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.coursedog.com/company/careers) links it; the name-variant harvest never derived it. Supersedes the 2026-07-08 rejection, which was tagged unpollable=true and read: No Greenhouse/Ashby/Lever board found via WebSearch -- likely uses a non-standard or internal ATS, not pollable.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "AI-Titled Roles discovery 2026-07-07",
+      "first_seen": "2026-07-07",
+      "source_backfilled": "git-replay"
     }
   ]
 }

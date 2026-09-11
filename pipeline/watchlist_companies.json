@@ -5803,6 +5803,157 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "needs_vertical_classification": true,
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (130 jobs) with 4 fit-titles at harvest time (3 tier2, 1 tier2c), e.g. 'Manager, Integration Delivery - Professional Services' [Miami]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Procure Analytics",
+      "ats": "paylocity",
+      "slug": "37f1fc46-3c9a-4802-995e-eebd78e096d7",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): board GUID read off the company's own careers page (https://procureanalytics.com/careers-culture/), hand-enrolled per _paylocity_notes",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://procureanalytics.com/careers-culture/) links this board, which the name-variant harvest could not derive. Board verified live (4 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Project Manager (Contract Position)' [Atlanta HQ]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-08-31 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters."
+    },
+    {
+      "name": "Steno",
+      "ats": "rippling",
+      "slug": "steno-careers-page",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): board read off the careers page (https://ats.rippling.com/steno-careers-page/jobs), verified live via the rippling API",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://ats.rippling.com/steno-careers-page/jobs) links this board, which the name-variant harvest could not derive. Board verified live (43 jobs) with 2 fit-titles at harvest time (1 tier1, 1 tier2c), e.g. 'Revenue Operations Manager' [Remote (United States)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-09-03 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters."
+    },
+    {
+      "name": "Devoted Health",
+      "ats": "workday",
+      "slug": "devoted",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): wd_host/wd_tenant/wd_site read off the careers page (https://devoted.com/careers/), verified live with verify_workday.try_site",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://devoted.com/careers/) links this board, which the name-variant harvest could not derive. Board verified live (85 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Senior Manager, AI Performance & Operations' [Remote USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. NOTE: scored on all 85 postings; poll_ats.fetch_workday currently stops after 40 on this tenant (Workday returns `total` only on the first page; flagged 2026-09-11), so reqs past position 40 stay invisible to the daily poll until that is fixed. Supersedes the 2026-08-18 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): smartrecruiters/'devotedhealth' is live but carries only 2 nurse-practitioner postings and 0 fit-titles: a fragment board, not the company's main careers system. Left rejected.",
+      "wd_host": "devoted.wd1.myworkdayjobs.com",
+      "wd_tenant": "devoted",
+      "wd_site": "Devoted"
+    },
+    {
+      "name": "Illumia",
+      "ats": "greenhouse",
+      "slug": "illumiallc",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): board read off the careers page (https://illumiatech.com/about/careers), verified live via the greenhouse API",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://illumiatech.com/about/careers) links this board, which the name-variant harvest could not derive. Board verified live (27 jobs) with 11 fit-titles at harvest time (7 tier2, 4 tier3(location-gated)), e.g. 'Associate Implementation Consultant – Food & Nutrition Servi' [Alpharetta, Georgia, United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-08-04 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). No supported ATS: custom careers page at illumiatech.com/about/careers. Higher education, healthcare, and senior-living solutions. NOTE: distinct from Illumio (zero-trust security) and Illumina (genomics) -- do not conflate on a future search."
+    },
+    {
+      "name": "TeleTracking",
+      "ats": "greenhouse",
+      "slug": "teletrackingtechnologiesinc",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): board read off the careers page (https://www.teletracking.com/careers/), verified live via the greenhouse API",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.teletracking.com/careers/) links this board, which the name-variant harvest could not derive. Board verified live (12 jobs) with 2 fit-titles at harvest time (1 tier2c, 1 tier3(location-gated)), e.g. 'Client Success Manager' [Remote, US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-09-02 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters."
+    },
+    {
+      "name": "Neuron7.ai",
+      "ats": "lever",
+      "slug": "neuron7",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): board read off the careers page (https://www.neuron7.ai/), verified live via the lever API",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.neuron7.ai/) links this board, which the name-variant harvest could not derive. Board verified live (18 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Manager – Customer Success (AI Field Services | AI' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-08-17 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters."
+    },
+    {
+      "name": "Pendo.io",
+      "ats": "greenhouse",
+      "slug": "pendo",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): board read off the careers page (https://www.pendo.io/careers/), verified live via the greenhouse API",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.pendo.io/careers/) links this board, which the name-variant harvest could not derive. Board verified live (21 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Pre- & Post-Sales Customer Engineer, Enterprise' [San Francisco, CA / Seattle, WA / Denver]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-08-10 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess."
+    },
+    {
+      "name": "RaceTrac",
+      "ats": "workday",
+      "slug": "racetrac",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): wd_host/wd_tenant/wd_site read off the careers page (https://careers.racetrac.com/), verified live with verify_workday.try_site",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://careers.racetrac.com/) links this board, which the name-variant harvest could not derive. Board verified live (52 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier2c), e.g. 'Business Intelligence & Systems Analyst' [200 Galleria Parkway SE Suite 900 Atlant]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. NOTE: scored on all 52 postings; poll_ats.fetch_workday currently stops after 40 on this tenant (Workday returns `total` only on the first page; flagged 2026-09-11), so reqs past position 40 stay invisible to the daily poll until that is fixed. Supersedes the 2026-09-08 rejection, which was tagged unpollable=true and read: No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "wd_host": "racetrac.wd5.myworkdayjobs.com",
+      "wd_tenant": "racetrac",
+      "wd_site": "SSC"
+    },
+    {
+      "name": "REPAY",
+      "ats": "workday",
+      "slug": "repay",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): wd_host/wd_tenant/wd_site read off the careers page (https://repay.com/company/careers/), verified live with verify_workday.try_site",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://repay.com/company/careers/) links this board, which the name-variant harvest could not derive. Board verified live (15 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'Enterprise Technical Account Manager' [Atlanta Headquarters]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-09-07 rejection, which was tagged unpollable=true and read: No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "wd_host": "repay.wd115.myworkdayjobs.com",
+      "wd_tenant": "repay",
+      "wd_site": "REPAYCareers"
+    },
+    {
+      "name": "Stord",
+      "ats": "workday",
+      "slug": "stord",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): wd_host/wd_tenant/wd_site read off the careers page (https://www.stord.com/careers), verified live with verify_workday.try_site",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.stord.com/careers) links this board, which the name-variant harvest could not derive. Board verified live (98 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Head of Customer Experience' [ATL1 - Atlanta, GA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. NOTE: scored on all 98 postings; poll_ats.fetch_workday currently stops after 40 on this tenant (Workday returns `total` only on the first page; flagged 2026-09-11), so reqs past position 40 stay invisible to the daily poll until that is fixed. Supersedes the 2026-09-02 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "wd_host": "stord.wd503.myworkdayjobs.com",
+      "wd_tenant": "stord",
+      "wd_site": "Stord_External_Career"
+    },
+    {
+      "name": "Palo Alto Networks",
+      "ats": "workday",
+      "slug": "paloaltonetworks",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): wd_host/wd_tenant/wd_site read off the careers page (https://jobs.paloaltonetworks.com/en), verified live with verify_workday.try_site",
+      "needs_vertical_classification": true,
+      "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://jobs.paloaltonetworks.com/en) links this board, which the name-variant harvest could not derive. Board verified live (1520 jobs) with 12 fit-titles at harvest time (1 tier1, 6 tier2, 5 tier2c), e.g. 'Senior Product Manager (Cloud Delivered Security Services)' [Office - USA - CA - Headquarters]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. NOTE: scored on all 1520 postings; poll_ats.fetch_workday currently stops after 40 on this tenant (Workday returns `total` only on the first page; flagged 2026-09-11), so reqs past position 40 stay invisible to the daily poll until that is fixed. Supersedes the 2026-09-02 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "wd_host": "paloaltonetworks.wd5.myworkdayjobs.com",
+      "wd_tenant": "paloaltonetworks",
+      "wd_site": "panwexternalcareers"
+    },
+    {
+      "name": "ChargeAfter",
+      "ats": "comeet",
+      "slug": "chargeafter",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "harvest_ats.py Comeet careers-page resolution (credentials scraped from https://chargeafter.com/careers/)",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (9 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier3(location-gated)), e.g. 'Customer Success Manager, Home Improvement' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-08-12 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "comeet_uid": "C5.004",
+      "comeet_token": "5C41CD433E422980B88285C2E20114C1CD4",
+      "comeet_careers_url": "https://chargeafter.com/careers/"
+    },
+    {
+      "name": "Dot Compliance",
+      "ats": "comeet",
+      "slug": "dot-compliance",
+      "priority": "low",
+      "enrolled_date": "2026-09-11",
+      "enrolled_via": "harvest_ats.py Comeet careers-page resolution (credentials scraped from https://www.dotcompliance.com/careers/)",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (12 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'Technical Customer Support Team Lead' [North America East Coast Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-08-03 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). No supported ATS: runs a custom careers page at dotcompliance.com/careers/. ~180 employees, Phoenix AZ, AI-powered eQMS for life sciences. Notable adjacency: their platform is Salesforce-based (Apex/LWC), so their roles skew Salesforce-heavy. Genuinely unpollable, not a slug miss.",
+      "comeet_uid": "89.00D",
+      "comeet_token": "98D42DB98D131A263442DB2FC142DB02FC1",
+      "comeet_careers_url": "https://www.dotcompliance.com/careers/"
     }
   ]
 }
