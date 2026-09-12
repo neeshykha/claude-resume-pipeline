@@ -632,6 +632,53 @@ dead-404 from resolved-empty, and this probe collapses both into `None`. **When 
 adapter to `poll_ats.py`, check whether `harvest_ats.py` can discover it too — the two keep
 separate ATS lists and nothing syncs them.**
 
+**Two 2026-09-11 fixes share a shape worth recognizing: the adapter was already there, and one
+company's variation on the ATS defeated it.** Comeet has a third embed shape, the JS API
+(`COMEET.init({ token: '...', 'company-uid': '...' })`, found on alice.io), and it failed twice
+over: none of `COMEET_MARKERS` appeared on that page, and the quoted, hyphenated `company-uid` key
+is unreachable by the loose `\buid\s*[:=]` pattern. `harvest_ats.py` now reads that shape from
+inside the init object only, so a stray analytics `token:` cannot pair with anything, and
+`pipeline/test_comeet_credentials.py` covers all three shapes plus the marker gate the loose
+patterns depend on. Rippling boards can point at the company's own domain, which redirects
+`ats.rippling.com/{slug}/jobs` away and leaves no `__NEXT_DATA__` to scrape (Nutrient); both files
+now fall back to `_endpoints.rippling_board_api` when, and only when, the listing lands off
+ats.rippling.com, sharing `poll_ats.rippling_api_items` so a multi-location posting collapses to
+one item identically on both sides. The fallback is deliberately not the primary path: that API is
+undocumented, and an unknown slug still 404s on the listing, so the harvest slug walk never reaches
+it.
+
+**A duplicate record in `enrollment_candidates.json` is a correctness bug, not clutter (fixed
+2026-09-11).** `harvest_ats.py` superseded a stale `rejected` record only when it carried
+`timed_out`; every other rejection path appended, so re-probing a company that already had a
+rejection left two records with nothing to arbitrate between them. The stale one can carry
+`unpollable: true`, which is both the flag that stops a company being re-checked and the input to
+the weekly punch list, so a re-probe that RESOLVED the board left the company still reading as
+unpollable: Nutrient, 2026-09-11, whose Rippling board became reachable the same day the
+custom-domain fallback landed. `with_provenance()` now retires any older record for the same name
+in the bucket it is writing to, folds `PROVENANCE_FIELDS` and `CARRY_FIELDS` forward, and writes a
+`superseded_note` that names a falsified `unpollable: true` explicitly rather than summarising it
+away. `weekly_report_surfaced` carries forward only onto another unpollable record, since
+suppressing a repeat punch-list entry is the only thing it does.
+
+Three dispositions, and the differences are load-bearing:
+
+1. **Within a bucket, REPLACE.** One company, one record in `rejected`; one in `enrolled`. The
+   newer probe is the better evidence, so its fields win and the old one's fill the gaps.
+2. **An enrolment NEUTRALIZES that company's rejections in place, never deletes them.** The
+   rejection is the only account of why the company was ever turned away and the `enrolled` entry
+   has no field to hold it, so `unpollable` and `recheck_if_resurfaced` go false, the reason gets
+   a `SUPERSEDED <date>` preamble, and `superseded_by_enrollment` is stamped. This is exactly the
+   disposition Aneesh applied by hand to Affirm, Brown & Brown, and Reputation; it is automatic now.
+3. **A rejection for a company already enrolled or on the watchlist is SUPPRESSED and printed.**
+   This script never removes a watchlist entry (`--prune` owns de-enrolment and is report-only), so
+   such a record can only misdescribe the live state. Bluehost spent 2026-09-08 to 09-11 enrolled
+   at workday/web while carrying a timed-out rejection with `recheck_if_resurfaced: true`: an
+   instruction to re-probe a company already polled daily. Reachable only via `--names`, which
+   bypasses the already-known skip.
+
+`validate_config.py` warns on both duplicate shapes. That is the guard for the other writers of
+this file and for hand edits, neither of which the `harvest_ats.py` fix reaches.
+
 **Location matching in `poll_ats.py` is boundary-based as of 2026-09-11.** It was plain substring
 matching, and that was wrong in both directions: `LOCATION_EXCLUDE` killed "Remote - Indiana"
 ("india"), Milwaukee/Waukesha/Waukegan ("uk"), and "Remote - New Mexico" ("mexico"), while
@@ -655,6 +702,30 @@ still returns False, as do Minneapolis, Columbus, and Phoenix: `LOCATION_INCLUDE
 18-city list with a default-exclude behind it, so an on-site role in any unlisted US city is
 dropped. That is a coverage gap, not the substring bug, and Aneesh scoped it out on 2026-09-11.
 Adding state names and USPS codes is the fix whenever it becomes worth the wider intake.
+
+**Per-posting country fields are read and stamped as of 2026-09-11 (`pipeline/countries.py`).**
+The three location gates read one string, and until now the only way that string could say
+"not the US" was `NON_US_MARKERS`, a hand-kept list of countries, regions, and cities. Several
+ATSes return a structured country per posting (Comeet `location.country`, SmartRecruiters
+`location.country`, Ashby `address.postalAddress.addressCountry`, Lever `country`, Workable
+`country`, Paylocity `JobLocation.Country`), and ignoring it is what made Dot Compliance's Canadian
+role read "Montreal, Remote" and forced "montreal" onto the marker list by hand. `parse_location`
+and the harvest probes now append a `(non-US: Canada)` tag when the field resolves to a non-US
+country, and `us_reachable`, `tier3_location_ok`, and `location_relevant` check for that tag first
+and answer False outright, dual-region rescue included. Two rules keep it safe: a US, absent, or
+unrecognised country stamps nothing (Upwind returns `country: ""` on real Chicago and Dallas
+postings, and appending "United States" to a US string would move every on-site role into the
++20 scoring bucket), and `GE`/`GS` stamp as the bare code because "Georgia" is an Atlanta hint.
+Property checks at the bottom of `test_tier3_gate.py` re-derive both rules.
+
+**Workday boards were read 40 deep, not 200 (fixed 2026-09-11).** Workday reports the board's
+real `total` only on the offset-0 response; later pages answer `total: 0`, and `fetch_workday`
+re-read it every page, so the loop ended after page two on every board (JLL 40 of 2000, Stord 40
+of 98). It reads `total` once now and treats a short page as the last page. The cap is
+`WORKDAY_MAX_POSTINGS`, raised 200 to 1000 on the same day from a measurement across all 46 live
+boards: 200 left about 230 fresh title+location matches unread, including a tier1 at Salesforce
+#400; 1000 leaves about 18 for 641 requests a run. `pipeline/test_workday_pagination.py` simulates
+both the total-once behaviour and the cap with a fake session, no network.
 
 ## Assisted Apply (on-demand skill)
 
