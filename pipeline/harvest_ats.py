@@ -54,6 +54,14 @@ from urllib.parse import urlsplit
 import requests
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Sibling import. poll_ats is still imported lazily inside the probes that need
+# it (it is the heavier module); countries.py is a leaf with no imports of its
+# own beyond `re`, and the gates below need it at module scope.
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
+
 WATCHLIST = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 QUEUE = os.path.join(SCRIPT_DIR, "enrollment_candidates.json")
 
@@ -475,6 +483,43 @@ def smartrecruiters_endpoint():
     return _SR_ENDPOINT
 
 
+# Rippling's public board API, read from the same `_endpoints` block as
+# fetch_rippling for the reason given above for SmartRecruiters. Used only for a
+# board whose listing redirects off ats.rippling.com; see probe()'s rippling
+# branch.
+_RIPPLING_API_ENDPOINT = None
+
+
+def rippling_board_api_endpoint():
+    """`_endpoints["rippling_board_api"]` from the watchlist, read once."""
+    global _RIPPLING_API_ENDPOINT
+    if _RIPPLING_API_ENDPOINT is None:
+        with open(WATCHLIST, encoding="utf-8") as f:
+            _RIPPLING_API_ENDPOINT = json.load(f)["_endpoints"]["rippling_board_api"]
+    return _RIPPLING_API_ENDPOINT
+
+
+def _rippling_board_api(slug, budget=None):
+    """[(title, location)] from Rippling's board API, or None on any failure.
+
+    Reshaped through poll_ats.rippling_api_items, the poller's own normalizer,
+    so a multi-location posting counts once here exactly as it does in the
+    daily fetch.
+    """
+    import poll_ats as _P
+    r = _get(rippling_board_api_endpoint().format(slug=slug), budget)
+    if not r:
+        return None
+    try:
+        rows = r.json()
+    except ValueError:
+        return None
+    if not isinstance(rows, list):
+        return None
+    return [(j["name"], ", ".join(l["name"] for l in j["locations"]))
+            for j in _P.rippling_api_items(rows)]
+
+
 def probe(ats: str, slug: str, budget=None):
     """Return [(title, location)] if the board resolves, else None."""
     if ats == "greenhouse":
@@ -484,23 +529,36 @@ def probe(ats: str, slug: str, budget=None):
         return [(j.get("title", ""), (j.get("location") or {}).get("name", ""))
                 for j in r.json().get("jobs", [])]
     if ats == "ashby":
+        # The country stamp mirrors parse_location's ashby branch in poll_ats.py.
+        # workplaceType is deliberately NOT mirrored here: it only ever ADDS
+        # "Remote"/"Hybrid" to the string, which matters for scoring an enrolled
+        # role and not for judging whether a board carries US-reachable fit-space.
         r = _get(f"https://api.ashbyhq.com/posting-api/job-board/{slug}", budget)
         if not r:
             return None
-        return [(j.get("title", ""), j.get("location", ""))
-                for j in r.json().get("jobs", [])]
+        out = []
+        for j in r.json().get("jobs", []):
+            addr = ((j.get("address") or {}).get("postalAddress") or {})
+            out.append((j.get("title", ""),
+                        countries.stamp(j.get("location", ""),
+                                        addr.get("addressCountry"))))
+        return out
     if ats == "lever":
         r = _get(f"https://api.lever.co/v0/postings/{slug}?mode=json", budget)
         if not r:
             return None
-        return [(j.get("text", ""), (j.get("categories") or {}).get("location", ""))
+        return [(j.get("text", ""),
+                 countries.stamp((j.get("categories") or {}).get("location", ""),
+                                 j.get("country")))
                 for j in r.json()]
     if ats == "workable":
         r = _get(f"https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true",
                  budget)
         if not r:
             return None
-        return [(j.get("title", ""), j.get("location", "") or j.get("city", ""))
+        return [(j.get("title", ""),
+                 countries.stamp(j.get("location", "") or j.get("city", ""),
+                                 j.get("country")))
                 for j in r.json().get("jobs", [])]
     if ats == "pinpoint":
         r = _get(f"https://{slug}.pinpointhq.com/postings.json", budget)
@@ -537,8 +595,19 @@ def probe(ats: str, slug: str, budget=None):
         # First page only (20 postings) -- enough to judge fit-space; the real
         # daily poll (fetch_rippling in poll_ats.py) paginates fully once a
         # company is actually enrolled.
-        r = _get(f"https://ats.rippling.com/{slug}/jobs", budget)
-        if not r:
+        #
+        # _raw_get, not _get: a custom-domain board's listing redirects to the
+        # company's own careers page (Nutrient, 2026-09-11), and that page's
+        # status says nothing about the board. Landing off ats.rippling.com
+        # means the board exists and is served elsewhere, so read the board API
+        # the same way fetch_rippling does. An unknown slug still 404s ON
+        # ats.rippling.com, so the slug walk never reaches the fallback.
+        r = _raw_get(f"https://ats.rippling.com/{slug}/jobs", budget)
+        if r is None:
+            return None
+        if (urlsplit(r.url).hostname or "") != "ats.rippling.com":
+            return _rippling_board_api(slug, budget)
+        if r.status_code != 200:
             return None
         m = re.search(
             r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
@@ -635,10 +704,10 @@ def probe(ats: str, slug: str, budget=None):
             # us_reachable / tier3_location_ok read.
             loc = j.get("location") or {}
             full = loc.get("fullLocation") or ", ".join(
-                p for p in [loc.get("city"), (loc.get("country") or "").upper()] if p)
+                p for p in [loc.get("city"), countries.display(loc.get("country"))] if p)
             if loc.get("remote"):
                 full = f"Remote {full}".strip()
-            out.append((j.get("name", ""), full))
+            out.append((j.get("name", ""), countries.stamp(full, loc.get("country"))))
         return out
     return None
 
@@ -764,9 +833,10 @@ COMEET_ENDPOINT = ("https://www.comeet.co/careers-api/2.0/company/{uid}/position
 # for. Dropping it takes the Upwind payload from ~287KB to a fraction of that.
 
 # Markup the Comeet widget leaves on a careers page. The class names come from
-# the widget's own DOM and the last two from the two embed shapes below.
+# the widget's own DOM; the rest come from the three embed shapes below.
 COMEET_MARKERS = ("comeet-outer-wrapper", "comeet-groups-list", "comeet-position-info",
-                  "comeetvar", "careers-api/2.0/company")
+                  "comeetvar", "careers-api/2.0/company",
+                  "COMEET.init", "careers-api/api.js")
 
 # Paths worth trying on a domain that has proven live. Ordered by how common
 # they are; /careers alone covers both companies confirmed on Comeet so far.
@@ -802,6 +872,21 @@ _COMEET_API_URL = re.compile(
     r'careers-api/2\.0/company/([A-Za-z0-9][A-Za-z0-9.\-]{1,30})'
     r'/[A-Za-z_]+\?[^"\'\s>]{0,200}?token=([A-Za-z0-9]{8,64})')
 
+# Embed shape 3, the Comeet JS API: a hand-written `COMEET.init({ token: '...',
+# 'company-uid': '...', ... })` call, with the loader pulled from
+# comeet.co/careers-api/api.js. Found 2026-09-11 on alice.io (Alice, formerly
+# ActiveFence), where it resolved to nothing for two reasons at once: none of
+# the markers above appear on that page, and the uid key is the quoted,
+# hyphenated 'company-uid', which the loose `\buid\s*[:=]` pattern cannot
+# reach past its closing quote. The two keys are read only from inside the
+# init object, so a `token:` in some unrelated analytics script can't pair
+# with it. The `}\s*\)` terminator is what ends the object: an inner object
+# closes on `},` rather than `})`.
+_COMEET_INIT_BLOCK = re.compile(r'COMEET\.init\(\s*\{([\s\S]{0,2000}?)\}\s*\)')
+_COMEET_INIT_UID = re.compile(r'["\']?company-uid["\']?\s*:\s*["\']([^"\']{2,32})["\']')
+_COMEET_INIT_TOKEN = re.compile(
+    r'(?<![\w-])["\']?token["\']?\s*:\s*["\']([A-Za-z0-9]{8,64})["\']')
+
 # Loose fallback for a hand-rolled embed that assigns the two values separately.
 # Kept tight on SHAPE rather than on key name -- a Comeet uid is two chars, a
 # dot, three chars ("49.004", "F6.007"), and the token is a long hex string --
@@ -821,11 +906,16 @@ def looks_like_comeet(html: str) -> bool:
 
 
 def _credentials_from_text(text: str):
-    """(uid, token) from one document, or None. Tries both embed shapes."""
+    """(uid, token) from one document, or None. Tries all three embed shapes."""
     uid = _COMEET_WP_UID.search(text)
     token = _COMEET_WP_TOKEN.search(text)
     if uid and token:
         return uid.group(1), token.group(1)
+    for block in _COMEET_INIT_BLOCK.finditer(text):
+        uid = _COMEET_INIT_UID.search(block.group(1))
+        token = _COMEET_INIT_TOKEN.search(block.group(1))
+        if uid and token:
+            return uid.group(1), token.group(1)
     pair = _COMEET_API_URL.search(text)
     if pair:
         return pair.group(1), pair.group(2)
@@ -1005,14 +1095,18 @@ def probe_comeet(name: str, budget=None):
                     continue
                 loc = p.get("location") or {}
                 # Mirrors parse_location's comeet branch in poll_ats.py: city +
-                # state, falling back to the location name. is_remote is
-                # deliberately NOT consulted -- it was true on 19/19 Stampli
-                # postings, 17 of which describe in-office days, and reading it
-                # here would hand tier3's location gate a constant.
+                # state, falling back to the location name, then the country
+                # stamp. is_remote is deliberately NOT consulted -- it was true
+                # on 19/19 Stampli postings, 17 of which describe in-office days,
+                # and reading it here would hand tier3's location gate a
+                # constant. `country` is the opposite case: a real ISO code per
+                # posting, and without it Dot Compliance's Canadian role read
+                # "Montreal, Remote" and counted as fit-space.
                 parts = [q.strip() for q in (loc.get("city"), loc.get("state"))
                          if q and q.strip()]
+                label = ", ".join(parts) if parts else (loc.get("name") or "")
                 jobs.append((p.get("name", ""),
-                             ", ".join(parts) if parts else (loc.get("name") or "")))
+                             countries.stamp(label, loc.get("country"))))
             if not jobs:
                 continue
             return jobs, {"comeet_uid": uid, "comeet_token": token,
@@ -1034,6 +1128,8 @@ def comeet_slug(name: str) -> str:
 def _names_non_us(loc: str) -> bool:
     """True if a lowercased location string carries a non-US country, region,
     or city marker. Shared by us_reachable() and tier3_location_ok()."""
+    if countries.is_non_us(loc):
+        return True
     for place in US_LOOKALIKES:
         loc = loc.replace(place, " ")
     if any(m in loc for m in NON_US_MARKERS):
@@ -1051,8 +1147,16 @@ def us_reachable(loc: str) -> bool:
     (found 2026-09-11). A non-US marker disqualifies the string unless it also
     names the US outright ("Remote - US or Canada", "New York; London"), the
     same dual-region rescue poll_ats.location_relevant() applies.
+
+    A STAMPED country skips that rescue and answers False outright. The marker
+    scan reads free text, where a second region genuinely can be co-listed; the
+    stamp comes from a per-posting country field, and an ATS that returns one
+    returns exactly one (Comeet duplicates a posting per location). See
+    countries.py.
     """
     loc = (loc or "").lower()
+    if countries.is_non_us(loc):
+        return False
     names_us = bool(US_TOKEN.search(loc)) or any(h in loc for h in US_PLACE_HINTS)
     if _names_non_us(loc):
         return names_us
@@ -1421,32 +1525,152 @@ def main():
     # (added 2026-09-10; the timeout path used to drop them).
     CARRY_FIELDS = ("manual_review", "manual_review_why", "manual_review_surfaced",
                     "card_title", "card_job_id", "card_url")
+    # Flags recording what the PIPELINE already did with a company, not what is
+    # true about its board. These survive a supersede only while they still mean
+    # something: weekly_report_surfaced exists to stop the punch list printing
+    # the same company twice, which only matters if the NEW record is unpollable
+    # as well. Carrying it onto a resolved record would just be noise.
+    UNPOLLABLE_STICKY = ("weekly_report_surfaced", "weekly_report_surfaced_date")
 
-    def with_provenance(entry, name):
-        """Copy provenance fields from the matching `pending` entry, if any.
+    def _head(rec, n=140):
+        """One-line gist of a record, for quoting inside a supersede note."""
+        text = " ".join(str(rec.get("reason") or rec.get("enrolled_via")
+                            or rec.get("via") or "").split())
+        if not text:
+            text = f"{rec.get('ats')}/{rec.get('slug')}"
+        return (text[:n].rstrip() + "...") if len(text) > n else text
 
-        No-ops for a name passed via --names that was never queued: it has no
-        discovery channel to attribute to, and the weekly report counts that
-        as unattributed rather than inventing a source.
+    def _supersede_note(removed, entry):
+        """Why the record that replaced these exists, in the reader's terms.
+
+        An `unpollable: true` record gets called out by name rather than
+        summarised away. That flag is not one verdict among several: it is what
+        stops a company being re-checked at all, and it is what the weekly
+        punch list reads, so a later probe that resolves the board has
+        FALSIFIED it rather than merely aged it out. Nutrient (2026-09-11) is
+        the case that made this explicit -- a Rippling custom-domain fix made
+        the board resolvable, the run wrote a correct fit-space rejection, and
+        the 2026-09-08 unpollable record survived beside it, so the company
+        still read as unpollable from the older of its two records.
         """
-        origin = pending_by_name.get(name.lower(), {})
+        parts = []
+        for old in removed:
+            when = (old.get("rejected_date") or old.get("enrolled_date")
+                    or old.get("first_seen") or "undated")
+            if old.get("unpollable"):
+                resolved = (f"resolved {entry.get('ats')}/{entry.get('slug')}"
+                            if entry.get("ats") else "reached a different verdict")
+                parts.append(
+                    f"Supersedes the {when} rejection, which carried "
+                    f"unpollable=true: the flag that stops a company being "
+                    f"re-checked and that feeds the weekly unpollable punch "
+                    f"list. This probe {resolved}, so that claim is FALSIFIED, "
+                    f"not merely stale. It read: {_head(old)}")
+            else:
+                parts.append(f"Supersedes the {when} record: {_head(old)}")
+        return " ".join(parts)
+
+    def with_provenance(entry, name, bucket="rejected"):
+        """Copy provenance onto `entry` and retire older records for the same name.
+
+        Provenance first: `source` and `first_seen` come from the matching
+        `pending` entry, if any. No-ops for a name passed via --names that was
+        never queued -- it has no discovery channel to attribute to, and the
+        weekly report counts that as unattributed rather than inventing a source.
+
+        Then the supersede. ONE company keeps ONE record per outcome bucket. A
+        name that has already left `pending` has no pending entry for a later
+        run to copy from, so every re-probe used to APPEND beside the old record
+        instead of replacing it, and the two then disagreed with nothing to
+        arbitrate them. That was fixed for `timed_out` records on 2026-09-10 and
+        generalised on 2026-09-11, because the narrow version left the worst
+        case open: an `unpollable: true` record is exactly what a re-probe is
+        run to overturn, and it survived the overturning (Nutrient). Fields the
+        new record lacks are folded forward from the old one; fields it already
+        carries win, since the newer probe is the better evidence.
+        """
+        key = name.lower()
+        origin = pending_by_name.get(key, {})
         for field in PROVENANCE_FIELDS:
             if origin.get(field):
                 entry[field] = origin[field]
-        # SUPERSEDE EARLIER TIMEOUTS (added 2026-09-10). A timed-out name is drained
-        # from pending into `rejected`, so a later `--names` re-run has no pending
-        # entry to copy from and used to APPEND a second rejected record with no
-        # source, no first_seen, and no review flags (P-1 AI, Gainwell, and Rising
-        # Medical each ended 2026-09-10 with two). Fold the stale timeout record's
-        # fields into the new entry and drop it, so each company keeps one record.
-        stale = [r for r in q.get("rejected", [])
-                 if r.get("timed_out") and str(r.get("name", "")).lower() == name.lower()]
+
+        stale = [r for r in q.setdefault(bucket, [])
+                 if str(r.get("name", "")).lower() == key]
         for old in stale:
             for field in PROVENANCE_FIELDS + CARRY_FIELDS:
                 if old.get(field) and not entry.get(field):
                     entry[field] = old[field]
-            q["rejected"].remove(old)
+            if entry.get("unpollable"):
+                for field in UNPOLLABLE_STICKY:
+                    if old.get(field) and not entry.get(field):
+                        entry[field] = old[field]
+            q[bucket].remove(old)
+        if stale:
+            entry["superseded_note"] = _supersede_note(stale, entry)
+            print(f"       superseded {len(stale)} older {bucket} record(s) for "
+                  f"{name}"
+                  + (" [one claimed unpollable=true]"
+                     if any(r.get("unpollable") for r in stale) else ""),
+                  flush=True)
         return entry
+
+    def neutralize_rejections(name, today, res):
+        """Retire a company's rejections when THIS run enrols it.
+
+        Cross-bucket is the one place a supersede must not delete. The
+        rejection holds the only account of why the company was ever turned
+        away and the `enrolled` entry has no field to hold it, so the record
+        stays and stops reading as live instead: `unpollable` and
+        `recheck_if_resurfaced` go false, `superseded_by_enrollment` is
+        stamped, and the reason says what overtook it. This is the disposition
+        Aneesh applied by hand to Affirm, Brown & Brown, and Reputation; it is
+        automatic now.
+        """
+        touched = 0
+        for r in q.get("rejected", []):
+            if str(r.get("name", "")).lower() != name.lower():
+                continue
+            if r.get("superseded_by_enrollment"):
+                continue
+            was_unpollable = bool(r.get("unpollable"))
+            r["reason"] = (
+                f"SUPERSEDED {today}: re-probed and ENROLLED on the watchlist "
+                f"({res['ats']}/{res['slug']}, {res['total']} jobs, "
+                f"{len(res['strong'])} fit-titles)."
+                + (" This record claimed unpollable=true; a live board falsifies "
+                   "that claim." if was_unpollable else "")
+                + f" Kept as the record of the original rejection, not as a live "
+                  f"verdict. Original reason: {_head(r, 400)}")
+            r["recheck_if_resurfaced"] = False
+            r["unpollable"] = False
+            r["superseded_by_enrollment"] = today
+            touched += 1
+        if touched:
+            print(f"       neutralized {touched} earlier rejection(s) for {name}",
+                  flush=True)
+
+    # A rejection for a company the pipeline is ALREADY POLLING is a
+    # contradiction, not a finding, and this script has no way to resolve it: it
+    # never removes a watchlist entry (--prune is report-only and owns
+    # de-enrolment). Writing one anyway is how Bluehost ended 2026-09-08
+    # enrolled at workday/web AND carrying a timed-out rejection with
+    # recheck_if_resurfaced=true, which is an instruction to re-probe a company
+    # that is already being polled daily. So the rejection is suppressed and
+    # printed instead; the operator gets the finding, the file stays coherent.
+    # Reachable only via --names, which bypasses the already-known skip.
+    polled_names = ({str(c.get("name", "")).lower() for c in wl["companies"]}
+                    | {str(e.get("name", "")).lower() for e in q.get("enrolled", [])})
+    contradictions = []
+
+    def reject(entry, name):
+        if name.lower() in polled_names:
+            contradictions.append((name, _head(entry, 110)))
+            print(f"  [!!] {name:24s} is already enrolled/on the watchlist; "
+                  f"rejection NOT written. Use --prune to audit a dead board.",
+                  flush=True)
+            return
+        q.setdefault("rejected", []).append(with_provenance(entry, name, "rejected"))
 
     targets = list(args.names)
     if args.from_pending:
@@ -1601,7 +1825,7 @@ def main():
     # and the weekly punch list exists to surface companies a human could reach by
     # hand. A reposter is not one of those.
     for name, matched in aggregator_blocked:
-        q.setdefault("rejected", []).append(with_provenance(
+        reject(
             {"name": name, "ats": None, "slug": None,
              "rejected_date": today,
              "reason": (
@@ -1617,7 +1841,7 @@ def main():
                  f"explicitly with --names, which bypasses this gate."),
              "recheck_if_resurfaced": False,
              "unpollable": False,
-             "aggregator_blocked": True}, name))
+             "aggregator_blocked": True}, name)
     for name, res in enrollable:
         entry = {
             "name": name, "ats": res["ats"], "slug": res["slug"],
@@ -1667,9 +1891,11 @@ def main():
         wl["companies"].append(entry)
         q.setdefault("enrolled", []).append(with_provenance(
             {"name": name, "ats": res["ats"], "slug": res["slug"],
-             "enrolled_date": today, "via": "harvest_ats.py"}, name))
+             "enrolled_date": today, "via": "harvest_ats.py"}, name, "enrolled"))
+        polled_names.add(name.lower())
+        neutralize_rejections(name, today, res)
     for name, res in no_fit:
-        q.setdefault("rejected", []).append(with_provenance(
+        reject(
             {"name": name, "ats": res["ats"], "slug": res["slug"],
              "rejected_date": today,
              "reason": (f"Board resolves and is live ({res['total']} jobs) but ZERO "
@@ -1679,7 +1905,7 @@ def main():
                         f"company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US "
                         f"does NOT qualify, so this company may still have a Boston or SF "
                         f"CSM open; that is intended."),
-             "recheck_if_resurfaced": True}, name))
+             "recheck_if_resurfaced": True}, name)
     # PROBABLE NAME COLLISIONS (added 2026-09-10). A board resolved and had jobs,
     # but none of them is the role the LinkedIn card named. The likeliest reading
     # is that a name variant reached a DIFFERENT company's board (Bark vs.
@@ -1715,11 +1941,11 @@ def main():
             if field in pending_entry:
                 entry[field] = pending_entry[field]
         entry.setdefault("card_title", card_title)
-        q.setdefault("rejected", []).append(with_provenance(entry, name))
+        reject(entry, name)
     for name, res in empty_board:
         # NOT unpollable: the board was found. A manual site: search cannot help
         # here, so this must never reach the weekly unpollable punch list.
-        q.setdefault("rejected", []).append(with_provenance(
+        reject(
             {"name": name, "ats": res["ats"], "slug": res["slug"],
              "rejected_date": today,
              "reason": (f"Board RESOLVED at {res['ats']}/{res['slug']} but returned ZERO "
@@ -1731,7 +1957,7 @@ def main():
                         f"(Slugs that resolved empty: "
                         f"{', '.join(a + '/' + s for a, s in res.get('empty_hits', []))}.)"),
              "recheck_if_resurfaced": True,
-             "unpollable": False}, name))
+             "unpollable": False}, name)
     for name, _ in no_board:
         # The old wording here read "across Greenhouse/Ashby/Lever/Workable" long
         # after the probe list had grown past those four, and named a
@@ -1761,7 +1987,7 @@ def main():
         for field in CARRY_FIELDS:
             if field in pending_entry:
                 entry[field] = pending_entry[field]
-        q.setdefault("rejected", []).append(with_provenance(entry, name))
+        reject(entry, name)
 
     # A timeout is NOT a finding about the company, so it gets its own reason and
     # is explicitly not marked unpollable: nothing was learned about whether a
@@ -1772,7 +1998,7 @@ def main():
     # re-run is the cheap next step, not a manual search.
     for name, res in timed_out:
         found = ", ".join(a + "/" + s for a, s in res.get("empty_hits", []))
-        q.setdefault("rejected", []).append(with_provenance(
+        reject(
             {"name": name, "ats": None, "slug": None, "rejected_date": today,
              "reason": (f"UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the "
                         f"{res['budget']:g}s per-company wall-clock cap after "
@@ -1792,7 +2018,7 @@ def main():
              # drop them, so a timed-out LinkedIn lead lost its Manual-channel role
              # and a later --names re-run could no longer surface it.
              **{f: pending_by_name[name.lower()][f] for f in CARRY_FIELDS
-                if f in pending_by_name.get(name.lower(), {})}}, name))
+                if f in pending_by_name.get(name.lower(), {})}}, name)
 
     handled = ({n.lower() for n, _ in enrollable} | {n.lower() for n, _ in no_fit}
                | {n.lower() for n, _ in empty_board} | {n.lower() for n, _ in no_board}
@@ -1810,8 +2036,14 @@ def main():
             json.dump(data, f, indent=2, ensure_ascii=(path == QUEUE))
             f.write("\n")
         os.replace(tmp, path)
+    if contradictions:
+        print("\nREJECTIONS SUPPRESSED (company already enrolled / on the watchlist; "
+              "nothing was written for these):", flush=True)
+        for name, why in contradictions:
+            print(f"  {name:24s} {why}", flush=True)
     print(f"\nenrolled {len(enrollable)}, "
-          f"rejected {len(no_fit) + len(empty_board) + len(no_board) + len(collision)}, "
+          f"rejected {len(no_fit) + len(empty_board) + len(no_board) + len(collision)}"
+          f"{f' (-{len(contradictions)} suppressed)' if contradictions else ''}, "
           f"unresolved-on-timeout {len(timed_out)}; "
           f"watchlist now {len(wl['companies'])}", flush=True)
     return 0
