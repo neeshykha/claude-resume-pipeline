@@ -251,6 +251,46 @@ def validate_enrollment(data) -> tuple[list, list]:
                 warnings.append(f"enrollment: pending '{label}' has no ats/slug and no needs_ats_resolution flag — enrollment step can't act on it")
             if bucket == "rejected" and not e.get("reason"):
                 warnings.append(f"enrollment: rejected '{label}' has no reason — it may get re-evaluated")
+
+    # ONE COMPANY, ONE RECORD PER BUCKET (added 2026-09-11).
+    #
+    # Duplicates here are not cosmetic. Nothing arbitrates between two records
+    # for the same name, so whichever a reader reaches first wins, and the stale
+    # one can carry `unpollable: true` — the flag that stops a company being
+    # re-checked and that feeds the weekly punch list. Nutrient hit this live on
+    # 2026-09-11: a Rippling custom-domain fix made its board resolvable, the run
+    # wrote a correct fit-space rejection, and the 2026-09-08 unpollable record
+    # survived beside it, so the company still read as unpollable.
+    #
+    # harvest_ats.py supersedes on write now, so a duplicate reaching this check
+    # came from a hand edit or from one of the other seven writers of this file.
+    by_name = {}
+    for bucket in QUEUE_BUCKETS:
+        for e in data.get(bucket, []):
+            if isinstance(e, dict) and e.get("name"):
+                by_name.setdefault(str(e["name"]).strip().lower(), []).append((bucket, e))
+    for key, recs in sorted(by_name.items()):
+        if len(recs) < 2:
+            continue
+        name = recs[0][1]["name"]
+        for bucket in QUEUE_BUCKETS:
+            same = [e for b, e in recs if b == bucket]
+            if len(same) > 1:
+                flag = " (one claims unpollable=true)" if any(e.get("unpollable") for e in same) else ""
+                warnings.append(
+                    f"enrollment: '{name}' holds {len(same)} records in '{bucket}'{flag} "
+                    f"— nothing arbitrates between them; keep the newest and fold "
+                    f"source/first_seen forward")
+        # A rejection beside an enrollment is fine ONLY as a retired audit trail.
+        # Live flags on it tell future runs to re-probe a company already polled.
+        if any(b == "enrolled" for b, _ in recs):
+            for b, e in recs:
+                if b == "rejected" and not e.get("superseded_by_enrollment"):
+                    warnings.append(
+                        f"enrollment: '{name}' is enrolled but still carries a live "
+                        f"rejection ({e.get('rejected_date', 'undated')}) — stamp "
+                        f"superseded_by_enrollment and set unpollable/"
+                        f"recheck_if_resurfaced false")
     return errors, warnings
 
 

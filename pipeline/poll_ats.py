@@ -34,6 +34,13 @@ WATCHLIST_PATH = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 SEEN_JOBS_PATH = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
 JOBS_DIR = os.path.join(SCRIPT_DIR, "jobs")
 
+# Sibling import, the way harvest_linkedin.py reaches harvest_ats: this module is
+# run as a script and imported flat ("import poll_ats") by harvest_ats.py and the
+# unit tests, never as pipeline.poll_ats, so SCRIPT_DIR is what resolves it.
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
+
 # ── Config plumbing ──────────────────────────────────────────────────────────
 # Single source of truth is watchlist_companies.json. Endpoints, the salary
 # floor, the company cap, the small-company bonus, and EVERY title list are
@@ -44,6 +51,15 @@ JOBS_DIR = os.path.join(SCRIPT_DIR, "jobs")
 
 REQUEST_TIMEOUT = 30  # seconds
 SMARTRECRUITERS_MAX_POSTINGS = 500  # pagination cap for fetch_smartrecruiters; see its docstring
+# Pagination cap for fetch_workday. Raised 200 -> 1000 on 2026-09-11, measured
+# across all 46 live Workday boards: 200 costs 296 requests/run and leaves ~230
+# fresh (<=MAX_POSTING_AGE_DAYS) title+location matches unread, 1000 costs 641
+# and leaves ~18, and reading every board to its end costs 757 for zero. The
+# misses are not filler -- a tier1 "Manager, Technical Support Engineering" sat
+# at Salesforce #400 and a tier1 "Technical Product Operations Manager" at GM
+# #336. Depth does not buy more shortlist slots (MAX_PER_COMPANY_PER_RUN is 2);
+# it buys better candidates for the two each board already gets.
+WORKDAY_MAX_POSTINGS = 1000
 DEDUP_WINDOW_DAYS = 30
 MAX_PER_COMPANY_PER_RUN = 2  # diversity cap: max roles per company in the surfaced shortlist (prevents one company sweeping the run)
 # Raised 25 -> 40 on 2026-07-27. A funnel audit showed 128 title-matched jobs
@@ -433,7 +449,11 @@ class TitleMatcher:
 
 # Location filter — only keep US-relevant roles
 LOCATION_INCLUDE = [
-    "remote", "united states", "us", "usa", "u.s.",
+    # "remotely" is listed because matching is boundary-based as of 2026-09-11
+    # and a suffixed form is no longer reached by the "remote" term. Prefixed
+    # and punctuated forms ("Remote-first", "Fully Remote", "Remote/Hybrid")
+    # need no entry; only a trailing suffix breaks the boundary.
+    "remote", "remotely", "united states", "us", "usa", "u.s.",
     "atlanta", "georgia", "new york", "nyc", "new jersey",
     "boston", "chicago", "san francisco", "los angeles",
     "austin", "denver", "seattle", "portland", "dallas",
@@ -459,6 +479,21 @@ LOCATION_EXCLUDE = [
     "mandarin", "cantonese",  # language-specific roles
 ]
 
+# US places whose names contain an excluded marker even at a word boundary:
+# "New Mexico" contains a whole-word "mexico". Blanked out of the string before
+# the exclusion scan runs, and ONLY there -- the include scan below still needs
+# to see the real location. Mirrors harvest_ats.US_LOOKALIKES, which carries the
+# same two entries for the same reason; "indiana" is already safe under boundary
+# matching and is kept for parity, so a future loosening of the matcher does not
+# silently restore the "india"-inside-"Indianapolis" bug a third time.
+#
+# Deliberately NOT extended to city names that are genuinely ambiguous: Dublin,
+# Paris, Berlin, and Toronto all name a real US town AND the non-US city the
+# exclude list is aimed at, so blanking them would open the filter to the
+# original. Those need state context to disambiguate, which this filter has no
+# way to read.
+LOCATION_LOOKALIKES = ("new mexico", "indiana")
+
 # Narrower than LOCATION_INCLUDE on purpose: used only to rescue dual-region
 # postings (e.g. "LATAM & USA", "EMEA / US") from the exclusion check below.
 # Excludes the generic "remote"/"us"/"north america"/"americas"/"anywhere"
@@ -471,6 +506,44 @@ US_SPECIFIC_INCLUDE = [
     "austin", "denver", "seattle", "portland", "dallas",
     "miami", "charlotte", "raleigh", "nashville",
 ]
+
+
+def _boundary_pattern(terms) -> re.Pattern:
+    """Compile an alternation that matches each term only at non-alphanumeric
+    boundaries.
+
+    Plain substring matching was wrong in both directions and had been since
+    these lists existed (found 2026-09-11): "india" fired inside "Indiana" and
+    "Indianapolis", "uk" inside "Milwaukee"/"Waukesha"/"Waukegan", and on the
+    include side "us" inside "Belarus"/"Cyprus"/"Mauritius" made non-US
+    locations read as US-relevant.
+
+    The boundary is `(?<![a-z0-9])` / `(?![a-z0-9])` rather than `\\b` because a
+    period has to count as a separator on BOTH sides: `\\bu\\.s\\.\\b` cannot
+    match "Remote U.S.", since the trailing `\\b` wants a word character after
+    the final period and there isn't one. harvest_linkedin.py's `has_us` regex
+    has that exact bug.
+    """
+    alt = "|".join(re.escape(t) for t in sorted(terms, key=len, reverse=True))
+    return re.compile(rf"(?<![a-z0-9])(?:{alt})(?![a-z0-9])")
+
+
+_LOCATION_INCLUDE_RE = _boundary_pattern(LOCATION_INCLUDE)
+_LOCATION_EXCLUDE_RE = _boundary_pattern(LOCATION_EXCLUDE)
+_US_SPECIFIC_INCLUDE_RE = _boundary_pattern(US_SPECIFIC_INCLUDE)
+
+
+def _loc_hit(pattern: re.Pattern, text: str) -> bool:
+    """Boundary-match against the raw string and its period-stripped form.
+
+    The second pass exists only for dotted acronyms the term list does not spell
+    out: "U.S.A." blocks the "u.s." term on its trailing "a", and stripping the
+    periods turns it into the "usa" the list already carries. Checking the raw
+    string first keeps a period working as a separator, so "Remote.India" is
+    still caught.
+    """
+    return bool(pattern.search(text) or pattern.search(text.replace(".", "")))
+
 
 # Titles to always exclude (too senior, wrong function).
 # NOTE: an exact TIER-1 title match overrides this list (see poll_all) — tier1
@@ -607,23 +680,37 @@ def location_relevant(location: str, title: str) -> bool:
     t = title.lower()
     combined = loc + " " + t
 
+    # A stamped country outranks every text heuristic below, the dual-region
+    # rescue included: parse_location writes that tag only from a structured
+    # per-posting country field, so "Montreal, Remote (non-US: Canada)" is not a
+    # posting open to two regions, it is one Canadian posting. Checked first so
+    # that a country NAME inside the tag can never be read as a location term.
+    if countries.is_non_us(location):
+        return False
+
+    # Blank out US places whose names contain an excluded marker, for the
+    # exclusion scan only -- the include scan below still reads the real string.
+    scrubbed = combined
+    for place in LOCATION_LOOKALIKES:
+        scrubbed = scrubbed.replace(place, " ")
+
     # Explicit exclusion wins (e.g., "Customer Success Manager, EMEA") --
     # UNLESS the same string also unambiguously names a US option (e.g.
     # "LATAM & USA", "EMEA / US Remote"). A co-listed excluded region
     # shouldn't silently kill a role the company explicitly opened to US
     # candidates too.
-    if any(excl in combined for excl in LOCATION_EXCLUDE):
-        if any(us_term in combined for us_term in US_SPECIFIC_INCLUDE):
+    if _loc_hit(_LOCATION_EXCLUDE_RE, scrubbed):
+        if _loc_hit(_US_SPECIFIC_INCLUDE_RE, combined):
             return True
-        # Word-boundary check for bare "US" (e.g. "EMEA / US Remote") -- not
-        # a plain substring test, since that would false-positive inside
-        # "aUStralia", "belarUS", etc.
+        # Bare "US" (e.g. "EMEA / US Remote"). Kept separate from
+        # US_SPECIFIC_INCLUDE, which deliberately omits it; the boundary check
+        # is the same one _boundary_pattern applies to every other term.
         if re.search(r'\bus\b', combined):
             return True
         return False
 
     # If location contains any included term, it's relevant
-    if any(incl in loc for incl in LOCATION_INCLUDE):
+    if _loc_hit(_LOCATION_INCLUDE_RE, loc):
         return True
 
     # If location is vague/empty but title doesn't have region markers, keep it
@@ -741,7 +828,8 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             # None of these list responses exposes a posting-creation date
             # (Pinpoint: only deadline_at, the application cutoff, not when it
             # opened; Rippling: the SSR job-list payload carries
-            # id/name/url/department/locations only; JazzHR: the board page
+            # id/name/url/department/locations only, and the board API used
+            # for custom-domain boards has no date either; JazzHR: the board page
             # renders title, location and department and nothing else). Always
             # neutral, same "no data -> don't filter" treatment as a missing
             # salary. For JazzHR this means MAX_POSTING_AGE_DAYS never filters
@@ -888,12 +976,16 @@ def parse_location(job_data: dict, ats: str) -> str:
         # US and reached full tailoring (Baseten, 7AI, Benchling).
         loc = job_data.get("location", "")
         full = ", ".join(loc) if isinstance(loc, list) else (str(loc) if loc else "")
-        return _apply_workplace_type(full, job_data.get("workplaceType"))
+        full = _apply_workplace_type(full, job_data.get("workplaceType"))
+        # addressCountry is a NAME here ("United States"), not a code.
+        addr = ((job_data.get("address") or {}).get("postalAddress") or {})
+        return countries.stamp(full, addr.get("addressCountry"))
     elif ats == "lever":
         cats = job_data.get("categories", {})
         full = cats.get("location", "") if isinstance(cats, dict) else ""
         # Lever's workplaceType is lowercase ("remote"/"hybrid"/"on-site").
-        return _apply_workplace_type(full, job_data.get("workplaceType"))
+        full = _apply_workplace_type(full, job_data.get("workplaceType"))
+        return countries.stamp(full, job_data.get("country"))
     elif ats == "workday":
         return job_data.get("_workday_location") or "Unknown"
     elif ats == "workable":
@@ -901,13 +993,23 @@ def parse_location(job_data: dict, ats: str) -> str:
         full = ", ".join(p for p in parts if p)
         if job_data.get("telecommuting"):
             full = f"Remote {full}".strip()
+        # Workable already spells the country out, so the stamp usually collapses
+        # to a bare "(non-US)" -- what it adds is that the gate stops depending on
+        # NON_US_MARKERS carrying that particular country ("Iceland" is not in it).
+        full = countries.stamp(full, job_data.get("country"))
         return full or "Unknown"
     elif ats == "smartrecruiters":
         loc = job_data.get("location", {}) or {}
+        # The city-only fallback used to append `country.upper()` as a bare ISO
+        # code, which is the ambiguity this module exists to avoid: "Toronto, CA"
+        # reads as California. It spells the country out now instead, keeping the
+        # old behaviour of naming the country in that path -- the fallback only
+        # runs when fullLocation is absent, and fullLocation carries it already.
         full = loc.get("fullLocation") or ", ".join(
-            p for p in [loc.get("city"), (loc.get("country") or "").upper()] if p)
+            p for p in [loc.get("city"), countries.display(loc.get("country"))] if p)
         if loc.get("remote"):
             full = f"Remote {full}".strip()
+        full = countries.stamp(full, loc.get("country"))
         return full or "Unknown"
     elif ats == "pinpoint":
         # Pinpoint's location object is inconsistent: sometimes city+province
@@ -926,7 +1028,14 @@ def parse_location(job_data: dict, ats: str) -> str:
         # LocationName in both directions on a real board (33 city-named jobs
         # flagged remote because they are home-based field-sales territories,
         # 13 "Remote, US" jobs flagged not-remote). See fetch_paylocity.
-        return job_data.get("LocationName") or "Unknown"
+        #
+        # JobLocation.Country ("USA") is the one location field on this ATS that
+        # is not self-contradictory, and it is read only to stamp a non-US
+        # posting -- every Paylocity tenant polled so far is US-only, so this
+        # fires on nothing today and exists so it cannot silently stop firing.
+        loc = job_data.get("JobLocation") or {}
+        return countries.stamp(job_data.get("LocationName") or "",
+                               loc.get("Country")) or "Unknown"
     elif ats == "rippling":
         locs = job_data.get("locations") or []
         names = [l.get("name") for l in locs if l.get("name")]
@@ -958,10 +1067,17 @@ def parse_location(job_data: dict, ats: str) -> str:
         # a false positive costs a tailored application to a role requiring
         # relocation. Revisit only if a Comeet board is found where the field
         # actually varies.
+        #
+        # `country` IS read (2026-09-11), and is the reason this branch no longer
+        # needs "montreal" in NON_US_MARKERS: it is a real ISO code per posting
+        # ("CA", "IL", "JP" on live Dot Compliance / Stampli / Upwind boards) and
+        # city+state alone produced "Montreal, Remote", which names no country at
+        # all. Non-US only -- Upwind returns country "" on four live US postings,
+        # so absence cannot be read as "not US". See countries.py.
         loc = job_data.get("location") or {}
         parts = [p.strip() for p in [loc.get("city"), loc.get("state")] if p and p.strip()]
         full = ", ".join(parts) if parts else (loc.get("name") or "")
-        return full or "Unknown"
+        return countries.stamp(full, loc.get("country")) or "Unknown"
     return "Unknown"
 
 
@@ -1107,7 +1223,7 @@ def fetch_workday(company: dict) -> list[dict]:
     which returns structured postings. The host (including the wdN datacenter),
     tenant, and site are NOT guessable, so they live on the watchlist entry as
     wd_host / wd_tenant / wd_site (verified once via /tmp/verify_workday.py).
-    Paginates 20/page up to MAX_JOBS.
+    Paginates 20/page up to WORKDAY_MAX_POSTINGS.
 
     Salary is NOT in the list response (it lives on each job's detail page), so
     it stays unset here and is treated as neutral in scoring; Claude fetches the
@@ -1132,11 +1248,15 @@ def fetch_workday(company: dict) -> list[dict]:
         "User-Agent": "Mozilla/5.0 (resume-pipeline)",
     }
     PAGE = 20
-    MAX_JOBS = 200  # cap pagination; watchlist boards run well under this
     out = []
     offset = 0
+    # Workday reports the board's real `total` only on the offset=0 response;
+    # later pages answer total=0. Re-reading it every page ended this loop after
+    # page two, so every board read as 40 postings whatever its size (verified
+    # 2026-09-11: JLL 40 of 2000, Stord 40 of 98). Read it once.
+    total = None
     try:
-        while offset < MAX_JOBS:
+        while offset < WORKDAY_MAX_POSTINGS:
             body = {"appliedFacets": {}, "limit": PAGE, "offset": offset, "searchText": ""}
             resp = requests.post(url, json=body, headers=headers, timeout=REQUEST_TIMEOUT)
             resp.raise_for_status()
@@ -1164,9 +1284,11 @@ def fetch_workday(company: dict) -> list[dict]:
                     "_posted": p.get("postedOn", ""),
                     "id": ext,
                 })
-            total = data.get("total", 0)
+            if total is None:
+                total = data.get("total") or 0
             offset += PAGE
-            if offset >= total:
+            # A short page is the last page, whatever `total` says.
+            if len(postings) < PAGE or (total and offset >= total):
                 break
             time.sleep(0.2)
     except Exception as e:
@@ -1375,6 +1497,36 @@ def fetch_paylocity(company: dict) -> list[dict]:
         return [{"_error": f"{type(e).__name__}: {e}"}]
 
 
+def rippling_api_items(rows: list) -> list[dict]:
+    """Rippling board-API rows reshaped into the listing page's item shape.
+
+    The API returns one row per (posting, location), keyed `uuid`, with a single
+    `workLocation`: Nutrient's Workflow Support Engineer is one uuid across six
+    LatAm countries and comes back as six rows. Collapsed here to one item per
+    uuid carrying every location in `locations`, so parse_location,
+    build_apply_url, and the title read in poll() work unchanged. Shared with
+    harvest_ats.py's rippling probe so discovery and the daily fetch read the
+    same rows.
+    """
+    by_id: dict[str, dict] = {}
+    for row in rows:
+        uid = row.get("uuid")
+        if not uid:
+            continue
+        item = by_id.get(uid)
+        if item is None:
+            name = row.get("name", "")
+            item = by_id[uid] = {
+                "id": uid, "name": name, "title": name, "url": row.get("url", ""),
+                "department": {"name": (row.get("department") or {}).get("label", "")},
+                "locations": [],
+            }
+        label = (row.get("workLocation") or {}).get("label")
+        if label and all(l["name"] != label for l in item["locations"]):
+            item["locations"].append({"name": label})
+    return list(by_id.values())
+
+
 def fetch_rippling(slug: str) -> list[dict]:
     """Fetch jobs from a Rippling ATS board.
 
@@ -1392,6 +1544,18 @@ def fetch_rippling(slug: str) -> list[dict]:
     writing, so multi-page Rippling boards are lower-confidence until one is
     seen live. Normalizes each item's `name` into `title` (Rippling's own key
     is "name", same normalization fetch_smartrecruiters does for "name").
+
+    CUSTOM-DOMAIN BOARDS (added 2026-09-11, Nutrient). A company can point its
+    Rippling board at its own careers page, and then the listing redirects
+    there (ats.rippling.com/nutrient/jobs -> www.nutrient.io/company/careers),
+    which has no __NEXT_DATA__, even though every posting still lives at
+    ats.rippling.com/nutrient/jobs/<uuid>. When page 0 lands off
+    ats.rippling.com, read Rippling's public board API instead
+    (`_endpoints.rippling_board_api`): the whole board in one unpaginated list,
+    404 for an unknown slug, and 43/43 matching ids against the listing on
+    steno-careers-page. Fallback only, by Aneesh's call: the API is
+    undocumented, and keeping the scrape primary means a change to it can
+    break only the custom-domain boards rather than every Rippling board.
     """
     url = ATS_ENDPOINTS["rippling"].format(slug=slug)
     headers = {
@@ -1406,6 +1570,18 @@ def fetch_rippling(slug: str) -> list[dict]:
         while page < RIPPLING_MAX_PAGES:
             resp = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT,
                                  params={"page": page} if page else None)
+            # Checked before raise_for_status: once the listing has left
+            # ats.rippling.com, the status belongs to the company's own site.
+            if page == 0 and (urlsplit(resp.url).hostname or "") != "ats.rippling.com":
+                api = requests.get(ATS_ENDPOINTS["rippling_board_api"].format(slug=slug),
+                                   headers={"User-Agent": headers["User-Agent"]},
+                                   timeout=REQUEST_TIMEOUT)
+                api.raise_for_status()
+                rows = api.json()
+                if not isinstance(rows, list):
+                    return [{"_error": "Rippling board API: unexpected response shape "
+                                       f"{type(rows).__name__}"}]
+                return rippling_api_items(rows)
             resp.raise_for_status()
             m = re.search(
                 r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
@@ -1896,7 +2072,10 @@ def poll_all(run_date: date) -> dict:
         # alongside an excluded region -- but without this check they'd still
         # fall to the lowest bucket below since they don't contain the literal
         # word "remote". Treat them the same as a remote US role.
-        us_named = (any(term in loc for term in US_SPECIFIC_INCLUDE)
+        # Boundary-matched for the same reason location_relevant() is: as a bare
+        # substring "usa" fires inside "Jerusalem" and would hand a non-US role
+        # the +20 US bucket instead of +3.
+        us_named = (_loc_hit(_US_SPECIFIC_INCLUDE_RE, loc)
                     or re.search(r'\bus\b', loc))
         # Atlanta gets a shortlist-selection edge (+4) over the generic
         # remote/US bucket, and must be checked FIRST: "atlanta"/"georgia" are

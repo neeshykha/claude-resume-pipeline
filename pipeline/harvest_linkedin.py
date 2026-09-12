@@ -144,6 +144,8 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 
+import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
+
 WATCHLIST = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 QUEUE = os.path.join(SCRIPT_DIR, "enrollment_candidates.json")
 LOCAL_CONFIG = os.path.join(SCRIPT_DIR, "local_config.json")
@@ -551,6 +553,15 @@ class Grader:
         text = f"{loc} {title.lower()}"
         if not loc:
             return "unknown"
+        # A stamped country, if one ever reaches here, is authoritative and skips
+        # the has_us rescue below. Nothing on this path carries one today: a
+        # LinkedIn card is scraped text ("Montreal, Quebec, Canada") with no
+        # structured country field to recover, so the marker scan stays the only
+        # signal this grader has. The check is here so that a location assembled
+        # by poll_ats/harvest_ats cannot be graded by the weaker rule if the two
+        # paths ever meet. See countries.py.
+        if countries.is_non_us(loc):
+            return "non-us"
         has_us = "united states" in loc or re.search(r"\b(usa|u\.s\.|us)\b", loc)
         # Word-boundary match on the long markers, not substring: harvest_ats matches
         # them as substrings, and on the live 2026-09-02 run "india" fired inside

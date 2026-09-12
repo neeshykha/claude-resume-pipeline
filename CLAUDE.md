@@ -632,6 +632,30 @@ dead-404 from resolved-empty, and this probe collapses both into `None`. **When 
 adapter to `poll_ats.py`, check whether `harvest_ats.py` can discover it too — the two keep
 separate ATS lists and nothing syncs them.**
 
+**Location matching in `poll_ats.py` is boundary-based as of 2026-09-11.** It was plain substring
+matching, and that was wrong in both directions: `LOCATION_EXCLUDE` killed "Remote - Indiana"
+("india"), Milwaukee/Waukesha/Waukegan ("uk"), and "Remote - New Mexico" ("mexico"), while
+`LOCATION_INCLUDE` passed "Minsk, Belarus", Cyprus, and Mauritius on the "us" inside the country
+name and `US_SPECIFIC_INCLUDE` rescued "Jerusalem, Israel" on the "usa" inside Jerusalem.
+`_boundary_pattern()` compiles each list into one alternation matched at non-alphanumeric
+boundaries; it uses lookarounds rather than `\b` because a period has to count as a separator on
+both sides, which `\bu\.s\.\b` cannot do at the end of "Remote U.S." (`harvest_linkedin.py`'s
+`has_us` still carries that bug). Boundaries alone do not save "New Mexico", so
+`LOCATION_LOOKALIKES` blanks it out before the exclusion scan and only there, since the include
+scan still needs the real string; that mirrors `harvest_ats.US_LOOKALIKES`. Genuinely ambiguous
+city names are deliberately NOT exempted: Dublin, Paris, Berlin, and Toronto each name a real US
+town AND the non-US city the exclude list is aimed at, and this filter cannot read state context
+to tell them apart. Measured over 373 generated location strings the change flips exactly four,
+all of them non-US locations that used to read as US. Cases live in `test_tier3_gate.py →
+POLL_CASES`.
+
+Two consequences worth knowing. "remotely" is now an explicit `LOCATION_INCLUDE` entry, because a
+trailing suffix is the one form the "remote" term no longer reaches. And a bare "Milwaukee, WI"
+still returns False, as do Minneapolis, Columbus, and Phoenix: `LOCATION_INCLUDE` is a curated
+18-city list with a default-exclude behind it, so an on-site role in any unlisted US city is
+dropped. That is a coverage gap, not the substring bug, and Aneesh scoped it out on 2026-09-11.
+Adding state names and USPS codes is the fix whenever it becomes worth the wider intake.
+
 ## Assisted Apply (on-demand skill)
 
 `assisted-apply` (`.claude/skills/assisted-apply/SKILL.md`, local-only) fills a job
