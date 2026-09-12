@@ -718,6 +718,18 @@ postings, and appending "United States" to a US string would move every on-site 
 +20 scoring bucket), and `GE`/`GS` stamp as the bare code because "Georgia" is an Atlanta hint.
 Property checks at the bottom of `test_tier3_gate.py` re-derive both rules.
 
+**Rippling is the one adapter left with a country field it does not read, and that is a
+decision rather than an oversight.** Its two paths disagree in shape: the listing page carries
+`locations[].country`/`countryCode`, the board API carries it inside `workLocation`, and
+`rippling_api_items` collapses both to a name-only list because one posting can hold six
+locations (Nutrient's Workflow Support Engineer across six LatAm countries). Stamping it needs
+the country carried through that collapse plus an all-locations-non-US rule, which is a
+different change from the one-line stamp the other six took. Greenhouse, JazzHR, and Workday
+return no country at all, and Pinpoint's `location.province` merely sometimes holds one
+("United Kingdom"), which is free text, not a field. So `NON_US_MARKERS` is still the only
+signal for those and for the LinkedIn grader: the stamp shrinks what the blocklist has to
+cover, it does not retire it. Leave "montreal" where it is.
+
 **Workday boards were read 40 deep, not 200 (fixed 2026-09-11).** Workday reports the board's
 real `total` only on the offset-0 response; later pages answer `total: 0`, and `fetch_workday`
 re-read it every page, so the loop ended after page two on every board (JLL 40 of 2000, Stord 40
