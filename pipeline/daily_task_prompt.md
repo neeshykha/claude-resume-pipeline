@@ -523,6 +523,10 @@ markers are matched as SUBSTRINGS, so `US_LOOKALIKES` has to blank out US places
 ("india" inside "Indiana", "mexico" inside "New Mexico"), and `poll_ats.LOCATION_EXCLUDE` is a
 SEPARATE list that nothing syncs — it had the same hole and needed the same countries added by
 hand. Cases for all three gates live in `pipeline/test_tier3_gate.py`; run it after any edit here.
+Two follow-ups landed later on 2026-09-11: `poll_ats` now matches its lists at word boundaries
+(the harvest markers are still substrings, so `US_LOOKALIKES` stays), and where an ATS returns a
+structured per-posting country, `pipeline/countries.py` stamps `(non-US: Canada)` onto the string
+and all three gates read that tag before any marker scan. Details in CLAUDE.md.
 On the first live run it flipped Britive and Sonatype (real remote-US tier3 roles) while
 correctly leaving Nylas and Placemakr rejected. Auto-enrolls at LOW
 priority (auto-enrollment must never outrank hand-vetted companies), rejects with a specific
