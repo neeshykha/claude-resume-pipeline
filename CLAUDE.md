@@ -735,6 +735,20 @@ return no country at all, and Pinpoint's `location.province` merely sometimes ho
 signal for those and for the LinkedIn grader: the stamp shrinks what the blocklist has to
 cover, it does not retire it. Leave "montreal" where it is.
 
+**Workday "N Locations" postings are resolved from the detail endpoint (fixed 2026-09-14).**
+The list view gives no city for multi-site roles, and `fetch_workday` stashed those as
+"Unknown", which `location_relevant` keeps as neutral; NVIDIA's UK, Munich, and Bengaluru
+architect roles leaked into `ai_engineer_stretch` that way, and the same path fed matched and
+borderline. A census of 46 boards found 25% of postings in that shape. `parse_location` now
+reads `jobPostingInfo` for them (after the title gate, one cached request shared with the
+start-date resolver), joins primary + `additionalLocations`, and stamps the primary's country
+unless an alternate names the US, since Workday's country field describes the primary only.
+On a failed detail read the externalPath segment is used to exclude, never to include: a US
+segment the gate can't read ("Louisville KY") stays Unknown. One consequence: a multi-location
+US posting whose every location is an unlisted city now drops, same as its single-location twin
+under the curated-city gap below. `harvest_ats.py`'s Workday probe still scores "N Locations" as
+not US-reachable, which under-admits rather than leaks; not fixed.
+
 **Workday boards were read 40 deep, not 200 (fixed 2026-09-11).** Workday reports the board's
 real `total` only on the offset-0 response; later pages answer `total: 0`, and `fetch_workday`
 re-read it every page, so the loop ended after page two on every board (JLL 40 of 2000, Stord 40

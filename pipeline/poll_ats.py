@@ -764,7 +764,96 @@ def description_excluded(text: str) -> bool:
     return any(term in t for term in EXCLUDED_TERMS)
 
 
-_WORKDAY_START_DATE_CACHE: dict[str, date | None] = {}
+_WORKDAY_POSTING_INFO_CACHE: dict[str, dict | None] = {}
+
+
+def _workday_posting_info(detail_url: str | None) -> dict | None:
+    """GET a Workday posting's CXS detail and return its `jobPostingInfo`.
+
+    Shared by the start-date and location resolvers so a posting that needs
+    both costs one request. Cached per URL for the life of the process; None on
+    any failure, so a network blip degrades the field and never breaks the poll.
+    """
+    if not detail_url:
+        return None
+    if detail_url in _WORKDAY_POSTING_INFO_CACHE:
+        return _WORKDAY_POSTING_INFO_CACHE[detail_url]
+    info = None
+    try:
+        resp = requests.get(
+            detail_url,
+            headers={"Accept": "application/json",
+                     "User-Agent": "Mozilla/5.0 (resume-pipeline)"},
+            timeout=REQUEST_TIMEOUT,
+        )
+        if resp.status_code == 200:
+            info = resp.json().get("jobPostingInfo") or None
+    except Exception:
+        info = None
+    _WORKDAY_POSTING_INFO_CACHE[detail_url] = info
+    return info
+
+
+def _workday_path_location(external_path: str) -> str:
+    """The location segment of a Workday externalPath, de-hyphenated.
+
+    "/job/UK-Remote/Senior-Solutions-Architect_JR2024526" -> "UK Remote". Empty
+    when the path carries no segment ("/job/Solutions-Engineer_R072318", every
+    posting whose locationsText is blank). Always the PRIMARY location only: a
+    2026-09-14 census of 278 multi-location postings across 46 boards matched
+    the segment to jobRequisitionLocation 278 of 278 times.
+    """
+    m = re.match(r"^/job/([^/]+)/[^/]+$", external_path or "")
+    if not m:
+        return ""
+    return re.sub(r"\s+", " ", m.group(1).replace("-", " ")).strip()
+
+
+def _workday_location_from_info(info: dict | None, external_path: str) -> str:
+    """Assemble a location for a Workday posting whose list view gave none.
+
+    The list view says "2 Locations" (or nothing at all), and that used to pass
+    straight through location_relevant() as "Unknown". NVIDIA's UK, Munich, and
+    Bengaluru Solutions Architect roles reached ai_engineer_stretch that way on
+    2026-09-14. The detail payload names every location and the primary one's
+    country, so this joins primary + additionalLocations for the text gate and
+    stamps the country when it is non-US.
+
+    The stamp is withheld when any additional location names the US outright,
+    because Workday's country field describes the primary location only, and
+    countries.is_non_us() shuts the dual-region rescue. Autodesk posts Canada
+    primaries with US alternates ("AMER - United States - Ohio - Offsite/Home");
+    those go to the free-text gate unstamped, where the rescue can read them.
+
+    With no detail (no URL, network failure) the externalPath segment is used
+    only to EXCLUDE: it is returned when it trips an exclusion term, and
+    "Unknown" otherwise. The same census is why. A segment the gate reads as
+    non-US was the whole story in all but 2 of 278 postings, but a US segment
+    the gate simply cannot read ("Louisville KY", whose alternates include
+    Charlotte and Dallas) would be dropped by the default-exclude branch, and
+    that was 35 of the 278.
+    """
+    if info:
+        req_loc = info.get("jobRequisitionLocation") or {}
+        primary = (info.get("location") or req_loc.get("descriptor") or "").strip()
+        extras = [str(x).strip() for x in (info.get("additionalLocations") or [])
+                  if str(x).strip()]
+        parts = [p for p in [primary] + extras if p]
+        if parts:
+            full = "; ".join(parts)
+            country = ((req_loc.get("country") or {}).get("alpha2Code")
+                       or (info.get("country") or {}).get("descriptor"))
+            extras_name_us = any(
+                _loc_hit(_US_SPECIFIC_INCLUDE_RE, x.lower())
+                or re.search(r"\bus\b", x.lower()) for x in extras)
+            return full if extras_name_us else countries.stamp(full, country)
+    seg = _workday_path_location(external_path)
+    scrubbed = seg.lower()
+    for place in LOCATION_LOOKALIKES:
+        scrubbed = scrubbed.replace(place, " ")
+    if seg and _loc_hit(_LOCATION_EXCLUDE_RE, scrubbed):
+        return seg
+    return "Unknown"
 
 
 def _resolve_workday_start_date(detail_url: str | None) -> date | None:
@@ -785,31 +874,19 @@ def _resolve_workday_start_date(detail_url: str | None) -> date | None:
     Returns None on any failure so the caller can fall back; a network blip must
     degrade the date, never break the poll.
     """
-    if not detail_url:
-        return None
-    if detail_url in _WORKDAY_START_DATE_CACHE:
-        return _WORKDAY_START_DATE_CACHE[detail_url]
-    result: date | None = None
+    info = _workday_posting_info(detail_url)
     try:
-        resp = requests.get(
-            detail_url,
-            headers={"Accept": "application/json",
-                     "User-Agent": "Mozilla/5.0 (resume-pipeline)"},
-            timeout=REQUEST_TIMEOUT,
-        )
-        if resp.status_code == 200:
-            raw = (resp.json().get("jobPostingInfo") or {}).get("startDate")
-            if raw:
-                parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
-                # Guard against clock skew / bad data the same way the Comeet
-                # branch does: a future start date is treated as no-data rather
-                # than as ultra-fresh.
-                if parsed <= date.today():
-                    result = parsed
+        raw = (info or {}).get("startDate")
+        if raw:
+            parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
+            # Guard against clock skew / bad data the same way the Comeet
+            # branch does: a future start date is treated as no-data rather
+            # than as ultra-fresh.
+            if parsed <= date.today():
+                return parsed
     except Exception:
-        result = None
-    _WORKDAY_START_DATE_CACHE[detail_url] = result
-    return result
+        return None
+    return None
 
 
 def extract_posted_date(job_data: dict, ats: str) -> date | None:
@@ -1012,7 +1089,16 @@ def parse_location(job_data: dict, ats: str) -> str:
         full = _apply_workplace_type(full, job_data.get("workplaceType"))
         return countries.stamp(full, job_data.get("country"))
     elif ats == "workday":
-        return job_data.get("_workday_location") or "Unknown"
+        loc = job_data.get("_workday_location")
+        if loc and loc != "Unknown":
+            return loc
+        # "N Locations" or blank in the list view. parse_location runs only
+        # after the title gate, so this detail read is bounded to candidates.
+        # `_posting_info` lets a test hand in a trimmed detail payload.
+        info = job_data.get("_posting_info")
+        if info is None:
+            info = _workday_posting_info(job_data.get("_detail_url"))
+        return _workday_location_from_info(info, job_data.get("id", ""))
     elif ats == "workable":
         parts = [job_data.get("city"), job_data.get("state"), job_data.get("country")]
         full = ", ".join(p for p in parts if p)
@@ -1293,9 +1379,9 @@ def fetch_workday(company: dict) -> list[dict]:
                 ext = p.get("externalPath", "")
                 loc = p.get("locationsText", "") or ""
                 # Workday shows "N Locations" for multi-site roles instead of a
-                # city — we can't tell US vs intl from the list view, so pass
-                # these through as Unknown (kept for Claude review) rather than
-                # dropping potentially-US roles.
+                # city, so the list view can't tell US from intl. Stashed as
+                # Unknown; parse_location resolves it from the detail payload
+                # (_workday_location_from_info) once the title gate has passed.
                 if re.match(r'^\s*\d+\s+locations?\s*$', loc, re.I):
                     loc = "Unknown"
                 out.append({
