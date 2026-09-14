@@ -132,6 +132,16 @@ def validate_watchlist(data) -> tuple[list, list]:
     for key in ("signal_words", "exclude_if_contains", "explicit_titles"):
         if not isinstance(wc.get(key), list) or not wc.get(key):
             errors.append(f"watchlist: tier2b_ai_wildcard.{key} must be a non-empty list")
+    route = wc.get("engineer_stretch_route")
+    if route is not None:
+        for key in ("routed_exclusions", "operating_words"):
+            if not isinstance(route.get(key), list) or not route.get(key):
+                errors.append(f"watchlist: tier2b_ai_wildcard.engineer_stretch_route.{key} must be a non-empty list")
+        routed = route.get("routed_exclusions")
+        if isinstance(routed, list):
+            stray = [w for w in routed if w not in (wc.get("exclude_if_contains") or [])]
+            if stray:
+                errors.append(f"watchlist: engineer_stretch_route.routed_exclusions not in exclude_if_contains: {stray}")
 
     pc = data["_poller_config"]
     supp = pc.get("supplemental_exact_titles", {})

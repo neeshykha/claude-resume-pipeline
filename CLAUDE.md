@@ -516,7 +516,12 @@ Engineer and Solutions Engineer postings that fail the normal bar still get a bo
 conditional review; spec is `daily_task_prompt.md` Step 3.5 (max 2 JD reads/run, four
 gates, own digest section, logged even at zero). Visibility only: the tiers above and the
 2026-07-09 FDE demotion stand. He is separately working a qualification pathway toward
-both titles.
+both titles. As of 2026-09-14 the lane also takes AI-titled engineer/architect/developer
+roles carrying an operating word (poller output `ai_engineer_stretch`, config
+`tier2b_ai_wildcard → engineer_stretch_route`), which used to go unreviewed (kept off the AI wildcard, then cut by the 20-slot
+borderline cap).
+Same 2-read cap, same strict coding gate; the domain gate widens to internal AI automation
+for those titles only.
 
 ## Supplemental WebSearch Sources (Atlanta + Startup Discovery)
 

@@ -1427,7 +1427,7 @@ title to `jd_verification_required_titles` so the class is covered. Only worth t
 API call when the top pick's JD genuinely disqualifies it — not a step to run for every
 company by default.
 
-## Step 3.5: Stretch lane — FDE / Solutions Engineer conditional review (added 2026-08-30)
+## Step 3.5: Stretch lane — FDE / Solutions Engineer / AI engineer conditional review (added 2026-08-30; AI engineer titles 2026-09-14)
 
 Aneesh's explicit call, 2026-08-30: he knows Forward Deployed Engineer is a title he is
 mostly not qualified for yet, he is actively working on getting qualified for it (and for
@@ -1449,7 +1449,15 @@ Mechanics; hard cap of 2 JD reads per run for this lane:
    for ~2 weeks while FDE reqs are visibly live at watchlist companies (Cresta, Decagon,
    Baseten, Modal, and LangChain all carry them per their watchlist notes), say so in
    digest housekeeping rather than silently accepting it.
-2. Take up to 2, highest pre-score first, and read the full JD (`fetch_jd.py`, verbatim
+   **AI engineer titles (added 2026-09-14, Aneesh's call).** Also collect every entry in the
+   poller's `ai_engineer_stretch` list: AI-titled engineer/architect/developer roles that
+   carry an operating word (config: `tier2b_ai_wildcard → engineer_stretch_route`), which never
+   reached review: the AI wildcard excludes them, and the ones matching enough borderline
+   fragments lost the 20-slot borderline cap. FullStory's "AI Automation Engineer" (2 fragments,
+   140-entry pool, 2026-09-14) is the miss that prompted it. He wanted these judged case by case,
+   knowing many will be more technical than he's used to. They carry a `pre_score` at tier4
+   title weight (+8, the same as FDE) and are never shortlisted, whatever they score.
+2. Take up to 2 across both sources, highest pre-score first, and read the full JD (`fetch_jd.py`, verbatim
    requirements; these are exactly the titles the verbatim rule exists for). Surface a
    role ONLY if ALL four gates hold:
    - **Location** qualifies under the standard rules (remote US or metro Atlanta).
@@ -1460,6 +1468,11 @@ Mechanics; hard cap of 2 JD reads per run for this lane:
      "write/ship production code" in the requirements → fail closed.
    - **Domain overlap with an SME area**: support/CX AI, IoT/smart building, or the
      Salesforce ecosystem; somewhere the SME-first argument can carry the title gap.
+     For `ai_engineer_stretch` entries only, internal AI automation or business-systems
+     work also counts (AI workflows built for an internal team such as Finance, Support,
+     or Ops), since tool building is his primary interest. The coding gate does NOT loosen
+     for these titles (his 2026-09-14 call): data-pipeline or ETL-grade programming fails
+     closed like any other production-code bar, and lands as a housekeeping line quoting it.
    A failed gate costs at most one digest housekeeping line ("checked, disqualified by
    <quoted requirement>") and no further budget.
 3. A passing role goes in its own digest section, **"Stretch lane (FDE/SE) — risk
@@ -1469,7 +1482,7 @@ Mechanics; hard cap of 2 JD reads per run for this lane:
    this lane. The HARD-REQUIREMENT TIER CAP applies with no special pleading; the lane's
    gates overlap with the cap on purpose, so a role that passes them usually escapes the
    cap honestly. If Aneesh wants a full package for one, he'll ask for it by name.
-4. Log `stretch_lane: {candidates_seen, jds_read, passed, surfaced_titles}` in
+4. Log `stretch_lane: {candidates_seen, ai_engineer_candidates, jds_read, passed, surfaced_titles}` in
    `run_[date].json` every run, zeros included: a logged zero is verifiable, while an
    absent section is indistinguishable from a skipped step (the Step 1d-2 lesson).
 
