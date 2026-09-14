@@ -245,6 +245,7 @@ MIN_TIER1_SLOTS = 6
 TIER1_TIER_NAME = "tier1_true_match"
 BORDERLINE_SIZE = 20
 MIN_AI_WILDCARD_SLOTS = 10  # reserved quota; see borderline-list build below
+AI_ENGINEER_STRETCH_SIZE = 20  # Step 3.5 candidates kept in output; the lane reads at most 2 JDs a run
 
 # ── Title matching (config-driven, stemmed-token-subset) ────────────────────
 # History: this used to be two hand-maintained substring lists that only grew
@@ -390,6 +391,14 @@ class TitleMatcher:
                              for t in pc["jd_verification_required_titles"]["titles"]]
         self.wc_signal = [w.lower() for w in wc["signal_words"]]
         self.wc_exclude = [w.lower() for w in wc["exclude_if_contains"]]
+        # AI engineer stretch route (2026-09-14, Aneesh's call: "more
+        # case-by-case"). An AI title that wc_exclude would drop is kept for
+        # Step 3.5's gated JD read when it carries a routed exclusion word AND
+        # an operating word. Missing config block = no route at all.
+        route = wc.get("engineer_stretch_route", {})
+        self.stretch_routed = [w.lower() for w in route.get("routed_exclusions", [])]
+        self.stretch_operating = [w.lower() for w in route.get("operating_words", [])]
+        self.stretch_title_score = tiers["tier4_weak_stretch"]["title_match_score"]
         fm = pc.get("function_mismatch_titles", {})
         self.mismatch = [frozenset(tokenize(t)) for t in fm.get("titles", [])]
         self.mismatch_protected = set(fm.get("protected_tiers", []))
@@ -446,6 +455,22 @@ class TitleMatcher:
         if any(ex in t for ex in self.wc_exclude):
             return False
         return any(sig in t for sig in self.wc_signal)
+
+    def matches_ai_engineer_stretch(self, title: str) -> bool:
+        """AI-titled engineer/architect/developer roles with an operating word
+        ('AI Automation Engineer', FullStory 2026-09-14). matches_ai_wildcard
+        excludes these, and the ones that clear min_fragments were losing the
+        20-slot borderline cap; this routes them to the Step 3.5 stretch lane
+        instead, never to the shortlist. Exclusions that are NOT routed
+        (scientist, researcher) still drop the title outright."""
+        t = title.lower()
+        if not self.stretch_routed or not re.search(r'\bai\b', t):
+            return False
+        if any(ex in t for ex in self.wc_exclude if ex not in self.stretch_routed):
+            return False
+        if not any(ex in t for ex in self.stretch_routed):
+            return False
+        return any(op in t for op in self.stretch_operating)
 
 # Location filter — only keep US-relevant roles
 LOCATION_INCLUDE = [
@@ -1742,6 +1767,7 @@ def poll_all(run_date: date) -> dict:
     matched = []
     borderline = []
     function_mismatch = []  # demoted title classes (PM/TPM/SalesEng...): digest FYI, never shortlisted
+    ai_engineer_stretch = []  # AI engineer titles routed to the Step 3.5 stretch lane (2026-09-14)
     errors = []
     reseen = []  # existing jobs re-encountered (for last_seen_date update)
     stats = {
@@ -1750,6 +1776,7 @@ def poll_all(run_date: date) -> dict:
         "title_matched": 0,
         "title_borderline": 0,
         "title_ai_wildcard": 0,
+        "ai_engineer_stretch_title_hits": 0,
         "jd_verification_flagged": 0,
         "function_mismatch": 0,
         "dedup_skipped": 0,
@@ -1858,8 +1885,18 @@ def poll_all(run_date: date) -> dict:
             is_exact = exact_match is not None
             borderline_count = MATCHER.fragment_count(title)
             is_ai_wildcard = not is_exact and MATCHER.matches_ai_wildcard(title)
+            # Every non-exact AI engineer title with an operating word takes the
+            # stretch route, including ones that clear min_fragments: those
+            # landed in borderline and lost the 20-slot cap (FullStory "AI
+            # Automation Engineer", 2026-09-14: 2 fragments, 140-entry pool).
+            # Exact tier matches keep their normal path.
+            is_ai_eng_stretch = (not is_exact and not is_ai_wildcard
+                                 and MATCHER.matches_ai_engineer_stretch(title))
+            if is_ai_eng_stretch:
+                stats["ai_engineer_stretch_title_hits"] += 1
 
-            if not is_exact and borderline_count < MATCHER.min_fragments and not is_ai_wildcard:
+            if (not is_exact and borderline_count < MATCHER.min_fragments
+                    and not is_ai_wildcard and not is_ai_eng_stretch):
                 continue  # Not relevant at all
 
             location = parse_location(job_data, ats)
@@ -1996,6 +2033,12 @@ def poll_all(run_date: date) -> dict:
                 # Claude scores them at +18 (not by guessing a tier) and the
                 # digest can call out "novel AI title, needs a look."
                 entry["ai_wildcard"] = True
+            if is_ai_eng_stretch:
+                # Step 3.5 candidates only: never matched, borderline, or
+                # function-mismatch, so these can't take a shortlist slot.
+                entry["ai_engineer_stretch"] = True
+                ai_engineer_stretch.append(entry)
+                continue
             if MATCHER.needs_jd_verification(title):
                 # Known-risky title (per _poller_config): read the full JD
                 # before tailoring, and don't let it consume a diversity-cap
@@ -2216,6 +2259,14 @@ def poll_all(run_date: date) -> dict:
     for job in borderline:
         if job.get("ai_wildcard"):
             job["pre_score"] = pre_score_job(job, default_title_prescore=tier2b_score)
+
+    # Stretch-route entries score at tier4's title weight, the same +8 FDE
+    # inherits, so Step 3.5 can take the highest first.
+    for job in ai_engineer_stretch:
+        job["pre_score"] = pre_score_job(
+            job, default_title_prescore=MATCHER.stretch_title_score)
+    ai_engineer_stretch.sort(key=lambda j: -j["pre_score"])
+    stats["ai_engineer_stretch"] = len(ai_engineer_stretch)
 
     # Sort by pre-score, then apply a per-company DIVERSITY CAP before keeping
     # the top 25. Without this, a single company that posts many CS-adjacent
@@ -2460,6 +2511,7 @@ def poll_all(run_date: date) -> dict:
         "near_window": near_window,
         "sibling_collapsed": sibling_collapsed,
         "borderline": borderline_capped,
+        "ai_engineer_stretch": ai_engineer_stretch[:AI_ENGINEER_STRETCH_SIZE],
         "function_mismatch": function_mismatch[:40],
         "reseen_keys": reseen,
         "errors": errors,
@@ -2527,6 +2579,12 @@ def main():
         print(f"\nTop AI-wildcard borderline hits (now pre-scored — review before finalizing the shortlist, don't just skim):")
         for j in ai_wildcard_hits[:5]:
             print(f"  [{j['pre_score']}] {j['company']}: {j['title']}")
+    stretch = results.get("ai_engineer_stretch") or []
+    print(f"\nAI engineer stretch candidates (Step 3.5 only, never shortlisted): "
+          f"{s.get('ai_engineer_stretch', 0)} after filters, "
+          f"{s.get('ai_engineer_stretch_title_hits', 0)} title hits")
+    for j in stretch[:5]:
+        print(f"  [{j['pre_score']}] {j['company']}: {j['title']} | {j['location']}")
     print(f"\nOutput: {output_path}")
 
 

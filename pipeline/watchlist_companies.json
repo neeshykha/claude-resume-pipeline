@@ -776,6 +776,24 @@
         "scientist",
         "researcher"
       ],
+      "engineer_stretch_route": {
+        "description": "Added 2026-09-14 on Aneesh's call after FullStory's 'AI Automation Engineer' never reached review: exclude_if_contains kept it off the wildcard, and its 2 borderline fragments ('ai', 'automation') put it in a 140-entry borderline pool that the 20-slot cap cut. An AI title containing a routed exclusion AND an operating word is NOT dropped: poll_ats.py puts it in the ai_engineer_stretch output list for the Step 3.5 stretch lane (gated JD read, 2-read cap shared with FDE/SE, strict coding gate), never on the shortlist. 'scientist' and 'researcher' are deliberately not routed and still drop outright. Exact tier matches are unaffected; borderline fragment matches with this pattern move to the stretch list ahead of the borderline cap. Measure newly visible titles across all boards before adding an operating word; 'agent' in signal_words was pulled the same day it was added (2026-09-08) for flooding in product and sales roles.",
+        "routed_exclusions": [
+          "engineer",
+          "architect",
+          "developer"
+        ],
+        "operating_words": [
+          "automation",
+          "deployment",
+          "implementation",
+          "solution",
+          "operations",
+          "support",
+          "enablement",
+          "customer"
+        ]
+      },
       "explicit_titles": [
         "AI Success Manager",
         "AI Outcomes Manager",
