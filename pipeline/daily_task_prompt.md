@@ -452,8 +452,8 @@ enforces a **60s wall-clock cap per company across every probe, Workday included
 as `[TO] … unresolved` and the run moves to the next one, so no single company can stall a
 batch. The batch ceiling is therefore 60s × the pending count rather than open-ended. There
 is no cap on the batch itself: `--from-pending` takes every pending name, and with LinkedIn
-(Step 1d-2) and BuiltIn (`poll_builtin.py`) each allowed 15 new names a run, a full queue is
-~30 names and a ~30-minute worst case. Typical is far less (most names resolve in 5–20s).
+(Step 1d-2) allowed 30 new names a run and BuiltIn (`poll_builtin.py`) 15, a full queue is
+~45 names and a ~45-minute worst case. Typical is far less (most names resolve in 5–20s).
 Left uncapped on purpose (Aneesh, 2026-09-03); revisit if the harvest step starts crowding
 out the JD reads.
 
@@ -728,7 +728,7 @@ c. Grade, dedupe, and queue:
 
    Read its stdout (the card block and the UNKNOWN list are short), then re-run with
    `--apply` to append the UNKNOWN companies to `pending`. `--apply` is the only write to
-   a tracked file; it caps at 15 (flagged cards first, then order of appearance), carries
+   a tracked file; it caps at 30 (flagged cards first, then order of appearance), carries
    `manual_review` / `manual_review_why` per item 2, and runs `validate_config.py` after.
    The dry run is idempotent and only writes `pipeline/jobs/linkedin_cards_[date].json`
    and the `.txt` digest block.
@@ -787,7 +787,7 @@ credential-backed path that is written but unverified and cannot run until a tok
 
    Widening is close to free and cannot double-count: these are subject-line reads for
    `jobalerts-noreply@`, every extracted company goes through `check_company.py` before it can
-   become a lead, and the hard cap of 15 new companies per run still bounds the downstream work. **Read snippets/subjects, not full bodies** —
+   become a lead, and the hard cap of 30 new companies per run still bounds the downstream work. **Read snippets/subjects, not full bodies** —
    these emails are long and a full read of several will blow the run's context budget. The
    subject line alone carries the company and title (`<Title> at <Company>`), which is all this
    step needs.
@@ -947,10 +947,17 @@ credential-backed path that is written but unverified and cannot run until a tok
    title" AND "blind-spot company" should be rare by construction. Log the count (checked,
    found, cap-deferred) in `run_[date].json → step_1d_2_linkedin_harvest`.
 
-4. **Hard cap: append at most 15 new companies per run.** If more survive dedupe, take them
-   in the order they appeared and leave the rest; tomorrow's run will catch them, and the
-   3-day/1-day windows overlap enough that nothing is lost. This cap is what keeps the step's
-   cost flat no matter how noisy the alerts get — do not raise it to "clear the backlog."
+4. **Hard cap: append at most 30 new companies per run.** If more survive dedupe, take them
+   in the order they appeared and leave the rest; they are queued only if LinkedIn alerts on
+   them again. The cap keeps the step's cost bounded no matter how noisy the alerts get.
+
+   **Raised 15 -> 30 on 2026-09-17, Aneesh's call.** At 15 the cap, not the inbox, was the
+   channel's real leak: the four runs 09-14..09-17 deferred 94, 60, 40, and 74 unknown
+   companies, and the "tomorrow's run will catch them" claim this item used to make only holds
+   for a company that alerts again. Cost of the raise: up to 15 more names through
+   `harvest_ats.py` per run, ~15 more minutes worst case. Keep reporting `cap_deferred`; if it
+   still runs in the dozens at 30, that is the number to bring back to him, not a reason to
+   raise the cap silently again.
 5. Append each to `enrollment_candidates.json → pending` using the standard `_schema` shape,
    with `needs_ats_resolution: true`, `source: "LinkedIn alert"`, `first_seen` = today, and a
    `why` naming the alert it came from. Carry `manual_review` / `manual_review_why` from step 2
