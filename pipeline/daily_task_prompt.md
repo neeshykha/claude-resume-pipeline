@@ -707,6 +707,17 @@ was absent from `searches_run` — while roughly a dozen unprocessed alerts sat 
 had run correctly the day before, so the failure mode is silent omission, not breakage. A logged
 zero is verifiable; an absent section is indistinguishable from a skipped step.
 
+**The audit is per MESSAGE as of 2026-09-17, not per thread.** A Gmail thread can hold several
+stacked alert messages — LinkedIn sends several alerts at the same timestamp and Gmail threads
+them — and on 2026-09-16 one real thread held 4 separate alert messages, each a different saved
+search with different job cards. `bodies_read == job_alert_threads_seen` only asked whether a
+thread had gotten ANY body, so fetching just the first stacked message satisfied it while the
+other 3 alerts' cards silently never got graded: that run logged 38/38 threads read while 6 alert
+messages had no body, caught only by a hand check of message ids. The script now also reports
+`job_alert_messages_seen`, `job_alert_messages_with_body`, and `missing_body_message_ids`; keep
+recording the thread-level pair too (unchanged, still useful context), but treat the message-level
+pair as the actual gate and fetch exactly the ids `missing_body_message_ids` names.
+
 **HOW TO RUN THIS STEP (script-first as of 2026-09-02). The numbered list below it is the
 MANUAL FALLBACK, used only when the script fails, and the fallback is what the history in
 that list is about.**
@@ -736,7 +747,10 @@ d. Record: copy the script's `counters` object into `run_[date].json ->
    step_1d_2_linkedin_harvest` verbatim; it carries every field required above
    (`job_alert_threads_seen`, `bodies_read`, `companies_extracted`, `newly_queued`,
    `cap_deferred`, the legacy pair, the aggregators dropped, the review and blind-spot
-   lists). If it prints `SHORTFALL`, name the shortfall in the digest.
+   lists), plus the message-level trio (`job_alert_messages_seen`,
+   `job_alert_messages_with_body`, `missing_body_message_ids`) that is the real shortfall
+   gate as of 2026-09-17. If it prints `SHORTFALL`, name the shortfall in the digest and
+   fetch the ids it lists.
 e. Digest: the `.html` block (`linkedin_cards_[date].html`: the same lines as the `.txt`,
    with each LinkedIn job id as a tappable link since 2026-09-10) goes in verbatim as its own
    section, **"LinkedIn alert cards, graded"** (Step 5). Every card, one line, in the script's order. Do not trim it to the
