@@ -699,6 +699,31 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
     bodies = list(by_msg.values())
     threads_with_body = {(r["thread_id"] or r["source"]) for r in bodies}
 
+    # Message-level coverage (added 2026-09-17, replacing thread-level SHORTFALL).
+    # A THREAD can hold several stacked alert messages -- LinkedIn sends several
+    # alerts at the same timestamp and Gmail threads them, and on 2026-09-16 one
+    # real thread held 4 separate alert messages, each a different saved search
+    # with different job cards. Thread-level coverage (`bodies_read` vs
+    # `job_alert_threads_seen` below) only asks "did this thread get ANY body,"
+    # so fetching just the first stacked message satisfied it while the other 3
+    # alerts' cards silently never got graded: that run logged 38/38 threads read
+    # while 6 alert messages had no body, and it was caught only by a hand check
+    # of message ids. `seen_msgs` dedupes by the SAME key as `by_msg` (real
+    # message id when the source carries one, else thread+source), but keeps
+    # every job-alert message the input mentioned, body or not -- a
+    # `search_messages`/`search_threads` LISTING record (sender+subject only,
+    # body "") counts as "seen" here even though it can never satisfy `by_msg`.
+    seen_msgs: dict[str, dict] = {}
+    for r in job_records:
+        key = r["id"] or (r["thread_id"] + ":" + r["source"])
+        cur = seen_msgs.get(key)
+        if cur is None or (r["body"] and not cur["body"]):
+            seen_msgs[key] = r
+    missing_body_message_ids = sorted(
+        (r["id"] or key) for key, r in seen_msgs.items() if not r["body"].strip())
+    job_alert_messages_seen = len(seen_msgs)
+    job_alert_messages_with_body = job_alert_messages_seen - len(missing_body_message_ids)
+
     cards_by_id: dict[str, dict] = {}
     order: list[str] = []
     for r in sorted(bodies, key=lambda x: x["date"], reverse=True):
@@ -780,6 +805,13 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
         "jobs_noreply_threads_seen": jobs_noreply_seen,
         "bodies_read": len(threads_with_body),
         "messages_read": len(bodies),
+        # Message-level coverage (2026-09-17): the thread-level pair above reads
+        # "read" the moment ONE message in a thread has a body, which is exactly
+        # the gap a stacked thread exploits. These are the audit going forward;
+        # see the `seen_msgs` comment above for the 2026-09-16 incident.
+        "job_alert_messages_seen": job_alert_messages_seen,
+        "job_alert_messages_with_body": job_alert_messages_with_body,
+        "missing_body_message_ids": missing_body_message_ids,
         "digest_bodies_opened": sum(1 for r in bodies if r["sender"] == JOB_SENDERS[1]),
         "non_job_threads_skipped": len({(r["thread_id"] or r["source"]) for r in records
                                         if r["sender"] not in JOB_SENDERS}),
@@ -914,9 +946,19 @@ def main() -> int:
     print(f"cards_parsed={c['cards_parsed']} companies_extracted={c['companies_extracted']} "
           f"unknown_after_dedupe={c['unknown_after_dedupe']} newly_queued={c['newly_queued']} "
           f"cap_deferred={c['cap_deferred']} aggregators_dropped={len(c['aggregators_dropped'])}")
-    if c["bodies_read"] < c["job_alert_threads_seen"]:
-        print(f"SHORTFALL: {c['job_alert_threads_seen'] - c['bodies_read']} job-alert threads "
-              f"had no body in the input; name this in the digest.")
+    # Message-level, not thread-level (2026-09-17): a thread with several stacked
+    # alert messages reads "bodies_read == job_alert_threads_seen" the moment ONE
+    # of its messages has a body, which is exactly how 6 missing alert messages
+    # went unreported on 2026-09-16 (38/38 threads read, by the thread-level count
+    # this check used to gate on). Report the missing message ids so a re-run can
+    # fetch exactly those.
+    missing_n = c["job_alert_messages_seen"] - c["job_alert_messages_with_body"]
+    if missing_n:
+        ids = ", ".join(c["missing_body_message_ids"]) or "(no message id available)"
+        print(f"SHORTFALL: {missing_n} job-alert message(s) had no body in the input "
+              f"(across {c['job_alert_threads_seen']} thread(s) seen, {c['bodies_read']} "
+              f"thread(s) with at least one body); missing message ids: {ids}. Fetch these "
+              f"specifically and re-run.")
     if not args.quiet:
         print("\nLinkedIn alert cards, graded")
         print(block)
