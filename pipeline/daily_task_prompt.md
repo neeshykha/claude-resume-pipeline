@@ -472,6 +472,39 @@ Two things make that ceiling real, and both matter if you touch this code:
   (114 requests × 0.35s) — two thirds of the budget in `time.sleep()` before a byte moved — and
   a 60s cap would have starved the Workday walk it exists to bound, making the cap a permanent
   `--skip-workday` in disguise. Each ATS still sees at most one request per `DELAY`.
+- **Those eight ATSes are probed CONCURRENTLY, one thread each (`probe_cheap`, 2026-09-17).**
+  Removing the sleeps left the sleeps' replacement: 16–21 slug variants × 8 ATSes is 130–170
+  sequential requests at a median 0.14s (Greenhouse) to 0.83s (JazzHR), which measured **46–69s
+  per name in that loop alone** — the whole 60s budget, spent before Comeet or Workday was
+  reached, which is why names were being blamed on the Workday walk. The
+  eight are independent hosts, so the wall clock is now the slowest single ATS rather than the
+  sum of all eight. Six names re-measured, whole-company wall clock, before → after (with the
+  connect-timeout fix below): TriNet 57.5→23.8s, M-Files 4.4→1.4s, Remo Health 111.2→33.3s,
+  WealthCounsel 76.9→21.5s, Allegis Group 66.7→20.7s, Unit21 51.0→46.3s. The **answers are
+  still read back in `CHEAP_ATSES` order**, which is what
+  keeps every collision rule intact: first board with fit-titles wins, a no-fit board on the
+  company's own full name is still trusted immediately, and SmartRecruiters is still considered
+  last. The one behaviour change is that a slug whose winner is an early ATS now also costs the
+  later probes in that round — at most seven extra one-shot calls per resolved company.
+
+**A scalar `timeout` is not a wall-clock bound, and that is the second thing that was breaking
+the cap.** `requests` applies the value to the connection and then to each socket read, and
+urllib3 tries *every* address a hostname resolves to, so one dead host with two A records costs
+`2 × TIMEOUT`. Measured 2026-09-17: `https://remohealth.com/careers` spent **40.1s reaching a
+ConnectionError** against `TIMEOUT=20` — two thirds of that name's budget burnt by a single
+request that never reached a server — and `Budget.expired()` only gates *between* requests.
+Every probe now passes `(CONNECT_TIMEOUT, read)` = `(5, 20)`, shrunk to fit the remaining budget.
+5s is well clear of a real handshake: the slowest request that actually answered in that
+827-request sample took 3.3s end to end. DNS is still unbounded — no `requests` timeout covers
+`getaddrinfo`.
+
+**Known, unfixed, and separate: Workable rate-limits this walk into uselessness.** In the same
+sample `apply.workable.com` answered **429 to 55 of 94 requests** before the fan-out and 63 of 94
+after. `_get` turns any non-200 into `None` and `assess()` reads `None` as "no board", so a
+throttled Workable board is indistinguishable from a company that has none — the same
+false-negative class the Comeet and SmartRecruiters gaps were. It predates the fan-out and is not
+a timing problem; fixing it means deciding how much wall clock to spend backing off, which is
+Aneesh's call, not a silent one.
 
 Measured 2026-09-03 on the exact names that hung: `--names "Palo Alto Networks" "RSA Security"
 "Forescout"` with Workday enabled finishes in **92s, no timeouts**, versus a SIGKILL at 10
