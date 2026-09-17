@@ -118,6 +118,18 @@ EXPECT = {
 }
 DROPPED = {"Swooped", "RemoteHunter"}
 
+# Minimal single-card body, reused by the message-level coverage tests below (added
+# 2026-09-17). Those tests care about message counting, not card grading, so a
+# one-card body is enough; the job id is bumped per use to avoid cross-run collisions
+# in cards_by_id (harvest() dedupes by job_id within a single call, and each test
+# below makes its own call, but distinct ids keep the fixtures unambiguous to read).
+def _mini_body(job_id: str) -> str:
+    return (f"Your job alert for support operations manager in Atlanta\n\n"
+            f"New jobs match your preferences.\n\n"
+            f"Support Operations Manager\nAcme Corp\nAtlanta, GA\n"
+            f"View job: https://www.linkedin.com/comm/jobs/view/{job_id}/{TRK}\n\n"
+            f"See all jobs on LinkedIn: https://www.linkedin.com/comm/jobs/search-results/?x=y\n")
+
 
 def main() -> int:
     fails = 0
@@ -189,6 +201,74 @@ def main() -> int:
     pend = {e["name"]: e for e in res["pending_entries"]}
     if "Example Labs" not in pend or pend["Example Labs"].get("manual_review"):
         print(f"FAIL pending: {pend}")
+        fails += 1
+
+    # Message-level coverage (2026-09-17): a THREAD counting as "read" the moment
+    # one of its stacked messages has a body is what let 6 missing alert messages
+    # through on 2026-09-16 (38/38 threads read). These three cases cover the fix:
+    # a stacked thread with a partial shortfall, a stacked thread with none, and
+    # confirmation that non-job LinkedIn senders never enter the message count.
+
+    # Case 1: one thread, 3 stacked alert messages, only the first has a body.
+    stacked = [
+        {"id": "sm1", "thread_id": "stack-1", "sender": HL.JOB_SENDERS[0],
+         "subject": "alert 1", "date": "2026-09-16T08:00:00Z",
+         "body": _mini_body("5551000001"), "source": "fixture"},
+        {"id": "sm2", "thread_id": "stack-1", "sender": HL.JOB_SENDERS[0],
+         "subject": "alert 2", "date": "2026-09-16T08:00:00Z", "body": "", "source": "fixture"},
+        {"id": "sm3", "thread_id": "stack-1", "sender": HL.JOB_SENDERS[0],
+         "subject": "alert 3", "date": "2026-09-16T08:00:00Z", "body": "", "source": "fixture"},
+    ]
+    res_stacked = HL.harvest(stacked, grader, dt.date(2026, 9, 16),
+                             {"query": "q", "window_used": "2d", "input_mode": "fixture"})
+    cs = res_stacked["counters"]
+    if cs["job_alert_threads_seen"] != 1 or cs["bodies_read"] != 1:
+        print(f"FAIL stacked thread-level counters unexpectedly changed: {cs}")
+        fails += 1
+    if (cs["job_alert_messages_seen"], cs["job_alert_messages_with_body"]) != (3, 1):
+        print(f"FAIL stacked message-level counters: {cs}")
+        fails += 1
+    if cs["missing_body_message_ids"] != ["sm2", "sm3"]:
+        print(f"FAIL stacked missing ids: {cs['missing_body_message_ids']} want ['sm2', 'sm3']")
+        fails += 1
+
+    # Case 2: one thread, 2 stacked alert messages, both have a body -> no shortfall.
+    full = [
+        {"id": "fm1", "thread_id": "full-1", "sender": HL.JOB_SENDERS[0],
+         "subject": "alert 1", "date": "2026-09-16T08:00:00Z",
+         "body": _mini_body("5551000002"), "source": "fixture"},
+        {"id": "fm2", "thread_id": "full-1", "sender": HL.JOB_SENDERS[1],
+         "subject": "alert 2", "date": "2026-09-16T09:00:00Z",
+         "body": _mini_body("5551000003"), "source": "fixture"},
+    ]
+    res_full = HL.harvest(full, grader, dt.date(2026, 9, 16),
+                          {"query": "q", "window_used": "2d", "input_mode": "fixture"})
+    cf = res_full["counters"]
+    if (cf["job_alert_messages_seen"], cf["job_alert_messages_with_body"]) != (2, 2):
+        print(f"FAIL full-coverage message counters: {cf}")
+        fails += 1
+    if cf["missing_body_message_ids"]:
+        print(f"FAIL full-coverage should have no missing ids: {cf['missing_body_message_ids']}")
+        fails += 1
+
+    # Case 3: non-job LinkedIn senders (newsletters, "someone viewed your profile")
+    # must never enter the job-alert message count, with or without a body.
+    mixed = full + [
+        {"id": "nl1", "thread_id": "newsletter-1", "sender": "newsletters-noreply@linkedin.com",
+         "subject": "This week on LinkedIn", "date": "2026-09-16T10:00:00Z",
+         "body": "not a job alert", "source": "fixture"},
+        {"id": "em1", "thread_id": "em-1", "sender": "linkedin@em.linkedin.com",
+         "subject": "Someone viewed your profile", "date": "2026-09-16T11:00:00Z",
+         "body": "", "source": "fixture"},
+    ]
+    res_mixed = HL.harvest(mixed, grader, dt.date(2026, 9, 16),
+                           {"query": "q", "window_used": "2d", "input_mode": "fixture"})
+    cm = res_mixed["counters"]
+    if cm["job_alert_messages_seen"] != 2:
+        print(f"FAIL non-job senders leaked into message count: {cm}")
+        fails += 1
+    if cm["missing_body_message_ids"]:
+        print(f"FAIL non-job senders leaked into missing ids: {cm['missing_body_message_ids']}")
         fails += 1
 
     print(f"{len(EXPECT)} graded expectations, {len(res['cards'])} cards, "
