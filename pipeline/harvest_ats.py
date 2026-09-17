@@ -48,7 +48,9 @@ import json
 import os
 import re
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit
 
 import requests
@@ -105,6 +107,13 @@ class Budget:
                  single hung socket cannot overshoot the cap by a full TIMEOUT.
                  Without it the cap would be honoured only to +/-20s, which is a
                  third of the budget.
+
+    Neither is a hard bound, and 2026-09-17 showed how far that can go. requests
+    applies its timeout per socket operation, not per request, and urllib3 tries
+    every address a host resolves to, so ONE request to remohealth.com/careers
+    took 40.1s against TIMEOUT=20 while expired() sat between requests waiting
+    for a turn it never got. See CONNECT_TIMEOUT, which fixes the multi-address
+    half; DNS is still outside every bound here.
     """
 
     def __init__(self, seconds=PER_COMPANY_BUDGET):
@@ -348,6 +357,24 @@ def slug_variants(name: str):
 # Last request time per SERVICE, for the politeness pause below.
 _SERVICE_LAST_HIT = {}
 
+# One lock per service, so _pace stays correct once the cheap walk fans out
+# across ATSes (see probe_cheap, 2026-09-17). A SINGLE global lock would have
+# been wrong rather than merely coarse: _pace sleeps while holding it, so a
+# thread waiting out Rippling's DELAY would also stall the Greenhouse and Ashby
+# threads, which is the serialization the fan-out exists to remove. Per-service
+# locks give exactly the documented guarantee -- each ATS sees at most one
+# request per DELAY -- and nothing stronger.
+_SERVICE_LOCKS = {}
+_SERVICE_LOCKS_GUARD = threading.Lock()
+
+
+def _service_lock(svc):
+    with _SERVICE_LOCKS_GUARD:
+        lock = _SERVICE_LOCKS.get(svc)
+        if lock is None:
+            lock = _SERVICE_LOCKS[svc] = threading.Lock()
+        return lock
+
 
 def _service(url: str) -> str:
     """Registrable domain of a URL: 'greenhouse.io', 'myworkdayjobs.com'.
@@ -385,13 +412,41 @@ def _pace(url, budget=None):
     because a full cycle across every cheap ATS takes longer than DELAY on its own.
     """
     svc = _service(url)
-    wait = DELAY - (time.monotonic() - _SERVICE_LAST_HIT.get(svc, 0.0))
-    if wait > 0:
-        if budget is None:
-            time.sleep(wait)
-        else:
-            budget.sleep(wait)
-    _SERVICE_LAST_HIT[svc] = time.monotonic()
+    with _service_lock(svc):
+        wait = DELAY - (time.monotonic() - _SERVICE_LAST_HIT.get(svc, 0.0))
+        if wait > 0:
+            if budget is None:
+                time.sleep(wait)
+            else:
+                budget.sleep(wait)
+        _SERVICE_LAST_HIT[svc] = time.monotonic()
+
+
+# Connect timeout, kept separate from the read timeout (added 2026-09-17).
+#
+# A SCALAR `timeout` IS NOT A WALL-CLOCK BOUND, which is what Budget.timeout()'s
+# docstring quietly assumed. requests applies the value to the connection and
+# then to each socket read, and urllib3 tries EVERY address a hostname resolves
+# to, so one dead host with two A records costs 2 x TIMEOUT before it raises.
+# Measured 2026-09-17: https://remohealth.com/careers spent 40.1s reaching a
+# ConnectionError against TIMEOUT=20 -- two thirds of that name's 60s budget
+# burnt by a single request that never reached a server -- and nothing here
+# could stop it, because expired() only gates BETWEEN requests.
+#
+# 5s is well clear of a normal handshake: across the 827 requests measured that
+# day the slowest one that actually ANSWERED took 3.3s end to end, connect
+# included. A public ATS API or careers host that has not completed TCP+TLS in
+# 5s is not going to answer.
+#
+# What this still does not bound: DNS. getaddrinfo runs before the socket exists
+# and no requests timeout covers it.
+CONNECT_TIMEOUT = 5
+
+
+def _timeout(budget):
+    """(connect, read) for the next request, both inside the remaining budget."""
+    read = TIMEOUT if budget is None else budget.timeout()
+    return (min(CONNECT_TIMEOUT, read), read)
 
 
 def _get(url, budget=None):
@@ -399,8 +454,7 @@ def _get(url, budget=None):
         return None
     _pace(url, budget)
     try:
-        r = requests.get(url, headers=UA,
-                         timeout=TIMEOUT if budget is None else budget.timeout())
+        r = requests.get(url, headers=UA, timeout=_timeout(budget))
         return r if r.status_code == 200 else None
     except Exception:
         return None
@@ -419,8 +473,7 @@ def _raw_get(url, budget=None):
         return None
     _pace(url, budget)
     try:
-        return requests.get(url, headers=UA,
-                            timeout=TIMEOUT if budget is None else budget.timeout(),
+        return requests.get(url, headers=UA, timeout=_timeout(budget),
                             allow_redirects=True)
     except Exception:
         return None
@@ -712,6 +765,81 @@ def probe(ats: str, slug: str, budget=None):
     return None
 
 
+# The slug-addressed ATSes, in the order assess() EVALUATES a slug's results.
+# SmartRecruiters stays last for the collision reason given in assess(); the
+# order is load-bearing there and nowhere else.
+CHEAP_ATSES = ("greenhouse", "ashby", "lever", "workable", "pinpoint",
+               "rippling", "jazzhr", "smartrecruiters")
+
+
+def probe_cheap(slug, atses, budget=None):
+    """{ats: probe(ats, slug)} for several ATSes at once, one thread per ATS.
+
+    Added 2026-09-17, after two consecutive daily runs were dominated by
+    timeouts (16 of 30 companies on 09-16, 10 of 30 plus 2 of 5 on 09-17) and
+    companies were being written off as unresolvable without evidence.
+
+    THE CAP WAS NOT THE PROBLEM AND NEITHER WAS WORKDAY. Measured that day with
+    a 300s budget, the Workday walk cost 1.7-3.4s per name -- its 422
+    short-circuit fires exactly as documented, 5 requests per tenant -- while
+    this loop alone cost 46-69s:
+
+        name                  cheap walk        rest of the name
+        TriNet                130 req  49.5s     2.0s comeet   1.7s workday
+        Remo Health           152 req  62.8s    43.4s comeet   3.4s workday
+        WealthCounsel, LLC    168 req  69.0s     3.4s comeet   3.3s workday
+        Allegis Group         152 req  60.7s     2.1s comeet   2.9s workday
+        Unit21                128 req  46.4s     2.1s comeet   2.2s workday
+
+    No request in that phase came near TIMEOUT and none was retried. It is
+    simply 16-21 slug variants times eight ATSes -- 130-170 requests at a median
+    0.14s (Greenhouse) to 0.83s (JazzHR) -- issued one after another. The names
+    printed as timing out "during the Workday tenant walk" had already spent
+    their 60s here and merely tripped the cap at the next gate, which made
+    Workday look guilty for a bill this loop ran up.
+
+    The eight ATSes are eight INDEPENDENT hosts, so the serialization bought
+    nothing. Probing them concurrently makes the wall clock the slowest single
+    ATS rather than the sum of all eight. Same six names, whole-company wall
+    clock, before -> after (this change plus CONNECT_TIMEOUT):
+
+        TriNet 57.5 -> 23.8   M-Files 4.4 -> 1.4   Remo Health 111.2 -> 33.3
+        WealthCounsel 76.9 -> 21.5   Allegis 66.7 -> 20.7   Unit21 51.0 -> 46.3
+
+    Unit21 is the honest caveat: two Greenhouse 404s in that run took 18.6s and
+    13.4s, against a 0.14s median and a 2.7s worst case when the same probes ran
+    serially. Tightening the spacing to ~0.85s does occasionally provoke a stall
+    on that host. Two requests in 93 is not enough to tune against, and 46.3s is
+    still inside the 60s cap, so it is left alone and written down instead.
+
+    What this does NOT change:
+      - Politeness. DELAY is enforced per SERVICE in _pace, now under a
+        per-service lock, so each ATS still sees at most one request per DELAY.
+        The fan-out tightens the real spacing from ~3.3s to ~0.85s, which is
+        still more than twice DELAY.
+      - Evaluation order, and therefore every collision rule that depends on it.
+        assess() reads this dict back in CHEAP_ATSES order, so the first board
+        with fit-titles still wins and SmartRecruiters is still considered last.
+      - Any probe's own logic: probe() is called unmodified, so the
+        SmartRecruiters None-vs-[] distinction, the JazzHR inactive-page check,
+        the Rippling custom-domain fallback and _confirm_empty are untouched.
+      - Exceptions. fut.result() re-raises rather than swallowing, so a probe
+        that raises still aborts the run exactly as it did before.
+
+    What it does change: on a slug where an early ATS would have answered,
+    the later ones are now probed too, because they are already in flight. That
+    is at most seven extra one-shot API calls per resolved company, spread over
+    seven different hosts, and it is the price of not knowing the winner until
+    the round is over. The worst case -- a name that resolves nothing -- issues
+    exactly the same requests as before.
+    """
+    if len(atses) == 1:
+        return {atses[0]: probe(atses[0], slug, budget)}
+    with ThreadPoolExecutor(max_workers=len(atses)) as pool:
+        futures = [(ats, pool.submit(probe, ats, slug, budget)) for ats in atses]
+        return {ats: fut.result() for ats, fut in futures}
+
+
 WORKDAY_HOSTS = ["wd1", "wd5", "wd3", "wd12", "wd101"]
 WORKDAY_SITES = ["Careers", "External", "ExternalCareers", "External_Career_Site",
                  "Search", "careers", "Jobs", "US", "Global", "ext", "CareerSite"]
@@ -775,7 +903,7 @@ def probe_workday(slug: str, budget=None):
             _pace(url, budget)
             try:
                 r = requests.post(url, json=body, headers=UA,
-                                  timeout=TIMEOUT if budget is None else budget.timeout())
+                                  timeout=_timeout(budget))
             except Exception:
                 break          # network trouble on this host; try the next one
             if r.status_code == 422:
@@ -1325,21 +1453,23 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
     full_forms = {"".join(_words), "-".join(_words), re.sub(r"[^a-z0-9]+", "", _n)}
     nofit_hit = None
     for slug in slug_variants(name):
-        # SmartRecruiters runs LAST of the cheap probes. It is as cheap as any of
-        # them (one JSON GET), so this is a collision-risk ordering, not a cost
-        # one: its API cannot 404 a bad slug, so it is the branch most likely to
-        # answer for the wrong company. Letting a genuine Greenhouse or Ashby
-        # board answer first costs nothing and removes that chance entirely.
-        for ats in ("greenhouse", "ashby", "lever", "workable", "pinpoint",
-                    "rippling", "jazzhr", "smartrecruiters"):
-            if budget is not None and budget.expired():
-                # A held no-fit board is a real finding; return it rather than
-                # discard it for a timeout. The pre-2026-09-10 code would have
-                # returned it before the clock ran out anyway.
-                return nofit_hit or timed_out("cheap-ATS slug walk")
-            if (ats, slug) in known_pairs:
-                continue
-            jobs = probe(ats, slug, budget)
+        if budget is not None and budget.expired():
+            # A held no-fit board is a real finding; return it rather than
+            # discard it for a timeout. The pre-2026-09-10 code would have
+            # returned it before the clock ran out anyway.
+            return nofit_hit or timed_out("cheap-ATS slug walk")
+        # One round trip per slug across every cheap ATS at once (probe_cheap,
+        # 2026-09-17), then read the answers back IN ORDER. The order is the
+        # part that matters and it is unchanged: SmartRecruiters is evaluated
+        # LAST because its API cannot 404 a bad slug, so it is the branch most
+        # likely to answer for the wrong company, and letting a genuine
+        # Greenhouse or Ashby board answer first removes that chance entirely.
+        todo = [a for a in CHEAP_ATSES if (a, slug) not in known_pairs]
+        if not todo:
+            continue
+        answers = probe_cheap(slug, todo, budget)
+        for ats in todo:
+            jobs = answers[ats]
             if jobs is None:
                 continue
             if not jobs:
@@ -1362,6 +1492,13 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
                 return res
             if nofit_hit is None:
                 nofit_hit = res
+        # Re-checked after the round as well as before it. The pre-fan-out loop
+        # tested the budget before every single (slug, ATS) probe, so a trip on
+        # the LAST slug was reported against this phase; without this line it
+        # would instead fall through and be blamed on Comeet or Workday, which
+        # is the misattribution probe_cheap's docstring exists to correct.
+        if budget is not None and budget.expired():
+            return nofit_hit or timed_out("cheap-ATS slug walk")
     if nofit_hit is not None:
         return nofit_hit
 
