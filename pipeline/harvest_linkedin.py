@@ -126,7 +126,7 @@ Aggregators (Swooped, RemoteHunter, Jobot, ...) are dropped at extraction; the l
 in watchlist_companies.json -> _poller_config.linkedin_aggregator_blocklist. Everything
 else is checked against the watchlist, the blind-spot and unpollable blocks, and all three
 enrollment buckets through check_company.lookup(), so the same name never queues twice.
-Only UNKNOWN companies are queued, in the standard pending schema, at most 15 per run;
+Only UNKNOWN companies are queued, in the standard pending schema, at most 30 per run;
 cards carrying manual_review go first, then order of appearance.
 """
 import argparse
@@ -154,7 +154,7 @@ GMAIL_TOKEN = os.path.join(SCRIPT_DIR, "gmail_token.json")
 VALIDATE = os.path.join(SCRIPT_DIR, "validate_config.py")
 
 JOB_SENDERS = ("jobalerts-noreply@linkedin.com", "jobs-noreply@linkedin.com")
-MAX_NEW_PER_RUN = 15          # Step 1d-2 item 4; do not raise to "clear the backlog"
+MAX_NEW_PER_RUN = 30          # Step 1d-2 item 4; raised 15 -> 30 on 2026-09-17 (Aneesh's call)
 SOURCE_LABEL = "LinkedIn alert"
 
 TIER_LABELS = {
