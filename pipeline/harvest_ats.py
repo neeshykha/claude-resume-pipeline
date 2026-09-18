@@ -121,6 +121,10 @@ class Budget:
         self.start = time.monotonic()
         self.deadline = self.start + seconds
         self.tripped = False
+        # Services whose one 429 retry has already failed during this company's
+        # walk; _send stops retrying them (still sends, never waits). Kept here
+        # because a Budget is exactly one company's walk. Added 2026-09-17.
+        self.retry_exhausted = set()
 
     def elapsed(self):
         return time.monotonic() - self.start
@@ -449,15 +453,150 @@ def _timeout(budget):
     return (min(CONNECT_TIMEOUT, read), read)
 
 
+# ---------------------------------------------------------------------------
+# Throttling: the third answer a probe can give (added 2026-09-17)
+# ---------------------------------------------------------------------------
+# Every probe used to have two answers: None ("no board at this ats/slug") and
+# a list ("board, with these jobs"; [] meaning resolved-but-empty). _get turned
+# EVERY non-200 into None, so a rate-limited request read as proof that no board
+# existed. Measured 2026-09-17 during the probe_cheap timing study:
+# apply.workable.com answered HTTP 429 to 55 of 94 requests (59% before the
+# fan-out landed, 64% after, so parallelism is not the cause -- Workable
+# throttles this walk hard), and every one of them was scored "no Workable
+# board".
+#
+# That is not a slow-run problem, it is a data-loss problem. A company resolved
+# as having no board anywhere is rejected with `unpollable: true`, the flag that
+# stops it ever being re-checked and puts it on the weekly manual punch list. A
+# throttled Workable board could therefore permanently write off a real
+# company: the same failure class as the Comeet (Upwind, 2026-09-02) and
+# SmartRecruiters (2026-09-03) false negatives, reached through a status code
+# instead of a missing adapter.
+#
+# THROTTLED is that third answer: "the ATS refused to say". It is a singleton
+# compared by identity, and it RAISES on bool()/len()/iteration. That is
+# deliberate. Nearly every caller in this file tests a probe result with `if not
+# r` or `len(jobs)`, and a sentinel that quietly evaluated falsy would slide
+# straight back into the no-board branch this exists to keep it out of. A caller
+# that forgets to check `is THROTTLED` crashes loudly instead of lying.
+class _Throttled:
+    __slots__ = ()
+
+    def _refuse(self, *_a):
+        raise TypeError("THROTTLED is not a board answer; test `is THROTTLED` "
+                        "before treating a probe result as a list or a bool")
+
+    __bool__ = __len__ = __iter__ = _refuse
+
+    def __repr__(self):
+        return "THROTTLED"
+
+
+THROTTLED = _Throttled()
+
+# Only 429. It is the status every measured throttle used, and it means one
+# thing. 503 is deliberately NOT included: it is also what a dead or
+# misconfigured host serves, and reading it as "unknown" would hold companies
+# open on noise that has never been observed as a throttle here.
+THROTTLE_STATUSES = frozenset((429,))
+
+# One retry, after Retry-After when the server sends one, else this. 2s matches
+# _confirm_empty's pause, the existing figure for "let a burst drain".
+RETRY_FALLBACK_WAIT = 2.0
+# A Retry-After longer than this is not worth waiting out inside a per-company
+# walk: the result stays THROTTLED and the company is reported unresolved,
+# which a later targeted --names run can settle.
+RETRY_AFTER_MAX = 10.0
+
+
+def _retry_after_seconds(r):
+    """Seconds a 429 asks us to wait: Retry-After if parseable, else the fallback.
+
+    Accepts delay-seconds (read with float(), which also tolerates "1.5") and
+    the HTTP-date form. Anything unparseable falls back rather than raising.
+    """
+    raw = (getattr(r, "headers", None) or {}).get("Retry-After")
+    if raw is None:
+        return RETRY_FALLBACK_WAIT
+    raw = str(raw).strip()
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        pass
+    try:
+        from email.utils import parsedate_to_datetime
+        import datetime as _dt
+        when = parsedate_to_datetime(raw)
+        return max(0.0, (when - _dt.datetime.now(when.tzinfo)).total_seconds())
+    except Exception:
+        return RETRY_FALLBACK_WAIT
+
+
+def _is_throttled(r) -> bool:
+    return r is not None and getattr(r, "status_code", None) in THROTTLE_STATUSES
+
+
+def _send(method, url, budget=None, **kw):
+    """One request, plus AT MOST ONE retry if it was throttled.
+
+    Returns the final response (which may still be a 429), or None on network
+    failure. Callers decide what a 429 means; this only decides whether to ask
+    twice. The retry is skipped, leaving the 429 as the answer, when:
+
+      - Retry-After exceeds RETRY_AFTER_MAX, or would outlast the remaining
+        per-company budget. The budget is never slept past: a wait that cannot
+        finish in time buys nothing, and sleeping a partial wait and retrying
+        early would ignore what the server asked for.
+      - This service has already failed a retry during this company's walk
+        (budget.retry_exhausted). The cheap walk sends ~20 slug variants to
+        every ATS, so without this a service throttling for the whole walk
+        would cost ~20 retry waits -- 40s of a 60s budget at the fallback --
+        and time the company out, which is worse than one honest THROTTLED.
+        Requests are still SENT, because Workable's throttling is partial (41%
+        of requests got through on 2026-09-17) and any one of them might be
+        the board; only the retry is withheld. With no budget (prune, or
+        --budget-seconds 0) there is no walk to protect, so every request keeps
+        its one retry.
+    """
+    send = getattr(requests, method)
+    r = None
+    for attempt in (0, 1):
+        _pace(url, budget)
+        try:
+            r = send(url, headers=UA, timeout=_timeout(budget), **kw)
+        except Exception:
+            return None
+        if not _is_throttled(r):
+            return r
+        svc = _service(url)
+        if attempt:
+            if budget is not None:
+                budget.retry_exhausted.add(svc)
+            return r
+        if budget is not None and svc in budget.retry_exhausted:
+            return r
+        wait = _retry_after_seconds(r)
+        if wait > RETRY_AFTER_MAX:
+            return r
+        if budget is not None and wait >= budget.remaining():
+            return r
+        if budget is None:
+            time.sleep(wait)
+        else:
+            budget.sleep(wait)
+    return r
+
+
 def _get(url, budget=None):
+    """200 -> the response; throttled (after one retry) -> THROTTLED; else None."""
     if budget is not None and budget.expired():
         return None
-    _pace(url, budget)
-    try:
-        r = requests.get(url, headers=UA, timeout=_timeout(budget))
-        return r if r.status_code == 200 else None
-    except Exception:
+    r = _send("get", url, budget)
+    if r is None:
         return None
+    if r.status_code == 200:
+        return r
+    return THROTTLED if _is_throttled(r) else None
 
 
 def _raw_get(url, budget=None):
@@ -468,15 +607,15 @@ def _raw_get(url, budget=None):
     walk needs: a dead domain should be abandoned after one request, while a
     live domain that 404s on /careers is worth trying /jobs on. Every ATS probe
     above genuinely only cares about 200, so they keep using _get.
+
+    A 429 is retried once like any other request here (see _send) and, if it
+    persists, returned as-is: callers that care test _is_throttled(r).
+    poll_builtin.py also calls this and reads any non-200 as a failure, which
+    the one retry only improves.
     """
     if budget is not None and budget.expired():
         return None
-    _pace(url, budget)
-    try:
-        return requests.get(url, headers=UA, timeout=_timeout(budget),
-                            allow_redirects=True)
-    except Exception:
-        return None
+    return _send("get", url, budget, allow_redirects=True)
 
 
 def _confirm_empty(ats: str, slug: str, budget=None):
@@ -501,12 +640,19 @@ def _confirm_empty(ats: str, slug: str, budget=None):
     costs one missed re-check, over-claiming writes a wrong ats/slug onto a
     company's permanent record and suppresses the manual search that would have
     found the real one.
+
+    Returns THROTTLED (not False) when the re-probe was rate-limited, added
+    2026-09-17: Workable is both the host that serves false empties under load
+    and the host that 429s this walk, so a throttled confirm is the likeliest
+    way this guard runs at all, and "could not confirm" is not "no board".
     """
     if budget is None:
         time.sleep(max(DELAY, 2.0))
     else:
         budget.sleep(max(DELAY, 2.0))
     again = probe(ats, slug, budget)
+    if again is THROTTLED:
+        return THROTTLED
     return again is not None and len(again) == 0
 
 
@@ -561,6 +707,8 @@ def _rippling_board_api(slug, budget=None):
     """
     import poll_ats as _P
     r = _get(rippling_board_api_endpoint().format(slug=slug), budget)
+    if r is THROTTLED:
+        return THROTTLED
     if not r:
         return None
     try:
@@ -573,10 +721,44 @@ def _rippling_board_api(slug, budget=None):
             for j in _P.rippling_api_items(rows)]
 
 
+# ATSes that can never serve a board at a DOTTED slug (added 2026-09-17).
+# slug_variants() emits dotted forms (`unit21.ai`) on purpose, because Ashby
+# board names really do keep the dot (ambient.ai, far.ai, mistral.ai,
+# happyrobot.ai on the watchlist) and so does at least one Lever site
+# (lever/regal.ai). Sending them everywhere was not free, though. The same
+# 2026-09-17 timing study that found the Workable 429s counted, from dotted
+# variants alone:
+#
+#   jazzhr           15 SSL errors   {slug}.applytojob.com: a dot makes it a
+#   pinpoint         15 SSL errors   {slug}.pinpointhq.com: second-level
+#                                     subdomain the wildcard cert cannot cover
+#   smartrecruiters  15 HTTP 400s    path-addressed, but the API rejects the
+#                                     identifier outright rather than 404ing
+#
+# The first two address the board by SUBDOMAIN, so a dotted slug is not a
+# plausible board address at all. SmartRecruiters is path-addressed, but a 400
+# on every dotted identifier is the API saying the same thing. Greenhouse,
+# Workable, and Rippling keep receiving them: they 404 cleanly and nothing
+# measured says a dot is invalid there. Ashby and Lever keep them because a
+# dotted slug is legitimate on both. probe() answers None for these pairs
+# without sending anything: "no board can exist at this address" is exactly
+# what None means.
+NO_DOTTED_SLUG_ATSES = frozenset(("jazzhr", "pinpoint", "smartrecruiters"))
+
+
 def probe(ats: str, slug: str, budget=None):
-    """Return [(title, location)] if the board resolves, else None."""
+    """[(title, location)] if the board resolves, None if not, THROTTLED if unknown.
+
+    THROTTLED means the ATS rate-limited the request (after _send's one retry),
+    so nothing is known about this (ats, slug). It must never be read as None:
+    see the THROTTLED block above.
+    """
+    if "." in slug and ats in NO_DOTTED_SLUG_ATSES:
+        return None
     if ats == "greenhouse":
         r = _get(f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs", budget)
+        if r is THROTTLED:
+            return THROTTLED
         if not r:
             return None
         return [(j.get("title", ""), (j.get("location") or {}).get("name", ""))
@@ -587,6 +769,8 @@ def probe(ats: str, slug: str, budget=None):
         # "Remote"/"Hybrid" to the string, which matters for scoring an enrolled
         # role and not for judging whether a board carries US-reachable fit-space.
         r = _get(f"https://api.ashbyhq.com/posting-api/job-board/{slug}", budget)
+        if r is THROTTLED:
+            return THROTTLED
         if not r:
             return None
         out = []
@@ -598,6 +782,8 @@ def probe(ats: str, slug: str, budget=None):
         return out
     if ats == "lever":
         r = _get(f"https://api.lever.co/v0/postings/{slug}?mode=json", budget)
+        if r is THROTTLED:
+            return THROTTLED
         if not r:
             return None
         return [(j.get("text", ""),
@@ -607,6 +793,8 @@ def probe(ats: str, slug: str, budget=None):
     if ats == "workable":
         r = _get(f"https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true",
                  budget)
+        if r is THROTTLED:
+            return THROTTLED
         if not r:
             return None
         return [(j.get("title", ""),
@@ -615,6 +803,8 @@ def probe(ats: str, slug: str, budget=None):
                 for j in r.json().get("jobs", [])]
     if ats == "pinpoint":
         r = _get(f"https://{slug}.pinpointhq.com/postings.json", budget)
+        if r is THROTTLED:
+            return THROTTLED
         if not r:
             return None
         out = []
@@ -633,6 +823,8 @@ def probe(ats: str, slug: str, budget=None):
         # so the probe and the daily fetch cannot drift apart.
         import poll_ats as _P
         r = _raw_get(f"https://{slug}.applytojob.com/apply/", budget)
+        if _is_throttled(r):
+            return THROTTLED
         if not _P.jazzhr_board_live(r):
             return None
         out = []
@@ -660,6 +852,8 @@ def probe(ats: str, slug: str, budget=None):
             return None
         if (urlsplit(r.url).hostname or "") != "ats.rippling.com":
             return _rippling_board_api(slug, budget)
+        if _is_throttled(r):
+            return THROTTLED
         if r.status_code != 200:
             return None
         m = re.search(
@@ -728,6 +922,13 @@ def probe(ats: str, slug: str, budget=None):
         offset = 0
         while offset < SMARTRECRUITERS_PROBE_MAX:
             r = _get(f"{base}{sep}offset={offset}", budget)
+            if r is THROTTLED:
+                # Page one throttled: nothing known about this slug. A later
+                # page throttled: a truncated read of a board that has already
+                # proven real, kept exactly like any other short read below.
+                if not postings:
+                    return THROTTLED
+                break
             if not r:
                 break
             try:
@@ -832,6 +1033,9 @@ def probe_cheap(slug, atses, budget=None):
     seven different hosts, and it is the price of not knowing the winner until
     the round is over. The worst case -- a name that resolves nothing -- issues
     exactly the same requests as before.
+
+    Values are passed through untouched, so a dict entry can be THROTTLED as
+    well as None or a list; assess() owns telling them apart.
     """
     if len(atses) == 1:
         return {atses[0]: probe(atses[0], slug, budget)}
@@ -846,7 +1050,8 @@ WORKDAY_SITES = ["Careers", "External", "ExternalCareers", "External_Career_Site
 
 
 def probe_workday(slug: str, budget=None):
-    """Resolve a Workday board. Returns ([(title, location)], meta) or (None, None).
+    """Resolve a Workday board. Returns ([(title, location)], meta) or (None, None),
+    or (THROTTLED, None) when a host rate-limited the walk and nothing resolved.
 
     Workday is addressed by THREE parts (tenant, host, site) rather than the
     single slug every other ATS here uses, so it gets its own function instead
@@ -888,6 +1093,12 @@ def probe_workday(slug: str, budget=None):
         f"Careers_{slug.upper()}",
     ]
     body = {"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": ""}
+    # A 429 here used to fall through to `continue` and read as "404, wrong
+    # site name", and a host that throttled every site read as a clean miss.
+    # Now it ends that HOST (a 429 says nothing about the tenant, and the
+    # remaining sites would be asked of a host that is refusing) and, if
+    # nothing resolves anywhere, the whole answer is THROTTLED. 2026-09-17.
+    throttled = False
     for host in WORKDAY_HOSTS:
         if budget is not None and budget.expired():
             return None, None
@@ -900,12 +1111,12 @@ def probe_workday(slug: str, budget=None):
             if budget is not None and budget.expired():
                 return None, None
             url = f"https://{fqdn}/wday/cxs/{slug}/{site}/jobs"
-            _pace(url, budget)
-            try:
-                r = requests.post(url, json=body, headers=UA,
-                                  timeout=_timeout(budget))
-            except Exception:
+            r = _send("post", url, budget, json=body)
+            if r is None:
                 break          # network trouble on this host; try the next one
+            if _is_throttled(r):
+                throttled = True
+                break
             if r.status_code == 422:
                 break          # no such tenant here -- don't try the other sites
             if r.status_code != 200:
@@ -920,7 +1131,7 @@ def probe_workday(slug: str, budget=None):
                     for p in d.get("jobPostings", [])]
             return jobs, {"wd_host": fqdn, "wd_tenant": slug, "wd_site": site,
                           "total": d["total"]}
-    return None, None
+    return (THROTTLED, None) if throttled else (None, None)
 
 
 # ---------------------------------------------------------------------------
@@ -1072,6 +1283,9 @@ def comeet_credentials(html: str, page_url: str, budget=None):
         return found
     origin = "{0.scheme}://{0.netloc}".format(urlsplit(page_url))
     hops = 0
+    # A throttled script hop means the credentials may well be in it: return
+    # THROTTLED rather than None if nothing else yields them (2026-09-17).
+    throttled = False
     for m in _COMEET_SCRIPT_SRC.finditer(html):
         if hops >= MAX_SCRIPT_HOPS:
             break
@@ -1089,12 +1303,15 @@ def comeet_credentials(html: str, page_url: str, budget=None):
             continue
         hops += 1
         r = _get(src, budget)
+        if r is THROTTLED:
+            throttled = True
+            continue
         if r is None:
             continue
         found = _credentials_from_text(r.text)
         if found:
             return found
-    return None
+    return THROTTLED if throttled else None
 
 
 def domain_candidates(name: str):
@@ -1140,7 +1357,8 @@ def _redirected_home(response) -> bool:
 
 
 def probe_comeet(name: str, budget=None):
-    """Resolve a Comeet board from a company NAME. ([(title, location)], meta) or (None, None).
+    """Resolve a Comeet board from a company NAME. ([(title, location)], meta) or (None, None),
+    or (THROTTLED, None) if a 429 anywhere on the walk left the answer unknown.
 
     Walks name-derived domains, and on each one that actually answers, walks a
     short list of careers paths looking for the widget.
@@ -1173,6 +1391,9 @@ def probe_comeet(name: str, budget=None):
     seen_domains = set(queue)
     walked_hosts = set()
     walked = 0
+    # Any 429 on the way -- careers page, script hop, or the Comeet API itself
+    # -- turns a final miss into THROTTLED instead of (None, None). 2026-09-17.
+    throttled = False
     while queue:
         if budget is not None and budget.expired():
             return None, None
@@ -1182,6 +1403,9 @@ def probe_comeet(name: str, budget=None):
         first = _raw_get(f"https://{domain}{CAREERS_PATHS[0]}", budget)
         if first is None:
             continue          # domain does not resolve; nothing else to try here
+        if _is_throttled(first):
+            throttled = True
+            continue
         host = urlsplit(first.url).netloc
         if host in walked_hosts:
             continue          # a second spelling of a site already walked
@@ -1199,16 +1423,25 @@ def probe_comeet(name: str, budget=None):
                 return None, None
             url = f"https://{domain}{path}"
             r = first if path == CAREERS_PATHS[0] else _raw_get(url, budget)
+            if _is_throttled(r):
+                throttled = True
+                continue
             if r is None or r.status_code != 200 or _redirected_home(r):
                 continue
             html = r.text
             if not looks_like_comeet(html):
                 break         # real careers page, different ATS -- stop here
             creds = comeet_credentials(html, r.url or url, budget)
+            if creds is THROTTLED:
+                throttled = True
+                continue
             if not creds:
                 continue
             uid, token = creds
             api = _get(COMEET_ENDPOINT.format(uid=uid, token=token), budget)
+            if api is THROTTLED:
+                throttled = True
+                continue
             if api is None:
                 continue
             try:
@@ -1239,7 +1472,7 @@ def probe_comeet(name: str, budget=None):
                 continue
             return jobs, {"comeet_uid": uid, "comeet_token": token,
                           "comeet_careers_url": r.url or url, "total": len(jobs)}
-    return None, None
+    return (THROTTLED, None) if throttled else (None, None)
 
 
 def comeet_slug(name: str) -> str:
@@ -1400,6 +1633,24 @@ def board_has_title(titles, card_title) -> bool:
     return False
 
 
+def _throttle_summary(pairs) -> str:
+    """'workable x14, workday x1' -- which services refused, and how often."""
+    counts = {}
+    for ats, _slug in pairs or ():
+        counts[ats] = counts.get(ats, 0) + 1
+    return ", ".join(f"{a} x{n}" for a, n in sorted(counts.items()))
+
+
+def _throttle_clause(res) -> str:
+    """Reason-text sentence for a record whose walk hit rate limits, or ''."""
+    pairs = res.get("throttled_probes") or []
+    if not pairs:
+        return ""
+    return (f" {len(pairs)} probe(s) were rate-limited (HTTP 429) and never "
+            f"answered ({_throttle_summary(pairs)}), so a board at one of those "
+            f"addresses was not ruled out.")
+
+
 def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
            skip_comeet=False, budget_seconds=PER_COMPANY_BUDGET):
     """Resolve a company to (ats, slug, strong_hits, total_jobs) or a reason.
@@ -1416,10 +1667,26 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
     not cost the other fourteen. 0 or None disables the cap entirely.
     """
     budget = Budget(budget_seconds) if budget_seconds else None
+    t0 = time.monotonic()
 
     def timed_out(phase):
         return {"timed_out": True, "phase": phase, "empty_hits": empty_hits,
+                "throttled_probes": list(throttled),
                 "elapsed": budget.elapsed(), "budget": budget.seconds}
+
+    # (ats, slug) pairs whose probe came back THROTTLED (added 2026-09-17; see
+    # the THROTTLED block). Each one is a place a board may exist that we were
+    # not allowed to look at, so a walk that finds nothing while this is
+    # non-empty has NOT shown the company has no board, and must not return
+    # the None that main() writes up as unpollable. It returns a `throttled`
+    # result instead, the same unresolved-not-a-finding shape as timed_out().
+    throttled = []
+
+    def _note(res):
+        """Attach the throttled pairs to a result that is returned anyway."""
+        if throttled and isinstance(res, dict):
+            res["throttled_probes"] = list(throttled)
+        return res
 
     # Boards that resolved but returned zero jobs. Remembered rather than
     # discarded (added 2026-08-31): continuing to look is right, but FORGETTING
@@ -1470,6 +1737,9 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
         answers = probe_cheap(slug, todo, budget)
         for ats in todo:
             jobs = answers[ats]
+            if jobs is THROTTLED:
+                throttled.append((ats, slug))
+                continue
             if jobs is None:
                 continue
             if not jobs:
@@ -1478,7 +1748,10 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
                 # at all. But hold on to it in case nothing better turns up --
                 # and only after confirming it is a real empty board rather than
                 # a load artifact (see _confirm_empty).
-                if _confirm_empty(ats, slug, budget):
+                confirmed = _confirm_empty(ats, slug, budget)
+                if confirmed is THROTTLED:
+                    throttled.append((ats, slug))
+                elif confirmed:
                     empty_hits.append((ats, slug))
                 continue
             res = {"ats": ats, "slug": slug, "total": len(jobs),
@@ -1487,9 +1760,9 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
             if res["strong"]:
                 if nofit_hit is not None:
                     res["passed_over"] = f"{nofit_hit['ats']}/{nofit_hit['slug']}"
-                return res
+                return _note(res)
             if slug.lower() in full_forms:
-                return res
+                return _note(res)
             if nofit_hit is None:
                 nofit_hit = res
         # Re-checked after the round as well as before it. The pre-fan-out loop
@@ -1500,7 +1773,10 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
         if budget is not None and budget.expired():
             return nofit_hit or timed_out("cheap-ATS slug walk")
     if nofit_hit is not None:
-        return nofit_hit
+        # Still returned: a real board did answer. But if a throttled probe
+        # might have been the company's own board, say so, because the held
+        # board is by construction a reduced-form match (see above).
+        return _note(nofit_hit)
 
     # COMEET, after every slug-addressable ATS has failed and before Workday.
     #
@@ -1517,7 +1793,9 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
         if budget is not None and budget.expired():
             return timed_out("Comeet careers-page walk")
         jobs, meta = probe_comeet(name, budget)
-        if jobs:
+        if jobs is THROTTLED:
+            throttled.append(("comeet", comeet_slug(name)))
+        elif jobs:
             slug = comeet_slug(name)
             if ("comeet", slug) not in known_pairs:
                 res = {"ats": "comeet", "slug": slug, "total": meta["total"],
@@ -1569,6 +1847,9 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
         if ("workday", slug) in known_pairs:
             continue
         jobs, meta = probe_workday(slug, budget)
+        if jobs is THROTTLED:
+            throttled.append(("workday", slug))
+            continue
         if not jobs:
             continue
         res = {"ats": "workday", "slug": slug, "total": meta["total"],
@@ -1589,8 +1870,18 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
     # say that instead of claiming no board exists (see empty_hits above).
     if empty_hits:
         ats, slug = empty_hits[0]
-        return {"ats": ats, "slug": slug, "total": 0, "strong": [],
-                "empty_board": True, "empty_hits": empty_hits}
+        return _note({"ats": ats, "slug": slug, "total": 0, "strong": [],
+                      "empty_board": True, "empty_hits": empty_hits})
+    # Nothing resolved, but something refused to answer. This is the case the
+    # third state exists for: before 2026-09-17 it fell through to the `return
+    # None` below and was written up unpollable=true. It is checked AFTER the
+    # empty-board branch because an empty board is a real finding and already
+    # carries unpollable=false; the throttled pairs ride along on it via _note.
+    if throttled:
+        return {"throttled": True, "throttled_probes": list(throttled),
+                "elapsed": time.monotonic() - t0}
+    # The ONLY path to None, and therefore the only path to an unpollable=true
+    # no-board record: every probe that ran got an answer, and none was a board.
     return None
 
 
@@ -1867,6 +2158,7 @@ def main():
 
     enrollable, no_board, no_fit, empty_board, skipped = [], [], [], [], []
     timed_out, aggregator_blocked, collision = [], [], []
+    throttled_unresolved = []
     run_started = time.monotonic()
     total_targets = len(targets)
     for idx, name in enumerate(targets, 1):
@@ -1893,6 +2185,13 @@ def main():
             timed_out.append((name, res))
             print(f"  [TO] {name:24s} {took} hit the {res['budget']:g}s cap during "
                   f"the {res['phase']}; unresolved", flush=True)
+            continue
+        if res is not None and res.get("throttled"):
+            throttled_unresolved.append((name, res))
+            print(f"  [RL] {name:24s} {took} nothing resolved, but "
+                  f"{len(res['throttled_probes'])} probe(s) were rate-limited "
+                  f"({_throttle_summary(res['throttled_probes'])}); unresolved, "
+                  f"NOT no-board", flush=True)
             continue
         if res is None:
             no_board.append((name, None))
@@ -1937,13 +2236,17 @@ def main():
 
     print(f"\nenrollable={len(enrollable)} no_fit={len(no_fit)} "
           f"empty_board={len(empty_board)} no_board={len(no_board)} "
-          f"timed_out={len(timed_out)} collision={len(collision)} "
+          f"timed_out={len(timed_out)} throttled={len(throttled_unresolved)} "
+          f"collision={len(collision)} "
           f"already_known_skipped={len(skipped)} "
           f"aggregator_blocked={len(aggregator_blocked)} "
           f"[{time.monotonic() - run_started:.0f}s total]", flush=True)
     if timed_out:
         print("TIMED OUT (unresolved, safe to re-run individually): "
               + ", ".join(n for n, _ in timed_out), flush=True)
+    if throttled_unresolved:
+        print("RATE-LIMITED (unresolved, re-run individually later): "
+              + ", ".join(n for n, _ in throttled_unresolved), flush=True)
     if collision:
         print("PROBABLE NAME COLLISIONS (routed to the Manual channel): "
               + ", ".join(f"{n} -> {r['ats']}/{r['slug']}" for n, r, _ in collision), flush=True)
@@ -2041,7 +2344,7 @@ def main():
                         f"Rejected on fit-space, not pollability -- recheck if the "
                         f"company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US "
                         f"does NOT qualify, so this company may still have a Boston or SF "
-                        f"CSM open; that is intended."),
+                        f"CSM open; that is intended." + _throttle_clause(res)),
              "recheck_if_resurfaced": True}, name)
     # PROBABLE NAME COLLISIONS (added 2026-09-10). A board resolved and had jobs,
     # but none of them is the role the LinkedIn card named. The likeliest reading
@@ -2092,7 +2395,8 @@ def main():
                         f"between postings or the company has paused hiring. Recheck on "
                         f"any resurfacing and enroll directly if it has repopulated. "
                         f"(Slugs that resolved empty: "
-                        f"{', '.join(a + '/' + s for a, s in res.get('empty_hits', []))}.)"),
+                        f"{', '.join(a + '/' + s for a, s in res.get('empty_hits', []))}.)"
+                        + _throttle_clause(res)),
              "recheck_if_resurfaced": True,
              "unpollable": False}, name)
     for name, _ in no_board:
@@ -2147,7 +2451,8 @@ def main():
                         f"(--names \"{name}\" --budget-seconds 300), NOT a manual "
                         f"site:myworkdayjobs.com search."
                         + (f" Boards that resolved empty before the cap: {found}."
-                           if found else "")),
+                           if found else "")
+                        + _throttle_clause(res)),
              "recheck_if_resurfaced": True,
              "unpollable": False,
              "timed_out": True,
@@ -2157,9 +2462,43 @@ def main():
              **{f: pending_by_name[name.lower()][f] for f in CARRY_FIELDS
                 if f in pending_by_name.get(name.lower(), {})}}, name)
 
+    # RATE-LIMITED, NOT NO-BOARD (added 2026-09-17). The same reasoning as the
+    # timeout writer above, for a different cause: every probe that answered
+    # said "no board", but some did not answer at all (HTTP 429 after one
+    # retry), and the board may be behind one of them. Workable refused 55 of
+    # 94 requests in the study that found this, and each refusal used to be
+    # scored as an absent board, so a throttled Workable company could be
+    # written unpollable=true and dropped from re-checking for good.
+    #
+    # unpollable is FALSE and must stay false: that flag claims a board does
+    # not exist, and this record exists precisely because that was not shown.
+    # recheck_if_resurfaced is TRUE and the cheap next step is a --names re-run,
+    # which a rate limit that has since cleared will answer.
+    for name, res in throttled_unresolved:
+        pairs = res.get("throttled_probes") or []
+        reject(
+            {"name": name, "ats": None, "slug": None, "rejected_date": today,
+             "reason": (f"UNRESOLVED ON RATE LIMIT, not on evidence. No probe that "
+                        f"answered found a board, but {len(pairs)} probe(s) were "
+                        f"refused with HTTP 429 even after one retry "
+                        f"({_throttle_summary(pairs)}), so nothing is known about a "
+                        f"board at those addresses. This is NOT an unpollable company. "
+                        f"Cheap next step is a targeted re-run later "
+                        f"(--names \"{name}\"), NOT a manual search. Throttled: "
+                        + ", ".join(f"{a}/{s}" for a, s in pairs[:12])
+                        + (f" (+{len(pairs) - 12} more)" if len(pairs) > 12 else "")
+                        + "."),
+             "recheck_if_resurfaced": True,
+             "unpollable": False,
+             "throttled": True,
+             "throttled_probes": [f"{a}/{s}" for a, s in pairs],
+             **{f: pending_by_name[name.lower()][f] for f in CARRY_FIELDS
+                if f in pending_by_name.get(name.lower(), {})}}, name)
+
     handled = ({n.lower() for n, _ in enrollable} | {n.lower() for n, _ in no_fit}
                | {n.lower() for n, _ in empty_board} | {n.lower() for n, _ in no_board}
                | {n.lower() for n, _ in timed_out}
+               | {n.lower() for n, _ in throttled_unresolved}
                | {n.lower() for n, _, _ in collision})
     q["pending"] = [e for e in q.get("pending", [])
                     if str(e.get("name", "")).lower() not in handled]
@@ -2181,14 +2520,18 @@ def main():
     print(f"\nenrolled {len(enrollable)}, "
           f"rejected {len(no_fit) + len(empty_board) + len(no_board) + len(collision)}"
           f"{f' (-{len(contradictions)} suppressed)' if contradictions else ''}, "
-          f"unresolved-on-timeout {len(timed_out)}; "
+          f"unresolved-on-timeout {len(timed_out)}, "
+          f"unresolved-on-rate-limit {len(throttled_unresolved)}; "
           f"watchlist now {len(wl['companies'])}", flush=True)
     return 0
 
 
 def prune(wl, matcher, hard_excluded):
     """Dead-board audit: report enrolled companies whose board 404s or is empty."""
-    dead, empty, ok = [], [], 0
+    # `throttled` added 2026-09-17: this audit includes Workable, and a 429 used
+    # to be listed as DEAD(404) -- report-only, but it is exactly the list a
+    # human reads before de-enrolling a company.
+    dead, empty, throttled, ok = [], [], [], 0
     # One probe per enrolled company, several hundred of them, so this is a
     # multi-minute run by nature. It reports each dead/empty board as it finds
     # one (flushed, same reasoning as the harvest loop) instead of holding the
@@ -2201,7 +2544,11 @@ def prune(wl, matcher, hard_excluded):
             continue  # Workday and custom hosts are out of scope for this audit
         jobs = probe(ats, slug)
         checked += 1
-        if jobs is None:
+        if jobs is THROTTLED:
+            throttled.append(c["name"])
+            print(f"  [RL] {c['name']:32s} {ats}/{slug} 429 rate-limited; unknown",
+                  flush=True)
+        elif jobs is None:
             dead.append(c["name"])
             print(f"  [XX] {c['name']:32s} {ats}/{slug} 404", flush=True)
         elif not jobs:
@@ -2211,11 +2558,15 @@ def prune(wl, matcher, hard_excluded):
             ok += 1
         if checked % 25 == 0:
             print(f"  ... {checked} checked", flush=True)
-    print(f"live={ok} dead(404)={len(dead)} empty={len(empty)}", flush=True)
+    print(f"live={ok} dead(404)={len(dead)} empty={len(empty)} "
+          f"rate-limited={len(throttled)}", flush=True)
     if dead:
         print("DEAD:", ", ".join(dead), flush=True)
     if empty:
         print("EMPTY:", ", ".join(empty), flush=True)
+    if throttled:
+        print("RATE-LIMITED (unknown, NOT dead; re-run --prune later):",
+              ", ".join(throttled), flush=True)
     print("\nReport only; no changes written. Set board_status by hand after review.",
           flush=True)
     return 0
