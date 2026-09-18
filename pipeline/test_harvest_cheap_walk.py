@@ -42,11 +42,12 @@ def never_excluded(_title):
 
 
 class FakeResponse:
-    def __init__(self, status=200, payload=None, text="", url=""):
+    def __init__(self, status=200, payload=None, text="", url="", headers=None):
         self.status_code = status
         self._payload = payload
         self.text = text
         self.url = url
+        self.headers = headers or {}
 
     def json(self):
         if self._payload is None:
@@ -102,15 +103,33 @@ class FakeRequests:
     so it is reproduced exactly.
     """
 
-    def __init__(self, boards):
+    def __init__(self, boards, throttle=None):
         self.boards = boards
         self.log = []          # (ats, slug, monotonic)
+        # (ats, slug) -> "always", or a list consumed one entry per request:
+        # a dict of 429 headers means "answer 429 with these", None means
+        # "answer normally". An exhausted list answers normally.
+        self.throttle = {k: (v if v == "always" else list(v))
+                         for k, v in (throttle or {}).items()}
+
+    def _throttled(self, ats, slug, url):
+        plan = self.throttle.get((ats, slug))
+        if plan == "always":
+            return FakeResponse(429, url=url)
+        if plan:
+            step = plan.pop(0)
+            if step is not None:
+                return FakeResponse(429, url=url, headers=step)
+        return None
 
     def get(self, url, **_kw):
         ats, slug = _route(url)
         assert ats, f"unrouted URL in test fake: {url}"
         time.sleep(FAKE_LATENCY)
         self.log.append((ats, slug, time.monotonic()))
+        refused = self._throttled(ats, slug, url)
+        if refused is not None:
+            return refused
         jobs = self.boards.get((ats, slug))
         if ats == "smartrecruiters" and jobs is None:
             return FakeResponse(200, _payload("smartrecruiters", []), url=url)
@@ -124,8 +143,9 @@ class FakeRequests:
         raise AssertionError(f"unexpected POST in test fake: {url}")
 
 
-def run(name, boards, known_pairs=frozenset(), skip_workday=True, skip_comeet=True):
-    fake = FakeRequests(boards)
+def run(name, boards, known_pairs=frozenset(), skip_workday=True, skip_comeet=True,
+        throttle=None, budget_seconds=0):
+    fake = FakeRequests(boards, throttle)
     real = H.requests
     H.requests = fake
     H._SERVICE_LAST_HIT.clear()
@@ -133,10 +153,34 @@ def run(name, boards, known_pairs=frozenset(), skip_workday=True, skip_comeet=Tr
         t0 = time.monotonic()
         res = H.assess(name, FakeMatcher(), never_excluded, set(known_pairs),
                        skip_workday=skip_workday, skip_comeet=skip_comeet,
-                       budget_seconds=0)
+                       budget_seconds=budget_seconds)
         return res, fake, time.monotonic() - t0
     finally:
         H.requests = real
+
+
+class tuned:
+    """Temporarily override module constants (DELAY, retry waits) for speed."""
+
+    def __init__(self, **attrs):
+        self.attrs = attrs
+        self.saved = {}
+
+    def __enter__(self):
+        for k, v in self.attrs.items():
+            self.saved[k] = getattr(H, k)
+            setattr(H, k, v)
+        return self
+
+    def __exit__(self, *_exc):
+        for k, v in self.saved.items():
+            setattr(H, k, v)
+        return False
+
+
+# Fast-but-real settings for the throttle cases: the retry path still sleeps
+# and still paces, just not for seconds at a time.
+FAST = dict(DELAY=0.005, RETRY_FALLBACK_WAIT=0.05)
 
 
 CASES = []
@@ -184,11 +228,17 @@ def smartrecruiters_zero_is_no_board_not_empty_board():
 
     A re-probe would get the same confident 200 and CONFIRM a slug collision
     onto a company's permanent record. Checked by request count: exactly one
-    SmartRecruiters request per slug variant and not one more.
+    SmartRecruiters request per UNDOTTED slug variant and not one more (dotted
+    variants are never sent there since 2026-09-17; see NO_DOTTED_SLUG_ATSES).
+    Also checked directly on probe(), which is the layer that owns the rule.
     """
     res, fake, _ = run("Acme", {})
     sr = [e for e in fake.log if e[0] == "smartrecruiters"]
-    return res is None and len(sr) == len(H.slug_variants("Acme")), (res, len(sr))
+    undotted = [s for s in H.slug_variants("Acme") if "." not in s]
+    direct = _with_fake_requests(FakeRequests({}),
+                                 lambda: H.probe("smartrecruiters", "Acme"))
+    return (res is None and len(sr) == len(undotted) and direct is None,
+            (res, len(sr), len(undotted), direct))
 
 
 @case
@@ -297,6 +347,199 @@ def a_short_budget_shrinks_both_halves():
                                             budget))
     connect, read = rec.seen[0]
     return connect <= read <= 2.0 and connect <= H.CONNECT_TIMEOUT, rec.seen[0]
+
+
+# ---------------------------------------------------------------------------
+# Rate limiting (added 2026-09-17)
+# ---------------------------------------------------------------------------
+# apply.workable.com answered HTTP 429 to 55 of 94 requests in that day's timing
+# study, and each 429 was read as "no Workable board". A company where that was
+# the only unresolved signal was written unpollable=true, which stops it ever
+# being re-checked. These cases pin the third state (THROTTLED), the one-retry
+# policy, and the dotted-variant skip found in the same study.
+
+
+@case
+def a_429_is_unknown_not_no_board():
+    """probe() answers THROTTLED, and THROTTLED refuses to act like None or []."""
+    with tuned(**FAST):
+        got = _with_fake_requests(
+            FakeRequests({}, {("workable", "acme"): "always"}),
+            lambda: H.probe("workable", "acme"))
+    try:
+        bool(got)
+        loud = False
+    except TypeError:
+        loud = True
+    return got is H.THROTTLED and loud, (got, loud)
+
+
+@case
+def a_throttle_only_company_is_unresolved_not_no_board():
+    """Nothing resolves, Workable refused: the result is `throttled`, never None."""
+    with tuned(**FAST):
+        res, _, _ = run("Acme", {}, throttle={("workable", "acme"): "always"})
+    ok = (res is not None and res.get("throttled") is True
+          and ("workable", "acme") in res["throttled_probes"]
+          and not res.get("empty_board") and not res.get("timed_out"))
+    return ok, res
+
+
+def _main_writes(name, assess_result):
+    """Run main() --apply for one name against TEMP copies of both data files.
+
+    assess() is replaced with one returning `assess_result`, so this exercises
+    exactly the writer that turns a result into a rejected record. The real
+    watchlist and queue are copied, never opened for writing.
+    """
+    import contextlib
+    import io
+    import json
+    import shutil
+    import tempfile
+    tmp = tempfile.mkdtemp(prefix="harvest_throttle_test_")
+    saved = (H.WATCHLIST, H.QUEUE, H.assess, sys.argv)
+    try:
+        wl = os.path.join(tmp, "watchlist_companies.json")
+        qu = os.path.join(tmp, "enrollment_candidates.json")
+        shutil.copyfile(saved[0], wl)
+        shutil.copyfile(saved[1], qu)
+        H.WATCHLIST, H.QUEUE = wl, qu
+        H.assess = lambda *_a, **_k: assess_result
+        sys.argv = ["harvest_ats.py", "--names", name, "--apply"]
+        with contextlib.redirect_stdout(io.StringIO()):
+            H.main()
+        with open(qu, encoding="utf-8") as f:
+            q = json.load(f)
+        return [r for r in q.get("rejected", []) if r.get("name") == name]
+    finally:
+        H.WATCHLIST, H.QUEUE, H.assess, sys.argv = saved
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+@case
+def a_throttled_company_is_never_written_unpollable():
+    """End to end: 429 -> assess() -> main()'s writer -> unpollable is False.
+
+    The contrast run feeds the same writer a genuine no-board result (None) and
+    must still produce unpollable=true, which proves this case would have
+    caught the bug rather than passing because the writer changed shape.
+    """
+    name = "Zzq Throttle Fixture Co"
+    with tuned(**FAST):
+        res, _, _ = run(name, {}, throttle={("workable", s): "always"
+                                            for s in H.slug_variants(name)})
+    written = _main_writes(name, res)
+    contrast = _main_writes(name, None)
+    ok = (len(written) == 1 and written[0].get("unpollable") is False
+          and written[0].get("throttled") is True
+          and written[0].get("recheck_if_resurfaced") is True
+          and len(contrast) == 1 and contrast[0].get("unpollable") is True)
+    return ok, ([{k: r.get(k) for k in ("unpollable", "throttled")} for r in written],
+                [{k: r.get(k) for k in ("unpollable",)} for r in contrast])
+
+
+@case
+def the_retry_happens_at_most_once():
+    """A persistent 429 costs exactly two requests, and a cleared one resolves."""
+    with tuned(**FAST):
+        fake = FakeRequests({}, {("workable", "acme"): "always"})
+        got = _with_fake_requests(fake, lambda: H.probe("workable", "acme"))
+        cleared = FakeRequests({("workable", "acme"): [(FIT, "Remote - USA")]},
+                               {("workable", "acme"): [{}]})
+        got2 = _with_fake_requests(cleared, lambda: H.probe("workable", "acme"))
+    ok = (got is H.THROTTLED and len(fake.log) == 2
+          and isinstance(got2, list) and len(got2) == 1 and len(cleared.log) == 2)
+    return ok, (got, len(fake.log), got2, len(cleared.log))
+
+
+@case
+def retry_after_is_honored():
+    """The retry waits at least Retry-After, not the fallback."""
+    with tuned(**FAST):
+        fake = FakeRequests({("workable", "acme"): [(FIT, "Remote - USA")]},
+                            {("workable", "acme"): [{"Retry-After": "0.3"}]})
+        got = _with_fake_requests(fake, lambda: H.probe("workable", "acme"))
+    gap = fake.log[1][2] - fake.log[0][2] if len(fake.log) == 2 else 0
+    # Each log stamp is taken after FAKE_LATENCY, so the gap is wait + latency.
+    return isinstance(got, list) and gap >= 0.3, f"gap {gap:.3f}s"
+
+
+@case
+def the_retry_never_outlives_the_budget():
+    """A Retry-After past the budget is not waited out: one request, THROTTLED, fast."""
+    with tuned(**FAST):
+        fake = FakeRequests({}, {("workable", "acme"): [{"Retry-After": "5"}]})
+        budget = H.Budget(1.0)
+        t0 = time.monotonic()
+        got = _with_fake_requests(fake, lambda: H.probe("workable", "acme", budget))
+        took = time.monotonic() - t0
+        # And one inside the budget IS retried.
+        fake2 = FakeRequests({}, {("workable", "acme"): [{"Retry-After": "0.1"}]})
+        _with_fake_requests(fake2, lambda: H.probe("workable", "acme", H.Budget(5.0)))
+    ok = got is H.THROTTLED and len(fake.log) == 1 and took < 0.5 and len(fake2.log) == 2
+    return ok, (got, len(fake.log), f"{took:.2f}s", len(fake2.log))
+
+
+@case
+def a_service_that_fails_its_retry_is_not_retried_again_this_walk():
+    """Bounds a whole-walk throttle to one wait: every variant is still SENT,
+    but only the first one is retried."""
+    name = "Acme"
+    variants = [s for s in H.slug_variants(name)]
+    with tuned(**FAST):
+        res, fake, _ = run(name, {}, throttle={("workable", s): "always" for s in variants},
+                           budget_seconds=30)
+    wk = [e for e in fake.log if e[0] == "workable"]
+    ok = res.get("throttled") is True and len(wk) == len(variants) + 1
+    return ok, (len(wk), len(variants))
+
+
+@case
+def a_throttled_empty_confirm_is_unknown():
+    """Board answers [] then the confirming re-probe is refused: unknown, not no-board."""
+    with tuned(**FAST):
+        res, _, _ = run("Acme", {("greenhouse", "acme"): []},
+                        throttle={("greenhouse", "acme"): [None, {}, {}]})
+    ok = (res is not None and res.get("throttled") is True
+          and ("greenhouse", "acme") in res["throttled_probes"])
+    return ok, res
+
+
+@case
+def a_throttled_workday_host_is_unknown():
+    """probe_workday: a host answering 429 yields (THROTTLED, None), not (None, None)."""
+
+    class WorkdayFake:
+        def __init__(self):
+            self.n = 0
+
+        def post(self, url, **_kw):
+            self.n += 1
+            if ".wd1." in url:
+                return FakeResponse(429, url=url)
+            return FakeResponse(422, url=url)
+
+        def get(self, url, **_kw):
+            raise AssertionError(url)
+
+    fake = WorkdayFake()
+    with tuned(**FAST):
+        got = _with_fake_requests(fake, lambda: H.probe_workday("acme"))
+    return got[0] is H.THROTTLED and got[1] is None, (got, fake.n)
+
+
+@case
+def dotted_variants_skip_subdomain_atses():
+    """No dotted slug reaches JazzHR, Pinpoint, or SmartRecruiters; Ashby and
+    Lever still get them, because ambient.ai and regal.ai are real boards."""
+    with tuned(**FAST):
+        _, fake, _ = run("Acme", {})
+    dotted = {(a, s) for a, s, _ in fake.log if "." in s}
+    leaked = {p for p in dotted if p[0] in H.NO_DOTTED_SLUG_ATSES}
+    kept = {a for a, _ in dotted}
+    ok = not leaked and {"ashby", "lever"} <= kept and any("." in s for s in H.slug_variants("Acme"))
+    return ok, (sorted(leaked), sorted(kept))
 
 
 def main():

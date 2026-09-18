@@ -498,13 +498,27 @@ Every probe now passes `(CONNECT_TIMEOUT, read)` = `(5, 20)`, shrunk to fit the 
 827-request sample took 3.3s end to end. DNS is still unbounded — no `requests` timeout covers
 `getaddrinfo`.
 
-**Known, unfixed, and separate: Workable rate-limits this walk into uselessness.** In the same
-sample `apply.workable.com` answered **429 to 55 of 94 requests** before the fan-out and 63 of 94
-after. `_get` turns any non-200 into `None` and `assess()` reads `None` as "no board", so a
-throttled Workable board is indistinguishable from a company that has none — the same
-false-negative class the Comeet and SmartRecruiters gaps were. It predates the fan-out and is not
-a timing problem; fixing it means deciding how much wall clock to spend backing off, which is
-Aneesh's call, not a silent one.
+**A rate-limited probe is UNKNOWN, not "no board" (fixed 2026-09-17).** In the same sample
+`apply.workable.com` answered **429 to 55 of 94 requests**, before and after the fan-out alike.
+`_get` used to turn any non-200 into `None` and `assess()` reads `None` as "no board", so a
+throttled Workable board read exactly like a company with none, and a name whose only
+unresolved signal was a 429 was written `unpollable: true`, which stops it ever being re-checked.
+Same false-negative class as the Comeet and SmartRecruiters gaps. Now:
+- Probes have a **third answer, `THROTTLED`** (a sentinel that raises on `bool()`/`len()`, so a
+  caller that forgets to check for it crashes instead of misreading it). It flows through
+  `probe()`, `probe_cheap()`, `_confirm_empty`, `probe_workday`, `probe_comeet`, and `--prune`.
+- A walk that finds nothing while any probe was throttled returns a **`throttled` result**,
+  written like a timeout: `unpollable: false`, `throttled: true`, `recheck_if_resurfaced: true`,
+  and `throttled_probes` listing the refused `ats/slug` pairs. It never reaches the unpollable
+  punch list. The cheap next step is a later `--names "<name>"` re-run, not a manual search.
+  `assess()` returns `None` (the only path to `unpollable: true`) only when every probe answered.
+- **One retry per request**, after `Retry-After` or 2s, capped at 10s and never past the
+  per-company budget. Once a service fails its retry, later requests to it in that company's
+  walk are still sent but not retried again, which caps a whole-walk throttle at one wait.
+- **Dotted slug variants (`unit21.ai`) are no longer sent to JazzHR, Pinpoint, or
+  SmartRecruiters.** In the same study they cost 15 SSL errors each on the first two
+  (subdomain-addressed) and 15 HTTP 400s on the third. Ashby and Lever keep them because real
+  boards use them (`ashby/ambient.ai`, `lever/regal.ai`). Saves 9 requests per name.
 
 Measured 2026-09-03 on the exact names that hung: `--names "Palo Alto Networks" "RSA Security"
 "Forescout"` with Workday enabled finishes in **92s, no timeouts**, versus a SIGKILL at 10
