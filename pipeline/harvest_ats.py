@@ -2270,6 +2270,24 @@ def main():
         print("dry run; re-run with --apply to enroll", flush=True)
         return 0
 
+    # RELOAD BOTH FILES BEFORE APPLYING (added 2026-09-18). They were read at
+    # startup and written whole at exit, so any write another script made in
+    # between -- a --from-pending walk runs 30-45 minutes -- was silently
+    # reverted. On 2026-09-18 that erased websearch_rotation.py --mark, which had
+    # recorded six sources as run; nothing errored, and the rotation would have
+    # re-run them the next day while the stale ones kept waiting. Every mutation
+    # below happens after this point, and the helpers above (reject,
+    # with_provenance) close over these same dict objects, so refreshing them in
+    # place keeps the edit window to the few seconds this phase takes.
+    for _path, _obj in ((WATCHLIST, wl), (QUEUE, q)):
+        with open(_path, encoding="utf-8") as f:
+            _fresh = json.load(f)
+        _obj.clear()
+        _obj.update(_fresh)
+    polled_names.clear()
+    polled_names.update({str(c.get("name", "")).lower() for c in wl["companies"]}
+                        | {str(e.get("name", "")).lower() for e in q.get("enrolled", [])})
+
     today = __import__("datetime").date.today().isoformat()
     # Aggregators are rejected, not left pending: otherwise the name sits in the
     # queue and is re-gated (cheaply, but noisily) on every future run. unpollable
