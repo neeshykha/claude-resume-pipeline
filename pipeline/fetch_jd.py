@@ -77,6 +77,7 @@ if SCRIPT_DIR not in sys.path:
 import ats_adp  # noqa: E402  (needs SCRIPT_DIR on the path first)
 import ats_icims  # noqa: E402
 import ats_gem  # noqa: E402
+import ats_successfactors  # noqa: E402  (SuccessFactors JD fetch; shares its parser)
 
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
@@ -886,9 +887,19 @@ def fetch_gem(url):
     }
 
 
+def fetch_successfactors(url):
+    """SAP SuccessFactors RMK job detail page. See ats_successfactors.py's
+    module docstring and fetch_jd_successfactors for the full read-path story
+    (og:title / canonical-link parsing, shared with the urlset-shape poll
+    branch). Host-agnostic match on the /job/<slug>/<id>/ path convention,
+    same reasoning as fetch_paylocity's host-agnostic GUID match above.
+    """
+    return ats_successfactors.fetch_jd_successfactors(url, get=get)
+
+
 FETCHERS = (fetch_ashby, fetch_workday, fetch_greenhouse, fetch_lever,
             fetch_smartrecruiters, fetch_comeet, fetch_paylocity, fetch_workable,
-            fetch_ukg, fetch_adp, fetch_icims, fetch_gem)
+            fetch_ukg, fetch_adp, fetch_icims, fetch_gem, fetch_successfactors)
 
 
 def fetch(url):
@@ -901,8 +912,8 @@ def fetch(url):
             return out
     return {"error": "no fetcher matched this URL. Supported: Ashby, Workday, "
                      "Greenhouse, Lever, SmartRecruiters, Comeet, Paylocity, "
-                     "Workable, UKG Pro Recruiting, ADP WorkforceNow, iCIMS, Gem. "
-                     "Pinpoint/Rippling have no per-posting JSON "
+                     "Workable, UKG Pro Recruiting, ADP WorkforceNow, iCIMS, Gem, "
+                     "SuccessFactors. Pinpoint/Rippling have no per-posting JSON "
                      "endpoint; use WebSearch for those. ADP Recruiting/RTI.home and "
                      "myjobs.adp.com boards are unsupported (no public JSON API found); "
                      "use WebSearch for those too."}
