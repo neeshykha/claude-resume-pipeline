@@ -791,16 +791,28 @@ def probe(ats: str, slug: str, budget=None):
                                  j.get("country")))
                 for j in r.json()]
     if ats == "workable":
+        # Location comes from the poller's own parser (fixed 2026-09-17). This
+        # branch used to read `location or city`, which is empty for a fully
+        # remote Workable posting: those carry city "" and state "" and put the
+        # facts in `country` and `telecommuting` instead. The probe therefore
+        # scored every city-less remote-US role as location "", us_reachable
+        # said no, and the company was rejected as "zero qualifying fit-titles"
+        # while the daily poller would have read the same record as "Remote
+        # United States". Whip Around was the case: a tier1 remote-US
+        # "Operations Manager, Customer Success & AI Enablement", rejected
+        # 2026-09-17 and caught only because Aneesh pasted the link.
+        import poll_ats as _P
         r = _get(f"https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true",
                  budget)
         if r is THROTTLED:
             return THROTTLED
         if not r:
             return None
-        return [(j.get("title", ""),
-                 countries.stamp(j.get("location", "") or j.get("city", ""),
-                                 j.get("country")))
-                for j in r.json().get("jobs", [])]
+        out = []
+        for j in r.json().get("jobs", []):
+            loc = _P.parse_location(j, "workable")
+            out.append((j.get("title", ""), "" if loc == "Unknown" else loc))
+        return out
     if ats == "pinpoint":
         r = _get(f"https://{slug}.pinpointhq.com/postings.json", budget)
         if r is THROTTLED:
