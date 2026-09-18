@@ -42,6 +42,7 @@ if SCRIPT_DIR not in sys.path:
 import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
 import ats_icims  # noqa: E402  (leaf module: parser + URL builder shared with harvest_ats.py)
 import ats_gem  # noqa: E402  (Gem's fetch/parse logic; see its module docstring)
+import ats_successfactors  # noqa: E402  (SuccessFactors fetch/parse; see module docstring)
 
 # ── Config plumbing ──────────────────────────────────────────────────────────
 # Single source of truth is watchlist_companies.json. Endpoints, the salary
@@ -985,6 +986,13 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             if raw:
                 parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
                 return parsed if parsed <= date.today() else None
+        elif ats == "successfactors":
+            # Neither feed shape exposes a real posting-creation date. The
+            # urlset shape's sitemap <lastmod> is a crawl/regeneration
+            # timestamp (verified 2026-09-18: every entry on a board shares
+            # the same day), not when the req opened, so it is not read here.
+            # Always neutral, same treatment as pinpoint/rippling/jazzhr above.
+            return None
         elif ats == "workday":
             # Workday's CXS list response has no ISO date, only a relative
             # "postedOn" string ("Posted Today" / "Posted Yesterday" /
@@ -1240,6 +1248,13 @@ def parse_location(job_data: dict, ats: str) -> str:
         # Delegated to ats_gem: see its location_string() docstring for why
         # only a non-remote location's isoCountry is trusted for the stamp.
         return ats_gem.location_string(job_data)
+    elif ats == "successfactors":
+        # Pre-resolved by ats_successfactors.fetch_successfactors: the "rss"
+        # feed shape gives a real <g:location> per posting; the "urlset" shape
+        # resolves it from the detail page's og:title. Neither exposes a
+        # country field to stamp, unlike Comeet/SmartRecruiters/Ashby -- see
+        # the module docstring's Known Limitations.
+        return job_data.get("_sf_location") or "Unknown"
     return "Unknown"
 
 
@@ -1279,6 +1294,8 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
                 or job_data.get("position_url", ""))
     elif ats == "gem":
         return ats_gem.apply_url(slug, job_data.get("extId", ""))
+    elif ats == "successfactors":
+        return job_data.get("_apply_url", "")
     return ""
 
 
@@ -2110,6 +2127,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_icims(slug)
         elif ats == "gem":
             jobs = ats_gem.fetch_gem(slug, timeout=REQUEST_TIMEOUT)
+        elif ats == "successfactors":
+            jobs = ats_successfactors.fetch_successfactors(company)
         else:
             errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
             continue

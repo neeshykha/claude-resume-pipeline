@@ -65,6 +65,7 @@ if SCRIPT_DIR not in sys.path:
 import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
 import ats_icims  # noqa: E402  (leaf module: parser + URL builder shared with poll_ats.py)
 import ats_gem  # noqa: E402  (leaf module, same reasoning as countries.py)
+import ats_successfactors  # noqa: E402  (shared parser; see its module docstring)
 
 WATCHLIST = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 QUEUE = os.path.join(SCRIPT_DIR, "enrollment_candidates.json")
@@ -1617,6 +1618,48 @@ def comeet_slug(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
 
 
+def probe_successfactors(host: str, budget=None):
+    """[(title, location)] if an SF RMK board resolves at `host`, None if not
+    (dead host, non-RMK site, or a /sitemap.xml that doesn't parse), THROTTLED
+    if a rate limit anywhere left the answer unknown.
+
+    HAND-ENROLLED ONLY, like Paylocity (contract section 2, model 3): a
+    SuccessFactors board lives on a per-company HOST with no slug a name can be
+    turned into, so this validates a KNOWN host rather than searching for one --
+    it is NOT wired into assess()'s name-variant walk, and no amount of budget
+    would make a name resolve to a host this way. Use it (a) before hand-
+    enrolling a candidate host found on a company's careers page, and (b) to
+    re-check an already-enrolled one. `slug` is still required on the watchlist
+    entry as the human-readable dedup prefix (comeet_slug()-style: the company
+    name, lowercased and hyphenated), same convention as Comeet/Paylocity.
+
+    Shares ats_successfactors.resolve_board with fetch_successfactors so
+    discovery and the daily poll read the exact same feed the exact same way
+    (contract's "scrapers share one parser" rule) -- the only thing this
+    function adds is translating harvest's own budgeted `_raw_get`/THROTTLED
+    into the callable + sentinel that module expects, so ats_successfactors.py
+    never has to import anything from this file.
+    """
+    def _get_fn(url):
+        r = _raw_get(url, budget)
+        if r is None:
+            return None
+        if _is_throttled(r):
+            return ats_successfactors.THROTTLED
+        return r
+
+    try:
+        status, postings, _total = ats_successfactors.resolve_board(
+            host, _get_fn, budget=budget)
+    except Exception:
+        return None
+    if status == "throttled":
+        return THROTTLED
+    if status != "ok":
+        return None
+    return [(p.get("title", ""), p.get("location", "Unknown")) for p in postings]
+
+
 def _names_non_us(loc: str) -> bool:
     """True if a lowercased location string carries a non-US country, region,
     or city marker. Shared by us_reachable() and tier3_location_ok()."""
@@ -2671,11 +2714,12 @@ def main():
                              "non-obvious slug, on a careers page this script could not "
                              "guess the domain of, or on an ATS with no adapter yet "
                              "(Paylocity and ADP WorkforceNow boards are GUID-addressed "
-                             "and can never be auto-resolved by name; probe_adp can "
-                             "validate a cid found by hand, e.g. from a careers-page "
-                             "link or job-alert email, but cannot discover one). Worth "
-                             "one manual look at the company's own careers page if the "
-                             "company matters."),
+                             "and SuccessFactors boards are per-company-host RMK sites; "
+                             "none can ever be auto-resolved by name. probe_adp and "
+                             "probe_successfactors can validate a cid or host found by "
+                             "hand, e.g. from a careers-page link or job-alert email, but "
+                             "cannot discover one). Worth one manual look at the "
+                             "company's own careers page if the company matters."),
                   "recheck_if_resurfaced": True,
                   "unpollable": True}
         pending_entry = pending_by_name.get(name.lower(), {})
