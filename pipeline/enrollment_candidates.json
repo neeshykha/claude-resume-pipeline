@@ -2548,6 +2548,92 @@
       "via": "harvest_ats.py",
       "source": "LinkedIn alert",
       "first_seen": "2026-09-15"
+    },
+    {
+      "name": "Matia",
+      "ats": "ashby",
+      "slug": "matia",
+      "enrolled_date": "2026-09-16",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Typeform",
+      "ats": "greenhouse",
+      "slug": "typeform",
+      "enrolled_date": "2026-09-16",
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Pearl.com",
+      "ats": "ashby",
+      "slug": "pearl",
+      "enrolled_date": "2026-09-16",
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Juganu",
+      "ats": "workable",
+      "slug": "juganu",
+      "enrolled_date": "2026-09-17",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Onebrief",
+      "ats": "ashby",
+      "slug": "onebrief",
+      "enrolled_date": "2026-09-17",
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Spark Advisors",
+      "ats": "greenhouse",
+      "slug": "sparkadvisors",
+      "enrolled_date": "2026-09-17",
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "OneImaging",
+      "ats": "greenhouse",
+      "slug": "oneimaging",
+      "enrolled_date": "2026-09-17",
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Ncontracts",
+      "ats": "ashby",
+      "slug": "ncontracts",
+      "enrolled_date": "2026-09-17",
+      "via": "harvest_ats.py",
+      "source": "Ashby Boards - Target Roles WebSearch dork 2026-09-17",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Whip Around",
+      "ats": "workable",
+      "slug": "whiparound",
+      "enrolled_date": "2026-09-17",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Axle Insure",
+      "ats": "ashby",
+      "slug": "axleinsure",
+      "enrolled_date": "2026-09-17",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -5957,7 +6043,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Project Manager [Atlanta, GA] -- loose:tier2 title, Atlanta; LinkedIn job 4460065479"
+      "manual_review_why": "Project Manager [Atlanta, GA] -- loose:tier2 title, Atlanta; LinkedIn job 4460065479",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Pixel Machinery",
@@ -5968,7 +6056,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Technical Account Manager [United States] -- tier2 title, US (unspecified); LinkedIn job 4461274240"
+      "manual_review_why": "Technical Account Manager [United States] -- tier2 title, US (unspecified); LinkedIn job 4461274240",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Flexcar",
@@ -5979,7 +6069,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Operations Manager [Marietta, GA] -- loose:tier1 title, Atlanta; LinkedIn job 4460061125"
+      "manual_review_why": "Operations Manager [Marietta, GA] -- loose:tier1 title, Atlanta; LinkedIn job 4460061125",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "System Automation Corporation",
@@ -5990,7 +6082,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Technical Project Manager [United States] -- tier2 title, US (unspecified); LinkedIn job 4430616981"
+      "manual_review_why": "Technical Project Manager [United States] -- tier2 title, US (unspecified); LinkedIn job 4430616981",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "K&L Gates",
@@ -6001,7 +6095,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Manager, Enterprise Applications [United States] -- tier2c title, US (unspecified); LinkedIn job 4409065954"
+      "manual_review_why": "Manager, Enterprise Applications [United States] -- tier2c title, US (unspecified); LinkedIn job 4409065954",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Caterpillar Inc.",
@@ -6160,7 +6256,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Technical Operations Manager [Atlanta, GA] -- tier1 title, Atlanta; LinkedIn job 4458360279"
+      "manual_review_why": "Technical Operations Manager [Atlanta, GA] -- tier1 title, Atlanta; LinkedIn job 4458360279",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Caliber Car Wash",
@@ -6450,7 +6548,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Senior Manager, Digital Applications [Atlanta, GA] -- tier2c title, Atlanta; LinkedIn job 4463188240"
+      "manual_review_why": "Senior Manager, Digital Applications [Atlanta, GA] -- tier2c title, Atlanta; LinkedIn job 4463188240",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Protomiq",
@@ -6461,7 +6561,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Deployment Support Manager [Atlanta, GA] -- tier2 title, Atlanta; LinkedIn job 4463316326"
+      "manual_review_why": "Deployment Support Manager [Atlanta, GA] -- tier2 title, Atlanta; LinkedIn job 4463316326",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "WM",
@@ -6472,7 +6574,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Operations Manager [Smyrna, GA] -- loose:tier1 title, Atlanta; LinkedIn job 4463609595"
+      "manual_review_why": "Operations Manager [Smyrna, GA] -- loose:tier1 title, Atlanta; LinkedIn job 4463609595",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Locally",
@@ -6483,7 +6587,9 @@
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "manual_review": true,
-      "manual_review_why": "Merchant Technical Account Manager [United States] -- tier2 title, US (unspecified); LinkedIn job 4461915230"
+      "manual_review_why": "Merchant Technical Account Manager [United States] -- tier2 title, US (unspecified); LinkedIn job 4461915230",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "QSC",
@@ -7693,7 +7799,9 @@
       "card_job_id": "4454679324",
       "card_url": "https://www.linkedin.com/jobs/view/4454679324/",
       "manual_review": true,
-      "manual_review_why": "AI Deployment Manager [United States] -- LinkedIn job 4454679324 (restored 2026-09-10; the timeout path had dropped it)"
+      "manual_review_why": "AI Deployment Manager [United States] -- LinkedIn job 4454679324 (restored 2026-09-10; the timeout path had dropped it)",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Gainwell Technologies",
@@ -7710,7 +7818,9 @@
       "card_job_id": "4446660146",
       "card_url": "https://www.linkedin.com/jobs/view/4446660146/",
       "manual_review": true,
-      "manual_review_why": "Experienced System Operations Manager [Georgia, United States] -- LinkedIn job 4446660146 (restored 2026-09-10; the timeout path had dropped it)"
+      "manual_review_why": "Experienced System Operations Manager [Georgia, United States] -- LinkedIn job 4446660146 (restored 2026-09-10; the timeout path had dropped it)",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Rising Medical Solutions",
@@ -7727,7 +7837,9 @@
       "card_job_id": "4464660565",
       "card_url": "https://www.linkedin.com/jobs/view/4464660565/",
       "manual_review": true,
-      "manual_review_why": "Implementation/Project Manager [United States] -- LinkedIn job 4464660565 (restored 2026-09-10; the timeout path had dropped it)"
+      "manual_review_why": "Implementation/Project Manager [United States] -- LinkedIn job 4464660565 (restored 2026-09-10; the timeout path had dropped it)",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Oceans XYZ",
@@ -7795,7 +7907,9 @@
       "card_url": "https://www.linkedin.com/jobs/view/4453472169/",
       "source": "LinkedIn alert",
       "first_seen": "2026-09-11",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "UST",
@@ -8001,7 +8115,9 @@
       "card_title": "Director, Customer Support Operations (Remote)",
       "card_job_id": "4465324724",
       "card_url": "https://www.linkedin.com/jobs/view/4465324724/",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Daikin Comfort",
@@ -8018,7 +8134,9 @@
       "card_title": "TECHNICAL SERVICE MANAGER",
       "card_job_id": "4463559240",
       "card_url": "https://www.linkedin.com/jobs/view/4463559240/",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Assembly Software",
@@ -8035,7 +8153,9 @@
       "card_title": "Director of Customer Experience Operations",
       "card_job_id": "4464987564",
       "card_url": "https://www.linkedin.com/jobs/view/4464987564/",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "McGraw Hill",
@@ -8052,7 +8172,9 @@
       "card_title": "Manager, Business Applications TM1",
       "card_job_id": "4443680234",
       "card_url": "https://www.linkedin.com/jobs/view/4443680234/",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Nation's Dry Out",
@@ -8069,7 +8191,9 @@
       "card_title": "Operations Manager",
       "card_job_id": "4463518923",
       "card_url": "https://www.linkedin.com/jobs/view/4463518923/",
-      "manual_review_surfaced": true
+      "manual_review_surfaced": true,
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Aidoc",
@@ -8336,7 +8460,9 @@
       "card_job_id": "4466401932",
       "card_url": "https://www.linkedin.com/jobs/view/4466401932/",
       "source": "LinkedIn alert",
-      "first_seen": "2026-09-14"
+      "first_seen": "2026-09-14",
+      "weekly_report_surfaced": true,
+      "weekly_report_surfaced_date": "2026-09-17"
     },
     {
       "name": "Accenture",
@@ -9048,6 +9174,748 @@
       "card_url": "https://www.linkedin.com/jobs/view/4437073904/",
       "source": "LinkedIn alert",
       "first_seen": "2026-09-15"
+    },
+    {
+      "name": "H Company",
+      "ats": "ashby",
+      "slug": "hcompany",
+      "rejected_date": "2026-09-16",
+      "reason": "Board resolves and is live (22 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "JLS Trading Co.",
+      "ats": "jazzhr",
+      "slug": "jlstradingco",
+      "rejected_date": "2026-09-16",
+      "reason": "Board resolves and is live (1 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Saltbox",
+      "ats": "greenhouse",
+      "slug": "saltbox",
+      "rejected_date": "2026-09-16",
+      "reason": "Board resolves and is live (13 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "LivTech",
+      "ats": "ashby",
+      "slug": "livtech",
+      "rejected_date": "2026-09-16",
+      "reason": "Board RESOLVED at ashby/livtech but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: ashby/livtech, ashby/Livtech.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Coverflex",
+      "ats": "lever",
+      "slug": "Coverflex",
+      "rejected_date": "2026-09-16",
+      "reason": "Board RESOLVED at lever/Coverflex but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: lever/Coverflex.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "CENTEGIX",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Manager, Technical Operations (Atlanta) [Atlanta, GA] -- tier1 title, Atlanta; LinkedIn job 4466141404",
+      "card_title": "Manager, Technical Operations (Atlanta)",
+      "card_job_id": "4466141404",
+      "card_url": "https://www.linkedin.com/jobs/view/4466141404/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "ProArch",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "card_title": "Salesforce Administrator",
+      "card_job_id": "4466792216",
+      "card_url": "https://www.linkedin.com/jobs/view/4466792216/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Ent",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "card_title": "Head of RevOps",
+      "card_job_id": "4467003986",
+      "card_url": "https://www.linkedin.com/jobs/view/4467003986/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "DwyerOmega",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "card_title": "Global Pricing Operations Manager",
+      "card_job_id": "4467048854",
+      "card_url": "https://www.linkedin.com/jobs/view/4467048854/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Popmenu",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Urbantz",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Waystar",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Comeet careers-page walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Waystar\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Solution Adoption Consultant",
+      "card_job_id": "4439326363",
+      "card_url": "https://www.linkedin.com/jobs/view/4439326363/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "SCP Health",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 61s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"SCP Health\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "IT Workday Platform Manager",
+      "card_job_id": "4436642134",
+      "card_url": "https://www.linkedin.com/jobs/view/4436642134/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Brother USA",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Brother USA\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Vice President, Customer Care & Technical Support Operations",
+      "card_job_id": "4380740724",
+      "card_url": "https://www.linkedin.com/jobs/view/4380740724/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Evinova",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Evinova\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Service Improvement Manager - Evinova",
+      "card_job_id": "4465423265",
+      "card_url": "https://www.linkedin.com/jobs/view/4465423265/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Chick-fil-A Western Center Blvd",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Chick-fil-A Western Center Blvd\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Customer Success Manager",
+      "card_job_id": "4466781532",
+      "card_url": "https://www.linkedin.com/jobs/view/4466781532/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "ChiroHD",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"ChiroHD\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Senior Manager/Director, Revenue Operations",
+      "card_job_id": "4465483994",
+      "card_url": "https://www.linkedin.com/jobs/view/4465483994/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Get Engaged Media",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Get Engaged Media\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Trendyol Go by Uber Eats",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Trendyol Go by Uber Eats\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Isaac Health",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Isaac Health\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Mindy Support",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Mindy Support\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Nexus Marketing Agency",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Nexus Marketing Agency\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Snapsheet (snapsheetapp)",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Snapsheet (snapsheetapp)\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Virtually Incredible",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Virtually Incredible\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-16"
+    },
+    {
+      "name": "Giesecke+Devrient",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16",
+      "manual_review": true,
+      "manual_review_why": "Client Engagement Manager II [Atlanta, GA] -- tier2 title, Atlanta; LinkedIn job 4465770267",
+      "card_title": "Client Engagement Manager II",
+      "card_job_id": "4465770267",
+      "card_url": "https://www.linkedin.com/jobs/view/4465770267/",
+      "superseded_note": "Supersedes the 2026-09-16 record: UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so...",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Georgia-Pacific LLC",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16",
+      "manual_review": true,
+      "manual_review_why": "National Account Implementation Manager [Atlanta, GA] -- tier2 title, Atlanta; LinkedIn job 4465240965",
+      "card_title": "National Account Implementation Manager",
+      "card_job_id": "4465240965",
+      "card_url": "https://www.linkedin.com/jobs/view/4465240965/",
+      "superseded_note": "Supersedes the 2026-09-16 record: UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so...",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Mastercard",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-16",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-16",
+      "manual_review": true,
+      "manual_review_why": "Manager, Forward-Deployed AI Engineer \u2014 AI Mobilization & Transformation [Atlanta, GA] -- tier2 title, Atlanta; LinkedIn job 4436622980",
+      "card_title": "Manager, Forward-Deployed AI Engineer \u2014 AI Mobilization & Transformation",
+      "card_job_id": "4436622980",
+      "card_url": "https://www.linkedin.com/jobs/view/4436622980/",
+      "superseded_note": "Supersedes the 2026-09-16 record: UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 73s, during the Workday tenant walk, so...",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Whip Around",
+      "ats": "workable",
+      "slug": "whiparound",
+      "rejected_date": "2026-09-17",
+      "reason": "SUPERSEDED 2026-09-17: re-probed and ENROLLED on the watchlist (workable/whiparound, 2 jobs, 1 fit-titles). Kept as the record of the original rejection, not as a live verdict. Original reason: Board resolves and is live (2 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": false,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17",
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-09-17"
+    },
+    {
+      "name": "PLACE",
+      "ats": "greenhouse",
+      "slug": "place",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (31 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Osmind",
+      "ats": "lever",
+      "slug": "Osmind",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (9 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Atticus",
+      "ats": "ashby",
+      "slug": "atticus",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (16 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Cedar",
+      "ats": "ashby",
+      "slug": "cedar",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (3 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "GameChanger",
+      "ats": "ashby",
+      "slug": "gamechanger",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (5 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "livingHR, Inc.",
+      "ats": "smartrecruiters",
+      "slug": "livinghrinc",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (8 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Messa",
+      "ats": "ashby",
+      "slug": "messa",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (3 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "NetBox Labs",
+      "ats": "ashby",
+      "slug": "netboxlabs",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (12 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Paires",
+      "ats": "ashby",
+      "slug": "paires",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (5 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Scratch Financial",
+      "ats": "rippling",
+      "slug": "scratch-financial",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Shopify",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "PROBABLE NAME COLLISION. A name variant resolved to pinpoint/shopify (2 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'Technical Account Manager, Enterprise West (Los Angeles)' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "collision_board": "pinpoint/shopify",
+      "collision_suspected": true,
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Technical Account Manager, Enterprise West (Los Angeles) [United States] -- tier2 title, US (unspecified); LinkedIn job 4457133998",
+      "card_title": "Technical Account Manager, Enterprise West (Los Angeles)",
+      "card_job_id": "4457133998",
+      "card_url": "https://www.linkedin.com/jobs/view/4457133998/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Ottimate",
+      "ats": "pinpoint",
+      "slug": "ottimate",
+      "rejected_date": "2026-09-17",
+      "reason": "Board RESOLVED at pinpoint/ottimate but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: pinpoint/ottimate, pinpoint/Ottimate.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "SteelSeries",
+      "ats": "workable",
+      "slug": "steelseries",
+      "rejected_date": "2026-09-17",
+      "reason": "Board RESOLVED at workable/steelseries but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/steelseries.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "ICE",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Senior Manager, Systems Operations [Atlanta, GA] -- tier2c title, Atlanta; LinkedIn job 4448390265",
+      "card_title": "Senior Manager, Systems Operations",
+      "card_job_id": "4448390265",
+      "card_url": "https://www.linkedin.com/jobs/view/4448390265/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Zipliens",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "TrueSeek",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"TrueSeek\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "manual_review": true,
+      "manual_review_why": "AI Deployment Lead - Private Markets [United States] -- tier2 title, US (unspecified); LinkedIn job 4466505690",
+      "card_title": "AI Deployment Lead - Private Markets",
+      "card_job_id": "4466505690",
+      "card_url": "https://www.linkedin.com/jobs/view/4466505690/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "OptiMantra",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"OptiMantra\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "manual_review": true,
+      "manual_review_why": "Onboarding & Implementation Specialist [Atlanta Metropolitan Area] -- tier2 title, Atlanta; LinkedIn job 4465765852",
+      "card_title": "Onboarding & Implementation Specialist",
+      "card_job_id": "4465765852",
+      "card_url": "https://www.linkedin.com/jobs/view/4465765852/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Trillium Health Resources",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Trillium Health Resources\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Manager, Agile Solutions \u2013 Power Platform",
+      "card_job_id": "4467909669",
+      "card_url": "https://www.linkedin.com/jobs/view/4467909669/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Transco - A Marmon Rail Company",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Transco - A Marmon Rail Company\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Manager, IT Business Solutions",
+      "card_job_id": "4468271453",
+      "card_url": "https://www.linkedin.com/jobs/view/4468271453/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "TriNet",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"TriNet\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: lever/trinet.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Product Solutions Consultant",
+      "card_job_id": "4459063757",
+      "card_url": "https://www.linkedin.com/jobs/view/4459063757/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Bring IT",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 61s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Bring IT\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Salesforce Administrator / CRM Support Specialist",
+      "card_job_id": "4466827097",
+      "card_url": "https://www.linkedin.com/jobs/view/4466827097/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "WealthCounsel, LLC",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"WealthCounsel, LLC\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "Salesforce Administrator (Virtual, Full-time)",
+      "card_job_id": "4467924460",
+      "card_url": "https://www.linkedin.com/jobs/view/4467924460/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Allegis Group",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 61s, during the cheap-ATS slug walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Allegis Group\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. Boards that resolved empty before the cap: workable/allegis-group.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "card_title": "IS Manager (AI)",
+      "card_job_id": "4466101870",
+      "card_url": "https://www.linkedin.com/jobs/view/4466101870/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "M-Files",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"M-Files\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Remo Health",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 62s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Remo Health\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Gaiias",
+      "ats": "rippling",
+      "slug": "gaiias-open-positions",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (7 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "Rippling Boards - Target Roles WebSearch dork 2026-09-17",
+      "first_seen": "2026-09-17"
+    },
+    {
+      "name": "Tubi",
+      "ats": "greenhouse",
+      "slug": "tubi",
+      "rejected_date": "2026-09-17",
+      "reason": "Board resolves and is live (1 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17",
+      "manual_review": true,
+      "manual_review_why": "tier1 Director, Product Support Operations [United States], LinkedIn job 4467246365",
+      "card_title": "Director, Product Support Operations",
+      "superseded_note": "Supersedes the 2026-09-17 rejection, which carried unpollable=true: the flag that stops a company being re-checked and that feeds the weekly unpollable punch list. This probe resolved greenhouse/tubi, so that claim is FALSIFIED, not merely stale. It read: PROBABLE NAME COLLISION. A name variant resolved to greenhouse/tubi (1 jobs, zero fit-titles), but the LinkedIn card that queued this compan...",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Unit21",
+      "ats": "workable",
+      "slug": "unit21",
+      "rejected_date": "2026-09-17",
+      "reason": "Board RESOLVED at workable/unit21 but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/unit21.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17",
+      "manual_review": true,
+      "manual_review_why": "tier1 Manager, Customer Support [United States], LinkedIn job 4455784548",
+      "card_title": "Manager, Customer Support",
+      "superseded_note": "Supersedes the 2026-09-17 record: UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so...",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "City Innovate",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-17",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "Workable Boards - Target Roles WebSearch dork 2026-09-17",
+      "first_seen": "2026-09-17",
+      "superseded_note": "Supersedes the 2026-09-17 record: UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the cheap-ATS slug walk, so..."
     }
   ]
 }
