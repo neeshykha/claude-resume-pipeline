@@ -1663,6 +1663,108 @@ def _throttle_clause(res) -> str:
             f"addresses was not ruled out.")
 
 
+def probe_adp(cid: str, budget=None, get=None):
+    """Validate a KNOWN ADP WorkforceNow cid: None, [], or [(title, loc), ...].
+
+    ADP is hand-enrolled like Paylocity: a cid is a GUID with no relationship
+    to a company name (see ats_adp.py's module docstring), so this function
+    can VALIDATE a cid someone already found -- a careers-page link, a
+    posting URL, a job-alert email -- but can never DISCOVER one by name. It
+    is deliberately NOT wired into CHEAP_ATSES / probe_cheap's automatic
+    name-variant walk, the same way no probe_paylocity exists at all; call it
+    directly (e.g. via --names once a cid is known) instead. The `no_board`
+    reason text below says so explicitly, mirroring the existing Paylocity
+    caveat.
+
+    Paginates exactly like poll_ats.fetch_adp (same ADP_PAGE_SIZE /
+    ADP_MAX_POSTINGS / de-dup-by-itemID logic, kept in ats_adp.py so both
+    copies can't drift), through this module's own `_get`/`_pace`/Budget/
+    THROTTLED machinery -- a first-page failure (404 for an unknown cid,
+    confirmed live) or malformed body means no board; a LATER page failing is
+    a truncated read of a real board and keeps what was already collected,
+    same rule as the SmartRecruiters and Workday probes.
+
+    `get` is an injectable `(url, timeout) -> response-like object with
+    .status_code and .json()` callable. Two uses: pipeline/test_adp.py's
+    synthetic "real board, zero postings" / "malformed JSON body" fixtures
+    (no live ADP board with either was found among the five backlog
+    companies), and pipeline/test_adp_budget.py's simulated-hang proof, which
+    points it at a local socket that never answers to prove the BUDGET is
+    honored even when this path is taken. `budget`, when given, still gates
+    it exactly like the default `_get` path: `budget.expired()` is checked
+    before every page and `budget.timeout()` (floored at 1s) is passed as
+    `timeout` instead of the fixed constant, so an injected `get` that
+    actually respects its `timeout` argument (a real socket/requests client
+    does) cannot overrun the per-company cap. Leave `get` as None for every
+    production call; that path goes through `_get`/`_pace` and additionally
+    honors THROTTLED.
+    """
+    import ats_adp
+
+    def _fetch_page(skip):
+        url = ats_adp.requisitions_url(cid, skip=skip, top=ats_adp.ADP_PAGE_SIZE)
+        if get is not None:
+            if budget is not None and budget.expired():
+                return "NO_BOARD"
+            timeout = TIMEOUT if budget is None else budget.timeout()
+            r = get(url, timeout)
+            if r is None or getattr(r, "status_code", None) != 200:
+                return "NO_BOARD"
+            try:
+                return r.json()
+            except ValueError:
+                return "NO_BOARD"
+        r = _get(url, budget)
+        if r is THROTTLED:
+            return "THROTTLED"
+        if r is None:
+            return "NO_BOARD"
+        try:
+            return r.json()
+        except ValueError:
+            return "NO_BOARD"
+
+    def _as_result(postings):
+        out = []
+        for req in postings:
+            if ats_adp.is_internal(req):
+                continue
+            norm = ats_adp.normalize(req, cid)
+            out.append((norm["title"], norm["_adp_location"]))
+        return out
+
+    postings: list[dict] = []
+    seen_ids: set = set()
+    total = None
+    skip = 0
+    while skip < ats_adp.ADP_MAX_POSTINGS:
+        data = _fetch_page(skip)
+        if data == "THROTTLED":
+            return THROTTLED if not postings else _as_result(postings)
+        if data == "NO_BOARD":
+            return None if not postings else _as_result(postings)
+        page, page_total = ats_adp.extract_page(data)
+        if page_total is not None:
+            total = page_total
+        if not page:
+            break
+        new_count = 0
+        for req in page:
+            iid = req.get("itemID")
+            if iid is not None and iid in seen_ids:
+                continue
+            if iid is not None:
+                seen_ids.add(iid)
+            postings.append(req)
+            new_count += 1
+        skip += len(page)
+        if total is not None and len(seen_ids) >= total:
+            break
+        if new_count == 0:
+            break
+    return _as_result(postings)
+
+
 def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
            skip_comeet=False, budget_seconds=PER_COMPANY_BUDGET):
     """Resolve a company to (ats, slug, strong_hits, total_jobs) or a reason.
@@ -2449,9 +2551,12 @@ def main():
                              "May still be pollable under a "
                              "non-obvious slug, on a careers page this script could not "
                              "guess the domain of, or on an ATS with no adapter yet "
-                             "(Paylocity boards are GUID-addressed and can never be "
-                             "auto-resolved). Worth one manual look at the company's own "
-                             "careers page if the company matters."),
+                             "(Paylocity and ADP WorkforceNow boards are GUID-addressed "
+                             "and can never be auto-resolved by name; probe_adp can "
+                             "validate a cid found by hand, e.g. from a careers-page "
+                             "link or job-alert email, but cannot discover one). Worth "
+                             "one manual look at the company's own careers page if the "
+                             "company matters."),
                   "recheck_if_resurfaced": True,
                   "unpollable": True}
         pending_entry = pending_by_name.get(name.lower(), {})

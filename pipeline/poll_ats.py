@@ -60,6 +60,11 @@ SMARTRECRUITERS_MAX_POSTINGS = 500  # pagination cap for fetch_smartrecruiters; 
 # #336. Depth does not buy more shortlist slots (MAX_PER_COMPANY_PER_RUN is 2);
 # it buys better candidates for the two each board already gets.
 WORKDAY_MAX_POSTINGS = 1000
+# Shared with harvest_ats.probe_adp per ats_contract.md section 9 ("capped
+# pagination (named constant shared by probe and poller)"); the real value
+# lives in ats_adp.py so both call sites read the same number without a
+# circular import.
+from ats_adp import ADP_MAX_POSTINGS  # noqa: E402
 DEDUP_WINDOW_DAYS = 30
 MAX_PER_COMPANY_PER_RUN = 2  # diversity cap: max roles per company in the surfaced shortlist (prevents one company sweeping the run)
 # Raised 25 -> 40 on 2026-07-27. A funnel audit showed 128 title-matched jobs
@@ -907,6 +912,14 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             raw = job_data.get("PublishedDate")
             if raw:
                 return datetime.fromisoformat(raw).date()
+        elif ats == "adp":
+            # postDate is a real ISO-8601 timestamp with a UTC offset
+            # ("2026-09-18T12:36:00.000-04:00") -- unlike Workday's relative
+            # "Posted N Days Ago" string, no floor-resolution or detail-page
+            # lookup is needed. fromisoformat handles the offset directly.
+            raw = job_data.get("postDate")
+            if raw:
+                return datetime.fromisoformat(raw).date()
         elif ats == "ashby":
             raw = job_data.get("publishedAt")
             if raw:
@@ -1147,6 +1160,12 @@ def parse_location(job_data: dict, ats: str) -> str:
         loc = job_data.get("JobLocation") or {}
         return countries.stamp(job_data.get("LocationName") or "",
                                loc.get("Country")) or "Unknown"
+    elif ats == "adp":
+        # Precomputed by ats_adp.normalize() from requisitionLocations, since
+        # that same assembly is needed by harvest_ats.probe_adp too. See
+        # ats_adp.location_string() for the shortName-vs-address fallback and
+        # why country is not stamped (no non-US posting observed live yet).
+        return job_data.get("_adp_location") or "Unknown"
     elif ats == "rippling":
         locs = job_data.get("locations") or []
         names = [l.get("name") for l in locs if l.get("name")]
@@ -1216,6 +1235,12 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
         # Precomputed in fetch_paylocity, which knows the tenant host; the
         # job objects themselves carry only a numeric JobId.
         return job_data.get("_paylocity_url", "")
+    elif ats == "adp":
+        # Precomputed by ats_adp.normalize() (reuses the same generic
+        # "_apply_url" key Workday's branch above reads). Built from the
+        # requisition's ExternalJobID, NOT its itemID -- see
+        # ats_adp.apply_url()'s docstring for the live verification.
+        return job_data.get("_apply_url", "")
     elif ats == "comeet":
         return (job_data.get("url_comeet_hosted_page")
                 or job_data.get("url_active_page")
@@ -1608,6 +1633,77 @@ def fetch_paylocity(company: dict) -> list[dict]:
         return [{"_error": f"{type(e).__name__}: {e}"}]
 
 
+def fetch_adp(company: dict) -> list[dict]:
+    """Fetch jobs from an ADP WorkforceNow Career Center board.
+
+    Added 2026-09-18 (five-company ADP backlog: Caliber Car Wash, Mountain
+    Seed, Parallels, RK&K, Steel Partners). ADP is HAND-ENROLLED like
+    Paylocity: `slug` holds the WorkforceNow `cid` GUID (there is no other
+    identifier), addressed at the fixed public host workforcenow.adp.com. Of
+    the three ADP URL shapes found live on the five backlog companies' own
+    careers pages (see ats_adp.py's module docstring), only this one -- cid-
+    addressed WorkforceNow -- has a public JSON API; the other two (ADP
+    Recruiting/RTI.home, myjobs.adp.com) are unsupported.
+
+    The bulk of the logic (URL building, response parsing, normalization)
+    lives in ats_adp.py, shared with harvest_ats.probe_adp and
+    fetch_jd.fetch_adp, per the horizon-build convention of keeping new-ATS
+    code out of files three other builders are editing in parallel.
+
+    PAGINATES: the API serves ADP_PAGE_SIZE (20) requisitions per page
+    regardless of the requested $top (verified live 2026-09-18 against
+    Caliber Car Wash: $top=100 still returned 20 rows), up to
+    ADP_MAX_POSTINGS. Stops on meta.totalNumber (read from whichever page
+    carries it -- unlike Workday, a later page here still returns a non-empty
+    meta) or a short/empty page, and de-duplicates by itemID: a live board can
+    shift a requisition across the skip boundary between two requests (one
+    itemID was observed in both the skip=0 and skip=20 pages of the same
+    walk against Caliber's board), so re-reading it once more is expected and
+    must not be double-counted.
+    """
+    import ats_adp
+    cid = (company.get("slug") or "").strip()
+    if not cid:
+        return [{"_error": "ADP entry missing cid (stored in slug)"}]
+    postings: list[dict] = []
+    seen_ids: set = set()
+    total = None
+    skip = 0
+    try:
+        while skip < ADP_MAX_POSTINGS:
+            url = ats_adp.requisitions_url(cid, skip=skip, top=ats_adp.ADP_PAGE_SIZE)
+            resp = requests.get(
+                url, headers={"User-Agent": "Mozilla/5.0 (resume-pipeline)"},
+                timeout=REQUEST_TIMEOUT)
+            resp.raise_for_status()
+            data = resp.json()
+            page, page_total = ats_adp.extract_page(data)
+            if page_total is not None:
+                total = page_total
+            if not page:
+                break
+            new_count = 0
+            for req in page:
+                iid = req.get("itemID")
+                if iid is not None and iid in seen_ids:
+                    continue
+                if iid is not None:
+                    seen_ids.add(iid)
+                postings.append(req)
+                new_count += 1
+            skip += len(page)
+            if total is not None and len(seen_ids) >= total:
+                break
+            if new_count == 0:
+                # Every item on this page was one already seen -- stop rather
+                # than loop forever on a board whose total we never learned.
+                break
+        return [ats_adp.normalize(req, cid) for req in postings
+                if not ats_adp.is_internal(req)]
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
 def rippling_api_items(rows: list) -> list[dict]:
     """Rippling board-API rows reshaped into the listing page's item shape.
 
@@ -1897,6 +1993,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_rippling(slug)
         elif ats == "paylocity":
             jobs = fetch_paylocity(company)
+        elif ats == "adp":
+            jobs = fetch_adp(company)
         elif ats == "comeet":
             jobs = fetch_comeet(company)
         elif ats == "jazzhr":
