@@ -18,7 +18,7 @@
         "notes": "KEPT ACTIVE 2026-09-03 when BuiltIn Remote was disabled for poll_builtin.py, because it is NOT fully subsumed. The feeder harvests companies and every lead needs harvest_ats.py to resolve a board; when no board resolves, the company is rejected as unpollable and any live role at it is lost. This dork surfaces the ROLE directly off builtin.com/job, so it still reaches exactly that class -- the RethinkFirst case (real tier1 Atlanta role, no resolvable board for three days) is the shape. Atlanta is also the higher-signal, lower-competition half by the same reasoning as the Atlanta Board Sweep, so the non-overlap is worth a rotation slot here and was not worth one for Remote. Left at frequency 'daily', which the 1c rotation already means 'about every 3 days'; websearch_rotation.py supports only daily/monthly, so do not invent a 'weekly' value. NOTE: this is a judgement call, not a measurement -- channel_stats.websearch aggregates all sources and carries no per-source attribution, so neither dork's yield is actually known. If per-source stats ever land, re-test whether this one earns its slot. Original notes: Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount <=200. Query broadened 2026-06-25 to include customer success + solutions engineer terms.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-15"
+        "last_run": "2026-09-18"
       },
       {
         "name": "BuiltIn Remote",
@@ -46,7 +46,7 @@
         "status": "active",
         "frequency": "daily",
         "scoring_notes": "Apply +20 AI bonus + tier2b_ai_wildcard title match (+18) = strong signal. Verify salary floor.",
-        "last_run": "2026-09-15"
+        "last_run": "2026-09-18"
       },
       {
         "name": "Ashby Boards - Target Roles",
@@ -62,7 +62,7 @@
         "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-15"
+        "last_run": "2026-09-18"
       },
       {
         "name": "Lever Boards - Target Roles",
@@ -134,7 +134,7 @@
         "notes": "Closes the Workday blind spot found 2026-07-02: a Crowe 'AI Enablement Manager' (Atlanta, Tier-2 title, salary in range) was invisible to the pipeline because board dorks only covered Ashby/Greenhouse/Lever and Crowe isn't watchlist material. Workday hosts the enterprise segment specifically. Individual myworkdayjobs.com pages are JS-rendered — do NOT WebFetch them; verify hits via the Workday CXS API instead (POST https://{host}/wday/cxs/{tenant}/{site}/jobs with searchText — see _workday_notes / verify_workday.py). Enroll recurring-fit companies onto the watchlist with wd_host/wd_tenant/wd_site.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-15"
+        "last_run": "2026-09-18"
       },
       {
         "name": "Passion Verticals (EV/Health/Agtech/SportsTech discovery)",
@@ -142,7 +142,7 @@
         "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config → passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias. 'sports technology'/'sports analytics'/'player tracking' added 2026-07-22 for the new sports_technology domain -- this targets companies with real CSM/TAM/implementation-shaped roles (e.g. Sportradar, Catapult, Trackman, Zebra Sports), not field-hardware-technician titles like Hawk-Eye Innovations' actual Atlanta postings, which are a genuinely different job function and don't clear the title-tier bar regardless of the passion bonus. 'solar', 'home energy', and 'battery storage' added 2026-09-14 on Aneesh's ask after he asked whether home-solar companies like Sunrun were covered: they already scored under electrification_ev (+10) but no discovery source named them, and the watchlist had no residential-solar company. Expect installer boards to be mostly sales and field crews; the fitting roles sit at the software, battery, and home-energy-management end.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-15"
+        "last_run": "2026-09-18"
       },
       {
         "name": "Industrial IoT / Physical-World Hardware (discovery only, no scoring bonus)",
@@ -150,7 +150,7 @@
         "notes": "Added 2026-07-18 after Aneesh described being drawn to physical-world/industrial-equipment sensing (anchor example: a sensor device on spinning machinery) — narrower than generic 'hardware' or 'wireless communication' on purpose, to avoid pulling in consumer telecom/carrier noise or double-counting his existing consumer-IoT background (First Alert/Newell/Luma), which already scores normally via keyword overlap. A plain (non-site-scoped) version of this query was tested first and returned mostly generic aggregator category pages (ZipRecruiter/Indeed/SimplyHired), not enrollable individual companies -- switched to the ATS-host-scoped pattern (same shape as the Ashby/Greenhouse/Lever 'Boards - Target Roles' sources) since that's what actually surfaces live individual postings; first live run found AssetWatch (industrial condition-monitoring platform), Advanced Technology Services, and ANYbotics (industrial robotics/predictive maintenance). UNLIKE the Passion Verticals source above, this is discovery/enrollment-only: hits get NO passion-domain scoring bonus (Aneesh explicitly deferred that decision -- see memory user_profile.md 'Open item, deliberately deferred'). Companies surfaced here go through the normal enrollment verification and are scored on the standard rubric like any other company -- no bonus, no special treatment, just a wider discovery net. Do not add a passion_domains entry for this vertical unless Aneesh explicitly asks. RESOLVED 2026-09-08, and the answer was NOT a passion domain: asked directly (prompted by Seeq's Technical Account Manager, which scored 76 with zero company bonus against a real fit), Aneesh chose to score this vertical with the EXISTING IoT company-level bonus (+15) instead. So this source stays discovery-only and passion-domain-free exactly as written, and the lift arrives through the IoT line of the Step 2c rubric at scoring time. Apply it the way Samsara and Axon already do: leave score_bonus at 0, write the +15 as a SCORING NOTE in bonus_reason, and remember it counts toward the +30 company cap.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-15"
+        "last_run": "2026-09-18"
       },
       {
         "name": "PropTech / Resident Experience (vertical discovery)",
@@ -292,15 +292,8 @@
         "name": "Home Depot",
         "why": "Atlanta HQ with a real internal tech org. Workday tenant exists but the site name did not resolve on 2026-07-27 (HTTP 422 on the guess). If a search reveals the real site name, switch to polling and enroll.",
         "query": "site:careers.homedepot.com OR site:myworkdayjobs.com \"home depot\" (\"customer success\" OR \"support manager\" OR \"technical account\")",
-        "last_checked": "2026-09-08",
-        "last_hit": "2026-09-08: REAL HIT, and it came from the Step 1d-2 blind-spot auto-trigger rather than this query. 'Manager, Workforce Enablement (Equipment Services)', Atlanta GA, onsite, Req168826, at https://careers.homedepot.com/job/23047631/manager-workforce-enablement-equipment-services-atlanta-ga/ -- technician readiness, onboarding, upskilling, workflow adoption, field capability. Surfaced in the digest under Manual channel with the honest caveat that the 'technicians' are HDES field service techs, not support agents, so the shape of the work translates and the domain does not. Two further Home Depot cards the same day (ISE Planning Project Manager, DC Operations Manager) are not fit-space. Note the careers.homedepot.com site is directly searchable and indexable, so this employer is reachable by dork even though the Workday site name never resolved."
-      },
-      {
-        "name": "Cox Automotive",
-        "why": "Atlanta HQ (Cox Enterprises). Automotive software/marketplace tech. Workday site name unresolved (404 on the guess).",
-        "query": "site:myworkdayjobs.com cox (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"support operations\")",
-        "last_checked": "2026-09-08",
-        "last_hit": "2026-09-08: no Cox tenant on myworkdayjobs.com at all. The dork returned only OTHER employers' Workday reqs, which is the same failure mode already documented for Yardi: a common company name plus a shared ATS host means the results are dominated by everyone else. Incidental value, though: the same result set handed back three tenant/site pairs that harvest_ats.py had just burned 60s each failing to resolve (Adobe adobe.wd5/external_experienced, Magnite osv-rubicon.wd5/MagniteCareers, Bluehost web.wd1/ExternalCareerSite). Bluehost was enrolled off that. Consider rewriting this query to target cox.com or coxautoinc.com directly rather than the shared Workday host."
+        "last_checked": "2026-09-18",
+        "last_hit": "2026-09-18: nothing new in fit-space; the dork returned a 'Senior Manager, CX' (Temco Logistics, Atlanta, Req160751) and a 'Product Support Senior Manager, Technology Deployment Center' (onsite), both unverified and neither clearly support-ops at the right altitude. Prior: 2026-09-08: REAL HIT, and it came from the Step 1d-2 blind-spot auto-trigger rather than this query. 'Manager, Workforce Enablement (Equipment Services)', Atlanta GA, onsite, Req168826, at https://careers.homedepot.com/job/23047631/manager-workforce-enablement-equipment-services-atlanta-ga/ -- technician readiness, onboarding, upskilling, workflow adoption, field capability. Surfaced in the digest under Manual channel with the honest caveat that the 'technicians' are HDES field service techs, not support agents, so the shape of the work translates and the domain does not. Two further Home Depot cards the same day (ISE Planning Project Manager, DC Operations Manager) are not fit-space. Note the careers.homedepot.com site is directly searchable and indexable, so this employer is reachable by dork even though the Workday site name never resolved."
       },
       {
         "name": "AppFolio",
@@ -313,8 +306,8 @@
         "name": "Yardi",
         "why": "One of the two largest property-management software vendors; direct industry adjacency to iApartments. Added 2026-08-21 alongside AppFolio, same provenance and same result: no board from name variants, and site:myworkdayjobs.com returned only other employers hiring for Yardi SKILLS (EisnerAmper, Realty Income, Apex, Cushman & Wakefield, JLL) rather than a Yardi tenant. That pattern is itself a lesson: for a widely-deployed platform vendor, a skills-name search is dominated by its customers, so the fallback cannot resolve the vendor's own board.",
         "query": "\"yardi\" careers (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation manager\" OR \"technical support manager\") remote OR Atlanta",
-        "last_checked": "2026-09-10",
-        "last_hit": "2026-08-31: still live. careers.yardi.com Client Services family open, including Associate Technical Account Manager (Denver, CO listed) and other TAM reqs; ZipRecruiter mirrors ~20 Yardi TAM postings. Senior TAM median total pay reported around $128K, so the senior rung clears the floor even if the Associate rung does not. Triggered by the Step 1d-2 blind-spot auto-check after a LinkedIn alert for 'Technical Account Manager at Yardi'."
+        "last_checked": "2026-09-18",
+        "last_hit": "2026-09-18: Associate Technical Account Manager, Atlanta GA (Affordable Housing team, careers.yardi.com/openings/job-posting/AH24323311/) live; associate rung, phone/email support shape, likely under the salary floor. Prior 2026-08-31: still live. careers.yardi.com Client Services family open, including Associate Technical Account Manager (Denver, CO listed) and other TAM reqs; ZipRecruiter mirrors ~20 Yardi TAM postings. Senior TAM median total pay reported around $128K, so the senior rung clears the floor even if the Associate rung does not. Triggered by the Step 1d-2 blind-spot auto-check after a LinkedIn alert for 'Technical Account Manager at Yardi'."
       },
       {
         "name": "Intuit / Mailchimp",
@@ -2276,7 +2269,9 @@
       "enrolled_date": "2026-07-14",
       "score_bonus": 20,
       "bonus_reason": "Developer/infra tooling (+20)",
-      "board_status": "404_seen_2026-09-17"
+      "board_status": "404_confirmed",
+      "board_status_note": "2026-09-18: second consecutive 404 on boards-api.greenhouse.io/v1/boards/postman. Recovery search returned only cached job-boards.greenhouse.io/postman pages with old req ids; no new ATS host found. Likely migrated off Greenhouse or renamed the board token.",
+      "recheck_after": "2026-09-25"
     },
     {
       "name": "First Advantage",
@@ -2329,6 +2324,21 @@
       "headcount_band": "2000+",
       "score_bonus": 0,
       "bonus_reason": "Neither (+0): EdTech courseware and learning platforms."
+    },
+    {
+      "name": "Cox Automotive",
+      "ats": "workday",
+      "slug": "cox",
+      "wd_host": "cox.wd1.myworkdayjobs.com",
+      "wd_tenant": "cox",
+      "wd_site": "Cox_External_Career_Site_1",
+      "priority": "low",
+      "reason": "Atlanta HQ (Cox Enterprises: Cox Automotive, Manheim, Autotrader, VinSolutions, vAuto, RapidScale). Promoted out of _blind_spot_companies 2026-09-18: the blind-spot dork finally returned the real tenant/site (cox.wd1 / Cox_External_Career_Site_1), and a direct CXS call returned 766 live jobs. The board is dominated by field and auction roles, so expect a low hit rate; fit-space seen in the dork was a RapidScale Customer Success Manager (West). Enrolled at low priority for that reason.",
+      "headcount_band": "2000+",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): automotive marketplace and dealer software conglomerate; not AI-native and not developer/infra tooling.",
+      "enrolled_date": "2026-09-18",
+      "enrolled_via": "blind-spot rotation promotion (Step 1c-2)"
     },
     {
       "name": "Sprinklr",
@@ -3998,7 +4008,8 @@
       "enrolled_via": "User-surfaced (Aneesh spotted 'AI Operations Lead' directly in the LinkedIn app Jobs feed, not a forwarded alert email -- confirmed the harvest layer's auto-enrollment same run)",
       "reason": "hercules.app -- AI app builder (a16z-backed, founding team of Fig), 300k+ users, ~250 support tickets/day. 'AI Operations Lead' role is a very close functional match: own support end to end, build AI automations to scale ticket handling. Real caveats found on direct JD read: requires 'extensive Stripe experience' (refunds/chargebacks/credit notes) Aneesh doesn't have, expects ~150 tickets/day personally closed (heavily IC, not manager-of-team scope), one weekend/month required, and despite the Ashby location tag 'Remote - North America' the JD states a 'very strong preference for in-office' (SF) with remote only for 'exceptional candidates... willing/able to travel to the office regularly' -- not a clean remote role in practice. $100K-$250K + equity.",
       "score_bonus": 20,
-      "bonus_reason": "AI/ML platform (+20) -- AI app builder, squarely AI-native"
+      "bonus_reason": "AI/ML platform (+20) -- AI app builder, squarely AI-native",
+      "headcount_band": "51-200"
     },
     {
       "name": "Headway",
@@ -4133,7 +4144,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (188 jobs) with 1 US-reachable tier1/tier2/tier2c fit-titles at harvest time, e.g. 'Career Manager (Public Sector, Professional Services)'. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 20,
-      "bonus_reason": "Developer/infra tooling (+20) (classified 2026-08-21, verified from product this session). Low-code application development platform (LCAP): process automation, data fabric, process mining, case management. The product is a tool for BUILDING software, which is devtools by any reading, even though the builders are often business users rather than engineers. Only 1 US fit-title at harvest, so the bonus matters more than the current board does."
+      "bonus_reason": "Developer/infra tooling (+20) (classified 2026-08-21, verified from product this session). Low-code application development platform (LCAP): process automation, data fabric, process mining, case management. The product is a tool for BUILDING software, which is devtools by any reading, even though the builders are often business users rather than engineers. Only 1 US fit-title at harvest, so the bonus matters more than the current board does.",
+      "headcount_band": "2000+"
     },
     {
       "name": "Precisely",
@@ -5929,11 +5941,12 @@
       "priority": "low",
       "enrolled_date": "2026-09-11",
       "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): wd_host/wd_tenant/wd_site read off the careers page (https://careers.racetrac.com/), verified live with verify_workday.try_site",
-      "needs_vertical_classification": true,
       "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://careers.racetrac.com/) links this board, which the name-variant harvest could not derive. Board verified live (52 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier2c), e.g. 'Business Intelligence & Systems Analyst' [200 Galleria Parkway SE Suite 900 Atlant]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. NOTE: scored on all 52 postings; poll_ats.fetch_workday currently stops after 40 on this tenant (Workday returns `total` only on the first page; flagged 2026-09-11), so reqs past position 40 stay invisible to the daily poll until that is fixed. Supersedes the 2026-09-08 rejection, which was tagged unpollable=true and read: No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
       "wd_host": "racetrac.wd5.myworkdayjobs.com",
       "wd_tenant": "racetrac",
-      "wd_site": "SSC"
+      "wd_site": "SSC",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): convenience-store and fuel retail chain; the hiring is corporate IT/ops, not an AI or tooling product."
     },
     {
       "name": "REPAY",
@@ -5942,11 +5955,12 @@
       "priority": "low",
       "enrolled_date": "2026-09-11",
       "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): wd_host/wd_tenant/wd_site read off the careers page (https://repay.com/company/careers/), verified live with verify_workday.try_site",
-      "needs_vertical_classification": true,
       "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://repay.com/company/careers/) links this board, which the name-variant harvest could not derive. Board verified live (15 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'Enterprise Technical Account Manager' [Atlanta Headquarters]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. Supersedes the 2026-09-07 rejection, which was tagged unpollable=true and read: No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
       "wd_host": "repay.wd115.myworkdayjobs.com",
       "wd_tenant": "repay",
-      "wd_site": "REPAYCareers"
+      "wd_site": "REPAYCareers",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): payment processing for verticals (loan repayment, B2B AP/AR); fintech, not AI-native and not developer/infra tooling."
     },
     {
       "name": "Stord",
@@ -5955,11 +5969,12 @@
       "priority": "low",
       "enrolled_date": "2026-09-11",
       "enrolled_via": "the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): wd_host/wd_tenant/wd_site read off the careers page (https://www.stord.com/careers), verified live with verify_workday.try_site",
-      "needs_vertical_classification": true,
       "reason": "Enrolled from the 2026-09-11 careers-page sweep (horizon-builds run 03, Milestone 5): the company's own careers page (https://www.stord.com/careers) links this board, which the name-variant harvest could not derive. Board verified live (98 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Head of Customer Experience' [ATL1 - Atlanta, GA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty. NOTE: scored on all 98 postings; poll_ats.fetch_workday currently stops after 40 on this tenant (Workday returns `total` only on the first page; flagged 2026-09-11), so reqs past position 40 stay invisible to the daily poll until that is fixed. Supersedes the 2026-09-02 rejection, which was tagged unpollable=true and read: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
       "wd_host": "stord.wd503.myworkdayjobs.com",
       "wd_tenant": "stord",
-      "wd_site": "Stord_External_Career"
+      "wd_site": "Stord_External_Career",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): e-commerce fulfillment and logistics platform (warehousing plus software); not AI-native and not developer/infra tooling."
     },
     {
       "name": "Palo Alto Networks",
@@ -6287,6 +6302,56 @@
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (17 jobs) with 6 fit-titles at harvest time (6 tier2), e.g. 'Implementation Specialist' [New York City]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 30,
       "bonus_reason": "AI/ML platform + Developer/infra tooling (+30, classified 2026-09-17). Axle sells a universal API for property-and-casualty insurance data (banks, lenders, and rental companies integrate it the way they integrate Plaid) and runs AI agents that automate verification, monitoring, and policy updates on top of it. The API is an integration platform for engineering teams and the agents are the product, so both verticals hold. NYC HQ with a West Midtown Atlanta office; the team is in person 4 days a week."
+    },
+    {
+      "name": "Daybreak Health",
+      "ats": "greenhouse",
+      "slug": "daybreakhealth",
+      "priority": "low",
+      "enrolled_date": "2026-09-18",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (26 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Customer Success Manager' [100% Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Foodsmart",
+      "ats": "lever",
+      "slug": "foodsmart",
+      "priority": "low",
+      "enrolled_date": "2026-09-18",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (17 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Client Success Manager' [Remote (US)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Yugabyte",
+      "ats": "greenhouse",
+      "slug": "yugabyte",
+      "priority": "low",
+      "enrolled_date": "2026-09-18",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (14 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Principal Solutions Engineer' [Remote, USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Overstory",
+      "ats": "greenhouse",
+      "slug": "overstory",
+      "priority": "low",
+      "enrolled_date": "2026-09-18",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (10 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Enterprise Customer Success Manager' [Remote: San Francisco Bay Area]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Bloomerang",
+      "ats": "greenhouse",
+      "slug": "bloomerang",
+      "priority": "low",
+      "enrolled_date": "2026-09-18",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (17 jobs) with 1 fit-titles at harvest time (1 tier2c), e.g. 'Salesforce Administrator' [Remote, US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
