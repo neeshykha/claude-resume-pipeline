@@ -3,7 +3,7 @@
 ATS Board Poller — runs as a standalone Python script BEFORE Claude's pipeline.
 
 Polls all watchlist companies' ATS endpoints (Greenhouse, Ashby, Lever, Workday,
-SmartRecruiters, Workable, Pinpoint, Rippling),
+SmartRecruiters, Workable, Pinpoint, Rippling, Gem),
 filters by target titles, deduplicates against seen_jobs.json, applies
 company cap and basic filters, and outputs a small JSON file that Claude
 reads instead of fetching/processing raw API data in-context.
@@ -41,6 +41,7 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
 import ats_icims  # noqa: E402  (leaf module: parser + URL builder shared with harvest_ats.py)
+import ats_gem  # noqa: E402  (Gem's fetch/parse logic; see its module docstring)
 
 # ── Config plumbing ──────────────────────────────────────────────────────────
 # Single source of truth is watchlist_companies.json. Endpoints, the salary
@@ -964,6 +965,13 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             if raw:
                 return datetime.strptime(raw, "%m/%d/%Y %I:%M %p").date()
             return None
+        elif ats == "gem":
+            # The board-LIST query (what the daily poll reads) exposes no
+            # publish/created timestamp at all -- only the single-job detail
+            # query does (firstPublishedTsSec, used by fetch_jd.py's fetch_gem
+            # for a JD lookup, never by the poller). Always neutral here, same
+            # "no data -> don't filter" treatment as Pinpoint/Rippling/JazzHR.
+            return None
         elif ats == "comeet":
             # Comeet exposes time_updated but no creation/publication date.
             # Use it as an approximation, same precedent as greenhouse's
@@ -1228,6 +1236,10 @@ def parse_location(job_data: dict, ats: str) -> str:
         parts = [p.strip() for p in [loc.get("city"), loc.get("state")] if p and p.strip()]
         full = ", ".join(parts) if parts else (loc.get("name") or "")
         return countries.stamp(full, loc.get("country")) or "Unknown"
+    elif ats == "gem":
+        # Delegated to ats_gem: see its location_string() docstring for why
+        # only a non-remote location's isoCountry is trusted for the stamp.
+        return ats_gem.location_string(job_data)
     return "Unknown"
 
 
@@ -1265,6 +1277,8 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
         return (job_data.get("url_comeet_hosted_page")
                 or job_data.get("url_active_page")
                 or job_data.get("position_url", ""))
+    elif ats == "gem":
+        return ats_gem.apply_url(slug, job_data.get("extId", ""))
     return ""
 
 
@@ -2094,6 +2108,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_jazzhr(slug)
         elif ats == "icims":
             jobs = fetch_icims(slug)
+        elif ats == "gem":
+            jobs = ats_gem.fetch_gem(slug, timeout=REQUEST_TIMEOUT)
         else:
             errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
             continue

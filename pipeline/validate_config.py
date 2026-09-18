@@ -40,7 +40,7 @@ SEEN_JOBS_PATH = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
 # would have blocked the whole daily run. Caught 2026-07-30 enrolling Hawk-Eye.
 SUPPORTED_ATS = {"greenhouse", "greenhouse_eu", "ashby", "lever", "workday",
                  "smartrecruiters", "workable", "pinpoint", "rippling", "comeet",
-                 "paylocity", "jazzhr", "adp", "icims"}
+                 "paylocity", "jazzhr", "adp", "icims", "gem"}
 VALID_BANDS = {"1-50", "51-200", "201-500", "501-2000", "2000+"}
 QUEUE_BUCKETS = ("pending", "enrolled", "rejected")
 
@@ -171,7 +171,15 @@ def validate_watchlist(data) -> tuple[list, list]:
                     errors.append(f"watchlist: function_mismatch_titles.protected_tiers names unknown tier '{t}'")
 
     for name, url in data["_endpoints"].items():
-        if not isinstance(url, str) or "{" not in url:
+        # A "POST " prefix means poll_ats._init_config never loads this one into
+        # ATS_ENDPOINTS for generic .format(slug=slug) use -- its own fetcher
+        # builds the request by hand (Workday's tenant/site go in the URL;
+        # Gem's board id goes in the POST body as a GraphQL variable, so its
+        # endpoint is a single fixed URL with no placeholder at all). The "{"
+        # requirement below is only meaningful for the templated group.
+        if not isinstance(url, str):
+            errors.append(f"watchlist: _endpoints.{name} doesn't look like a URL template")
+        elif not url.startswith("POST") and "{" not in url:
             errors.append(f"watchlist: _endpoints.{name} doesn't look like a URL template")
 
     sources = data["_websearch_sources"].get("sources", [])
