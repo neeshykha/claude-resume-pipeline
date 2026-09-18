@@ -76,6 +76,7 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 import ats_adp  # noqa: E402  (needs SCRIPT_DIR on the path first)
 import ats_icims  # noqa: E402
+import ats_gem  # noqa: E402
 
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
@@ -837,9 +838,57 @@ def fetch_icims(url):
     }
 
 
+GEM_URL_RE = re.compile(r"https?://jobs\.gem\.com/([^/?#]+)/([^/?#]+)")
+
+
+def fetch_gem(url):
+    """Gem, via the same POST GraphQL endpoint the board itself uses.
+
+    Added 2026-09-18 alongside the poller/discovery adapter (ats_gem.py --
+    see its module docstring for the endpoint and the board-exists gotcha).
+    A job-detail URL is `https://jobs.gem.com/<boardId>/<extId>`; the bare
+    board-list URL (`https://jobs.gem.com/<boardId>`, no second segment)
+    does not match here and falls through to WebSearch, same as Pinpoint and
+    Rippling below.
+
+    `firstPublishedTsSec` -- unlike the board-LIST query the poller reads,
+    the single-posting query DOES carry a real publish timestamp, so `posted`
+    is populated here even though poll_ats.extract_posted_date always returns
+    None for Gem.
+    """
+    m = GEM_URL_RE.match(url)
+    if not m:
+        return None
+    board_id, ext_id = m.group(1), m.group(2)
+    payload = ats_gem.build_detail_payload(board_id, ext_id)
+    r = requests.post(ats_gem.GRAPHQL_URL, json=payload, headers=UA, timeout=TIMEOUT)
+    r.raise_for_status()
+    posting = r.json()[0]["data"].get("oatsExternalJobPosting")
+    if not posting:
+        return None
+    sections = posting.get("jobPostSectionHtml") or {}
+    body = "\n\n".join(strip_html(h) for h in
+                       (sections.get("introHtml"), posting.get("descriptionHtml"),
+                        sections.get("outroHtml")) if h)
+    job = posting.get("job") or {}
+    posted = None
+    ts = posting.get("firstPublishedTsSec")
+    if ts:
+        posted = dt.datetime.fromtimestamp(int(ts), tz=dt.timezone.utc).date().isoformat()
+    return {
+        "ats": "gem",
+        "title": posting.get("title"),
+        "location": ats_gem.location_string(posting),
+        "remote": (job.get("locationType") or "").upper() == "REMOTE",
+        "posted": posted,
+        "salary": strip_html(posting.get("compensationHtml")) or None,
+        "body": body,
+    }
+
+
 FETCHERS = (fetch_ashby, fetch_workday, fetch_greenhouse, fetch_lever,
             fetch_smartrecruiters, fetch_comeet, fetch_paylocity, fetch_workable,
-            fetch_ukg, fetch_adp, fetch_icims)
+            fetch_ukg, fetch_adp, fetch_icims, fetch_gem)
 
 
 def fetch(url):
@@ -852,7 +901,7 @@ def fetch(url):
             return out
     return {"error": "no fetcher matched this URL. Supported: Ashby, Workday, "
                      "Greenhouse, Lever, SmartRecruiters, Comeet, Paylocity, "
-                     "Workable, UKG Pro Recruiting, ADP WorkforceNow, iCIMS. "
+                     "Workable, UKG Pro Recruiting, ADP WorkforceNow, iCIMS, Gem. "
                      "Pinpoint/Rippling have no per-posting JSON "
                      "endpoint; use WebSearch for those. ADP Recruiting/RTI.home and "
                      "myjobs.adp.com boards are unsupported (no public JSON API found); "

@@ -64,6 +64,7 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
 import ats_icims  # noqa: E402  (leaf module: parser + URL builder shared with poll_ats.py)
+import ats_gem  # noqa: E402  (leaf module, same reasoning as countries.py)
 
 WATCHLIST = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 QUEUE = os.path.join(SCRIPT_DIR, "enrollment_candidates.json")
@@ -600,6 +601,21 @@ def _get(url, budget=None):
     return THROTTLED if _is_throttled(r) else None
 
 
+def _post(url, payload, budget=None):
+    """200 -> the response; throttled (after one retry) -> THROTTLED; else None.
+
+    Same contract as _get, for the one probe (Gem) whose API is POST-only.
+    """
+    if budget is not None and budget.expired():
+        return None
+    r = _send("post", url, budget, json=payload)
+    if r is None:
+        return None
+    if r.status_code == 200:
+        return r
+    return THROTTLED if _is_throttled(r) else None
+
+
 def _raw_get(url, budget=None):
     """GET returning the response on ANY HTTP status; None only on network failure.
 
@@ -972,6 +988,26 @@ def probe(ats: str, slug: str, budget=None):
             if len(page_jobs) < ats_icims.ICIMS_PAGE_SIZE:
                 break
         return [(j["title"], j["location"]) for j in jobs[:ats_icims.ICIMS_MAX_POSTINGS]]
+    if ats == "gem":
+        # See ats_gem.py's module docstring for the full account. Short version:
+        # jobs.gem.com is ONE fixed POST GraphQL endpoint for every company, slug
+        # passed as a variable, never as part of the URL, so unlike every other
+        # branch here this can't be a plain _get. It CAN cleanly 404-equivalent a
+        # bad slug, though (jobBoardExternal is null, verified live and with a
+        # dotted bogus slug), so it earns a slot in the normal cheap walk rather
+        # than being held back to last like SmartRecruiters.
+        r = _post(ats_gem.GRAPHQL_URL, ats_gem.build_list_payload(slug), budget)
+        if r is THROTTLED:
+            return THROTTLED
+        if not r:
+            return None
+        try:
+            board_exists, postings = ats_gem.parse_board_response(r.json())
+        except (ValueError, KeyError, IndexError, TypeError):
+            return None
+        if not board_exists:
+            return None
+        return [(j.get("title", ""), ats_gem.location_string(j)) for j in postings]
     if ats == "smartrecruiters":
         # Added 2026-09-03, the SmartRecruiters half of the same gap probe_comeet
         # closed the same day: poll_ats.py has read this ATS since 2026-06-30
@@ -1060,9 +1096,12 @@ def probe(ats: str, slug: str, budget=None):
 
 # The slug-addressed ATSes, in the order assess() EVALUATES a slug's results.
 # SmartRecruiters stays last for the collision reason given in assess(); the
-# order is load-bearing there and nowhere else.
+# order is load-bearing there and nowhere else. iCIMS and Gem sit before it
+# (not after) because both CAN reject a bad slug (iCIMS 404s a bogus tenant;
+# Gem answers jobBoardExternal null -- see their probe() branches and
+# ats_icims.py / ats_gem.py), so neither carries SmartRecruiters' collision risk.
 CHEAP_ATSES = ("greenhouse", "ashby", "lever", "workable", "pinpoint",
-               "rippling", "jazzhr", "icims", "smartrecruiters")
+               "rippling", "jazzhr", "icims", "gem", "smartrecruiters")
 
 
 def probe_cheap(slug, atses, budget=None):
@@ -2627,7 +2666,7 @@ def main():
         entry = {"name": name, "ats": None, "slug": None, "rejected_date": today,
                   "reason": ("No board resolved: no deterministic name-variant slug matched "
                              "Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/"
-                             f"JazzHR/iCIMS/SmartRecruiters; {workday_clause}; {comeet_clause}. "
+                             f"JazzHR/iCIMS/Gem/SmartRecruiters; {workday_clause}; {comeet_clause}. "
                              "May still be pollable under a "
                              "non-obvious slug, on a careers page this script could not "
                              "guess the domain of, or on an ATS with no adapter yet "

@@ -94,6 +94,26 @@ def _payload(ats, jobs):
     raise AssertionError(ats)
 
 
+def _gem_payload(jobs):
+    """Wrap [(title, location)] in the shape ats_gem.parse_board_response expects.
+
+    `jobs is None` means no board at this slug -- jobBoardExternal null, same
+    HTTP 200 every other slug on this API gets (see ats_gem.py's module
+    docstring: Gem never 404s, so board-exists is read off this field, never
+    off status code or job count). A non-None `jobs` (including []) means a
+    resolved board.
+    """
+    board = ({"id": "RXh0ZXJuYWxKb2JCb2FyZDoxMjM=", "teamDisplayName": "Fake Co",
+              "pageTitle": "Fake Co Careers"} if jobs is not None else None)
+    postings = [{"id": f"id-{i}", "extId": f"ext-{i}", "title": t,
+                 "locations": [{"name": l, "city": None, "isoCountry": None,
+                               "isRemote": False}] if l else [],
+                 "job": {"locationType": None, "employmentType": None}}
+                for i, (t, l) in enumerate(jobs or [])]
+    return [{"data": {"oatsExternalJobPostings": {"jobPostings": postings},
+                      "jobBoardExternal": board}}]
+
+
 class FakeRequests:
     """`requests` stand-in. BOARDS maps (ats, slug) -> [(title, location)].
 
@@ -139,8 +159,22 @@ class FakeRequests:
             raise AssertionError("the fake does not serve HTML boards")
         return FakeResponse(200, _payload(ats, jobs), url=url)
 
-    def post(self, url, **_kw):        # Workday; never reached by these cases
-        raise AssertionError(f"unexpected POST in test fake: {url}")
+    def post(self, url, **_kw):
+        # Gem is POST-only (see ats_gem.py) and is now in CHEAP_ATSES, so every
+        # case's slug walk sends it one of these per slug -- unlike Workday,
+        # which stays unreached here because every case passes skip_workday=True.
+        if H.ats_gem.GRAPHQL_URL not in url:
+            raise AssertionError(f"unexpected POST in test fake: {url}")
+        ats = "gem"
+        payload = _kw.get("json") or [{}]
+        slug = (payload[0].get("variables") or {}).get("boardId")
+        time.sleep(FAKE_LATENCY)
+        self.log.append((ats, slug, time.monotonic()))
+        refused = self._throttled(ats, slug, url)
+        if refused is not None:
+            return refused
+        jobs = self.boards.get((ats, slug))
+        return FakeResponse(200, _gem_payload(jobs), url=url)
 
 
 def run(name, boards, known_pairs=frozenset(), skip_workday=True, skip_comeet=True,
