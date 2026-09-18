@@ -66,6 +66,14 @@ import urllib.parse
 
 import requests
 
+# Sibling import (same pattern poll_ats.py and harvest_ats.py use): ats_adp.py
+# holds the ADP URL-building/parsing shared by the poller, the discovery
+# probe, and this file's fetch_adp().
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+import ats_adp  # noqa: E402  (needs SCRIPT_DIR on the path first)
+
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 TIMEOUT = 45
@@ -706,9 +714,53 @@ def fetch_paylocity(url):
     }
 
 
+def fetch_adp(url):
+    """ADP WorkforceNow (cid-addressed), single-requisition detail endpoint.
+
+    Added 2026-09-18. Matches a recruitment.html?cid=<GUID>...&jobId=<id> URL
+    -- the same shape poll_ats.py's _apply_url stashes for an ADP posting
+    (see ats_adp.apply_url()). jobId is the requisition's ExternalJobID, not
+    its itemID.
+
+    Uses the single-requisition DETAIL endpoint
+    (.../job-requisitions/{jobId}?cid=<cid>), found by network capture while
+    verifying the live board, not the LISTING endpoint poll_ats.fetch_adp /
+    harvest_ats.probe_adp paginate through. The detail endpoint returns one
+    extra field the listing omits entirely: `requisitionDescription`, the
+    full posting body as HTML (complete with inline base64 <img> data on the
+    live Caliber Car Wash posting verified against -- strip_html drops it for
+    free, since the whole data: URI sits inside the tag's attributes and the
+    generic `<[^>]+>` removal takes the tag and its attributes together).
+    """
+    parsed = ats_adp.parse_recruitment_url(url)
+    if not parsed:
+        return None
+    cid, job_id = parsed
+    if not job_id:
+        return {"ats": "adp", "error":
+                "recruitment.html URL has no jobId= parameter -- this is a "
+                "board/search-results link, not a single posting. Open the "
+                "specific requisition (its apply link carries &jobId=<id>) "
+                "and use that URL instead."}
+    d = get(ats_adp.detail_url(cid, job_id)).json()
+    if not d or not d.get("requisitionTitle"):
+        return {"ats": "adp", "error":
+                f"no requisition found for jobId={job_id} at cid={cid} "
+                f"(closed, or the URL's cid/jobId is wrong)"}
+    return {
+        "ats": "adp",
+        "title": d.get("requisitionTitle"),
+        "location": ats_adp.location_string(d),
+        "remote": None,
+        "posted": ats_adp.posted_date(d),
+        "salary": ats_adp.salary_range(d),
+        "body": strip_html(d.get("requisitionDescription")),
+    }
+
+
 FETCHERS = (fetch_ashby, fetch_workday, fetch_greenhouse, fetch_lever,
             fetch_smartrecruiters, fetch_comeet, fetch_paylocity, fetch_workable,
-            fetch_ukg)
+            fetch_ukg, fetch_adp)
 
 
 def fetch(url):
@@ -721,8 +773,11 @@ def fetch(url):
             return out
     return {"error": "no fetcher matched this URL. Supported: Ashby, Workday, "
                      "Greenhouse, Lever, SmartRecruiters, Comeet, Paylocity, "
-                     "Workable, UKG Pro Recruiting. Pinpoint/Rippling have no per-posting JSON "
-                     "endpoint; use WebSearch for those."}
+                     "Workable, UKG Pro Recruiting, ADP WorkforceNow. "
+                     "Pinpoint/Rippling have no per-posting JSON "
+                     "endpoint; use WebSearch for those. ADP Recruiting/RTI.home and "
+                     "myjobs.adp.com boards are unsupported (no public JSON API found); "
+                     "use WebSearch for those too."}
 
 
 def render(url, rec, limit):
