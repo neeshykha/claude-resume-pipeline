@@ -66,13 +66,16 @@ import urllib.parse
 
 import requests
 
-# Sibling import (same pattern poll_ats.py and harvest_ats.py use): ats_adp.py
-# holds the ADP URL-building/parsing shared by the poller, the discovery
-# probe, and this file's fetch_adp().
+# Sibling imports (same pattern poll_ats.py and harvest_ats.py use): the
+# ats_<provider>.py modules hold the URL-building/parsing each adapter shares
+# between the poller, the discovery probe, and this file's fetch_<ats>().
+# This file is sometimes imported from a different cwd, so put its own
+# directory on sys.path rather than relying on script-directory insertion.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 import ats_adp  # noqa: E402  (needs SCRIPT_DIR on the path first)
+import ats_icims  # noqa: E402
 
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
@@ -758,9 +761,85 @@ def fetch_adp(url):
     }
 
 
+ICIMS_DETAIL_RE = re.compile(
+    r"careers-([a-z0-9-]+)\.icims\.com/jobs/(\d+)/", re.I)
+
+# Sections whose heading names a comp figure. Tenant-configurable label text
+# (Peraton/RealPage both use "Pay Range" live, but nothing here guarantees
+# every tenant does), matched loosely on purpose -- same reasoning as
+# fetch_paylocity's salary_label detection.
+ICIMS_SALARY_HEADING_RE = re.compile(r"salary|pay\s*range|compensation", re.I)
+
+
+def fetch_icims(url):
+    """iCIMS, scraped from the server-rendered job detail page.
+
+    Added 2026-09-18 alongside the poll_ats.py/harvest_ats.py adapter. There
+    is no JSON API (same situation as Paylocity/JazzHR): the detail page at
+    careers-{tenant}.icims.com/jobs/{id}/{title-slug}/job is plain HTML, one
+    `<h2 class="iCIMS_InfoMsg iCIMS_InfoField_Job">Heading</h2>` per section
+    followed by its `iCIMS_Expandable_Text` content -- verified live against
+    RealPage req 14575 ("Customer Success Manager II - HOA/Real Estate":
+    Overview / Responsibilities / Qualifications / Pay Range sections).
+
+    Location is read with the SAME regex the listing-page parser uses
+    (ats_icims.ICIMS_LOCATION_RE) -- the detail page repeats the identical
+    "header left" div shape, confirmed live on the same req. Posted date goes
+    through ats_icims.posted_date_raw() for the same reason: it is only ever
+    trustworthy when the tenant's own field label says so (RealPage's "header
+    right" slot on this very page holds the requisition ID, not a date), so an
+    untrusted tenant reads back None rather than a guess.
+    """
+    m = ICIMS_DETAIL_RE.search(url)
+    if not m:
+        return None
+    tenant = m.group(1)
+    resp = get(url)
+    page = resp.text
+
+    title = None
+    tm = re.search(r'<h1\s+class="iCIMS_Header"[^>]*>\s*(.*?)\s*</h1>', page, re.S | re.I)
+    if tm:
+        title = strip_html(tm.group(1)) or None
+
+    location = None
+    lm = ats_icims.ICIMS_LOCATION_RE.search(page)
+    if lm:
+        location = strip_html(lm.group(1)) or None
+
+    sections, salary = [], None
+    for hm in re.finditer(
+            r'<h2\s+class="iCIMS_InfoMsg iCIMS_InfoField_Job">\s*(.*?)\s*</h2>'
+            r'\s*<div\s+class="iCIMS_InfoMsg iCIMS_InfoMsg_Job">(.*?)</div>\s*</div>\s*</div>',
+            page, re.S | re.I):
+        label = strip_html(hm.group(1))
+        value = strip_html(hm.group(2))
+        if not label or not value:
+            continue
+        sections.append(f"### {label}\n\n{value}")
+        if salary is None and ICIMS_SALARY_HEADING_RE.search(label):
+            salary = value
+    if not sections:
+        return {"ats": "icims", "error":
+                f"no iCIMS_InfoField_Job sections on {url} (page shape changed, "
+                f"or this tenant '{tenant}' uses a custom-skinned front end -- "
+                f"see ats_icims.py's GitHub case)"}
+    body = "\n\n".join(sections)
+
+    return {
+        "ats": "icims",
+        "title": title,
+        "location": location,
+        "remote": "remote" in (location or "").lower() or None,
+        "posted": ats_icims.posted_date_raw(page),
+        "salary": salary,
+        "body": body,
+    }
+
+
 FETCHERS = (fetch_ashby, fetch_workday, fetch_greenhouse, fetch_lever,
             fetch_smartrecruiters, fetch_comeet, fetch_paylocity, fetch_workable,
-            fetch_ukg, fetch_adp)
+            fetch_ukg, fetch_adp, fetch_icims)
 
 
 def fetch(url):
@@ -773,7 +852,7 @@ def fetch(url):
             return out
     return {"error": "no fetcher matched this URL. Supported: Ashby, Workday, "
                      "Greenhouse, Lever, SmartRecruiters, Comeet, Paylocity, "
-                     "Workable, UKG Pro Recruiting, ADP WorkforceNow. "
+                     "Workable, UKG Pro Recruiting, ADP WorkforceNow, iCIMS. "
                      "Pinpoint/Rippling have no per-posting JSON "
                      "endpoint; use WebSearch for those. ADP Recruiting/RTI.home and "
                      "myjobs.adp.com boards are unsupported (no public JSON API found); "

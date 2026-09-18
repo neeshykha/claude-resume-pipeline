@@ -63,6 +63,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
+import ats_icims  # noqa: E402  (leaf module: parser + URL builder shared with poll_ats.py)
 
 WATCHLIST = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 QUEUE = os.path.join(SCRIPT_DIR, "enrollment_candidates.json")
@@ -698,6 +699,21 @@ def rippling_board_api_endpoint():
     return _RIPPLING_API_ENDPOINT
 
 
+# iCIMS URL template, read from the same `_endpoints` block fetch_icims reads
+# (see poll_ats.py), same one-source-of-truth reasoning as the two readers
+# above. ats_icims.ICIMS_HOST_TMPL is only the fallback for direct/test callers.
+_ICIMS_ENDPOINT = None
+
+
+def icims_endpoint():
+    """`_endpoints["icims"]` from the watchlist, read once."""
+    global _ICIMS_ENDPOINT
+    if _ICIMS_ENDPOINT is None:
+        with open(WATCHLIST, encoding="utf-8") as f:
+            _ICIMS_ENDPOINT = json.load(f)["_endpoints"]["icims"]
+    return _ICIMS_ENDPOINT
+
+
 def _rippling_board_api(slug, budget=None):
     """[(title, location)] from Rippling's board API, or None on any failure.
 
@@ -743,7 +759,15 @@ def _rippling_board_api(slug, budget=None):
 # dotted slug is legitimate on both. probe() answers None for these pairs
 # without sending anything: "no board can exist at this address" is exactly
 # what None means.
-NO_DOTTED_SLUG_ATSES = frozenset(("jazzhr", "pinpoint", "smartrecruiters"))
+#
+# "icims" added 2026-09-18 BY ANALOGY, not by measurement -- no dotted-slug
+# timing study has been run against it the way the 2026-09-17 study covered
+# the other three. iCIMS addresses a board the same way JazzHR/Pinpoint do
+# (tenant folded into a hostname label, `careers-{tenant}.icims.com`), so a
+# dotted tenant would push the dot into a new DNS label the same way it does
+# for those two, which is the shape that breaks a wildcard cert. Revisit if a
+# real iCIMS tenant is ever found with a literal dot in its name.
+NO_DOTTED_SLUG_ATSES = frozenset(("jazzhr", "pinpoint", "smartrecruiters", "icims"))
 
 
 def probe(ats: str, slug: str, budget=None):
@@ -892,6 +916,62 @@ def probe(ats: str, slug: str, budget=None):
             names = [l.get("name") for l in locs if l.get("name")]
             out.append((j.get("name", ""), ", ".join(names)))
         return out
+    if ats == "icims":
+        # Added 2026-09-18. Unlike SmartRecruiters, JazzHR, and Comeet, iCIMS
+        # DOES 404 a bad tenant cleanly (verified live against six bogus
+        # tenants -- see ats_icims.py's module docstring), so this branch can
+        # sit anywhere in CHEAP_ATSES on collision-risk grounds; it is placed
+        # right before smartrecruiters purely on cost (one classic-HTML GET,
+        # same class as jazzhr/pinpoint above it).
+        #
+        # PAGINATES, same reasoning as the SmartRecruiters branch below: the
+        # only board big enough to prove this live (Peraton, 1526 reqs / 31
+        # pages) would have its later-page fit-titles invisible to a
+        # first-page-only probe, same failure class as Canva's SmartRecruiters
+        # miss. Shares parse_icims_page/icims_page_count with fetch_icims in
+        # poll_ats.py so discovery and the daily fetch read the same markup.
+        base_template = icims_endpoint()
+        jobs = []
+        page = 0
+        total_pages = None
+        while len(jobs) < ats_icims.ICIMS_MAX_POSTINGS:
+            r = _get(ats_icims.icims_search_url(slug, page, base_template), budget)
+            if r is THROTTLED:
+                # Page one throttled: nothing known about this tenant. A later
+                # page throttled: a truncated read of a board already proven
+                # real, kept exactly like any other short read below.
+                if not jobs:
+                    return THROTTLED
+                break
+            if not r:
+                # _get folds a 404 and a network failure into the same None.
+                # Page one is the no-board decision either way; a later page
+                # doing this just ends the walk with what was already read.
+                if not jobs:
+                    return None
+                break
+            if page == 0 and not jobs and ats_icims.looks_like_redirect_skin(r.text):
+                # A real tenant (confirmed live: GitHub) that serves a
+                # custom-skinned front end this parser cannot read. Not proof
+                # of "no board" (the 200 says the tenant exists) and not a
+                # genuine empty board either, so this must not fall through to
+                # the ordinary empty-board path (which would get "confirmed"
+                # by _confirm_empty and recorded as a real empty board). None
+                # is the honest answer this probe can give: "could not be
+                # read", which is what a no_board rejection already says.
+                return None
+            page_jobs = ats_icims.parse_icims_page(r.text)
+            if page == 0:
+                total_pages = ats_icims.icims_page_count(r.text)
+            if not page_jobs:
+                break
+            jobs.extend(page_jobs)
+            page += 1
+            if total_pages is not None and page >= total_pages:
+                break
+            if len(page_jobs) < ats_icims.ICIMS_PAGE_SIZE:
+                break
+        return [(j["title"], j["location"]) for j in jobs[:ats_icims.ICIMS_MAX_POSTINGS]]
     if ats == "smartrecruiters":
         # Added 2026-09-03, the SmartRecruiters half of the same gap probe_comeet
         # closed the same day: poll_ats.py has read this ATS since 2026-06-30
@@ -982,7 +1062,7 @@ def probe(ats: str, slug: str, budget=None):
 # SmartRecruiters stays last for the collision reason given in assess(); the
 # order is load-bearing there and nowhere else.
 CHEAP_ATSES = ("greenhouse", "ashby", "lever", "workable", "pinpoint",
-               "rippling", "jazzhr", "smartrecruiters")
+               "rippling", "jazzhr", "icims", "smartrecruiters")
 
 
 def probe_cheap(slug, atses, budget=None):
@@ -2547,7 +2627,7 @@ def main():
         entry = {"name": name, "ats": None, "slug": None, "rejected_date": today,
                   "reason": ("No board resolved: no deterministic name-variant slug matched "
                              "Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/"
-                             f"JazzHR/SmartRecruiters; {workday_clause}; {comeet_clause}. "
+                             f"JazzHR/iCIMS/SmartRecruiters; {workday_clause}; {comeet_clause}. "
                              "May still be pollable under a "
                              "non-obvious slug, on a careers page this script could not "
                              "guess the domain of, or on an ATS with no adapter yet "

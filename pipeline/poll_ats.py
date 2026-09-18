@@ -40,6 +40,7 @@ JOBS_DIR = os.path.join(SCRIPT_DIR, "jobs")
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
+import ats_icims  # noqa: E402  (leaf module: parser + URL builder shared with harvest_ats.py)
 
 # ── Config plumbing ──────────────────────────────────────────────────────────
 # Single source of truth is watchlist_companies.json. Endpoints, the salary
@@ -950,6 +951,19 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             # salary. For JazzHR this means MAX_POSTING_AGE_DAYS never filters
             # its boards and they never earn the freshness bonus either.
             return None
+        elif ats == "icims":
+            # Posted date is TENANT-CONFIGURABLE, not universal: Peraton's
+            # "header right" listing field is a posted timestamp, RealPage's
+            # same slot is a bare requisition ID (verified live 2026-09-18;
+            # see ats_icims.py's docstring). ats_icims._posted_date_raw()
+            # already gates on the field's own label before returning
+            # anything, so a present-but-unparseable value here is a format
+            # this build never saw, not evidence to guess at -- same
+            # "no data -> don't filter" treatment as every other neutral ATS.
+            raw = job_data.get("posted")
+            if raw:
+                return datetime.strptime(raw, "%m/%d/%Y %I:%M %p").date()
+            return None
         elif ats == "comeet":
             # Comeet exposes time_updated but no creation/publication date.
             # Use it as an approximation, same precedent as greenhouse's
@@ -1176,6 +1190,12 @@ def parse_location(job_data: dict, ats: str) -> str:
         # remote flag to second-guess it with, which given the Ashby /
         # Paylocity / Comeet history with those flags is no loss.
         return job_data.get("location") or "Unknown"
+    elif ats == "icims":
+        # Already a flat display string off the listing page ("US-FL-MacDill
+        # AFB", "US-TX-Remote"), normalized in ats_icims.parse_icims_page. No
+        # separate country/remote field is exposed on the listing to
+        # second-guess it with -- see fetch_icims's docstring.
+        return job_data.get("location") or "Unknown"
     elif ats == "comeet":
         # Comeet location: {"name": "Austin, TX", "city": ..., "state": ...,
         # "is_remote": bool}. Build city+state, fall back to name.
@@ -1229,7 +1249,7 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
     elif ats == "smartrecruiters":
         jid = job_data.get("id", "")
         return f"https://jobs.smartrecruiters.com/{slug}/{jid}"
-    elif ats in ("pinpoint", "rippling", "jazzhr"):
+    elif ats in ("pinpoint", "rippling", "jazzhr", "icims"):
         return job_data.get("url", "")
     elif ats == "paylocity":
         # Precomputed in fetch_paylocity, which knows the tenant host; the
@@ -1528,6 +1548,79 @@ def fetch_jazzhr(slug: str) -> list[dict]:
             })
         return jobs
     except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
+def fetch_icims(slug: str) -> list[dict]:
+    """Fetch jobs from an iCIMS board (careers-{slug}.icims.com), paginated.
+
+    Added 2026-09-18, closing the GitHub/RealPage/Avalara/Peraton gap from the
+    2026-09-11 provider sweep. Scraped, not an API: the classic listing page
+    is server-rendered HTML, one `<li class="iCIMS_JobCardItem">` per posting.
+    Parsing lives in ats_icims.py (parse_icims_page et al.) so this fetcher and
+    harvest_ats.py's icims probe branch read the exact same markup -- see that
+    module's docstring for the live evidence behind every decision below.
+
+    NO-BOARD DETECTION is a clean HTTP 404 on a bad tenant (verified against
+    six bogus tenants live), unlike JazzHR's same-status "Inactive Career
+    Page" trick, so this fetcher does not need a body-content check the way
+    fetch_jazzhr does.
+
+    ONE SHAPE THAT IS NOT "NO BOARD": a real tenant (confirmed live: GitHub's
+    careers-githubinc.icims.com, which is exactly the `base + "inc"` slug
+    slug_variants() already generates) can answer 200 with a page that is
+    nothing but a client-side redirect to a custom-skinned front end this
+    parser cannot read. ats_icims.looks_like_redirect_skin() catches that
+    shape and this fetcher reports it as an _error (an ATS-COVERAGE gap, not
+    an empty board) rather than silently returning [] -- which would read as
+    "board resolved, zero jobs" and, via _confirm_empty on the harvest side,
+    could get written up as a confirmed empty board when the true state is
+    "cannot be read this way at all".
+
+    PAGINATION is capped at ats_icims.ICIMS_MAX_POSTINGS (500, shared with the
+    probe). Page 0 failing decides no-board; a later page failing or falling
+    short just ends the walk with what was already read (ats_contract.md
+    section 3), matching every other paginated adapter here.
+    """
+    template = ATS_ENDPOINTS.get("icims")
+    jobs: list[dict] = []
+    page = 0
+    total_pages = None
+    try:
+        while len(jobs) < ats_icims.ICIMS_MAX_POSTINGS:
+            url = ats_icims.icims_search_url(slug, page, template)
+            resp = requests.get(url, timeout=REQUEST_TIMEOUT,
+                                headers={"User-Agent": "Mozilla/5.0 (resume-pipeline)"})
+            if resp.status_code == 404:
+                if page == 0:
+                    return [{"_error": f"iCIMS: no board at tenant '{slug}' "
+                                       f"(careers-{slug}.icims.com/jobs/search -> 404)"}]
+                break
+            resp.raise_for_status()
+            if page == 0 and not jobs and ats_icims.looks_like_redirect_skin(resp.text):
+                return [{"_error": f"iCIMS: tenant '{slug}' resolves but serves a "
+                                   f"custom-skinned front end (client redirect off the "
+                                   f"classic search page), which this scraper cannot "
+                                   f"read -- not a board-does-not-exist case"}]
+            page_jobs = ats_icims.parse_icims_page(resp.text)
+            if page == 0:
+                total_pages = ats_icims.icims_page_count(resp.text)
+            if not page_jobs:
+                break
+            for j in page_jobs:
+                j["url"] = ats_icims.icims_job_url(slug, j["url"])
+            jobs.extend(page_jobs)
+            page += 1
+            if total_pages is not None and page >= total_pages:
+                break
+            if len(page_jobs) < ats_icims.ICIMS_PAGE_SIZE:
+                break
+        return jobs[:ats_icims.ICIMS_MAX_POSTINGS]
+    except Exception as e:
+        if jobs:
+            # A later-page failure is a truncated read of a real board; keep
+            # what was already read rather than discarding it (section 3).
+            return jobs
         return [{"_error": f"{type(e).__name__}: {e}"}]
 
 
@@ -1999,6 +2092,8 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_comeet(company)
         elif ats == "jazzhr":
             jobs = fetch_jazzhr(slug)
+        elif ats == "icims":
+            jobs = fetch_icims(slug)
         else:
             errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
             continue
