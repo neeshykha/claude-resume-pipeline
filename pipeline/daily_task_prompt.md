@@ -2042,6 +2042,17 @@ re-examines it.
    consistently structured that far back (checked 2026-08-10: zero of ~45 prior run files
    had usable per-channel data in a common shape).
 
+## Step 6.6: Rebuild the job dashboard (added 2026-09-19)
+
+Runs here, before Step 6.5, so tracking is final and a failure in the weekly rollup cannot skip
+it. Run `.venv/bin/python pipeline/build_dashboard.py`. One command, no arguments, nothing
+chained. It is read-only against the tracking files and always exits 0. It overwrites
+`~/Downloads/job_dashboard.html` (HTML Shelf tracks that file and refreshes its page in place)
+and keeps a dated copy in `pipeline/jobs/`. Copy its single output line into the run summary. If
+that line starts with `dashboard: FAILED`, note it in SESSION_STATE and continue; do not retry,
+do not debug it inside the run, and do not mention it in the digest. Never hand-edit the HTML,
+and never write a replacement dashboard inline. Spec: `pipeline/DASHBOARD_SPEC.md`.
+
 ## Step 6.5: Weekly channel-effectiveness rollup (gated, separate Gmail draft)
 
 **Added 2026-08-10, from Aneesh asking for a rundown of which discovery channel (ATS poll,
