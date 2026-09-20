@@ -250,14 +250,16 @@
         "why": "Opening an Atlanta office hub and hiring up to 400 tech and engineering roles. This is the rare company where two of the biggest scoring levers stack: Atlanta location, and agriculture/food, which is an explicit passion domain in _scoring_config. Added 2026-08-21 from an exploratory hub-expansion search. Confirmed unpollable the same day: harvest_ats resolved no board from name variants, and the documented site:myworkdayjobs.com fallback returned only OTHER companies' Cargill-adjacent reqs (Marmon, Goddard, Cushman & Wakefield). Cargill runs its own site at careers.cargill.com, so a targeted search is the only way it surfaces. Re-check for a Workday tenant occasionally; a real one would make it enrollable.",
         "query": "site:careers.cargill.com OR \"careers.cargill.com\" (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation manager\" OR \"technical operations\") Atlanta OR remote",
         "last_checked": "2026-09-14",
-        "last_hit": "2026-09-14: no US fit-space hit, fourth consecutive null. careers.cargill.com returned a Senior Technical Account Manager in Schiphol (Netherlands) only; Atlanta digital hub still nothing in CSM/TAM/support-ops."
+        "last_hit": "2026-09-14: no US fit-space hit, fourth consecutive null. careers.cargill.com returned a Senior Technical Account Manager in Schiphol (Netherlands) only; Atlanta digital hub still nothing in CSM/TAM/support-ops.",
+        "careers_url": "https://careers.cargill.com/"
       },
       {
         "name": "Google",
         "why": "Atlanta office. Its gUP org runs a whole family of support roles (Product Support Manager gUP Search, gUP Platforms and Devices, gUP Shopping Support Ops, Product Solutions Manager Home). Confirmed unpollable 2026-07-27. Proven vein: the Home role was tailored that day.",
         "query": "site:google.com/about/careers (\"product support manager\" OR \"product solutions manager\" OR \"support strategy\" OR \"customer support\") Atlanta OR remote",
         "last_checked": "2026-09-11",
-        "last_hit": "2026-09-11: gUP family still hiring with Atlanta as a preferred location -- Product Support Manager, Google Fi ($114K-$163K), PSM gUP Platforms and Devices (Google Store and Fi), PSM gTech Google One (Boulder/Atlanta), PSM Pixel Differentiated Care, PSM Play, and Product Solutions Manager Home (same req as 07-27). Google remains company-capped (4 pending) and needs >110."
+        "last_hit": "2026-09-11: gUP family still hiring with Atlanta as a preferred location -- Product Support Manager, Google Fi ($114K-$163K), PSM gUP Platforms and Devices (Google Store and Fi), PSM gTech Google One (Boulder/Atlanta), PSM Pixel Differentiated Care, PSM Play, and Product Solutions Manager Home (same req as 07-27). Google remains company-capped (4 pending) and needs >110.",
+        "careers_url": "https://www.google.com/about/careers/applications/jobs/results/"
       },
       {
         "name": "Microsoft",
@@ -265,98 +267,112 @@
         "query": "site:jobs.careers.microsoft.com (\"customer success\" OR \"support\" OR \"technical account manager\") Atlanta",
         "last_checked": "2026-09-14",
         "last_hit": "2026-09-14: repointed search at careers.microsoft.com (old jobs.careers.microsoft.com dork still broken). Only aggregator pages (ZipRecruiter, Indeed) and the generic Atlanta locations page returned; no Atlanta fit-space req surfaced directly. A LinkedIn alert the same run carried a 'Customer Success Account Manager (CSAM)' US-unspecified card. query_needs_repair stays true.",
-        "query_needs_repair": true
+        "query_needs_repair": true,
+        "careers_url": "https://apply.careers.microsoft.com/"
       },
       {
         "name": "Apple",
         "why": "Atlanta presence. AppleCare support org. Custom careers site.",
         "query": "site:jobs.apple.com (\"support\" OR \"customer\" OR \"AppleCare\") manager Atlanta",
         "last_checked": "2026-09-16",
-        "last_hit": "no qualifying fit-space role found"
+        "last_hit": "no qualifying fit-space role found",
+        "careers_url": "https://jobs.apple.com/en-us/search"
       },
       {
         "name": "Amazon / AWS",
         "why": "Atlanta offices. Huge TAM/support org. Custom careers site.",
         "query": "site:amazon.jobs (\"technical account manager\" OR \"customer success\" OR \"support operations\") Atlanta",
         "last_checked": "2026-09-17",
-        "last_hit": "no Atlanta-confirmed fit-space role in amazon.jobs results (TAM reqs are EMEA/LATAM or location unstated); LinkedIn cards show Sr. TAM + TAM Strategic Industries Atlanta still alerting"
+        "last_hit": "no Atlanta-confirmed fit-space role in amazon.jobs results (TAM reqs are EMEA/LATAM or location unstated); LinkedIn cards show Sr. TAM + TAM Strategic Industries Atlanta still alerting",
+        "careers_url": "https://www.amazon.jobs/en/search"
       },
       {
         "name": "Meta",
         "why": "Atlanta office. Custom careers site.",
         "query": "site:metacareers.com (\"customer success\" OR \"support\" OR \"operations manager\") Atlanta",
         "last_checked": "2026-09-17",
-        "last_hit": "no Atlanta fit-space role confirmed; ops/strategy reqs with unstated locations only"
+        "last_hit": "no Atlanta fit-space role confirmed; ops/strategy reqs with unstated locations only",
+        "careers_url": "https://www.metacareers.com/jobsearch/"
       },
       {
         "name": "Home Depot",
         "why": "Atlanta HQ with a real internal tech org. Workday tenant exists but the site name did not resolve on 2026-07-27 (HTTP 422 on the guess). If a search reveals the real site name, switch to polling and enroll.",
         "query": "site:careers.homedepot.com OR site:myworkdayjobs.com \"home depot\" (\"customer success\" OR \"support manager\" OR \"technical account\")",
         "last_checked": "2026-09-18",
-        "last_hit": "2026-09-18: nothing new in fit-space; the dork returned a 'Senior Manager, CX' (Temco Logistics, Atlanta, Req160751) and a 'Product Support Senior Manager, Technology Deployment Center' (onsite), both unverified and neither clearly support-ops at the right altitude. Prior: 2026-09-08: REAL HIT, and it came from the Step 1d-2 blind-spot auto-trigger rather than this query. 'Manager, Workforce Enablement (Equipment Services)', Atlanta GA, onsite, Req168826, at https://careers.homedepot.com/job/23047631/manager-workforce-enablement-equipment-services-atlanta-ga/ -- technician readiness, onboarding, upskilling, workflow adoption, field capability. Surfaced in the digest under Manual channel with the honest caveat that the 'technicians' are HDES field service techs, not support agents, so the shape of the work translates and the domain does not. Two further Home Depot cards the same day (ISE Planning Project Manager, DC Operations Manager) are not fit-space. Note the careers.homedepot.com site is directly searchable and indexable, so this employer is reachable by dork even though the Workday site name never resolved."
+        "last_hit": "2026-09-18: nothing new in fit-space; the dork returned a 'Senior Manager, CX' (Temco Logistics, Atlanta, Req160751) and a 'Product Support Senior Manager, Technology Deployment Center' (onsite), both unverified and neither clearly support-ops at the right altitude. Prior: 2026-09-08: REAL HIT, and it came from the Step 1d-2 blind-spot auto-trigger rather than this query. 'Manager, Workforce Enablement (Equipment Services)', Atlanta GA, onsite, Req168826, at https://careers.homedepot.com/job/23047631/manager-workforce-enablement-equipment-services-atlanta-ga/ -- technician readiness, onboarding, upskilling, workflow adoption, field capability. Surfaced in the digest under Manual channel with the honest caveat that the 'technicians' are HDES field service techs, not support agents, so the shape of the work translates and the domain does not. Two further Home Depot cards the same day (ISE Planning Project Manager, DC Operations Manager) are not fit-space. Note the careers.homedepot.com site is directly searchable and indexable, so this employer is reachable by dork even though the Workday site name never resolved.",
+        "careers_url": "https://careers.homedepot.com/"
       },
       {
         "name": "AppFolio",
         "why": "Property management SaaS for residential and commercial real estate; direct adjacency to iApartments. Added 2026-08-21 after the PropTech dork was disabled and its named targets were finally checked by hand. Confirmed unpollable the same day: harvest_ats resolved no board from name variants across Greenhouse/Ashby/Lever/Workable, and the documented site:myworkdayjobs.com fallback returned only OTHER employers' reqs that list AppFolio as a required skill (Armanino, DCX, Zego) rather than an AppFolio tenant. Runs a custom careers site.",
         "query": "\"appfolio\" careers (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation manager\" OR \"technical support manager\") remote OR Atlanta",
         "last_checked": "2026-09-14",
-        "last_hit": "2026-09-14: aggregator pages only (Indeed, Glassdoor, ZipRecruiter); no direct ATS link. Separately, a LinkedIn alert carried 'Revenue Operations Manager - Customer Success' (Atlanta, job 4455380639); a startup.jobs mirror of an older req of that title reads closed, so the new alert id may be a repost. Surfaced in digest Manual channel for a hand check."
+        "last_hit": "2026-09-14: aggregator pages only (Indeed, Glassdoor, ZipRecruiter); no direct ATS link. Separately, a LinkedIn alert carried 'Revenue Operations Manager - Customer Success' (Atlanta, job 4455380639); a startup.jobs mirror of an older req of that title reads closed, so the new alert id may be a repost. Surfaced in digest Manual channel for a hand check.",
+        "careers_url": "https://www.appfolio.com/open-roles"
       },
       {
         "name": "Yardi",
         "why": "One of the two largest property-management software vendors; direct industry adjacency to iApartments. Added 2026-08-21 alongside AppFolio, same provenance and same result: no board from name variants, and site:myworkdayjobs.com returned only other employers hiring for Yardi SKILLS (EisnerAmper, Realty Income, Apex, Cushman & Wakefield, JLL) rather than a Yardi tenant. That pattern is itself a lesson: for a widely-deployed platform vendor, a skills-name search is dominated by its customers, so the fallback cannot resolve the vendor's own board.",
         "query": "\"yardi\" careers (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation manager\" OR \"technical support manager\") remote OR Atlanta",
         "last_checked": "2026-09-18",
-        "last_hit": "2026-09-18: Associate Technical Account Manager, Atlanta GA (Affordable Housing team, careers.yardi.com/openings/job-posting/AH24323311/) live; associate rung, phone/email support shape, likely under the salary floor. Prior 2026-08-31: still live. careers.yardi.com Client Services family open, including Associate Technical Account Manager (Denver, CO listed) and other TAM reqs; ZipRecruiter mirrors ~20 Yardi TAM postings. Senior TAM median total pay reported around $128K, so the senior rung clears the floor even if the Associate rung does not. Triggered by the Step 1d-2 blind-spot auto-check after a LinkedIn alert for 'Technical Account Manager at Yardi'."
+        "last_hit": "2026-09-18: Associate Technical Account Manager, Atlanta GA (Affordable Housing team, careers.yardi.com/openings/job-posting/AH24323311/) live; associate rung, phone/email support shape, likely under the salary floor. Prior 2026-08-31: still live. careers.yardi.com Client Services family open, including Associate Technical Account Manager (Denver, CO listed) and other TAM reqs; ZipRecruiter mirrors ~20 Yardi TAM postings. Senior TAM median total pay reported around $128K, so the senior rung clears the floor even if the Associate rung does not. Triggered by the Step 1d-2 blind-spot auto-check after a LinkedIn alert for 'Technical Account Manager at Yardi'.",
+        "careers_url": "https://careers.yardi.com/openings/"
       },
       {
         "name": "Intuit / Mailchimp",
         "why": "Mailchimp is Atlanta-based and now Intuit-owned. Workday tenant returned 401 on 2026-07-27, so it is auth-gated rather than public.",
         "query": "site:jobs.intuit.com (\"customer success\" OR \"support operations\" OR \"technical account\") Atlanta OR Mailchimp",
         "last_checked": "2026-09-10",
-        "last_hit": "2026-08-31: REAL HIT, and richer than the 08-18 read. jobs.intuit.com carries an Atlanta (30361) 'Customer Success Manager (Mid-Market, Premium Experiences)' at $126K-$191K plus a 'Manager, Customer Success (Mid-Market, Premium Experiences)' at the same location, alongside the known Senior CSM Mailchimp req. Surfaced in the digest under Manual channel. Triggered by the Step 1d-2 blind-spot auto-check after a LinkedIn digest body named an Intuit Atlanta CSM role."
+        "last_hit": "2026-08-31: REAL HIT, and richer than the 08-18 read. jobs.intuit.com carries an Atlanta (30361) 'Customer Success Manager (Mid-Market, Premium Experiences)' at $126K-$191K plus a 'Manager, Customer Success (Mid-Market, Premium Experiences)' at the same location, alongside the known Senior CSM Mailchimp req. Surfaced in the digest under Manual channel. Triggered by the Step 1d-2 blind-spot auto-check after a LinkedIn digest body named an Intuit Atlanta CSM role.",
+        "careers_url": "https://jobs.intuit.com/"
       },
       {
         "name": "Delta Air Lines",
         "why": "Atlanta HQ and a personal-interest employer for Aneesh (SkyMiles/Medallion loyalty). Uses Avature, which the poller does not speak. Target its tech/digital org, not airport operations.",
         "query": "site:delta.avature.net OR site:jobs.delta.com (\"customer experience\" OR \"technical\" OR \"operations manager\" OR \"customer success\") technology",
         "last_checked": "2026-09-10",
-        "last_hit": "2026-08-31: same pattern as 2026-08-18 and unchanged. Customer Service Manager MRO (aerospace/airline technical, not SaaS support), Regional Sales Manager Technical Operations, Specialist Customer Experience Strategy, HR System Operations Pro (ServiceNow), Program Manager Wellbeing Technology, Product Leader CDP. No clean tier1/tier2 title. Third identical result in a row; repeat-near-miss suppression applies, so no digest line."
+        "last_hit": "2026-08-31: same pattern as 2026-08-18 and unchanged. Customer Service Manager MRO (aerospace/airline technical, not SaaS support), Regional Sales Manager Technical Operations, Specialist Customer Experience Strategy, HR System Operations Pro (ServiceNow), Program Manager Wellbeing Technology, Product Leader CDP. No clean tier1/tier2 title. Third identical result in a row; repeat-near-miss suppression applies, so no digest line.",
+        "careers_url": "https://delta.avature.net/en_US/careers"
       },
       {
         "name": "Electrify America",
         "why": "EV charging, a stated passion domain. Confirmed 2026-07-06 to have no Greenhouse/Ashby/Lever/Workday board.",
         "query": "\"Electrify America\" careers (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation\")",
         "last_checked": "2026-09-11",
-        "last_hit": "2026-09-11: aggregator pages only (EV.Careers, ZipRecruiter, BuiltIn); no specific fit-space role identified."
+        "last_hit": "2026-09-11: aggregator pages only (EV.Careers, ZipRecruiter, BuiltIn); no specific fit-space role identified.",
+        "careers_url": "https://jobs.volkswagen-group.com/Electrify_America/search"
       },
       {
         "name": "Alston Construction",
         "why": "Surfaced an AI Program Manager (Atlanta, $99K-$135K) on 2026-07-20 that was a real substance match. Custom careers site, no pollable board.",
         "query": "\"Alston Construction\" careers (\"AI program manager\" OR \"technology manager\" OR \"operations manager\")",
         "last_checked": "2026-09-11",
-        "last_hit": "2026-09-11: 'AI Program Manager' (Atlanta, $100K-$130K) still live; unchanged repeat near-miss."
+        "last_hit": "2026-09-11: 'AI Program Manager' (Atlanta, $100K-$130K) still live; unchanged repeat near-miss.",
+        "careers_url": "https://alstonco.com/careers-7/"
       },
       {
         "name": "InComm Payments",
         "why": "Atlanta HQ payments technology, mid-tier operating company. No pollable board identified.",
         "query": "\"InComm Payments\" careers (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\") Atlanta",
         "last_checked": "2026-09-16",
-        "last_hit": "no qualifying fit-space role found"
+        "last_hit": "no qualifying fit-space role found",
+        "careers_url": "https://jobs.incommpayments.com/jobs"
       },
       {
         "name": "Netflix",
         "why": "No supported ATS: custom careers site (jobs.netflix.com), confirmed unpollable 2026-07-30 after Greenhouse, Lever, and Workday probes all failed. Surfaced by a LinkedIn alert for 'N-Tech Manager, Technology Systems and Operations (Creative)' -- a tier2c-shaped systems/ops role, so the fit-space is real rather than incidental. Added to the rotation rather than rejected for the same reason Google was: a large employer whose fitting roles are structurally invisible to the poller.",
         "query": "site:jobs.netflix.com (\"technology systems\" OR \"systems and operations\" OR \"technical support\" OR \"support operations\" OR \"customer operations\") remote OR Atlanta",
         "last_checked": "2026-09-16",
-        "last_hit": "no qualifying fit-space role found"
+        "last_hit": "no qualifying fit-space role found",
+        "careers_url": "https://explore.jobs.netflix.net/careers"
       },
       {
         "name": "Docusign",
         "why": "Major e-signature/agreement platform with a real in-house support and customer-success organisation. Probed Greenhouse, Ashby, Lever and eight Workday tenant/site combinations on 2026-07-30: none resolved, so it is structurally unpollable. Added to rotation rather than rejected for the same reason as Google and Netflix -- the fit-space is genuine, only the plumbing is missing. Surfaced from Aneesh's LinkedIn on-site 'Jobs for you' feed, which is never emailed and therefore invisible to Step 1d-2.",
         "query": "site:careers.docusign.com (\"customer success\" OR \"technical account\" OR \"support operations\" OR \"implementation\" OR \"technical support manager\") remote OR Atlanta",
         "last_checked": "2026-09-17",
-        "last_hit": "Sr. TAM (29696, 29496), CSM II (US, 30139), Strategic CSAM (29716) live as 'Multiple Locations'; Atlanta/remote not confirmed"
+        "last_hit": "Sr. TAM (29696, 29496), CSM II (US, 30139), Strategic CSAM (29716) live as 'Multiple Locations'; Atlanta/remote not confirmed",
+        "careers_url": "https://careers.docusign.com/"
       }
     ]
   },
@@ -371,91 +387,104 @@
         "why": "'Manager, Technical Support' role confirmed via LinkedIn job 4446133973, Alpharetta GA (Hybrid), tier-1 word-order variant. Apply resolves to app.jobvite.com, an ATS the poller doesn't speak.",
         "query": "\"Barracuda\" careers \"Technical Support\" Alpharetta OR Atlanta",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: Aggregator snippets still reference a 'Technical Support Manager' for the Alpharetta team; directly visible openings are Technical Support Representative (Tier 1, $17-24/hr) and Technical Support Representative 2. No direct link to the manager req resolved. Treat the manager role as unconfirmed-live."
+        "last_hit": "2026-09-02: Aggregator snippets still reference a 'Technical Support Manager' for the Alpharetta team; directly visible openings are Technical Support Representative (Tier 1, $17-24/hr) and Technical Support Representative 2. No direct link to the manager req resolved. Treat the manager role as unconfirmed-live.",
+        "careers_url": "https://www.barracuda.com/company/careers"
       },
       {
         "name": "Mission Communications LLC",
         "why": "'Customer Experience and Technical Support Manager' confirmed via LinkedIn job 4423044898, Norcross GA (Hybrid), tier-1 loose match. No ATS board found under any deterministic slug guess.",
         "query": "\"Mission Communications\" careers \"Technical Support Manager\" Norcross OR Atlanta",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: Only 'Technical Support Specialist' ($42-59K, Norcross) visible. No Technical Support Manager listing found. No hit."
+        "last_hit": "2026-09-02: Only 'Technical Support Specialist' ($42-59K, Norcross) visible. No Technical Support Manager listing found. No hit.",
+        "careers_url": "https://tasimeasurement.rec.pro.ukg.net/TAS1500TASI/JobBoard/2fb92a77-0aea-4e34-864b-11b2e6f60345/"
       },
       {
         "name": "Institute for AI Policy and Strategy",
         "why": "80,000 Hours lead: 'People Operations Manager', Remote US/UK, $105K-$115K -- real title, real salary, tier fit. Apply link is careers.rethinkpriorities.org (fiscal-sponsor custom career site), not a supported ATS.",
         "query": "\"Institute for AI Policy and Strategy\" OR \"IAPS\" careers site:careers.rethinkpriorities.org",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: IAPS itself shows only the AI Policy Fellowship. Parent site surfaced 'AI Integration Lead - Remote' at Rethink Priorities (careers.rethinkpriorities.org, custom site). tier2b-shaped, remote; noted, not scored."
+        "last_hit": "2026-09-02: IAPS itself shows only the AI Policy Fellowship. Parent site surfaced 'AI Integration Lead - Remote' at Rethink Priorities (careers.rethinkpriorities.org, custom site). tier2b-shaped, remote; noted, not scored.",
+        "careers_url": "https://www.iaps.ai/careers"
       },
       {
         "name": "EV Connect",
         "why": "'Customer Success Manager' role, EV charging passion domain, surfaced via Passion Verticals discovery. No Greenhouse/Ashby/Lever board found.",
         "query": "\"EV Connect\" careers \"Customer Success Manager\"",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Enterprise Client Success Manager' (United States, remote-eligible) open per LinkedIn; earlier 'Customer Success Manager' listing on app.trinethire.com (TriNet Hire, unsupported ATS). tier3, remote US, EV passion domain. Manual-channel candidate."
+        "last_hit": "2026-09-02: 'Enterprise Client Success Manager' (United States, remote-eligible) open per LinkedIn; earlier 'Customer Success Manager' listing on app.trinethire.com (TriNet Hire, unsupported ATS). tier3, remote US, EV passion domain. Manual-channel candidate.",
+        "careers_url": "https://www.evconnect.com/careers"
       },
       {
         "name": "Assiduus Global",
         "why": "Atlanta-based AI-powered middleware platform for cross-border e-commerce, $25M pre-Series B (Bajaj Finserv, March 2026). Genuinely AI-native and Atlanta -- double passion/geo fit. Own site mentions active Operations roles but no supported ATS found.",
         "query": "\"Assiduus Global\" careers Atlanta \"Operations\"",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: Only Product Manager (Atlanta) and CFO visible. No fit-space role. No hit."
+        "last_hit": "2026-09-02: Only Product Manager (Atlanta) and CFO visible. No fit-space role. No hit.",
+        "careers_url": "https://www.assiduusglobal.com/careers/"
       },
       {
         "name": "Fusion Risk Management",
         "why": "'Customer Success Manager' role, surfaced via BuiltIn Remote. No Greenhouse/Ashby/Lever board found (WebSearch keeps surfacing an unrelated company, Commonwealth Fusion Systems).",
         "query": "\"Fusion Risk Management\" careers \"Customer Success Manager\"",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Customer Success Manager' and 'Principal Customer Success Manager' live on BuiltIn Chicago/NYC/SF. tier3, no Atlanta or explicit remote-US signal, so it fails the tier3 location gate. No hit."
+        "last_hit": "2026-09-02: 'Customer Success Manager' and 'Principal Customer Success Manager' live on BuiltIn Chicago/NYC/SF. tier3, no Atlanta or explicit remote-US signal, so it fails the tier3 location gate. No hit.",
+        "careers_url": "https://www.fusionrm.com/about-us/careers/"
       },
       {
         "name": "ModelOp",
         "why": "'Customer Success' role helping enterprises implement AI governance workflows -- AI-governance vertical discovery hit. Greenhouse slug guess 'modelop' 404'd.",
         "query": "\"ModelOp\" careers \"Customer Success\"",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: No specific fit-space opening surfaced; only a CS team/leadership page. No hit."
+        "last_hit": "2026-09-02: No specific fit-space opening surfaced; only a CS team/leadership page. No hit.",
+        "careers_url": "https://www.modelop.com/company/careers"
       },
       {
         "name": "Espressive",
         "why": "AI service desk platform -- 'would be a fit' per the original discovery note. Greenhouse slug 'espressive' 404'd.",
         "query": "\"Espressive\" careers \"Customer Success\" OR \"Support\"",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: No specific opening surfaced; careers page and LinkedIn jobs only. No hit."
+        "last_hit": "2026-09-02: No specific opening surfaced; careers page and LinkedIn jobs only. No hit.",
+        "careers_url": "https://resolve.io/careers"
       },
       {
         "name": "InVue",
         "why": "'Customer Support Manager-Americas' confirmed role, Charlotte NC. Uses Jobvite (jobs.jobvite.com/invue), unsupported ATS.",
         "query": "\"InVue\" careers \"Customer Support Manager\" Charlotte",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Customer Support Manager (B2B)' Charlotte still live (LinkedIn/Glassdoor; hosted on jobs.jobvite.com/invue, Jobvite unsupported). 5-7 yrs customer service/support ops, ~$76K. On-site Charlotte scores 0 for location. Noted, not a pick."
+        "last_hit": "2026-09-02: 'Customer Support Manager (B2B)' Charlotte still live (LinkedIn/Glassdoor; hosted on jobs.jobvite.com/invue, Jobvite unsupported). 5-7 yrs customer service/support ops, ~$76K. On-site Charlotte scores 0 for location. Noted, not a pick.",
+        "careers_url": "https://jobs.jobvite.com/invue/search"
       },
       {
         "name": "Transluce",
         "why": "'Operations Generalist' role, SF Bay Area, AI-safety org. Hosts on jobs.gem.com, an ATS the poller doesn't speak.",
         "query": "\"Transluce\" AI safety careers \"Operations\"",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Operations Generalist' (SF, people ops/finance/compliance) and 'AI Systems Engineer'. Neither is fit-space. No hit."
+        "last_hit": "2026-09-02: 'Operations Generalist' (SF, people ops/finance/compliance) and 'AI Systems Engineer'. Neither is fit-space. No hit.",
+        "careers_url": "https://jobs.gem.com/transluce"
       },
       {
         "name": "RealPage",
         "why": "Named target company in the PropTech discovery source notes. Re-confirmed 2026-08-18 (targeted site:myworkdayjobs.com search) still has no resolvable board -- likely a custom or unresolved Workday tenant.",
         "query": "\"RealPage\" careers \"Customer Success\" OR \"Implementation Manager\" OR \"Support Operations\"",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Senior Manager - Customer Success', 'Customer Success Manager - Remote', and 'Solution Consultant' (Strategic Implementation org) live on BuiltIn/LinkedIn; ~20 open US roles. MULTIFAMILY / RENTAL HOUSING SaaS: the exact vertical iApartments serves. Strongest hit in this sweep alongside AppFolio. ATS still unresolved (custom host); worth one manual site:myworkdayjobs.com search."
+        "last_hit": "2026-09-02: 'Senior Manager - Customer Success', 'Customer Success Manager - Remote', and 'Solution Consultant' (Strategic Implementation org) live on BuiltIn/LinkedIn; ~20 open US roles. MULTIFAMILY / RENTAL HOUSING SaaS: the exact vertical iApartments serves. Strongest hit in this sweep alongside AppFolio. ATS still unresolved (custom host); worth one manual site:myworkdayjobs.com search.",
+        "careers_url": "https://join.realpage.com/join/jobs/categories"
       },
       {
         "name": "Avanos Medical",
         "why": "Health-tech passion domain. Confirmed custom career site (careers.avanos.com), not on Greenhouse/Ashby/Lever/Workday -- a genuine no-board case, not a slug-guessing miss. A fit-space Systems-shaped role was seen at discovery time.",
         "query": "site:careers.avanos.com \"Customer Success\" OR \"Support Operations\" OR \"Implementation\"",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: careers.avanos.com shows Salesforce Architect, Patient Access Manager (remote), Distributor Experience Analyst and Business Process Support Consultant (both Alpharetta). None is fit-space. No hit."
+        "last_hit": "2026-09-02: careers.avanos.com shows Salesforce Architect, Patient Access Manager (remote), Distributor Experience Analyst and Business Process Support Consultant (both Alpharetta). None is fit-space. No hit.",
+        "careers_url": "https://careers.avanos.com/"
       },
       {
         "name": "West Physics",
         "why": "Atlanta-based medical imaging accreditation/radiation-physics consulting firm, recapitalized by Incline Equity Partners (PE, June 2026). Custom career site (westphysics.com/about/careers/), Atlanta-geo relevance even without a strong confirmed role yet.",
         "query": "\"West Physics\" Atlanta careers \"Operations\" OR \"Support\"",
         "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: Only 'Clinical Application Physicist in Support Operations' (a physicist role) plus scheduling coordinator. No hit."
+        "last_hit": "2026-09-02: Only 'Clinical Application Physicist in Support Operations' (a physicist role) plus scheduling coordinator. No hit.",
+        "careers_url": "https://westphysics.com/about/careers/"
       }
     ],
     "last_monthly_run": "2026-09-02"

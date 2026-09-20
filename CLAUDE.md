@@ -216,8 +216,8 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | `outcomes.csv` outcome (rejected/interview/offer) | `mark_outcome.py` | infer an outcome from silence |
 | `outcomes.csv` schema migrations | `repair_outcomes.py` | hand-fix drifted rows |
 
-**`outcomes.csv` canonical schema (15 columns as of 2026-08-27):**
-`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage`
+**`outcomes.csv` canonical schema (16 columns as of 2026-09-07, when `ic_scope` landed):**
+`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage,ic_scope`
 
 **`furthest_stage` landed 2026-08-27, and the bug it fixes had been silently destroying data
 since the file existed.** `outcome` is a single TERMINAL-state column, so a role that reached an
@@ -757,6 +757,30 @@ of 98). It reads `total` once now and treats a short page as the last page. The 
 boards: 200 left about 230 fresh title+location matches unread, including a tier1 at Salesforce
 #400; 1000 leaves about 18 for 641 requests a run. `pipeline/test_workday_pagination.py` simulates
 both the total-once behaviour and the cap with a fake session, no network.
+
+## Job Search Dashboard (built 2026-09-19)
+
+`pipeline/build_dashboard.py` writes one self-contained page, `~/Downloads/job_dashboard.html`,
+at `daily_task_prompt.md` Step 6.6: the apply queue (`stage=surfaced`, days left against the
+45-day retirement), manual checks (the blind-spot and unpollable-backlog companies), and
+applications gone quiet (post-epoch only, blank and `pending` outcomes alike). HTML Shelf tracks
+that file (its Track Source File feature) and refreshes the page in place under Career, so the
+"I checked this site" ticks survive each rebuild. Spec and the decisions behind it:
+`pipeline/DASHBOARD_SPEC.md`.
+
+- **Read-only, and it stays that way.** It never imports or calls `mark_applied.py`,
+  `mark_outcome.py`, `update_tracking.py`, or `repair_outcomes.py`. The ticks live in the Shelf
+  and the pipeline never reads them. No write-back from the page: a second source of truth next
+  to `outcomes.csv` is the thing this repo keeps getting burned by.
+- It always exits 0 and prints one line; `dashboard: FAILED ...` means yesterday's page is still
+  up, and the page shows its own stale strip when a weekday run should have replaced it.
+- The script is committed to a public repo: no company names or sample rows in it or its tests
+  (`pipeline/test_build_dashboard.py`, fixtures are made up).
+- Manual-check links come from an optional `careers_url` on the watchlist entries, falling back
+  to a search link built from `query`.
+- **Open:** verify the first scheduled run by the mtime of `~/Downloads/job_dashboard.html`
+  (next run Mon 2026-09-21). Phase two is an Interviews section fed by a small
+  `pipeline/interviews.json` cache written by the interview scan; not started.
 
 ## Assisted Apply (on-demand skill)
 
