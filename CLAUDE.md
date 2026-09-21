@@ -7,6 +7,12 @@ public — surfaced companies, scores, Gmail draft IDs, and the application queu
 committed. Read and update `pipeline/SESSION_STATE.md` for the latest run summary, company caps,
 and action queue. Do **not** restore that state into this file.
 
+**A local commit on `main` here is as good as published.** Other sessions commit and push this
+branch (the daily run at Step 7, the portfolio routine), so "committed locally, not pushed" lasts
+about as long as the next session's push: on 2026-09-19 a local commit reached `origin` within
+the hour, carried by an unrelated push. Decide whether something is fit for a public repo when
+you commit it, not when you push.
+
 ---
 
 ## What This Is
