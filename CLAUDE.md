@@ -778,9 +778,26 @@ that file (its Track Source File feature) and refreshes the page in place under 
   (`pipeline/test_build_dashboard.py`, fixtures are made up).
 - Manual-check links come from an optional `careers_url` on the watchlist entries, falling back
   to a search link built from `query`.
+- An off-schedule rebuild is the same one command. It redraws from the tracker only; it does not
+  read Gmail, so new confirmations still wait for Step 0.5.
 - **Open:** verify the first scheduled run by the mtime of `~/Downloads/job_dashboard.html`
   (next run Mon 2026-09-21). Phase two is an Interviews section fed by a small
-  `pipeline/interviews.json` cache written by the interview scan; not started.
+  `pipeline/interviews.json` cache written by the interview scan; not started. Deferred on
+  purpose: adapters for the Jobvite and Gem boards a few manual-check companies use, and the
+  queue rows that report "N PDFs match" instead of one resume path.
+
+**Queue-vs-Gmail check, 2026-09-19.** Aneesh asked whether queued roles had already been sent.
+All surfaced rows were checked against employer and ATS email since 2026-06-01. Result: the
+confirmation sync was wrong on ONE row. Cambium Learning Group's Workday rejection went to his
+other address rather than the `+jobs` alias, so Step 0.5 never saw it; recorded via
+`mark_outcome.py`. He applies only through the aliased address from here on and called the
+miss a one-off, so **no change to Step 0.5 was made or is wanted.** Two other apparent misses
+were false alarms that came from matching on company alone: a second, unsent req at a company
+where a similarly titled req was already `applied`, and a new req at a company whose earlier
+same-title req was already `rejected` (the row's own notes said so). Lesson for the next check
+of this kind: compare against the tracker row's URL and notes before calling anything a miss.
+Two rows stayed unresolved because the employer emails never name the role; left alone at his
+call.
 
 ## Assisted Apply (on-demand skill)
 
