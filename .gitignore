@@ -7,6 +7,9 @@
 master_resume.md*
 tailored/
 interview_prep/
+# Weekly work harvest: transcript digests, candidate bullets, proposed master diffs.
+# Built from Claude Code transcripts that carry customer and CRM data.
+work_log/
 audits/
 *.pdf
 
