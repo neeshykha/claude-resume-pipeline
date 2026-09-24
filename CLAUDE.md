@@ -851,10 +851,11 @@ Keeps `master_resume.md` current with the week's real work.
 - **Nothing here is committed.** `work_log/` is gitignored and also carries its own `*`
   `.gitignore`, because transcripts hold CRM and customer data. Only the script and its
   fabricated-fixture tests (`pipeline/test_harvest_work_log.py`) are in the repo.
-- **Open:** the worker Mac isn't a source yet. `--remote worker` works over the existing
-  ssh host with nothing installed there, and waits on Aneesh's go-ahead. Wispr Flow is a
-  possible future source, low priority. Verify the first run by the candidates file's
-  mtime (first run Fri 2026-09-25).
+- **Sources:** this machine plus the worker Mac, via `--remote worker` over the existing
+  ssh host (the script is sent on stdin; nothing is installed or written there). Worktree
+  sessions are kept on purpose: they're distinct sessions, not copies. Wispr Flow is a
+  possible future source, low priority.
+- **Open:** verify the first run by the candidates file's mtime (first run Fri 2026-09-25).
 
 ## LinkedIn Browser Sweep (on-demand skill)
 
