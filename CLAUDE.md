@@ -834,6 +834,28 @@ fallback is a paste-ready field sheet in the form's own section order (example:
 `tailored/Aneesh_Khan_BrownBrown_AIAdoption_workday_fields.md`), which is often the
 better option anyway.
 
+## Weekly Work Harvest (built 2026-09-24, local-only)
+
+Keeps `master_resume.md` current with the week's real work.
+
+- **Friday sweep:** scheduled task `friday-work-harvest` (Fri 4 PM, `model: opus`) runs
+  `pipeline/harvest_work_log.py`, which boils the week's Claude Code transcripts down to
+  `work_log/digest_<date>.md`. It keeps the user's typed messages and each turn's final
+  summary, and skips scratch dirs, ModelBaseline, headless runs, and job-pipeline
+  sessions. Scheduled runs are counted in a census line, not excerpted. The task then
+  drafts 3-8 bullets to `work_log/candidates_<date>.md`, each citing its session and
+  flagging its gaps, and sends a Discord nag.
+- **Interview:** user-level skill `~/.claude/skills/work-interview/` ("work interview")
+  asks only about the flagged gaps plus one question about non-Claude work, then writes
+  `work_log/master_diff_<date>.md`. It edits `master_resume.md` only on "update master".
+- **Nothing here is committed.** `work_log/` is gitignored and also carries its own `*`
+  `.gitignore`, because transcripts hold CRM and customer data. Only the script and its
+  fabricated-fixture tests (`pipeline/test_harvest_work_log.py`) are in the repo.
+- **Open:** the worker Mac isn't a source yet. `--remote worker` works over the existing
+  ssh host with nothing installed there, and waits on Aneesh's go-ahead. Wispr Flow is a
+  possible future source, low priority. Verify the first run by the candidates file's
+  mtime (first run Fri 2026-09-25).
+
 ## LinkedIn Browser Sweep (on-demand skill)
 
 `linkedin-sweep` (`.claude/skills/linkedin-sweep/SKILL.md`, local-only) drives a logged-in
