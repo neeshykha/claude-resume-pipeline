@@ -8,10 +8,13 @@ committed. Read and update `pipeline/SESSION_STATE.md` for the latest run summar
 and action queue. Do **not** restore that state into this file.
 
 **A local commit on `main` here is as good as published.** Other sessions commit and push this
-branch (the daily run at Step 7, the portfolio routine), so "committed locally, not pushed" lasts
-about as long as the next session's push: on 2026-09-19 a local commit reached `origin` within
-the hour, carried by an unrelated push. Decide whether something is fit for a public repo when
-you commit it, not when you push.
+branch (the daily run at Step 7, the portfolio routine). Decide whether something is fit for a
+public repo when you commit it, not when you push. [D1](DECISIONS.md#d1-a-local-commit-reached-origin-within-the-hour)
+
+**This file holds current rules only. The incidents behind them live in `DECISIONS.md`**, and a
+rule that came from one links to its entry (`[D7]` and so on). Read an entry when you're about to
+change or question that rule, not by default. When a new incident produces a rule, the rule goes
+here in a line or two and the story goes there.
 
 ---
 
@@ -84,12 +87,12 @@ Before tailoring, apply these principles based on how modern ATS (Greenhouse, Le
 - **Bullet selection**: For older roles, you may drop 1-2 less relevant bullets to save space
 - **Terminology**: Swap synonyms to match JD language exactly (e.g., if JD says "stakeholder engagement", use that instead of "stakeholder management")
 - **Skills section**: Reorder skill categories so the most relevant ones appear first. Mirror the JD's skill language precisely.
-- **First bullet rule**: Apply the 6-second rule (see Step 2). The first iApts bullet must be the single most compelling, metrics-dense achievement relative to this JD. Choose from: Maven AGI 85% deflection, CES system implementation, Salesforce 25+ automations, 100% case volume scale, 8-person global team build. Which one leads depends entirely on what the JD weights most.
+- **First bullet rule**: Apply the 6-second rule (see Step 2). The first iApts bullet must be the single most compelling, metrics-dense achievement relative to this JD. Choose from: the Maven AGI deployment, the CES system implementation, the Salesforce automations, the case-volume scale-up, the global team build. The numbers for each come from `master_resume.md`. Which one leads depends entirely on what the JD weights most.
 - **Portfolio projects**: `portfolio_projects.md` lists public GitHub projects citable in resumes and cover letters, each with a "cite when" trigger and a resume-ready line. Check it during tailoring; when the JD matches a trigger (AI evaluation, deployment rigor, workflow automation), work the project in — a verifiable public repo is stronger evidence than a claim. Never embellish beyond what that file states. The Friday portfolio routine appends new entries after each build. As of 2026-09-07 the renderer has a dedicated `projects` array (see Step 4), so a cited project goes in its own SELECTED TECHNICAL PROJECTS section rather than being worked into an experience bullet. Pick 2-4 per role, not every entry: `portfolio_projects.md` governs WHEN to cite via its `Cite when:` triggers, `master_resume.md` governs the factual line itself, and the career-narrative skill's Agent Operations evidence map carries the recommended order for agent-operating roles. Omit the field entirely when the JD does not earn the space; it is optional and costs a page.
 - **Keep it honest**: Every claim must be backed by actual experience from the master resume
 
 ### 4. Save the Tailored Version
-- Save the tailored resume as `tailored/Aneesh_Khan_[Company]_[Role]_data.json` (schema: see `pipeline/pdf_helpers.py` docstring; e.g., `tailored/Aneesh_Khan_Datadog_TAM_data.json`). **The JSON is the single source of truth as of 2026-09-02**: the PDF renders from it and the coverage check reads it. Do not also write a markdown twin; every resume used to be authored twice and every coverage fix applied twice, and the two copies drifted (Cresta, 2026-09-02: 4 fixes as 8 edits, JSON at 11/15 where the markdown read 14/15 on the same phrases). Write a `.md` only if Aneesh asks for one.
+- Save the tailored resume as `tailored/Aneesh_Khan_[Company]_[Role]_data.json` (schema: see `pipeline/pdf_helpers.py` docstring; e.g., `tailored/Aneesh_Khan_Datadog_TAM_data.json`). **The JSON is the single source of truth**: the PDF renders from it and the coverage check reads it. Don't also write a markdown twin; write a `.md` only if Aneesh asks for one. [D2](DECISIONS.md#d2-the-tailored-json-became-the-only-resume-copy)
 - `projects` is optional and guarded: omit the key and nothing renders. Include it as a list of strings, same shape as `community`, one repo per string. `check_coverage.py` counts it, so project text scores toward JD coverage like any other section.
 - Use `Aneesh_Khan_` prefix — recruiter inboxes and ATS systems often surface the filename; including the candidate name improves recognition and reduces the chance of misrouted files
 - Use TitleCase for company, short role abbreviation (TAM, CSM, SAM, SE, IC)
@@ -144,7 +147,7 @@ about how the letter reads.
 **OPENER — never start with an observation about the company or industry.**
 The #1 failure pattern: opening with a philosophical statement about what the company does or what the industry is experiencing. Examples of what NOT to write: "[Company] is fundamentally about X", "Voice AI is having its enterprise moment", "The hardest part of deploying AI is...". These are AI output and read as such. The opener must be specific to Aneesh — a personal experience with the company/product, a pointed claim about his fit, or something unusual about his candidacy. Self-check: could this sentence have been written by any applicant? If yes, cut it and start on the sentence after it.
 
-**OPENER — never lead with a schedule/location accommodation.** Added 2026-08-13 after the Precisely rejection (Technical Support Manager) came back same-day with the letter opening on shifting hours to cover Pacific time. Even when the accommodation is real and easy, putting it in the first sentence means a fast resume-screen reads the gap before it reads any qualification. Make the fit case first; if a JD states a timezone/location requirement Aneesh can meet but doesn't natively satisfy, address it later in the letter (middle paragraph or close) and frame it as a settled fact of how he already works ("My team already spans three time zones; covering Pacific hours is the same muscle, not a new one") rather than a hypothetical adjustment ("Shifting my hours... is a small adjustment"). Not confirmed as the actual cause of that rejection, but the opener structure was wrong on its own terms regardless.
+**OPENER — never lead with a schedule/location accommodation.** Even when the accommodation is real and easy, a fast resume-screen reads the gap before it reads any qualification. Make the fit case first; if a JD states a timezone/location requirement Aneesh can meet but doesn't natively satisfy, address it later in the letter (middle paragraph or close) and frame it as a settled fact of how he already works rather than a hypothetical adjustment. [D3](DECISIONS.md#d3-cover-letter-opened-on-a-schedule-accommodation)
 
 **Structure — vary it.** Not every letter needs three bold-header bullets. Sometimes a strong paragraph, sometimes two items, sometimes no bullets. The template is visible when every letter has the same "Three specific things I'd bring:" structure.
 
@@ -158,22 +161,22 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 
 **Honesty moments — keep them, but verify the gap is still real.** When there's a genuine technical gap, acknowledge it directly and without apology. This is a distinctive voice feature that makes letters feel real, and suppressing it costs more than it saves. What it is not is a license to keep repeating a concession after it stops being true. Before conceding any technical gap, read `portfolio_projects.md`, not just `master_resume.md` — the public repos are where a lot of his evidence lives and none of them appear in the master resume.
 
-**Python is no longer one of these (corrected 2026-09-07).** This section previously quoted "Python is a growing area for me" and "I am not a software developer" as the model sentences, and five letters duly reproduced the first one: ElevenLabs 2026-04-30, Netomi 05-11, Regal 05-14, Vanta 06-29, Assembled 07-23. Every one predates the public repos. `skill-regression-harness` and `deflection-audit` are unit-tested Python tools, and `sf-caseops-mcp` is a working MCP server running daily against a live Salesforce org. Their current sizes and test counts live in `portfolio_projects.md` and each repo's README; quote numbers from there, never from this file. "Not a strength yet" over that isn't modesty, it's an inaccurate claim about an artifact the reader can click and check.
+**Python is no longer one of these.** Don't concede it. `skill-regression-harness` and `deflection-audit` are unit-tested Python tools, and `sf-caseops-mcp` is a working MCP server running daily against a live Salesforce org. Their current sizes and test counts live in `portfolio_projects.md` and each repo's README; quote numbers from there, never from this file. [D4](DECISIONS.md#d4-python-stopped-being-a-conceded-gap)
 
 The replacement is scope, not volume. Claim: Python for tooling and evaluation harnesses, API clients, CLI utilities, unit-tested modules, an MCP server against a live org. Don't claim: software engineer as a role he has held, production application development, or shipping code in a team codebase; there's no code review, no CI, and no on-call for a service behind any of it. `master_resume.md` states exactly this scope under TECHNICAL SKILLS, so match it rather than improvising a fresh hedge per letter. The career-narrative skill's Language calibration paragraph arbitrates anything not covered here.
 
 "I am not a software developer" stays available, because it's still true and it's the right answer when a JD asks for an engineer. Just don't let it carry the Python question — it answers a different one, and pairing it with the repos reads as someone who hasn't looked at his own work.
 
-**Do not edit the five letters named above.** They're the record of what those employers read (see the sent-letter rule in the voice-gate section). This correction governs new letters only.
+**Do not edit the five letters that used the old Python line** (sent 2026-04-30 to 2026-07-23; see [D4](DECISIONS.md#d4-python-stopped-being-a-conceded-gap)). They're sent letters, so the sent-letter rule covers them too. They're the record of what those employers read (see the sent-letter rule in the voice-gate section). This correction governs new letters only.
 
 **Always pair a named gap with a concrete ramp commitment (added 2026-08-20, Aneesh's direct ask).** Naming the gap is half the move; the other half is showing he intends to close it and can. A bare admission leaves the reader to decide how much it costs them. Do NOT write generic filler — "I'm a fast learner," "I pick things up quickly," "eager to grow" are exactly the vague fluff the style guide bans, and they read as padding. The commitment has to be specific enough to be checkable, and ideally starts before he's asked:
 
-- **Name when he'll start, and make it early.** A dated, checkable claim about behavior (he has already begun, or begins before the first conversation) beats any adjective about learning speed. **Do not reuse a fixed sentence for this.** On 2026-09-02 all four letters in one run landed on the identical construction "now rather than after an offer" because this section used to supply that exact phrasing as its example; a mandated move plus a quoted sentence becomes a template across documents, and the per-letter voice gate cannot see it. Vary the construction every time: a start date, a named resource already opened, a first concrete step taken.
+- **Name when he'll start, and make it early.** A dated, checkable claim about behavior (he has already begun, or begins before the first conversation) beats any adjective about learning speed. **Do not reuse a fixed sentence for this.** A mandated move plus a quoted sentence becomes a template across documents, and the per-letter voice gate can't see it. Vary the construction every time: a start date, a named resource already opened, a first concrete step taken. [D5](DECISIONS.md#d5-ramp-commitments-converged-on-one-sentence)
 - **Re-read what the requirement actually demands, then aim at that.** Requirements are often looser than they look. Framer's bar was "enough to read our code and dig in from day one," which is a *reading* bar, not a writing one; naming that distinction turned the weakest paragraph in the letter into an argument. Check for this before conceding a requirement wholesale.
-- **Cite evidence he ramps fast rather than asserting it.** Real precedents from `master_resume.md`: sole integration partner on the Maven AGI deployment with no prior AI-vendor experience at the company; trained 24 Resideo agents to absorb an entire support function in six months; scaled a support org from 1 to 18; taught himself the Claude Agent SDK and MCP server development (both on the AI & Automation skills line; it gives no automation count, so don't quote one). One concrete precedent beats three claims.
+- **Cite evidence he ramps fast rather than asserting it.** Real precedents, all in `master_resume.md` (take the numbers from there): sole integration partner on the Maven AGI deployment with no prior AI-vendor experience at the company; training the Resideo agents to absorb an entire support function; the support-org scale-up; teaching himself the Claude Agent SDK and MCP server development (both on the AI & Automation skills line; it gives no automation count, so don't quote one). One concrete precedent beats three claims.
 - **Keep it to two or three sentences, in or beside the gap paragraph.** This is a beat inside the honesty moment, not its own section, and it must never turn into a plea.
 
-Worked example, described rather than quoted (Framer, Engineering Support Lead, 2026-08-20): the letter named the coding gap, committed to starting on Framer's stack before any interview, then re-read the JD's own bar ("enough to read our code and dig in from day one") as a reading bar rather than a writing one and argued that reading a codebase well enough to reproduce and route an issue is clearable. The move is: gap, dated commitment, re-read the requirement, aim at what it actually asks. The sentences that carried it are deliberately not reproduced here; see the bullet above for why.
+The move is: gap, dated commitment, re-read the requirement, aim at what it actually asks. The Framer letter (2026-08-20) is the worked example, described in [D5](DECISIONS.md#d5-ramp-commitments-converged-on-one-sentence); its sentences are deliberately not reproduced anywhere.
 
 **Three positive framings to use when relevant (from direct voice interview):**
 - *Maven story:* The real achievement isn't the 85% deflection number — it's the feedback loop: customer data flowing back in to auto-audit the knowledge base and feed T1 training. Lead with the loop, land on the number. Most companies skip the spec work and get swept up in vendor promises; Aneesh did the spec work. That's the differentiator.
@@ -184,20 +187,18 @@ Worked example, described rather than quoted (Framer, Engineering Support Lead, 
 
 **Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific. (3) Check the opener log for structural repetition.
 
-**Mechanical voice gate (added 2026-09-01):** run
-`.venv/bin/python pipeline/check_voice.py --drafted-now <cover.md>` before rendering.
-**Never edit a letter that has already been sent** — the file is the record of what the
-employer read, and editing it makes the archive disagree with the submission. The script
-labels each letter's stage. Note `surfaced` does NOT mean unsent: it means no confirmation
-was matched, and CodePath and Cursor both read `surfaced` on 2026-09-01 while already sent.
-Only `--drafted-now` (letters the current run authored) is safe to edit without asking. It checks the
-contraction ratio, the em-dash cap, and sentence-length uniformity, and exits 1 on failure.
-**Contractions are the one that keeps slipping.** Aneesh's own letters run 5–15 contractions
-with zero expanded forms; every letter written on 2026-08-28 inverted that, Brown & Brown
-worst at 0 against 13 ("I have never", "I did not", "does not make me", "is not a logistics
-problem"). No single sentence looks wrong, so it survived six letters undetected — the tell
-is only visible in aggregate, which is why it is a script and not a habit. The daily pipeline
-runs this plus an `avoid-ai-writing` detect pass at Step 4.5.
+**Mechanical voice gate:** run
+`.venv/bin/python pipeline/check_voice.py --drafted-now <cover.md>` before rendering. It checks
+the contraction ratio, the em-dash cap, and sentence-length uniformity, and exits 1 on failure.
+The daily pipeline runs this plus an `avoid-ai-writing` detect pass at Step 4.5.
+- **Never edit a letter that has already been sent** — the file is the record of what the
+  employer read, and editing it makes the archive disagree with the submission. The script
+  labels each letter's stage. `surfaced` does NOT mean unsent: it means no confirmation was
+  matched. Only `--drafted-now` (letters the current run authored) is safe to edit without asking.
+- **Contractions are the one that keeps slipping.** Aneesh's own letters use contractions
+  throughout with no expanded forms. No single "I have never" or "does not" looks wrong, so the
+  drift only shows in aggregate, which is why it's a script and not a habit.
+  [D6](DECISIONS.md#d6-voice-gate-and-the-contraction-slip)
 
 ## Important Rules
 - NEVER invent experience, certifications, or skills that aren't in `master_resume.md`
@@ -225,52 +226,33 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 **`outcomes.csv` canonical schema (16 columns as of 2026-09-07, when `ic_scope` landed):**
 `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage,ic_scope`
 
-**`furthest_stage` landed 2026-08-27, and the bug it fixes had been silently destroying data
-since the file existed.** `outcome` is a single TERMINAL-state column, so a role that reached an
-interview and was then rejected ends up reading `rejected` and the interview is gone. Aneesh said
-he was sure he'd had more interviews than the tracker showed; he was right. An audit that day
-found **six interview-stage events, of which only two appeared in `outcome`** — the other four
-survived only as free text in `notes` and had to be recovered by regex. Interview rate was
-therefore uncomputable from the schema, which meant the pipeline was systematically understating
-its own conversion. This is a strictly worse failure than the `jd_coverage_pct` problem below:
-that metric merely has no variance, this one erased its own history.
-
-`furthest_stage` records the furthest point a role ever reached and **only ever moves right**.
+**`furthest_stage`** records the furthest point a role ever reached and **only ever moves right**.
+`outcome` is a single terminal-state column, so a role that reached an interview and was then
+rejected reads only `rejected`; this column is what keeps the interview.
 Vocabulary, weakest to strongest, in `FURTHEST_STAGES` (`repair_outcomes.py`):
 `applied` · `assessment` · `interview` · `onsite` · `offer`.
+**Empty means NOT RECORDED, not "never interviewed."** Rows that predate the column
+(2026-08-27) stay blank on purpose; never backfill them to "no interview." Populate it going
+forward whenever a stage is confirmed, and set it alongside any `mark_outcome.py` run that
+records an interview, assessment, or offer. [D7](DECISIONS.md#d7-furthest_stage-and-the-lost-interviews)
 
-**Empty means NOT RECORDED, not "never interviewed"** — the same three-state discipline as
-`hard_req_cap_trigger`. The 233 rows that predate the column stay blank on purpose. Do NOT
-backfill them to "no interview": "nobody checked" and "checked, never interviewed" are different
-facts, and conflating them is precisely what made `outcome` useless here. Populate it going
-forward whenever a stage is confirmed, and set it alongside any `mark_outcome.py` run that records
-an interview, assessment, or offer.
-
-Columns 11–13 landed 2026-08-01 from the conversion audit (SESSION_STATE 2026-08-01):
+Columns 11–13 [D8](DECISIONS.md#d8-conversion-audit-columns):
 
 - **`surfaced_date`** — when the pipeline first surfaced the role, written once by
-  `update_tracking.py` and never updated. It exists because `applied_date` meant two different
-  things depending on stage, and `mark_applied.py` overwrote it on promotion, destroying the only
-  record of how long a role sat unsent. Backfilled from `seen_jobs.json → first_seen_date` by
-  `backfill_surfaced_date.py` (147 of 168 rows recovered; the 21 blanks are confirmation-backfill
-  rows the poller never saw, left blank rather than guessed). `age_report.py` reads this column.
+  `update_tracking.py` and never updated. `age_report.py` reads this column. Rows the backfill
+  couldn't recover stay blank rather than guessed.
 - **`unmet_hard_reqs`** — count of JD hard requirements that cannot be honestly claimed. This is
   the intended replacement for `jd_coverage_pct` as a readiness signal. Populate it at Step 6
   from the genuine gaps already identified during tailoring.
 - **`vendor_tool_named_in_jd`** — the incumbent AI/support tool the JD names, when it names one
   (`Intercom/Fin`, `Forethought AI`, `Zendesk`). Blank when the JD names none. Recorded to test
-  whether vendor mismatch is a recurring rejection cause; at n=2 it is a hypothesis, not a finding.
+  whether vendor mismatch is a recurring rejection cause; it's a hypothesis, not a finding.
 
-**`hard_req_cap_trigger`** landed 2026-08-21, from a finding by `audit_scores.py`. The
-HARD-REQUIREMENT TIER CAP demotes a role to light tier on a stated years-minimum in a function
-Aneesh has zero years in, or a requirement the JD calls non-negotiable. `unmet_hard_reqs` cannot
-express that — it counts *every* disclosed gap, and most are soft ("no fintech domain") — so
-nothing could tell a correctly-capped row from a missed one, and 10 rows were stuck as an
-unresolved review queue. Vanta (2026-08-21) is the clean case: 2 unmet hard reqs *and* full
-tailoring, entirely correct, because that JD states no years minimum at all.
-
-Three states, and the distinction is load-bearing — `outcome=null` already taught this tracker
-what happens when one value means both "no" and "never recorded":
+**`hard_req_cap_trigger`** records whether the HARD-REQUIREMENT TIER CAP fired: a stated
+years-minimum in a function Aneesh has zero years in, or a requirement the JD calls
+non-negotiable. `unmet_hard_reqs` can't express that, because it counts every disclosed gap and
+most are soft. Three states, and the distinction is load-bearing
+[D9](DECISIONS.md#d9-hard_req_cap_trigger):
 
 | Value | Meaning |
 |-------|---------|
@@ -279,9 +261,9 @@ what happens when one value means both "no" and "never recorded":
 | *verbatim text* | the triggering requirement, quoted (`5+ years in Data Governance or GTM Systems`) |
 
 **Empty is not "no cap."** Populate it at Step 6 whenever you set `unmet_hard_reqs`; write `none`
-rather than leaving it blank, because blank is what an unrecorded row looks like. The 219
-pre-existing rows stay empty (backfilling means re-reading 219 JDs) and `audit_scores.py` falls
-back to reading their notes, labelling that inference as a guess.
+rather than leaving it blank, because blank is what an unrecorded row looks like. Pre-existing
+rows stay empty (no backfill), and `audit_scores.py` falls back to reading their notes,
+labelling that inference as a guess.
 
 **Stage vocabulary:** `surfaced` (tailored, not confirmed sent), `applied`, `rejected`, `closed`,
 `expired` (retired by `age_report.py` after 45 days with no confirmation), `tailored` (legacy).
@@ -289,9 +271,7 @@ back to reading their notes, labelling that inference as a guess.
 **2026-07-28 is the outcome-data epoch. Do not audit, reconcile, or reason about `applied` rows
 that predate it.** The Gmail `+jobs` forwarding filter (Step 0.5) went live 2026-07-28; before
 that date nothing could confirm a send, so `stage=applied` on an older row is self-reported and
-often just means "tailored." Established the hard way 2026-08-20: Alston Construction sat at
-`stage=applied` since 07-20 with `applied_date == first_seen_date == the tailoring date`, and
-Aneesh confirmed he had never submitted it. Other pre-epoch rows are likely wrong the same way.
+often just means "tailored." [D10](DECISIONS.md#d10-outcome-data-epoch)
 
 **Standing decision (2026-08-20, Aneesh's call): those historical gaps are out of scope. Do not
 spend a run trying to reconcile them, do not surface them in digests, and do not propose bulk
@@ -301,34 +281,24 @@ effectiveness, and any claim about what happened to an application should be com
 `surfaced_date >= 2026-07-28` and say so. A pre-epoch row is fine to leave sitting in whatever
 state it is in; correct one only when Aneesh raises that specific role.
 
-`source_channel` is `pipeline`, `user_surfaced`, `referral`, or `linkedin`. It exists because a
-CodeRabbit application submitted through an employee referral was indistinguishable from a cold
-ATS apply, and those convert at very different rates. Vocabulary lives in `KNOWN_CHANNELS`
+`source_channel` is `pipeline`, `user_surfaced`, `referral`, or `linkedin`, because a referral
+and a cold ATS apply convert at very different rates. Vocabulary lives in `KNOWN_CHANNELS`
 (`repair_outcomes.py`); add there first or the migration will treat the row as drifted.
 
 **This schema is duplicated in two places on purpose** (`OUTCOMES_HEADER` in
 `update_tracking.py`, `CANONICAL` in `repair_outcomes.py`). Change both together, then run
 `.venv/bin/python pipeline/repair_outcomes.py --apply` to migrate. Schema drift here is not
-cosmetic: `mark_applied.py` silently skips any row whose column count differs from the header, and
-a 2026-07-28 audit found 32% of the file invisible to promotion for exactly that reason.
+cosmetic: `mark_applied.py` silently skips any row whose column count differs from the header.
+[D11](DECISIONS.md#d11-source_channel-and-schema-drift)
 
 **`jd_coverage_pct` is a pass/fail gate, not a ranking signal. Never sort, compare, or
 prioritize roles by it.** It measures whether the resume mirrors the posting's language, not
-whether Aneesh clears the hiring manager's bar. The Vanta AI Optimization Specialist role scored
-~111 with 15/15 coverage and was rejected at the recruiter screen over unlisted Intercom/Fin
-experience.
-
-The 2026-08-01 audit established that this is a **variance** problem, not a small-sample problem,
-which is a stronger claim than the earlier caution made: **22 of 26 applied rows with coverage
-recorded (85%) sit at >=93%, and 15 of 26 (58%) are exactly 100%.** The metric is
-range-restricted by construction, because Step 6 targets >=80% and the second-pass rule pushes it
-higher. A number the process optimizes to a target cannot explain variation in outcomes at ANY
-sample size, so no amount of additional outcome data will rehabilitate it. Vanta at 15/15 was not
-an anomaly needing explanation; it was the modal value.
-
+whether Aneesh clears the hiring manager's bar. Step 6 tailors every resume toward the 80% target,
+so the metric has almost no variance and no amount of outcome data will make it predictive.
 Use it exactly one way: as a gate at 80% during tailoring. For readiness, use `unmet_hard_reqs`.
+[D12](DECISIONS.md#d12-jd_coverage_pct-has-no-variance)
 
-Title matching is config-driven as of 2026-07-09: `poll_ats.py` builds its matcher at runtime from `watchlist_companies.json → _title_scoring_tiers` + `_poller_config` (stemmed-token matching, so word-form and word-order variants match automatically). To teach the poller a new title, edit the JSON; `poll_ats.py` carries no title lists, endpoints, or scoring numbers of its own. Whole TIERS are also discovered dynamically: any `_title_scoring_tiers` key starting with `tier` (except the specially-handled `tier2b_ai_wildcard`) is loaded automatically. That was a hardcoded 4-tuple until 2026-07-28, which silently made the newly added `tier2c_tooling_systems` match nothing despite this paragraph promising otherwise. After ANY hand edit to `watchlist_companies.json` or `enrollment_candidates.json`, run `.venv/bin/python pipeline/validate_config.py` (syntax + schema check). The daily run also runs it at Step 1-pre, and `poll_ats.py` refuses to poll against a malformed watchlist.
+Title matching is config-driven: `poll_ats.py` builds its matcher at runtime from `watchlist_companies.json → _title_scoring_tiers` + `_poller_config` (stemmed-token matching, so word-form and word-order variants match automatically). To teach the poller a new title, edit the JSON; `poll_ats.py` carries no title lists, endpoints, or scoring numbers of its own. Any `_title_scoring_tiers` key starting with `tier` (except the specially-handled `tier2b_ai_wildcard`) loads automatically as a tier. After ANY hand edit to `watchlist_companies.json` or `enrollment_candidates.json`, run `.venv/bin/python pipeline/validate_config.py` (syntax + schema check). The daily run also runs it at Step 1-pre, and `poll_ats.py` refuses to poll against a malformed watchlist. [D13](DECISIONS.md#d13-config-driven-title-matching)
 
 **JSON escaping is per-file and load-bearing (set 2026-09-07).** `enrollment_candidates.json` is stored ESCAPED (`json.dump(..., indent=2)`, `ensure_ascii` left at its default True); `watchlist_companies.json` is stored RAW (`ensure_ascii=False`). Every writer must match its file, and each write ends with a single `f.write("\n")`. A writer on the wrong setting rewrites every non-ASCII line in a 350-430KB file, so whichever script ran last flips the escaping of the whole file and buries a two-line logical change in a ~180-line diff — in a repo that is pushed publicly. Writers of the queue: `harvest_ats.py`, `poll_builtin.py`, `harvest_linkedin.py`, `poll_remotive.py`, `poll_80k.py`, `harvest_hn_hiring.py`, `harvest_vc_portfolios.py`, `weekly_channel_report.py`. Of the watchlist: `harvest_ats.py`, `websearch_rotation.py`. `harvest_ats.py` writes both in one loop and branches on `ensure_ascii=(path == QUEUE)` — don't collapse that to one setting. Hand edits must also round-trip: a stray `,` on its own line in the watchlist (fixed 2026-09-07) was valid JSON that no writer would emit, so it reflowed on the next run.
 
@@ -370,39 +340,33 @@ at `daily_task_prompt.md` Step 6 item 4 — the spec for it lives there, not her
 editing anything below: **changing a rule does not rescore the rows already recorded under
 it**, so a guardrail edit strands the existing queue until `--sweep-drift` reconciles it.
 **But `--sweep-drift` only ever SUBTRACTS a retired bonus** (see `sweep_drift()`), so a rule
-change that RAISES scores leaves the queue under-scored with nothing to reconcile it. The
-2026-09-07 freshness-band change is the first of that kind; it happened to strand zero rows,
-but only because just 6 of 265 rows record a parseable posting age in `notes` at all. Measure
+change that RAISES scores leaves the queue under-scored with nothing to reconcile it. Measure
 the affected rows by hand when a rule moves scores upward.
+[D14](DECISIONS.md#d14-score-audit-and-rule-changes-that-raise-scores)
 
 1. **Count the vertical bonus ONCE.** A watchlist company's `score_bonus` in
    `watchlist_companies.json` IS that company's complete vertical bonus — do **not** add a
    separate generic "+20 AI/ML" or "+20 tooling" on top. Read `bonus_reason` to see which
-   vertical it encodes. As of 2026-07-29 there are three cases:
-   - `20` + "AI/ML platform" — AI-native company (55 companies)
+   vertical it encodes. There are three cases (how many companies sit in each is in the JSON):
+   - `20` + "AI/ML platform" — AI-native company
    - `20` + "Developer/infra tooling" — the company's product is a tool: devtools, dev infra,
-     observability, security tooling, data/API platforms (19 companies). Added after Aneesh
+     observability, security tooling, data/API platforms. Added after Aneesh
      named tool creation and maintenance as his primary interest, AI co-equal secondary.
-   - `30` + both — genuinely both, already pre-clamped at the +30 cap (9 companies)
+   - `30` + both — genuinely both, already pre-clamped at the +30 cap
 
    For a non-watchlist company with no config bonus: +20 once if AI-native, +20 once if a
    tooling company, +30 if clearly both. Never a config bonus and a manual one together.
 
    **The tooling list is curated by hand and must stay that way.** A keyword pass over the
-   `reason` text was tried on 2026-07-28 and produced ~40% false positives in both directions
-   ("deployment" matched every AI-application company; "iam" substring-matched inside "Miami")
-   while missing LaunchDarkly, 1Password, Vanta, Expel, LogicGate, and Chainguard entirely.
-   To classify a new company, edit its `score_bonus`/`bonus_reason` directly.
+   `reason` text was tried on 2026-07-28 and got it wrong in both directions. To classify a new
+   company, edit its `score_bonus`/`bonus_reason` directly.
+   [D15](DECISIONS.md#d15-vertical-bonus-and-the-hand-curated-tooling-list)
 
    **This rule is about free text, not about publisher-assigned taxonomies.**
-   `poll_builtin.py -> INDUSTRY_ALLOW` (added 2026-09-04) does classify companies, but it
-   reads BuiltIn's own closed 94-tag industry vocabulary with set membership — no substring
-   matching, no inference from company names, and the tag split itself was curated by hand
-   exactly as this guardrail asks. Measured on the 771 companies in the configured slices:
-   0% false negatives against the 33 that are already hand-curated onto the watchlist, and
-   ~10% false positives on the blocked set. That is a different mechanism from the 2026-07-28
-   keyword pass, and its numbers are recorded on the constant. It does NOT feed scoring — it
-   gates queue admission only, so a miss costs a lead, never a wrong score.
+   `poll_builtin.py -> INDUSTRY_ALLOW` reads BuiltIn's own closed industry vocabulary with set
+   membership, and the tag split itself was curated by hand; its measured error rates are
+   recorded on the constant. It does NOT feed scoring — it gates queue admission only, so a
+   miss costs a lead, never a wrong score.
 
 2. **Cap total company-level bonuses at +30.** The sum of all structural bonuses that describe
    the *company* rather than the *role* — AI/ML, watchlist (+10), Atlanta-enterprise (+10) /
@@ -443,10 +407,8 @@ the affected rows by hand when a rule moves scores upward.
    it in the read instead: when a role sourced from `_blind_spot_companies`,
    `_unpollable_backlog_companies`, or a rejected-as-unpollable entry lands near a tier
    threshold, say so in the digest ("scored 94; ~10 of that gap is the unearnable watchlist
-   bonus, not fit") and use judgment on the tier rather than deferring to the number. Documented
-   2026-08-20 after Framer's Engineering Support Lead scored 94 against GitLab's 98 while
-   matching its JD responsibilities more closely; 7 of those points were watchlist, salary
-   disclosure, and source quality rather than anything about the work.
+   bonus, not fit") and use judgment on the tier rather than deferring to the number.
+   [D16](DECISIONS.md#d16-unpollable-companies-score-low)
 
 ## Target Roles for Reference
 
@@ -474,43 +436,29 @@ Score title match using `_title_scoring_tiers` in `watchlist_companies.json`.
 - Solutions Engineer (when JD allows non-engineering background)
 
 **Tier 2c — Tooling / systems ownership (full tailoring, title match +22):**
-Added 2026-07-28. Aneesh's stated PRIMARY interest is building and maintaining tools, with AI
-co-equal secondary. Backed by real resume content: 25+ Salesforce Flow automations, Service Cloud
-admin, the Maven AGI deployment, and the CES/QA tooling he built.
+Aneesh's stated PRIMARY interest is building and maintaining tools, with AI co-equal
+secondary, backed by the Salesforce automation and admin work, the Maven AGI deployment, and the
+CES/QA tooling in `master_resume.md`.
 - Business Systems Manager / Analyst · Support Systems Manager · Systems Manager
 - Platform Operations Manager · Internal Tools Manager · Tooling Manager · Automation Manager
 - Applications Manager family (Business / Enterprise / IT Applications Manager)
 - Revenue Operations Manager
 
-**Narrow platform-administration variants are DEMOTED as of 2026-08-28.** The governing rule is
+**Narrow platform-administration variants are DEMOTED.** The governing rule is
 Aneesh's own: *"it's the narrow admin work I don't want."* **The line is ALTITUDE, not domain:**
 own a function (build the tooling, run adoption, decide what the system does) versus be someone's
 platform administrator (configure the tool, work the queue, hold the cert). Use that test on
 titles the list has not seen yet; full statement lives in the career-narrative skill's
-Target-Role Criteria. Analyst level is fine and this is not a seniority rule — he applied to
-Wiz's "Sr. Business Systems Analyst" (106) unprompted; the *administrator* rung is the one he
-declines. A "Manager" in the title does not rescue a role either: check the responsibilities.
+Target-Role Criteria. Analyst level is fine and this is not a seniority rule; the
+*administrator* rung is the one he declines. A "Manager" in the title does not rescue a role
+either: check the responsibilities. Don't count on the salary floor to screen the admin end out,
+since AI-native companies pay well for that work.
 
 The demoted titles stay in the tier2c list so they still match and surface, but `_poller_config →
-function_mismatch_titles` now demotes them to digest FYI lines: `GTM Systems`, `Go-to-Market`,
+function_mismatch_titles` demotes them to digest FYI lines: `GTM Systems`, `Go-to-Market`,
 `Revenue Systems`, `Sales Systems`, `Salesforce Administrator`, `Salesforce Business Systems`,
-`CRM Administrator`, `Applications Administrator`.
-Aneesh prompted the review by reading the Baseten GTM Systems Manager JD and saying it looked
-very different from what he does. He was right, and his own history said so: **every
-GTM-qualified or Salesforce-admin-titled systems role the pipeline ever surfaced went unsent
-(0 of 5), and every systems role he did send lacked that qualifier (3 of 3)** — including
-CrowdStrike's "Sr. Business Systems Analyst, Go-to-Market" at 116, the second-highest score in
-the tracker. Four of the five unsent ones got full tailoring *with a cover letter*, so this was
-burning the pipeline's most expensive artifact about once a week.
-
-Two things that make this a real finding rather than a small sample: the discriminator is NOT
-the hard-requirement cap (Wiz was capped to light tier and he applied anyway; CrowdStrike
-carried `hard_req_cap_trigger: none` at priority tier and he did not), and the original tier2c
-note assumed **the salary floor would screen the Salesforce-admin end out on its own**, which
-fails at AI-native companies paying $160K–$200K for that work. The distinction underneath:
-Service Cloud and Sales Cloud are the same platform and different jobs. Verified against the
-live matcher (5/5 demoted, 0/3 sent roles affected, 0/7 controls affected); reverting is a
-one-line delete per pattern.
+`CRM Administrator`, `Applications Administrator`. Reverting is a one-line delete per pattern.
+[D17](DECISIONS.md#d17-tier-2c-and-the-narrow-admin-demotion)
 
 **Tier 4 — Weak stretch (light tailoring only, title match +8):**
 - Renewal Manager / Partner Success Manager
@@ -533,35 +481,23 @@ for those titles only.
 
 The `_websearch_sources` block in `pipeline/watchlist_companies.json` defines additional sources to run each daily pipeline pass. These catch companies NOT on the ATS watchlist — Atlanta startups plus, as of 2026-06-25, broader ATS-host and AI-vertical discovery.
 
-**These sources are ROTATED as of 2026-08-23, not run exhaustively.** Run
+**These sources are ROTATED, not run exhaustively.** Run
 `.venv/bin/python pipeline/websearch_rotation.py` after ATS board polling: it selects the
 `rotation_per_run` daily sources with the oldest `last_run` and prints their queries, then
 `--mark` records the ones that actually ran. Full spec and rationale:
-`pipeline/daily_task_prompt.md` Step 1c. The short version: 16 sources a day competed with JD
-retrieval and kept getting skipped wholesale (zero ran on 2026-08-21, four on 2026-08-23), and
-these sources discover *companies* rather than perishable reqs, so a ~3-day cycle costs almost
-nothing. The JSON block is still the source of truth for the queries themselves — don't
-hardcode a query count here (it drifts). As of 2026-06-25 the active set is:
-1. **BuiltIn Atlanta** — Atlanta mid-size tech (title terms broadened). **BuiltIn Remote was
-   disabled 2026-09-03**, superseded by `pipeline/poll_builtin.py`, which walks BuiltIn's
-   COMPANY directory instead of dorking `site:builtin.com/job` for individual roles (see
-   `daily_task_prompt.md` Step 1d). BuiltIn Atlanta stays active because it is not fully
-   subsumed: the feeder yields companies that still need a resolvable board, so a live
-   Atlanta role at a company whose board never resolves reaches the pipeline only through
-   the role-level dork. This was a judgement call made without data: `channel_stats.websearch`
-   aggregates every dork into one counter. As of 2026-09-07 the raw `source` string is carried
-   from `pending` onto `enrolled`/`rejected`, so per-source yield becomes measurable off
-   `enrollment_candidates.json` once a few weeks of entries accumulate — re-test then whether
-   this dork earns its rotation slot. The feeder carries TWO
-   company-level gates as of 2026-09-04: `TARGET_FUNCTIONS` (is it hiring in a support-ops
-   function?) and `INDUSTRY_ALLOW` (is it a technology company at all?). The second was added
-   after the first, alone, queued a car wash, an animal shelter, a bubble tea chain, and a
-   real-estate operator. `--no-fit-gate` turns it off to re-measure recall.
-2. **Wellfound** — early-stage startups nationally, filter to Atlanta
-3. **AI-Titled Roles** — novel AI-prefixed titles (tier2b wildcard)
-4. **Ashby / Greenhouse / Lever Boards - Target Roles** — discover companies off the watchlist on each ATS host
-5. **AI-Native & AI-Safety Orgs** — vertical/company discovery (catches FAR.AI-type orgs whose fitting roles may be titled differently)
-(Hypepotamus remains `disabled` — JS-rendered, not pollable.)
+`pipeline/daily_task_prompt.md` Step 1c. The JSON block is the source of truth for which sources
+are active and for the queries themselves; don't list or count them here (it drifts).
+[D18](DECISIONS.md#d18-websearch-rotation-and-the-builtin-sources)
+
+- **BuiltIn Remote is disabled**, superseded by `pipeline/poll_builtin.py`, which walks BuiltIn's
+  company directory (see `daily_task_prompt.md` Step 1d). **BuiltIn Atlanta stays on
+  deliberately:** a live Atlanta role at a company whose board never resolves reaches the
+  pipeline only through that role-level dork. That was a judgment call made without data; once a
+  few weeks of `source` strings accumulate on `enrolled`/`rejected` entries in
+  `enrollment_candidates.json`, re-test whether it earns its rotation slot.
+- The `poll_builtin.py` feeder carries two company-level gates: `TARGET_FUNCTIONS` (is it hiring
+  in a support-ops function?) and `INDUSTRY_ALLOW` (is it a technology company at all?).
+  `--no-fit-gate` turns off `INDUSTRY_ALLOW` to re-measure recall; it's not for daily runs.
 
 **Discovery sources surface COMPANIES, not just today's jobs.** When an ATS-host or vertical query turns up an unfamiliar company with a Greenhouse/Ashby/Lever board, the goal is to **enroll it**: verify the board is live (direct API check, or `pipeline/verify_workday.py` for Workday), then add it to the watchlist so the poller scans its full roster daily. This is how off-watchlist companies become permanently monitored — a one-time add, not a per-run re-discovery.
 
@@ -618,151 +554,82 @@ When Aneesh mentions a job or company he found outside the pipeline, do all four
 4. **Log the tally** — record the miss + root cause in memory (`project_job_pipeline.md`,
    "discovery miss tally").
 
-**The 2026-07-02 standing decision here is SPENT, not open.** It said a third WitnessAI-class
-miss triggers building the ATS directory-harvest layer. That fired, and the layer was built:
-it is `pipeline/harvest_ats.py` (name → slug candidates → live board → fit-space scoring →
-auto-enroll at low priority, plus `--prune` for dead boards). Do not re-raise it, and treat
-any memory entry describing that build as un-greenlit as stale on that point.
+**The 2026-07-02 standing decision here is SPENT, not open. Don't re-raise it.** It said a third
+WitnessAI-class miss triggers building the ATS directory-harvest layer; that fired, and the layer
+is `pipeline/harvest_ats.py`. Treat any memory entry describing that build as un-greenlit as
+stale on that point. [D19](DECISIONS.md#d19-harvest-layer-and-ats-coverage)
 
-The successor question, live as of 2026-09-03: **does the harvest layer reach every ATS the
-poller does?** It does not, and the gap hides itself — a company on a poller-supported but
-harvester-unknown ATS gets written to `rejected` with `unpollable: true`, which is both wrong
-and self-suppressing, since that flag is what stops it being re-checked. Upwind Security sat
-there on Comeet, an ATS `poll_ats.py` had read since 2026-08-20; fixed 2026-09-03 by
-`probe_comeet`, which resolves a Comeet board from the company's own careers page because
-Comeet has no slug to guess. **SmartRecruiters closed 2026-09-03** the same way: slug-addressable,
-so it needed only a `probe()` branch, but the branch has one non-obvious requirement. That API
-answers 200 with `totalFound: 0` for a slug that does not exist rather than 404ing, so the probe
-returns `None` (no board) and never `[]` on an empty result. Returning `[]` would route into
-`_confirm_empty`, whose re-probe gets the same confident 200 and would therefore *confirm* a slug
-collision and write a wrong ats/slug onto a company's permanent record; that is the failure a
-2026-08-28 sweep hit when it reported ten resolved companies that were all collisions. It probes
-last among the cheap ATSes for the same reason. Paylocity is still uncovered and unfixable by
-name (GUID-addressed). `prune()` still skips SmartRecruiters on purpose: that audit splits
-dead-404 from resolved-empty, and this probe collapses both into `None`. **When adding an ATS
-adapter to `poll_ats.py`, check whether `harvest_ats.py` can discover it too — the two keep
-separate ATS lists and nothing syncs them.**
+### Poller and harvester invariants
 
-**Two 2026-09-11 fixes share a shape worth recognizing: the adapter was already there, and one
-company's variation on the ATS defeated it.** Comeet has a third embed shape, the JS API
-(`COMEET.init({ token: '...', 'company-uid': '...' })`, found on alice.io), and it failed twice
-over: none of `COMEET_MARKERS` appeared on that page, and the quoted, hyphenated `company-uid` key
-is unreachable by the loose `\buid\s*[:=]` pattern. `harvest_ats.py` now reads that shape from
-inside the init object only, so a stray analytics `token:` cannot pair with anything, and
-`pipeline/test_comeet_credentials.py` covers all three shapes plus the marker gate the loose
-patterns depend on. Rippling boards can point at the company's own domain, which redirects
-`ats.rippling.com/{slug}/jobs` away and leaves no `__NEXT_DATA__` to scrape (Nutrient); both files
-now fall back to `_endpoints.rippling_board_api` when, and only when, the listing lands off
-ats.rippling.com, sharing `poll_ats.rippling_api_items` so a multi-location posting collapses to
-one item identically on both sides. The fallback is deliberately not the primary path: that API is
-undocumented, and an unknown slug still 404s on the listing, so the harvest slug walk never reaches
-it.
+Rules to hold when editing `poll_ats.py`, `harvest_ats.py`, or the location gates. Each links to
+the incident that set it.
 
-**A duplicate record in `enrollment_candidates.json` is a correctness bug, not clutter (fixed
-2026-09-11).** `harvest_ats.py` superseded a stale `rejected` record only when it carried
-`timed_out`; every other rejection path appended, so re-probing a company that already had a
-rejection left two records with nothing to arbitrate between them. The stale one can carry
-`unpollable: true`, which is both the flag that stops a company being re-checked and the input to
-the weekly punch list, so a re-probe that RESOLVED the board left the company still reading as
-unpollable: Nutrient, 2026-09-11, whose Rippling board became reachable the same day the
-custom-domain fallback landed. `with_provenance()` now retires any older record for the same name
-in the bucket it is writing to, folds `PROVENANCE_FIELDS` and `CARRY_FIELDS` forward, and writes a
-`superseded_note` that names a falsified `unpollable: true` explicitly rather than summarising it
-away. `weekly_report_surfaced` carries forward only onto another unpollable record, since
-suppressing a repeat punch-list entry is the only thing it does.
+- **The poller and the harvester keep separate ATS lists and nothing syncs them. When adding an
+  ATS adapter to `poll_ats.py`, check whether `harvest_ats.py` can discover it too.** A company
+  on a poller-supported but harvester-unknown ATS gets written to `rejected` with
+  `unpollable: true`, which is wrong and also stops it being re-checked. Paylocity is still
+  uncovered and unfixable by name (GUID-addressed).
+  [D19](DECISIONS.md#d19-harvest-layer-and-ats-coverage)
+- **The SmartRecruiters probe returns `None`, never `[]`, on an empty result.** That API answers
+  200 with `totalFound: 0` for a slug that doesn't exist, and `[]` would route into
+  `_confirm_empty`, which would confirm a slug collision onto a company's permanent record. It
+  probes last among the cheap ATSes for the same reason, and `prune()` skips SmartRecruiters on
+  purpose. [D19](DECISIONS.md#d19-harvest-layer-and-ats-coverage)
+- **Comeet** boards resolve from the company's own careers page (`probe_comeet`); the JS-API
+  embed (`COMEET.init`) is read from inside the init object only, so a stray analytics `token:`
+  can't pair with anything. `pipeline/test_comeet_credentials.py` covers all three embed shapes.
+  **Rippling** falls back to `_endpoints.rippling_board_api` when, and only when, the listing
+  lands off ats.rippling.com, with both files sharing `poll_ats.rippling_api_items`. That API is
+  undocumented, so it stays the fallback, not the primary path.
+  [D20](DECISIONS.md#d20-comeet-and-rippling-adapter-variants)
+- **A duplicate record in `enrollment_candidates.json` is a correctness bug, not clutter.**
+  `with_provenance()` retires any older record for the same name in the bucket it writes to and
+  folds `PROVENANCE_FIELDS` and `CARRY_FIELDS` forward; `weekly_report_surfaced` carries forward
+  only onto another unpollable record. Three dispositions:
+  1. **Within a bucket, REPLACE.** One company, one record per bucket; the newer probe's fields
+     win and the old one's fill the gaps.
+  2. **An enrollment NEUTRALIZES that company's rejections in place, never deletes them.**
+     `unpollable` and `recheck_if_resurfaced` go false, the reason gets a `SUPERSEDED <date>`
+     preamble, and `superseded_by_enrollment` is stamped.
+  3. **A rejection for a company already enrolled or on the watchlist is SUPPRESSED and
+     printed.** `harvest_ats.py` never removes a watchlist entry (`--prune` owns de-enrollment and
+     is report-only).
 
-Three dispositions, and the differences are load-bearing:
-
-1. **Within a bucket, REPLACE.** One company, one record in `rejected`; one in `enrolled`. The
-   newer probe is the better evidence, so its fields win and the old one's fill the gaps.
-2. **An enrolment NEUTRALIZES that company's rejections in place, never deletes them.** The
-   rejection is the only account of why the company was ever turned away and the `enrolled` entry
-   has no field to hold it, so `unpollable` and `recheck_if_resurfaced` go false, the reason gets
-   a `SUPERSEDED <date>` preamble, and `superseded_by_enrollment` is stamped. This is exactly the
-   disposition Aneesh applied by hand to Affirm, Brown & Brown, and Reputation; it is automatic now.
-3. **A rejection for a company already enrolled or on the watchlist is SUPPRESSED and printed.**
-   This script never removes a watchlist entry (`--prune` owns de-enrolment and is report-only), so
-   such a record can only misdescribe the live state. Bluehost spent 2026-09-08 to 09-11 enrolled
-   at workday/web while carrying a timed-out rejection with `recheck_if_resurfaced: true`: an
-   instruction to re-probe a company already polled daily. Reachable only via `--names`, which
-   bypasses the already-known skip.
-
-`validate_config.py` warns on both duplicate shapes. That is the guard for the other writers of
-this file and for hand edits, neither of which the `harvest_ats.py` fix reaches.
-
-**Location matching in `poll_ats.py` is boundary-based as of 2026-09-11.** It was plain substring
-matching, and that was wrong in both directions: `LOCATION_EXCLUDE` killed "Remote - Indiana"
-("india"), Milwaukee/Waukesha/Waukegan ("uk"), and "Remote - New Mexico" ("mexico"), while
-`LOCATION_INCLUDE` passed "Minsk, Belarus", Cyprus, and Mauritius on the "us" inside the country
-name and `US_SPECIFIC_INCLUDE` rescued "Jerusalem, Israel" on the "usa" inside Jerusalem.
-`_boundary_pattern()` compiles each list into one alternation matched at non-alphanumeric
-boundaries; it uses lookarounds rather than `\b` because a period has to count as a separator on
-both sides, which `\bu\.s\.\b` cannot do at the end of "Remote U.S." (`harvest_linkedin.py`'s
-`has_us` still carries that bug). Boundaries alone do not save "New Mexico", so
-`LOCATION_LOOKALIKES` blanks it out before the exclusion scan and only there, since the include
-scan still needs the real string; that mirrors `harvest_ats.US_LOOKALIKES`. Genuinely ambiguous
-city names are deliberately NOT exempted: Dublin, Paris, Berlin, and Toronto each name a real US
-town AND the non-US city the exclude list is aimed at, and this filter cannot read state context
-to tell them apart. Measured over 373 generated location strings the change flips exactly four,
-all of them non-US locations that used to read as US. Cases live in `test_tier3_gate.py →
-POLL_CASES`.
-
-Two consequences worth knowing. "remotely" is now an explicit `LOCATION_INCLUDE` entry, because a
-trailing suffix is the one form the "remote" term no longer reaches. And a bare "Milwaukee, WI"
-still returns False, as do Minneapolis, Columbus, and Phoenix: `LOCATION_INCLUDE` is a curated
-18-city list with a default-exclude behind it, so an on-site role in any unlisted US city is
-dropped. That is a coverage gap, not the substring bug, and Aneesh scoped it out on 2026-09-11.
-Adding state names and USPS codes is the fix whenever it becomes worth the wider intake.
-
-**Per-posting country fields are read and stamped as of 2026-09-11 (`pipeline/countries.py`).**
-The three location gates read one string, and until now the only way that string could say
-"not the US" was `NON_US_MARKERS`, a hand-kept list of countries, regions, and cities. Several
-ATSes return a structured country per posting (Comeet `location.country`, SmartRecruiters
-`location.country`, Ashby `address.postalAddress.addressCountry`, Lever `country`, Workable
-`country`, Paylocity `JobLocation.Country`), and ignoring it is what made Dot Compliance's Canadian
-role read "Montreal, Remote" and forced "montreal" onto the marker list by hand. `parse_location`
-and the harvest probes now append a `(non-US: Canada)` tag when the field resolves to a non-US
-country, and `us_reachable`, `tier3_location_ok`, and `location_relevant` check for that tag first
-and answer False outright, dual-region rescue included. Two rules keep it safe: a US, absent, or
-unrecognised country stamps nothing (Upwind returns `country: ""` on real Chicago and Dallas
-postings, and appending "United States" to a US string would move every on-site role into the
-+20 scoring bucket), and `GE`/`GS` stamp as the bare code because "Georgia" is an Atlanta hint.
-Property checks at the bottom of `test_tier3_gate.py` re-derive both rules.
-
-**Rippling is the one adapter left with a country field it does not read, and that is a
-decision rather than an oversight.** Its two paths disagree in shape: the listing page carries
-`locations[].country`/`countryCode`, the board API carries it inside `workLocation`, and
-`rippling_api_items` collapses both to a name-only list because one posting can hold six
-locations (Nutrient's Workflow Support Engineer across six LatAm countries). Stamping it needs
-the country carried through that collapse plus an all-locations-non-US rule, which is a
-different change from the one-line stamp the other six took. Greenhouse, JazzHR, and Workday
-return no country at all, and Pinpoint's `location.province` merely sometimes holds one
-("United Kingdom"), which is free text, not a field. So `NON_US_MARKERS` is still the only
-signal for those and for the LinkedIn grader: the stamp shrinks what the blocklist has to
-cover, it does not retire it. Leave "montreal" where it is.
-
-**Workday "N Locations" postings are resolved from the detail endpoint (fixed 2026-09-14).**
-The list view gives no city for multi-site roles, and `fetch_workday` stashed those as
-"Unknown", which `location_relevant` keeps as neutral; NVIDIA's UK, Munich, and Bengaluru
-architect roles leaked into `ai_engineer_stretch` that way, and the same path fed matched and
-borderline. A census of 46 boards found 25% of postings in that shape. `parse_location` now
-reads `jobPostingInfo` for them (after the title gate, one cached request shared with the
-start-date resolver), joins primary + `additionalLocations`, and stamps the primary's country
-unless an alternate names the US, since Workday's country field describes the primary only.
-On a failed detail read the externalPath segment is used to exclude, never to include: a US
-segment the gate can't read ("Louisville KY") stays Unknown. One consequence: a multi-location
-US posting whose every location is an unlisted city now drops, same as its single-location twin
-under the curated-city gap below. `harvest_ats.py`'s Workday probe still scores "N Locations" as
-not US-reachable, which under-admits rather than leaks; not fixed.
-
-**Workday boards were read 40 deep, not 200 (fixed 2026-09-11).** Workday reports the board's
-real `total` only on the offset-0 response; later pages answer `total: 0`, and `fetch_workday`
-re-read it every page, so the loop ended after page two on every board (JLL 40 of 2000, Stord 40
-of 98). It reads `total` once now and treats a short page as the last page. The cap is
-`WORKDAY_MAX_POSTINGS`, raised 200 to 1000 on the same day from a measurement across all 46 live
-boards: 200 left about 230 fresh title+location matches unread, including a tier1 at Salesforce
-#400; 1000 leaves about 18 for 641 requests a run. `pipeline/test_workday_pagination.py` simulates
-both the total-once behaviour and the cap with a fake session, no network.
+  `validate_config.py` warns on both duplicate shapes; that's the guard for the other writers
+  and for hand edits. [D21](DECISIONS.md#d21-duplicate-enrollment-records)
+- **`poll_ats.py` location matching is boundary-based.** `_boundary_pattern()` matches each list
+  at non-alphanumeric boundaries using lookarounds rather than `\b`, so a period counts as a
+  separator on both sides. `LOCATION_LOOKALIKES` blanks out "New Mexico" before the exclusion
+  scan and only there. Genuinely ambiguous city names (Dublin, Paris, Berlin, Toronto) are
+  deliberately NOT exempted. "remotely" is an explicit `LOCATION_INCLUDE` entry.
+  `harvest_linkedin.py`'s `has_us` still carries the trailing-period bug. Cases live in
+  `test_tier3_gate.py → POLL_CASES`.
+  [D22](DECISIONS.md#d22-boundary-based-location-matching)
+- **The unlisted-US-city gap is scoped out (Aneesh, 2026-09-11).** `LOCATION_INCLUDE` is a
+  curated city list with a default-exclude behind it, so an on-site role in an unlisted US city
+  drops. Adding state names and USPS codes is the fix whenever it becomes worth the wider
+  intake; don't do it unasked.
+- **Per-posting country stamps** (`pipeline/countries.py`): when an ATS returns a structured
+  country and it resolves to a non-US one, `parse_location` and the harvest probes append
+  `(non-US: <Country>)`, and `us_reachable`, `tier3_location_ok`, and `location_relevant` check
+  that tag first and answer False outright, dual-region rescue included. A US, absent, or
+  unrecognised country stamps nothing, and `GE`/`GS` stamp as the bare code because "Georgia" is
+  an Atlanta hint. Property checks at the bottom of `test_tier3_gate.py` re-derive both rules.
+  [D23](DECISIONS.md#d23-per-posting-country-stamps)
+- **Rippling's country field stays unread, by decision**, and Greenhouse, JazzHR, Workday, and
+  Pinpoint return no usable one, so `NON_US_MARKERS` is still the only signal for those and for
+  the LinkedIn grader. The stamp shrinks what the blocklist has to cover; it doesn't retire it.
+  Leave "montreal" where it is.
+- **Workday "N Locations" postings** resolve from the detail endpoint (`jobPostingInfo`, after
+  the title gate, one cached request shared with the start-date resolver). Primary +
+  `additionalLocations` are joined and the primary's country is stamped unless an alternate
+  names the US. On a failed detail read the externalPath segment is used to exclude, never to
+  include. `harvest_ats.py`'s Workday probe still scores "N Locations" as not US-reachable
+  (under-admits rather than leaks; not fixed).
+  [D24](DECISIONS.md#d24-workday-locations-and-pagination)
+- **Workday pagination:** read `total` once from the offset-0 response and treat a short page
+  as the last page. The cap is `WORKDAY_MAX_POSTINGS` (1000).
+  `pipeline/test_workday_pagination.py` covers both with a fake session, no network.
 
 ## Job Search Dashboard (built 2026-09-19)
 
@@ -792,23 +659,15 @@ that file (its Track Source File feature) and refreshes the page in place under 
   purpose: adapters for the Jobvite and Gem boards a few manual-check companies use, and the
   queue rows that report "N PDFs match" instead of one resume path.
 
-**Queue-vs-Gmail check, 2026-09-19.** Aneesh asked whether queued roles had already been sent.
-All surfaced rows were checked against employer and ATS email since 2026-06-01. Result: the
-confirmation sync was wrong on ONE row. Cambium Learning Group's Workday rejection went to his
-other address rather than the `+jobs` alias, so Step 0.5 never saw it; recorded via
-`mark_outcome.py`. He applies only through the aliased address from here on and called the
-miss a one-off, so **no change to Step 0.5 was made or is wanted.** Two other apparent misses
-were false alarms that came from matching on company alone: a second, unsent req at a company
-where a similarly titled req was already `applied`, and a new req at a company whose earlier
-same-title req was already `rejected` (the row's own notes said so). Lesson for the next check
-of this kind: compare against the tracker row's URL and notes before calling anything a miss.
-Two rows stayed unresolved because the employer emails never name the role; left alone at his
-call.
+**Queue-vs-Gmail checks.** Aneesh applies only through the `+jobs` alias, so **no change to
+Step 0.5 is wanted** for mail that reached his other address. Before calling a queued role
+already sent, compare against the tracker row's URL and notes, not the company alone.
+[D25](DECISIONS.md#d25-queue-vs-gmail-check)
 
 ## JD Screen Fan-out + Rate-Limit Recheck (built 2026-09-25)
 
-The daily run now reads every shortlist JD instead of only the 3-4 it picked from listing
-data (924 matches -> 49 shortlisted -> 4 tailored on 2026-09-24, most of the 49 never read).
+The daily run reads every shortlist JD, not only the few it used to pick from listing data.
+[D26](DECISIONS.md#d26-why-the-jd-screen-fans-out)
 Spec: `daily_task_prompt.md` Step 2-JD and Step 6.7.
 
 - `pipeline/jd_prefetch.py` fetches all shortlist + ai_wildcard + plausible near-window JDs in
@@ -839,10 +698,8 @@ application form in the browser up to but never including submit. **Explicit inv
 only** — "assisted apply", "help me apply to X", "fill out this application". Never
 triggered by the daily pipeline, never inferred from a role being tailored.
 
-Built 2026-08-28 after a Brown & Brown Workday form was abandoned mid-way. Aimed at the
-high-effort ATSes (Workday, Paylocity, Taleo, iCIMS) that make him retype his whole work
-history after an upload, which is a plausible contributor to the 38% send rate and
-31-day median at `stage=surfaced`.
+It's aimed at the high-effort ATSes (Workday, Paylocity, Taleo, iCIMS) that make him retype his
+whole work history after an upload. [D27](DECISIONS.md#d27-why-assisted-apply-exists)
 
 Claude never creates accounts, enters passwords, clicks submit, answers EEO or
 self-identification questions, answers screening questions (work authorization, salary,
