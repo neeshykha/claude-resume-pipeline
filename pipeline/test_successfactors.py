@@ -11,8 +11,10 @@ part fails:
      "rss" feed shape) and parses a real, named requisition's title, location,
      and apply URL. Written to fail before ats_successfactors.py existed (see
      the run captured before implementation, kept in the adapter's notes).
-  3. LIVE pagination past page 1 -- Avanos (urlset shape, full board < cap,
-     proves completeness) and Wipro (urlset shape, board >> cap, proves the
+  3. LIVE pagination past page 1 -- Avanos (urlset shape; reads
+     min(total, cap) and past one 25-item page -- a full-board completeness
+     proof while Avanos is under the cap, a capped read once it grows past it,
+     as it had by 2026-09-26) and Wipro (urlset shape, board >> cap, proves the
      cap stops it) against docs/ats_contract.md section 8 item 3.
   4. Budget under a simulated hang -- a local socket that accepts and never
      answers, probed with a 3s Budget; must return within budget + ~1s with no
@@ -238,11 +240,25 @@ try:
     status, postings, total = sf.resolve_board("careers.avanos.com", _plain_get)
     elapsed = time.monotonic() - t0
     read = len(postings or [])
-    ok_a = status == "ok" and total is not None and total > 25 and read == total
+    # READ == min(total, cap), NOT read == total (changed 2026-09-26, horizon M7).
+    # Avanos was 55 postings when this was written, under the 60-posting urlset
+    # cap, so "read everything" and "read up to the cap" were the same number.
+    # By 2026-09-26 it had grown to 69, the adapter correctly stopped at 60, and
+    # the old assertion read that as a failure. min(total, cap) is the actual
+    # contract in both regimes, and read > 25 still proves the walk goes past
+    # one 25-item page, which is what this section exists to show.
+    cap = sf.SUCCESSFACTORS_URLSET_DETAIL_CAP
+    expected = min(total, cap) if total is not None else None
+    ok_a = (status == "ok" and total is not None and total > 25
+            and read == expected and read > 25)
     print(f"Avanos: status={status}  sitemap_total={total}  read={read}  "
-         f"cap={sf.SUCCESSFACTORS_URLSET_DETAIL_CAP}  elapsed={elapsed:.1f}s")
+         f"cap={cap}  elapsed={elapsed:.1f}s")
     print(f"  [{'ok ' if (total and total > 25) else 'FAIL'}] total exceeds one 25-item page")
-    print(f"  [{'ok ' if read == total else 'FAIL'}] read count ({read}) == sitemap total ({total})")
+    print(f"  [{'ok ' if read == expected else 'FAIL'}] read count ({read}) == min(sitemap total, cap) ({expected})")
+    print(f"  [{'ok ' if read > 25 else 'FAIL'}] read past one 25-item page ({read})")
+    if total is not None and total > cap:
+        print(f"  note: Avanos ({total}) is now over the cap, so this is a capped read like "
+              f"Wipro's; the full-board completeness case needs a board under {cap}")
     live3_ok &= ok_a
 except Exception as e:
     print(f"Avanos: FAIL {type(e).__name__}: {e}")
