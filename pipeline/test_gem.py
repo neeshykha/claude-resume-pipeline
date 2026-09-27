@@ -134,7 +134,18 @@ if fh_ok:
     print("      Rendered board page (jobs.gem.com/function-health) header read "
           "'Open positions (33)' and hand-counting the 33 listed titles under "
           "each department matched exactly -- captured live 2026-09-18.")
-    check(n == 33, "API count matches the rendered page's stated + hand-counted total (33)", detail=str(n))
+    # WHY THIS NO LONGER PINS 33 (changed 2026-09-26, horizon M7). The board is
+    # live, so an exact count fails the day one posting opens or closes: on
+    # 2026-09-26 it had grown to 34 and this read as a regression. The page
+    # can't be re-counted automatically -- it's client-rendered, and a plain GET
+    # carries no "Open positions (N)" -- so the 09-18 hand count stays as the
+    # one-time completeness proof above. What CAN be checked every run is what
+    # a silent truncation would break: a single response well past any common
+    # page size (20/25), with no posting repeated.
+    ext_ids = [p.get("extId") for p in fh_jobs]
+    check(n > 25, "one response carries more than any common page size (20/25)", detail=str(n))
+    check(len(set(ext_ids)) == n and None not in ext_ids,
+          "every posting has a distinct extId (no repeated page)", detail=f"{len(set(ext_ids))}/{n}")
     print("      Conclusion: Gem is the contract's 'one response holds the whole "
           "board' (n/a) pagination class, same as Greenhouse -- no MAX_POSTINGS cap exists.")
 
