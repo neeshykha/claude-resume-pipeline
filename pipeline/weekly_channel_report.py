@@ -559,12 +559,74 @@ def load_linkedin_cards(cutoff, today):
     return list(unique.values()), raw_total, files
 
 
-def classify_card(card, tailored_pairs, tailored_companies):
-    company, title = _norm(card.get("company")), _norm(card.get("title"))
+# Company matching between LinkedIn cards and outcomes.csv (fixed 2026-09-26).
+# It used to be exact equality after stripping punctuation, so a card reading
+# "Acme" never matched the tracker row "Acme Technologies", "Acme, Inc." never
+# matched "Acme", and a row written as "Parent Co (Brand)" never matched a card
+# naming the brand. Roles already applied to came back as "strong roles the
+# poller missed" every week. Plain substring matching is not the fix: it makes
+# a short brand match inside any longer word that contains it ("OVA" inside
+# "NOVA"). So names are compared as
+# word lists: legal and filler words are dropped, a parenthetical counts as an
+# alias, and two names match when the shorter word list is the start of the
+# longer one. A lone word of three letters or fewer must match exactly, since
+# a two- or three-letter brand prefixing an unrelated name is the likelier
+# story. Erring toward no match only costs a duplicate line in the report;
+# erring toward a match would hide a real leak.
+_COMPANY_STOPWORDS = frozenset({
+    "the", "inc", "incorporated", "llc", "ltd", "limited", "co", "corp",
+    "corporation", "company", "plc", "gmbh", "technologies", "group", "holdings",
+})
+
+
+def _company_words(name):
+    cleaned = (name or "").lower().replace("'", "").replace("’", "")
+    words = "".join(ch if ch.isalnum() else " " for ch in cleaned).split()
+    return tuple(w for w in words if w not in _COMPANY_STOPWORDS)
+
+
+def _company_aliases(name):
+    """Word lists a company name can match on: the name without its
+    parenthetical, and each parenthetical on its own."""
+    name = name or ""
+    inner, outer, depth, buf = [], [], 0, []
+    for ch in name:
+        if ch == "(":
+            depth += 1
+            if depth == 1:
+                buf = []
+                continue
+        elif ch == ")" and depth:
+            depth -= 1
+            if depth == 0:
+                inner.append("".join(buf))
+                continue
+        (buf if depth else outer).append(ch)
+    aliases = {_company_words("".join(outer))} | {_company_words(p) for p in inner}
+    return {a for a in aliases if a}
+
+
+def _same_company(aliases_a, aliases_b):
+    for a in aliases_a:
+        for b in aliases_b:
+            short, long_ = (a, b) if len(a) <= len(b) else (b, a)
+            if len(short) == 1 and len(short[0]) <= 3:
+                if short == long_:
+                    return True
+            elif long_[:len(short)] == short:
+                return True
+    return False
+
+
+def classify_card(card, tailored_index):
+    aliases = _company_aliases(card.get("company"))
+    title = _norm(card.get("title"))
     status = _status_text(card)
-    if (company, title) in tailored_pairs:
+    worked = [row_title for row_aliases, row_title in tailored_index
+              if _same_company(aliases, row_aliases)]
+    if title in worked:
         return "tailored"
-    if company in tailored_companies:
+    if worked:
         return "company_worked"
     if card.get("blind_spot"):
         return "blind_spot"
@@ -578,19 +640,18 @@ def classify_card(card, tailored_pairs, tailored_companies):
 
 
 def load_tailored_index(path="pipeline/outcomes.csv"):
-    """Company/title pairs that ever reached outcomes.csv, at any stage."""
+    """(company aliases, normalized title) for every outcomes.csv row, any stage."""
     import csv
-    pairs, companies = set(), set()
+    index = []
     try:
         with open(path, newline="") as fh:
             for row in csv.DictReader(fh):
-                c, t = _norm(row.get("company")), _norm(row.get("title"))
-                if c:
-                    companies.add(c)
-                    pairs.add((c, t))
+                aliases = _company_aliases(row.get("company"))
+                if aliases:
+                    index.append((aliases, _norm(row.get("title"))))
     except OSError:
         pass
-    return pairs, companies
+    return index
 
 
 def print_linkedin_cards_section(cards, raw_total, files, cutoff, today):
@@ -601,7 +662,7 @@ def print_linkedin_cards_section(cards, raw_total, files, cutoff, today):
         print("or it ran before harvest_linkedin.py started writing card files (2026-09-02).")
         return
 
-    pairs, companies = load_tailored_index()
+    tailored_index = load_tailored_index()
     strong = [c for c in cards
               if c.get("title_tier") in STRONG_CARD_TIERS
               and (c.get("location_points") or 0) > 0
@@ -620,7 +681,7 @@ def print_linkedin_cards_section(cards, raw_total, files, cutoff, today):
 
     buckets = {}
     for card in strong:
-        buckets.setdefault(classify_card(card, pairs, companies), []).append(card)
+        buckets.setdefault(classify_card(card, tailored_index), []).append(card)
 
     print()
     print("Where the strong ones went:")
