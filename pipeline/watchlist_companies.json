@@ -6695,6 +6695,20 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "needs_vertical_classification": true,
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (51 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Customer Success Manager' [Atlanta, Georgia]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Yahoo",
+      "ats": "workday",
+      "slug": "ouryahoo",
+      "wd_host": "ouryahoo.wd5.myworkdayjobs.com",
+      "wd_tenant": "ouryahoo",
+      "wd_site": "careers",
+      "priority": "low",
+      "enrolled_date": "2026-09-27",
+      "enrolled_via": "Hand enrollment 2026-09-27; Workday tenant verified by direct CXS query.",
+      "reason": "Board verified live via direct CXS query (107 postings, 4 title hits under the current matcher: one tier2, one tier2d, one tier3, one AI wildcard). The 2026-08-18 unpollable-backlog check queried this tenant for CSM, TAM, support operations, and implementation titles only, so fit roles titled outside those words were invisible to it; enrolling lets the full matcher read the whole board.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): consumer media and advertising technology."
     }
   ]
 }

@@ -4352,9 +4352,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-06",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): real Workday tenant found and queried directly via CXS API (customer success manager / technical account manager / support operations manager / implementation manager searches) -- zero tier1/tier2/tier2c fit-space titles. Genuine no-fit, not a slug-guessing miss.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
+      "reason": "SUPERSEDED 2026-09-27: ENROLLED on the watchlist by hand (workday/ouryahoo, 107 postings, 4 title hits). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): real Workday tenant found and queried directly via CXS API (customer success manager / technical account manager / support op",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-09-27"
     },
     {
       "name": "Amba",
@@ -9972,17 +9973,6 @@
       "weekly_report_surfaced_date": "2026-09-24"
     },
     {
-      "name": "Ottimate",
-      "ats": "pinpoint",
-      "slug": "ottimate",
-      "rejected_date": "2026-09-17",
-      "reason": "Board RESOLVED at pinpoint/ottimate but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: pinpoint/ottimate, pinpoint/Ottimate.)",
-      "recheck_if_resurfaced": true,
-      "unpollable": false,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-17"
-    },
-    {
       "name": "SteelSeries",
       "ats": "workable",
       "slug": "steelseries",
@@ -14989,6 +14979,25 @@
       ],
       "source": "BuiltIn directory",
       "first_seen": "2026-09-25"
+    },
+    {
+      "name": "Ottimate",
+      "ats": "pinpoint",
+      "slug": "ottimate",
+      "rejected_date": "2026-09-27",
+      "reason": "Board RESOLVED at pinpoint/ottimate but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: pinpoint/ottimate, pinpoint/Ottimate.) 4 probe(s) were rate-limited (HTTP 429) and never answered (workable x4), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/ottimate",
+        "workable/ottimateio",
+        "workable/ottimatehq",
+        "workable/ottimateinc"
+      ],
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-17",
+      "superseded_note": "Supersedes the 2026-09-17 record: Board RESOLVED at pinpoint/ottimate but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual si..."
     }
   ]
 }

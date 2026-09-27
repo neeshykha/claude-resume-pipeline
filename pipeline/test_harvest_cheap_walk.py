@@ -440,6 +440,27 @@ def a_throttled_company_is_never_written_unpollable():
 
 
 @case
+def an_empty_board_with_a_throttled_probe_is_queued_for_recheck():
+    """An empty board found while another ATS refused to answer is unfinished.
+
+    The writer must flag it throttled so throttle_recheck_pick.py re-probes it;
+    the contrast (same empty board, nothing refused) must stay unflagged, so the
+    recheck queue does not fill with companies that are simply between postings.
+    """
+    name = "Zzq Empty Board Fixture Co"
+    empty = {"ats": "pinpoint", "slug": "zzq", "total": 0, "strong": [],
+             "empty_board": True, "empty_hits": [("pinpoint", "zzq")]}
+    written = _main_writes(name, dict(empty, throttled_probes=[("workable", "zzq")]))
+    contrast = _main_writes(name, dict(empty))
+    ok = (len(written) == 1 and written[0].get("throttled") is True
+          and written[0].get("throttled_probes") == ["workable/zzq"]
+          and written[0].get("unpollable") is False
+          and len(contrast) == 1 and not contrast[0].get("throttled"))
+    return ok, ([{k: r.get(k) for k in ("throttled", "throttled_probes")} for r in written],
+                [{k: r.get(k) for k in ("throttled",)} for r in contrast])
+
+
+@case
 def the_retry_happens_at_most_once():
     """A persistent 429 costs exactly two requests, and a cleared one resolves."""
     with tuned(**FAST):
