@@ -252,16 +252,63 @@ def read_backlog_counts():
                                          if e.get("unpollable") and not e.get("weekly_report_surfaced"))}
 
 
+SCREENED_DAYS = 7
+
+
+def read_screened(today):
+    """Roles the daily run's JD screen cleared but did not tailor (added 2026-09-25).
+
+    Source: jobs/screened_<date>.json, written at daily_task_prompt.md Step 6 from
+    the Step 2-JD fan-out. Only the last SCREENED_DAYS of files are read; newest
+    file wins per URL, and `first` keeps the earliest date it was cleared. A URL
+    already in outcomes.csv at any stage is dropped: it was tailored, sent, or
+    closed, and the queue or quiet list owns it now. Read-only like the rest.
+    Returns (rows, days_with_a_file) so the page can tell "nothing cleared"
+    from "the step never ran".
+    """
+    known = set()
+    try:
+        with open(OUTCOMES, encoding="utf-8", newline="") as f:
+            known = {(r.get("url") or "").strip() for r in csv.DictReader(f)}
+    except Exception:
+        pass
+    by_url, days = {}, 0
+    for n in range(SCREENED_DAYS):
+        d = date.fromordinal(today.toordinal() - n)
+        path = os.path.join(JOBS_DIR, f"screened_{d.isoformat()}.json")
+        try:
+            with open(path, encoding="utf-8") as f:
+                roles = json.load(f).get("roles") or []
+        except Exception:
+            continue
+        days += 1
+        for r in roles:
+            url = (r.get("url") or "").strip()
+            if not url or url in known or not isinstance(r, dict):
+                continue
+            if url in by_url:
+                by_url[url]["first"] = d.isoformat()
+                continue
+            by_url[url] = {"company": r.get("company") or "", "title": r.get("title") or "",
+                           "url": url, "score": to_num(str(r.get("score") or "")),
+                           "loc": r.get("loc") or "", "pay": r.get("pay") or "",
+                           "scope": r.get("scope") or "", "why": r.get("why") or "",
+                           "gap": r.get("gap") or "", "last": d.isoformat(), "first": d.isoformat()}
+    return list(by_url.values()), days
+
+
 def build_data(today, now):
     with open(WATCHLIST, encoding="utf-8") as f:
         watch = json.load(f)
     queue, quiet, counts = read_outcomes(today, watch.get("_scoring_config", {}))
     counts.update(read_backlog_counts())
+    screened, counts["screened_days"] = read_screened(today)
     return {"generated": now.strftime("%Y-%m-%dT%H:%M"), "expiry_days": EXPIRY_DAYS,
             "fresh_days": 14, "expiring_days": 7, "quiet_days": 10,
             # The task runs `0 3 * * 1-5`; by 8 AM a weekday's page should exist. JS weekday numbers.
             "run_weekdays": [1, 2, 3, 4, 5], "run_ready_hour": 8,
-            "queue": queue, "quiet": quiet, "manual": read_manual(watch), "counts": counts}
+            "queue": queue, "quiet": quiet, "manual": read_manual(watch), "counts": counts,
+            "screened": screened, "screened_window": SCREENED_DAYS}
 
 
 def render(data):
@@ -283,6 +330,7 @@ def summary(data, today):
         return None if not d else data["expiry_days"] - (today - d).days
     expiring = sum(1 for i in data["queue"] if left(i) is not None and left(i) <= data["expiring_days"])
     return (f"{len(data['queue'])} queue ({expiring} expiring), "
+            f"{len(data.get('screened', []))} cleared, "
             f"{len(data['manual'])} manual, {len(data['quiet'])} quiet")
 
 
@@ -379,6 +427,10 @@ footer li{margin:3px 0}
 <div class="chips" id="qchips"></div>
 <div class="list" id="queue"></div>
 
+<h2 id="h-screened">Cleared, not tailored</h2>
+<div class="sub">The daily run read these job descriptions in full and they cleared location, pay, and the scoring bar, but there wasn't a tailored resume for them that day. Last <span id="swin"></span> days; a role leaves once it's tailored or applied.</div>
+<div class="list" id="screened"></div>
+
 <h2 id="h-manual">Manual checks</h2>
 <div class="sub">Career sites the pipeline can't read. Tick one when you've looked; ticks are yours and the pipeline never sees them.</div>
 <div class="list" id="manual"></div>
@@ -441,6 +493,7 @@ function tiles(){
   var due=D.manual.filter(function(m){return tickState(m).due}).length, old=D.quiet.filter(ZF.old[1]).length;
   var t=[['good',fresh,'ready to apply, '+D.fresh_days+' days or newer','queue','fresh'],
     [exp?'warn':'',exp,'expiring within '+D.expiring_days+' days','queue','expiring'],
+    [(D.screened||[]).length?'good':'',(D.screened||[]).length,'cleared, not tailored','screened',null],
     [due?'bad':'good',due,'manual checks due','manual',null],
     ['',old,'applied and quiet '+D.quiet_days+'+ days'+(D.counts.in_process?' ('+D.counts.in_process+' in process)':''),'quiet','old']];
   el('tiles').innerHTML=t.map(function(x,i){return '<button class="tile '+x[0]+'" data-i="'+i+'"><b class="mono">'+x[1]+'</b><span>'+esc(x[2])+'</span></button>'}).join('');
@@ -478,6 +531,17 @@ function queue(){
     var p=s.getAttribute('data-copy'),old=s.textContent;
     try{navigator.clipboard.writeText(p).then(function(){s.textContent='copied';setTimeout(function(){s.textContent=old},900)})}catch(e){window.prompt('Path',p)}}})}
 
+function screened(){
+  var rows=(D.screened||[]).slice().sort(function(a,b){return (b.score||0)-(a.score||0)});
+  el('screened').innerHTML=rows.length?rows.map(function(s){var m=[];
+    if(s.loc)m.push('<span class="tag'+(s.loc==='ATL'?' good':'')+'">'+esc(s.loc==='ATL'?'Atlanta':s.loc)+'</span>');
+    if(s.pay)m.push('<span class="tag">'+esc(s.pay)+'</span>');
+    if(s.scope)m.push('<span class="tag">'+esc(s.scope==='ic'?'IC':s.scope)+'</span>');
+    if(s.gap)m.push('<span class="tag warn" title="'+esc(s.gap)+'">gap</span>');
+    var n=since(s.first);
+    return '<div class="row"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(s.score==null?'':Math.round(s.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(s.company)+'</span><span>'+titleLink(s)+'</span></div>'+(s.why?'<div class="why">'+esc(s.why)+(s.gap?' · gap: '+esc(s.gap):'')+'</div>':'')+'<div class="meta">'+m.join('')+'</div></div><div class="right"><small>cleared '+esc(ago(n))+'<br>'+esc(nice(s.first))+'</small></div></div>'
+  }).join(''):'<div class="empty">'+(D.counts.screened_days?'Nothing cleared beyond what was tailored.':'No JD screen results yet. The daily run writes them from its next run on.')+'</div>'}
+
 function manual(){
   var groups={},order=[];
   D.manual.forEach(function(m){if(!groups[m.group]){groups[m.group]=[];order.push(m.group)}groups[m.group].push(m)});
@@ -513,7 +577,8 @@ function foot(){var c=D.counts,f=[];
 
 el('stamp').textContent='Generated '+new Date(D.generated).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
 el('exp').textContent=D.expiry_days;
-strips();tiles();queue();manual();quiet();foot();
+el('swin').textContent=D.screened_window||7;
+strips();tiles();queue();screened();manual();quiet();foot();
 })();
 </script>
 </body>

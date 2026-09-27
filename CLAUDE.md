@@ -805,6 +805,33 @@ of this kind: compare against the tracker row's URL and notes before calling any
 Two rows stayed unresolved because the employer emails never name the role; left alone at his
 call.
 
+## JD Screen Fan-out + Rate-Limit Recheck (built 2026-09-25)
+
+The daily run now reads every shortlist JD instead of only the 3-4 it picked from listing
+data (924 matches -> 49 shortlisted -> 4 tailored on 2026-09-24, most of the 49 never read).
+Spec: `daily_task_prompt.md` Step 2-JD and Step 6.7.
+
+- `pipeline/jd_prefetch.py` fetches all shortlist + ai_wildcard + plausible near-window JDs in
+  parallel into `jobs/jd_cache/<date>/` (gitignored) with one `batch_NN.json` per 8.
+- One Sonnet worker per batch follows `pipeline/jd_screen_worker.md`, writes
+  `cards_batch_NN.json` (quoted facts only, never scores), answers in one line.
+- `pipeline/jd_screen_table.py` joins cards to one PASS/CHECK/FAIL line per role on location,
+  pay midpoint, and hard red flags; the orchestrator scores PASS/CHECK with the normal rubric.
+- Tailoring cap is 5; every other role at or above the light threshold goes to the digest's
+  "Cleared, not tailored" section and `jobs/screened_<date>.json`, which
+  `build_dashboard.py` shows on the Shelf (last 7 days, dropped once in `outcomes.csv`).
+- Workable gives this machine a fixed request allowance per window (~26-45 requests), not a
+  rate, so `harvest_ats.py` probes it with only the first 4 slug spellings
+  (`WORKABLE_MAX_VARIANTS`), and Step 6.7 re-probes the 10 oldest `throttled` rejections late
+  in the run via `throttle_recheck_pick.py`. Dry run: 10 of 10 resolved, 0 throttled.
+- Cost: ~150K Sonnet tokens per worker, ~10 workers a run.
+- **Open:** never yet run inside a scheduled session. The 2026-09-28 run is the first;
+  `NEXT_RUN_NOTES.md` flags it and the one-off task `jd-screen-first-run-check` (Mon 10 AM)
+  posts the result to #fleet-manage. If the Agent tool is unavailable in scheduled runs, the
+  documented fallback reads the cached JDs for the top 8 inline.
+- Pre-existing, unrelated: `test_harvest_cheap_walk.py → reduced_form_nofit_is_held_not_returned`
+  fails on the untouched harvester too (the reduced-name collision case).
+
 ## Assisted Apply (on-demand skill)
 
 `assisted-apply` (`.claude/skills/assisted-apply/SKILL.md`, local-only) fills a job

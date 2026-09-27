@@ -47,7 +47,41 @@ def fixture(rows, watch=None, queue=None, pdfs=()):
     bd.REPO = d
     bd.TAILORED = os.path.join(d, "tailored")
     bd.APPLY_NOW = os.path.join(d, "tailored", "apply_now")
+    bd.JOBS_DIR = os.path.join(d, "jobs")
+    os.makedirs(bd.JOBS_DIR)
     return d
+
+
+def screened_file(day, roles):
+    with open(os.path.join(bd.JOBS_DIR, f"screened_{day}.json"), "w", encoding="utf-8") as f:
+        json.dump({"run_date": day, "roles": roles}, f)
+
+
+def test_screened_window_dedupe_and_known_urls():
+    fixture([row(company="Tailored", stage="surfaced", surfaced_date="2026-09-18",
+                 url="https://example.com/tailored")])
+    screened_file("2026-09-19", [
+        {"company": "Acme", "title": "Ops Lead", "url": "https://example.com/a", "score": 91},
+        {"company": "Tailored", "title": "Now in outcomes", "url": "https://example.com/tailored", "score": 99}])
+    screened_file("2026-09-16", [
+        {"company": "Acme", "title": "Ops Lead", "url": "https://example.com/a", "score": 88},
+        {"company": "Bolt", "title": "Support Mgr", "url": "https://example.com/b", "score": 80}])
+    screened_file("2026-09-01", [
+        {"company": "Old", "title": "Too old", "url": "https://example.com/old", "score": 95}])
+    data = build()
+    got = {s["url"]: s for s in data["screened"]}
+    assert set(got) == {"https://example.com/a", "https://example.com/b"}, got
+    assert got["https://example.com/a"]["score"] == 91          # newest file wins
+    assert got["https://example.com/a"]["first"] == "2026-09-16"  # earliest clear kept
+    assert data["counts"]["screened_days"] == 2
+
+
+def test_screened_absent_is_distinguishable_from_empty():
+    fixture([])
+    assert build()["counts"]["screened_days"] == 0
+    screened_file("2026-09-19", [])
+    data = build()
+    assert data["screened"] == [] and data["counts"]["screened_days"] == 1
 
 
 def build():
