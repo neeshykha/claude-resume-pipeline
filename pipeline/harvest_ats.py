@@ -2444,7 +2444,17 @@ def main():
                         f"{', '.join(a + '/' + s for a, s in res.get('empty_hits', []))}.)"
                         + _throttle_clause(res)),
              "recheck_if_resurfaced": True,
-             "unpollable": False}, name)
+             "unpollable": False,
+             # An empty board plus a probe that was refused is an UNFINISHED
+             # walk, not a finding: the company may have moved to the ATS that
+             # would not answer. Flag it so Step 6.7's throttle_recheck_pick.py
+             # re-probes it; without the flag nothing ever looks again, since
+             # the empty board is the only thing the record admits to. The
+             # case (2026-09-26): a stale, empty Pinpoint board hid a live
+             # Workable board whose probe had hit a 429.
+             **({"throttled": True,
+                 "throttled_probes": [f"{a}/{s}" for a, s in res["throttled_probes"]]}
+                if res.get("throttled_probes") else {})}, name)
     for name, _ in no_board:
         # The old wording here read "across Greenhouse/Ashby/Lever/Workable" long
         # after the probe list had grown past those four, and named a
