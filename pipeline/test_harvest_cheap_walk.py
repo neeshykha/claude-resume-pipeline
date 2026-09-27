@@ -483,16 +483,33 @@ def the_retry_never_outlives_the_budget():
 
 @case
 def a_service_that_fails_its_retry_is_not_retried_again_this_walk():
-    """Bounds a whole-walk throttle to one wait: every variant is still SENT,
-    but only the first one is retried."""
+    """Bounds a whole-walk throttle to one wait: every variant Workable is allowed
+    (the first WORKABLE_MAX_VARIANTS, 2026-09-25) is still SENT, but only the
+    first one is retried."""
     name = "Acme"
     variants = [s for s in H.slug_variants(name)]
     with tuned(**FAST):
         res, fake, _ = run(name, {}, throttle={("workable", s): "always" for s in variants},
                            budget_seconds=30)
     wk = [e for e in fake.log if e[0] == "workable"]
-    ok = res.get("throttled") is True and len(wk) == len(variants) + 1
-    return ok, (len(wk), len(variants))
+    sent = min(len(variants), H.WORKABLE_MAX_VARIANTS)
+    ok = res.get("throttled") is True and len(wk) == sent + 1
+    return ok, (len(wk), sent)
+
+
+@case
+def workable_probes_only_the_first_variants():
+    """2026-09-25: Workable sees at most WORKABLE_MAX_VARIANTS slugs per name,
+    while the other cheap ATSes still walk every variant."""
+    name = "Acme Robotics Technologies Inc"
+    variants = [s for s in H.slug_variants(name)]
+    with tuned(**FAST):
+        _, fake, _ = run(name, {}, budget_seconds=30)
+    wk = {e[1] for e in fake.log if e[0] == "workable"}
+    gh = {e[1] for e in fake.log if e[0] == "greenhouse"}
+    ok = (len(variants) > H.WORKABLE_MAX_VARIANTS
+          and wk == set(variants[:H.WORKABLE_MAX_VARIANTS]) and len(gh) > len(wk))
+    return ok, (sorted(wk), len(gh), len(variants))
 
 
 @case

@@ -90,6 +90,21 @@ UA = {"User-Agent": "Mozilla/5.0 (resume-pipeline-harvest)"}
 # resolve nothing anywhere approach it.
 PER_COMPANY_BUDGET = 60.0
 
+# WORKABLE GETS THE FIRST FEW SLUG VARIANTS ONLY (added 2026-09-25).
+# Workable's widget API gives this IP a fixed allowance per window, not a rate:
+# measured 2026-09-24 from a rested state, the first 429 arrived at request 27
+# with 0.35s spacing and at request 46 with 2.0s spacing, and everything after
+# was refused either way, so slowing down buys almost nothing. With 16-21
+# variants per name, two or three names spent the whole allowance and every
+# later name in the run came back THROTTLED (21 of 44 on 2026-09-24, 94 parked
+# across four runs). slug_variants() yields most-likely first (base, nospace,
+# hyphen, stripped), so capping Workable there lets the allowance cover ~4x the
+# names. The cost is a Workable board that only answers on a 5th-or-later
+# variant; that company is reported no-board rather than throttled, and the
+# other seven ATSes still walk every variant. A truncated probe that answers
+# beats a full one that is refused.
+WORKABLE_MAX_VARIANTS = 4
+
 
 class Budget:
     """Per-company wall-clock cap, consulted between and during probes.
@@ -1731,7 +1746,7 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
     _words = re.sub(r"[^a-z0-9 ]+", " ", _n).split()
     full_forms = {"".join(_words), "-".join(_words), re.sub(r"[^a-z0-9]+", "", _n)}
     nofit_hit = None
-    for slug in slug_variants(name):
+    for variant_i, slug in enumerate(slug_variants(name)):
         if budget is not None and budget.expired():
             # A held no-fit board is a real finding; return it rather than
             # discard it for a timeout. The pre-2026-09-10 code would have
@@ -1743,7 +1758,8 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
         # LAST because its API cannot 404 a bad slug, so it is the branch most
         # likely to answer for the wrong company, and letting a genuine
         # Greenhouse or Ashby board answer first removes that chance entirely.
-        todo = [a for a in CHEAP_ATSES if (a, slug) not in known_pairs]
+        todo = [a for a in CHEAP_ATSES if (a, slug) not in known_pairs
+                and not (a == "workable" and variant_i >= WORKABLE_MAX_VARIANTS)]
         if not todo:
             continue
         answers = probe_cheap(slug, todo, budget)

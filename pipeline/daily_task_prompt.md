@@ -18,6 +18,9 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 - Application-confirmation promotions via `mark_applied.py` (Step 0.5) — never hand-edit
   `outcomes.csv`'s `stage`/`applied_date` columns
 - Read `master_resume.md` ONCE, reuse for all tailorings
+- JD reading for the shortlist is FANNED OUT at Step 2-JD: Python fetches, parallel Sonnet
+  workers read and write compact cards, you read one table. Never pull 40+ raw JDs into
+  this context.
 - WebSearch discovery is ROTATED, not exhaustive: `websearch_rotation.py` picks the due
   sources (Step 1c). Beyond those, only recovery searches and the blind-spot rotation.
 
@@ -1085,7 +1088,8 @@ Combine ATS hits + promoted borderline titles + WebSearch finds.
 low-fidelity fragment-count `borderline_score`, so they sorted alongside noise and were
 easy to skim past). The poller's console output prints the top 5 by `pre_score` under
 "Top AI-wildcard borderline hits" — **read every entry in `borderline` with
-`ai_wildcard: true` before finalizing the top 3-4**, not just the printed top 5, and not
+`ai_wildcard: true` before finalizing the picks** (Step 2-JD reads them all; score every one
+that clears), not just the printed top 5, and not
 just the `matched` top-25. Do not defer to the higher-pre-score `matched` list by default:
 ai_wildcard entries exist specifically because their title doesn't fit any exact tier, so
 a high `pre_score` here can still mean the single best-fitting role in the whole run (see
@@ -1125,6 +1129,80 @@ are real, distinct requisitions, just at a company/title already represented in 
 the 07-31 data this reclaimed 3 slots, not the 1 originally observed: Dialpad "Revenue Operations
 Manager, Downmarket", Zip "Senior Customer Success Manager - Technical", and Klaviyo "Sr. Lead
 Engineer - Customer Agent".
+
+### 2-JD. JD screen fan-out (added 2026-09-24/25, Aneesh's "make the changes you think are best")
+
+**Every shortlist JD gets read now, not just the 3-4 already picked from listing data.** On
+2026-09-24 the run went 924 title matches -> 49 shortlisted -> 4 tailored, and most of the 49
+were never read: JD text is the most expensive thing that can enter this context, so Step 3
+only ever fetched the picks. Re-screening that same day's shortlist this way produced 35 roles
+that cleared location, pay, and red-flag gates on the JD body itself, including an Atlanta
+hybrid and several remote roles the listing-only pass never opened, plus the correct
+disqualifiers for roles that had looked fine on the listing (two turned out on-site, two paid
+under the salary floor).
+
+The split: **Python fetches, Sonnet reads, you decide.** Workers extract quoted facts and never
+score; the rubric at 2b/2c stays yours.
+
+1. **Prefetch** (one command, nothing chained):
+
+   ```bash
+   .venv/bin/python pipeline/jd_prefetch.py
+   ```
+
+   Fetches every `matched` entry, every `ai_wildcard` borderline entry (2a-pre still applies:
+   they are all in here), and the `near_window` entries whose listing location could be
+   Atlanta or remote US, through `fetch_jd.fetch()` in parallel. Writes each JD to
+   `pipeline/jobs/jd_cache/<date>/NN_*.txt`, one `batch_NN.json` per 8 JDs (highest pre_score
+   first), and `manifest.json`. Skips URLs already `applied`/`rejected`/`closed` in
+   `outcomes.csv`. Copy its first line into `run_[date].json → jd_screen.prefetch`.
+
+2. **Dispatch one worker per batch, ALL IN ONE MESSAGE** so they run concurrently: the Agent
+   tool, `subagent_type: "general-purpose"`, `model: "sonnet"`, and exactly this prompt with
+   NN and the date filled in (absolute paths):
+
+   > You are a JD screen worker. Read /Users/aneesh/Documents/resume_project/pipeline/jd_screen_worker.md and follow it exactly. Batch file: /Users/aneesh/Documents/resume_project/pipeline/jobs/jd_cache/<date>/batch_NN.json. Resume: /Users/aneesh/Documents/resume_project/master_resume.md. Output path: /Users/aneesh/Documents/resume_project/pipeline/jobs/jd_cache/<date>/cards_batch_NN.json
+
+   Each worker writes its cards to that file and answers with one line. Do not ask a worker to
+   return the cards inline: 80 full cards is ~120K tokens, which is the problem this step
+   exists to remove. Measured 2026-09-25: 10 batches of 8, ~1.5-2 min wall clock, ~150K
+   Sonnet tokens per worker (mostly the brief, the resume, and eight JDs).
+
+3. **Read the table** (one command):
+
+   ```bash
+   .venv/bin/python pipeline/jd_screen_table.py
+   ```
+
+   One line per role: `PASS` / `CHECK` / `FAIL`, pre_score, location class, pay range, IC vs
+   manages, the worker's advisory overlap, and the years-of-experience bar quoted from the JD.
+   `FAIL` carries the gate that failed. If it prints `RE-DISPATCH`, send those batches ONCE
+   more (same prompt), then re-run the table. Anything still uncarded, plus the `MISSING` rows
+   (Rippling/Pinpoint have no fetcher; some fetches fail), is handled the old way: judge from
+   the listing, and fetch the JD at Step 3 only if it would make the picks. To read one role's
+   full card: `.venv/bin/python pipeline/jd_screen_table.py --show "<company>"`.
+
+4. **What the gates mean, so you do not re-derive them.** Location passes on `atlanta_ok: yes`
+   or `work_mode: remote_us`, read from the JD body (not the listing string). Salary compares
+   the MIDPOINT to `salary_floor_usd`; between `near_miss_salary_floor_usd` and the floor the
+   role FAILs as a salary near-miss, which still belongs on the digest's near-miss list. An IC
+   role under the IC non-interest floor shows as `CHECK`: you make the interest-category call
+   (Step 2b). Crypto, clearance, VP-and-above, non-US-only, staffing-agency, and closed
+   postings FAIL on the worker's flag. The table only applies facts; it never scores.
+
+5. **Then run 2b and 2c on the PASS and CHECK rows** with the cards as your JD evidence. The
+   worker's `resume_overlap.estimate_0_30` is advisory: set keyword overlap yourself (open the
+   card for any role within ~10 points of a tier threshold). `years_required_verbatim` is what
+   the HARD-REQUIREMENT TIER CAP needs, already quoted.
+
+**Fallback when the Agent tool is unavailable or every worker fails:** read the cached JD
+files for the top 8 rows by pre_score directly (they are already on disk; do NOT refetch),
+score those, note `jd_screen.fallback: true` with the reason, and continue. That is the
+pre-2026-09-24 behaviour with the fetches already done, so a failed fan-out can cost coverage
+but never the run.
+
+Record in `run_[date].json → jd_screen`: `prefetch` line, `workers_dispatched`,
+`redispatched`, `cards`, `pass`, `check`, `fail`, `missing`, `fallback`.
 
 ### 2b. Hard filters
 
@@ -1320,11 +1398,21 @@ capped role from a missed one — which is the state the tracker was in before 2
 **Diversity cap:** surface ≤2 roles per company per run; fully tailor only the single
 best-scoring one — additional same-company roles are "also live (FYI)" digest lines.
 
-**Pick the top 3-4 jobs.** Tailoring tiers come from `_scoring_config`:
+**Pick up to 5 jobs to tailor** (was 3-4 until 2026-09-25; the Step 2-JD fan-out took JD
+reading out of this context, which is what the lower number was protecting). Tailoring tiers
+come from `_scoring_config`:
 ≥`company_cap_threshold` priority/full · ≥`full_tailoring_threshold` full ·
 ≥`light_tailoring_threshold` light (summary rewrite + skills reorder only, no cover
 letter) · below that, skip. If fewer than 3 clear the light threshold, send what you
-have — never pad.
+have — never pad. The cap is on tailoring, not on surfacing: see the next paragraph.
+
+**Cleared, not tailored (added 2026-09-25).** Every Step 2-JD role that you scored at or
+above `light_tailoring_threshold` but did not tailor (it ranked below the 5, or lost a
+same-company tiebreak) goes on the digest's "Cleared, not tailored" list with its score, one
+line on why it cleared, and its apply link, and into `jobs/screened_[date].json` at Step 6
+so the Shelf dashboard shows it. These are real, JD-checked candidates: the whole point of
+reading 70+ JDs is that Aneesh sees every one that clears, not just the ones there was time
+to tailor. If he asks for one to be tailored, it is a normal interactive tailoring.
 
 **Capture near-misses (do NOT tailor):** (A) score near-miss — passed every hard filter
 but scored below `light_tailoring_threshold` (no lower bound); (B) salary near-miss —
@@ -1343,6 +1431,12 @@ with the identical conclusion in every digest from 07-15 through 07-19.)
 **Read `master_resume.md` NOW** — once, reused for all tailorings below.
 
 ## Step 3: Fetch full JDs
+
+**For every role that went through Step 2-JD, the full JD is already on disk** at the
+`file` path in its card (`jd_cache/<date>/NN_*.txt`). Read that file for each pick before
+tailoring; do not refetch it. The card is a screen, not a substitute: tailoring needs the
+whole text. Everything below applies to roles WITHOUT a cached file (the `MISSING` rows,
+WebSearch finds, promoted near-window roles the prefetch location gate skipped).
 
 **Use `fetch_jd.py` FIRST, not WebFetch (changed 2026-08-21).**
 
@@ -1867,6 +1961,13 @@ re-examines it.
   the same line. This is a statement of fact, not a warning: the point of the rule is that IC
   scope is his call to make, and he can only make it if the digest tells him.
 - Per-job tailoring diff below the table
+- **"Cleared, not tailored" section (added 2026-09-25), directly under the tailoring diffs.**
+  Every role from Step 2c's cleared-not-tailored list, highest score first, one line each:
+  `[score] Company: Title | remote/ATL | pay | IC or manages | why it cleared | gap | apply
+  link`. This is the section that answers "the pipeline feels limited": these roles were
+  read in full and cleared every gate; they simply were not tailored today. Omit only when
+  the list is empty, and then say "none cleared beyond the picks" in housekeeping so an
+  empty day is distinguishable from a skipped step.
 - **"Below the cutoff (ranks 41+)" section (added 2026-09-01):** the poller's `near_window`
   list as one-liners — `[pre_score] Company: Title | location | link`. Collapse obvious
   sibling duplicates to one line ("also NYC, SLC"). This section is FYI parity with the
@@ -1903,6 +2004,9 @@ re-examines it.
   bulleted, source-by-source account of what ran and what it found, so a miss like that is
   visible immediately rather than discovered by chance:
   - ATS poll: companies polled, jobs scanned, matches, shortlist size
+  - JD screen (Step 2-JD): JDs fetched, carded, PASS/CHECK/FAIL, missing, re-dispatches,
+    and whether the fallback ran
+  - Rate-limit recheck (Step 6.7): backlog size, names re-probed, and what they resolved to
   - WebSearch discovery: which sources the Step 1c rotation selected and ran, **which ones it
     deferred to the next run**, and a compressed list of what surfaced (mostly-known vs.
     genuinely new). Carry `websearch_rotation.py`'s staleness alarm here verbatim when it
@@ -1928,7 +2032,19 @@ re-examines it.
      "title": "...", "url": "...", "score": 0, "jd_coverage_pct": 0, "notes": "",
      "unmet_hard_reqs": 0, "vendor_tool_named_in_jd": "", "ic_scope": ""}]}
    ```
-   (surfaced top 3-4 only, not near-misses)
+   (tailored picks only, not near-misses or the cleared-not-tailored list)
+
+   **Also write `pipeline/jobs/screened_[date].json` (added 2026-09-25)** with the Write
+   tool, for the Shelf dashboard's "Cleared, not tailored" section:
+   ```json
+   {"run_date": "YYYY-MM-DD", "roles": [{"company": "...", "title": "...", "url": "...",
+     "score": 0, "loc": "remote|ATL", "pay": "$130K-$195K|no pay", "scope": "ic|manages|unclear",
+     "why": "one line: what cleared it", "gap": "one line: the main gap, or empty"}]}
+   ```
+   Only roles scored at or above `light_tailoring_threshold` and not tailored this run. Write
+   the file with an empty `roles` list when there are none, so the dashboard can tell "none
+   cleared" from "the step did not run". These rows do NOT go into `outcomes.csv`: stage
+   `surfaced` means tailored, and a screened role has no resume behind it.
 
    **`unmet_hard_reqs`, `vendor_tool_named_in_jd`, `hard_req_cap_trigger`, and `ic_scope`
    are all required.** You already identify each during tailoring; these fields just stop them
@@ -2052,6 +2168,39 @@ and keeps a dated copy in `pipeline/jobs/`. Copy its single output line into the
 that line starts with `dashboard: FAILED`, note it in SESSION_STATE and continue; do not retry,
 do not debug it inside the run, and do not mention it in the digest. Never hand-edit the HTML,
 and never write a replacement dashboard inline. Spec: `pipeline/DASHBOARD_SPEC.md`.
+
+## Step 6.7: Rate-limit recheck (added 2026-09-25)
+
+Runs here, late, on purpose. Workable's widget API gives this machine a fixed allowance per
+window rather than a rate: measured 2026-09-24, about 26 requests at 0.35s spacing and about
+45 at 2.0s, then HTTP 429 for everything, so slowing down does not help. The Step 1d harvest
+spends that allowance early in the run and every later name comes back throttled (21 of 44 on
+2026-09-24). Those companies are parked as `throttled` rejections, and nothing re-checked them
+unless they happened to resurface in a LinkedIn alert: 94 had piled up by 2026-09-25. By this
+point in the run the window has reset, and `harvest_ats.py` now probes Workable with only the 4
+likeliest slug spellings per name (`WORKABLE_MAX_VARIANTS`), which is what makes a batch of 10
+fit: the 2026-09-25 dry run resolved 10 of 10 parked names with zero throttling, where the same
+walk that morning had 3 of 5 refused.
+
+Two commands, nothing chained onto either:
+
+```bash
+.venv/bin/python pipeline/throttle_recheck_pick.py
+```
+
+It prints the backlog size and the path of a names file (the 10 oldest parked names). Then:
+
+```bash
+.venv/bin/python pipeline/harvest_ats.py --names-file pipeline/jobs/throttle_recheck_[date].json --apply
+```
+
+`harvest_ats.py` supersedes each old record with whatever it finds now: an enrollment, a real
+rejection, or a fresh throttled record dated today (which sends that name to the back of the
+queue). Run `validate_config.py` afterwards, as after any harvest. Record
+`run_[date].json → throttle_recheck`: backlog before, picked, enrolled, no_board, empty,
+still throttled. Enrollments made here are polled from tomorrow's run; nothing is perishable,
+because these steps find companies, not reqs. If the backlog is 0, skip the harvest command
+and record that.
 
 ## Step 6.5: Weekly channel-effectiveness rollup (gated, separate Gmail draft)
 
