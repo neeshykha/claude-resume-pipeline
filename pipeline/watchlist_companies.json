@@ -6904,6 +6904,101 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "needs_vertical_classification": true,
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (27 jobs) with 2 fit-titles at harvest time (2 tier2c), e.g. 'Senior Manager, Revenue Operations' [New York, NY (Hybrid)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Rippling",
+      "ats": "rippling",
+      "slug": "rippling",
+      "priority": "low",
+      "enrolled_date": "2026-09-28",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (319 jobs) with 19 fit-titles at harvest time (1 tier1, 15 tier2, 3 tier3(location-gated)), e.g. 'Customer Success Manager' [Remote (United States)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Wabtec",
+      "ats": "smartrecruiters",
+      "slug": "wabtec",
+      "priority": "low",
+      "enrolled_date": "2026-09-28",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (500 jobs) with 2 fit-titles at harvest time (1 tier1, 1 tier2c), e.g. 'Lead Systems Engineer - Thermal Management' [Erie, PA, United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Canva",
+      "ats": "smartrecruiters",
+      "slug": "canva",
+      "priority": "low",
+      "enrolled_date": "2026-09-28",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (170 jobs) with 1 fit-titles at harvest time (1 tier2c), e.g. 'Senior Manager, Sales Compensation Systems & Analytics' [San Francisco, , United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Checkout.com",
+      "ats": "ashby",
+      "slug": "checkout.com",
+      "priority": "low",
+      "enrolled_date": "2026-09-28",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (179 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Enterprise Account Manager, Payments' [Atlanta]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "NextGen Healthcare",
+      "ats": "workday",
+      "slug": "nextgen",
+      "priority": "low",
+      "enrolled_date": "2026-09-28",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (40 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Sr. Technical Account Manager (TAM) - Greater St. Louis Area' [Remote MO]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "wd_host": "nextgen.wd5.myworkdayjobs.com",
+      "wd_tenant": "nextgen",
+      "wd_site": "nextgen_careers"
+    },
+    {
+      "name": "SGS",
+      "ats": "smartrecruiters",
+      "slug": "sgs",
+      "priority": "low",
+      "enrolled_date": "2026-09-28",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (500 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Customer Success & Solutions Manager' [Remote Fairfield, NJ, United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "ICE",
+      "ats": "icims",
+      "slug": "ice",
+      "priority": "low",
+      "enrolled_date": "2026-09-28",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (216 jobs) with 10 fit-titles at harvest time (1 tier1, 5 tier2, 3 tier2c, 1 tier3(location-gated)), e.g. 'Senior Implementation Consultant - Automated Underwriting/Cl' [US-FL-Jacksonville]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Peraton",
+      "ats": "icims",
+      "slug": "peraton",
+      "priority": "low",
+      "enrolled_date": "2026-09-28",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (500 jobs) with 17 fit-titles at harvest time (1 tier1, 13 tier2, 3 tier2c), e.g. 'Major Incident Management (MIM)' [US-TX-San Antonio]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Parallels",
+      "ats": "adp",
+      "slug": "8a680274-0b2e-46cf-b2cc-49bd2ef0c20f",
+      "priority": "low",
+      "enrolled_date": "2026-09-28",
+      "enrolled_via": "Hand enrollment 2026-09-28 (horizon-7b part 3); WorkforceNow cid validated with harvest_ats.probe_adp (7 postings).",
+      "needs_vertical_classification": true,
+      "reason": "ADP WorkforceNow board, cid-addressed (see _adp_notes). 7 postings on 2026-09-28. The one fit title, Technical Account Manager, is posted as 'Remote, CA' and in Mauritius; the same board lists 'Remote, CA' and 'Remote, US' separately for another role, so CA reads as Canada and nothing fit is US-reachable today. Enrolled anyway because the daily poll costs one request and catches a future US posting.",
+      "score_bonus": 0,
+      "bonus_reason": "Unclassified (+0) pending needs_vertical_classification."
     }
   ]
 }
