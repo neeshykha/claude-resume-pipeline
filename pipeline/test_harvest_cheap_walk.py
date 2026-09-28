@@ -84,7 +84,17 @@ def _payload(ats, jobs):
     if ats == "lever":
         return [{"text": t, "categories": {"location": l}} for t, l in jobs]
     if ats == "workable":
-        return {"jobs": [{"title": t, "location": l} for t, l in jobs]}
+        # Real Workable shape: no `location` string; the probe reads city/state/
+        # country/telecommuting through poll_ats.parse_location (2026-09-17).
+        # A `location` key here parsed to "" and silently failed us_reachable.
+        out = []
+        for t, l in jobs:
+            remote = l.lower().startswith("remote")
+            country = l.split("-", 1)[1].strip() if remote and "-" in l else l
+            country = "United States" if country in ("USA", "US") else country
+            out.append({"title": t, "city": "", "state": "", "country": country,
+                        "telecommuting": remote})
+        return {"jobs": out}
     if ats == "pinpoint":
         return {"data": [{"title": t, "location": {"name": l}} for t, l in jobs]}
     if ats == "smartrecruiters":
@@ -214,11 +224,18 @@ def full_form_nofit_still_wins_immediately():
 
 @case
 def reduced_form_nofit_is_held_not_returned():
-    """The 2026-09-10 name-collision guard: `bark` must not beat the real board."""
+    """The 2026-09-10 name-collision guard: `bark` must not beat the real board.
+
+    The real board sits on Lever, not Workable: `bark-technologies-inc` is the
+    9th slug variant, and Workable stops at WORKABLE_MAX_VARIANTS (2026-09-25),
+    so a Workable board there is unreachable by design and would test the cap
+    rather than the guard. (The incident's board was Rippling, which this fake
+    does not serve.)
+    """
     res, _, _ = run("Bark Technologies",
                     {("greenhouse", "bark"): [(NOFIT, "Remote - USA")],
-                     ("workable", "bark-technologies-inc"): [(FIT, "Remote - USA")]})
-    ok = (res["ats"], res["slug"]) == ("workable", "bark-technologies-inc")
+                     ("lever", "bark-technologies-inc"): [(FIT, "Remote - USA")]})
+    ok = (res["ats"], res["slug"]) == ("lever", "bark-technologies-inc")
     return ok and res.get("passed_over") == "greenhouse/bark", res
 
 
