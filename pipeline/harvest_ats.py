@@ -63,6 +63,9 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
+import ats_icims  # noqa: E402  (leaf module: parser + URL builder shared with poll_ats.py)
+import ats_gem  # noqa: E402  (leaf module, same reasoning as countries.py)
+import ats_successfactors  # noqa: E402  (shared parser; see its module docstring)
 
 WATCHLIST = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 QUEUE = os.path.join(SCRIPT_DIR, "enrollment_candidates.json")
@@ -614,6 +617,21 @@ def _get(url, budget=None):
     return THROTTLED if _is_throttled(r) else None
 
 
+def _post(url, payload, budget=None):
+    """200 -> the response; throttled (after one retry) -> THROTTLED; else None.
+
+    Same contract as _get, for the one probe (Gem) whose API is POST-only.
+    """
+    if budget is not None and budget.expired():
+        return None
+    r = _send("post", url, budget, json=payload)
+    if r is None:
+        return None
+    if r.status_code == 200:
+        return r
+    return THROTTLED if _is_throttled(r) else None
+
+
 def _raw_get(url, budget=None):
     """GET returning the response on ANY HTTP status; None only on network failure.
 
@@ -713,6 +731,21 @@ def rippling_board_api_endpoint():
     return _RIPPLING_API_ENDPOINT
 
 
+# iCIMS URL template, read from the same `_endpoints` block fetch_icims reads
+# (see poll_ats.py), same one-source-of-truth reasoning as the two readers
+# above. ats_icims.ICIMS_HOST_TMPL is only the fallback for direct/test callers.
+_ICIMS_ENDPOINT = None
+
+
+def icims_endpoint():
+    """`_endpoints["icims"]` from the watchlist, read once."""
+    global _ICIMS_ENDPOINT
+    if _ICIMS_ENDPOINT is None:
+        with open(WATCHLIST, encoding="utf-8") as f:
+            _ICIMS_ENDPOINT = json.load(f)["_endpoints"]["icims"]
+    return _ICIMS_ENDPOINT
+
+
 def _rippling_board_api(slug, budget=None):
     """[(title, location)] from Rippling's board API, or None on any failure.
 
@@ -758,7 +791,15 @@ def _rippling_board_api(slug, budget=None):
 # dotted slug is legitimate on both. probe() answers None for these pairs
 # without sending anything: "no board can exist at this address" is exactly
 # what None means.
-NO_DOTTED_SLUG_ATSES = frozenset(("jazzhr", "pinpoint", "smartrecruiters"))
+#
+# "icims" added 2026-09-18 BY ANALOGY, not by measurement -- no dotted-slug
+# timing study has been run against it the way the 2026-09-17 study covered
+# the other three. iCIMS addresses a board the same way JazzHR/Pinpoint do
+# (tenant folded into a hostname label, `careers-{tenant}.icims.com`), so a
+# dotted tenant would push the dot into a new DNS label the same way it does
+# for those two, which is the shape that breaks a wildcard cert. Revisit if a
+# real iCIMS tenant is ever found with a literal dot in its name.
+NO_DOTTED_SLUG_ATSES = frozenset(("jazzhr", "pinpoint", "smartrecruiters", "icims"))
 
 
 def probe(ats: str, slug: str, budget=None):
@@ -907,6 +948,82 @@ def probe(ats: str, slug: str, budget=None):
             names = [l.get("name") for l in locs if l.get("name")]
             out.append((j.get("name", ""), ", ".join(names)))
         return out
+    if ats == "icims":
+        # Added 2026-09-18. Unlike SmartRecruiters, JazzHR, and Comeet, iCIMS
+        # DOES 404 a bad tenant cleanly (verified live against six bogus
+        # tenants -- see ats_icims.py's module docstring), so this branch can
+        # sit anywhere in CHEAP_ATSES on collision-risk grounds; it is placed
+        # right before smartrecruiters purely on cost (one classic-HTML GET,
+        # same class as jazzhr/pinpoint above it).
+        #
+        # PAGINATES, same reasoning as the SmartRecruiters branch below: the
+        # only board big enough to prove this live (Peraton, 1526 reqs / 31
+        # pages) would have its later-page fit-titles invisible to a
+        # first-page-only probe, same failure class as Canva's SmartRecruiters
+        # miss. Shares parse_icims_page/icims_page_count with fetch_icims in
+        # poll_ats.py so discovery and the daily fetch read the same markup.
+        base_template = icims_endpoint()
+        jobs = []
+        page = 0
+        total_pages = None
+        while len(jobs) < ats_icims.ICIMS_MAX_POSTINGS:
+            r = _get(ats_icims.icims_search_url(slug, page, base_template), budget)
+            if r is THROTTLED:
+                # Page one throttled: nothing known about this tenant. A later
+                # page throttled: a truncated read of a board already proven
+                # real, kept exactly like any other short read below.
+                if not jobs:
+                    return THROTTLED
+                break
+            if not r:
+                # _get folds a 404 and a network failure into the same None.
+                # Page one is the no-board decision either way; a later page
+                # doing this just ends the walk with what was already read.
+                if not jobs:
+                    return None
+                break
+            if page == 0 and not jobs and ats_icims.looks_like_redirect_skin(r.text):
+                # A real tenant (confirmed live: GitHub) that serves a
+                # custom-skinned front end this parser cannot read. Not proof
+                # of "no board" (the 200 says the tenant exists) and not a
+                # genuine empty board either, so this must not fall through to
+                # the ordinary empty-board path (which would get "confirmed"
+                # by _confirm_empty and recorded as a real empty board). None
+                # is the honest answer this probe can give: "could not be
+                # read", which is what a no_board rejection already says.
+                return None
+            page_jobs = ats_icims.parse_icims_page(r.text)
+            if page == 0:
+                total_pages = ats_icims.icims_page_count(r.text)
+            if not page_jobs:
+                break
+            jobs.extend(page_jobs)
+            page += 1
+            if total_pages is not None and page >= total_pages:
+                break
+            if len(page_jobs) < ats_icims.ICIMS_PAGE_SIZE:
+                break
+        return [(j["title"], j["location"]) for j in jobs[:ats_icims.ICIMS_MAX_POSTINGS]]
+    if ats == "gem":
+        # See ats_gem.py's module docstring for the full account. Short version:
+        # jobs.gem.com is ONE fixed POST GraphQL endpoint for every company, slug
+        # passed as a variable, never as part of the URL, so unlike every other
+        # branch here this can't be a plain _get. It CAN cleanly 404-equivalent a
+        # bad slug, though (jobBoardExternal is null, verified live and with a
+        # dotted bogus slug), so it earns a slot in the normal cheap walk rather
+        # than being held back to last like SmartRecruiters.
+        r = _post(ats_gem.GRAPHQL_URL, ats_gem.build_list_payload(slug), budget)
+        if r is THROTTLED:
+            return THROTTLED
+        if not r:
+            return None
+        try:
+            board_exists, postings = ats_gem.parse_board_response(r.json())
+        except (ValueError, KeyError, IndexError, TypeError):
+            return None
+        if not board_exists:
+            return None
+        return [(j.get("title", ""), ats_gem.location_string(j)) for j in postings]
     if ats == "smartrecruiters":
         # Added 2026-09-03, the SmartRecruiters half of the same gap probe_comeet
         # closed the same day: poll_ats.py has read this ATS since 2026-06-30
@@ -995,9 +1112,12 @@ def probe(ats: str, slug: str, budget=None):
 
 # The slug-addressed ATSes, in the order assess() EVALUATES a slug's results.
 # SmartRecruiters stays last for the collision reason given in assess(); the
-# order is load-bearing there and nowhere else.
+# order is load-bearing there and nowhere else. iCIMS and Gem sit before it
+# (not after) because both CAN reject a bad slug (iCIMS 404s a bogus tenant;
+# Gem answers jobBoardExternal null -- see their probe() branches and
+# ats_icims.py / ats_gem.py), so neither carries SmartRecruiters' collision risk.
 CHEAP_ATSES = ("greenhouse", "ashby", "lever", "workable", "pinpoint",
-               "rippling", "jazzhr", "smartrecruiters")
+               "rippling", "jazzhr", "icims", "gem", "smartrecruiters")
 
 
 def probe_cheap(slug, atses, budget=None):
@@ -1513,6 +1633,48 @@ def comeet_slug(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
 
 
+def probe_successfactors(host: str, budget=None):
+    """[(title, location)] if an SF RMK board resolves at `host`, None if not
+    (dead host, non-RMK site, or a /sitemap.xml that doesn't parse), THROTTLED
+    if a rate limit anywhere left the answer unknown.
+
+    HAND-ENROLLED ONLY, like Paylocity (contract section 2, model 3): a
+    SuccessFactors board lives on a per-company HOST with no slug a name can be
+    turned into, so this validates a KNOWN host rather than searching for one --
+    it is NOT wired into assess()'s name-variant walk, and no amount of budget
+    would make a name resolve to a host this way. Use it (a) before hand-
+    enrolling a candidate host found on a company's careers page, and (b) to
+    re-check an already-enrolled one. `slug` is still required on the watchlist
+    entry as the human-readable dedup prefix (comeet_slug()-style: the company
+    name, lowercased and hyphenated), same convention as Comeet/Paylocity.
+
+    Shares ats_successfactors.resolve_board with fetch_successfactors so
+    discovery and the daily poll read the exact same feed the exact same way
+    (contract's "scrapers share one parser" rule) -- the only thing this
+    function adds is translating harvest's own budgeted `_raw_get`/THROTTLED
+    into the callable + sentinel that module expects, so ats_successfactors.py
+    never has to import anything from this file.
+    """
+    def _get_fn(url):
+        r = _raw_get(url, budget)
+        if r is None:
+            return None
+        if _is_throttled(r):
+            return ats_successfactors.THROTTLED
+        return r
+
+    try:
+        status, postings, _total = ats_successfactors.resolve_board(
+            host, _get_fn, budget=budget)
+    except Exception:
+        return None
+    if status == "throttled":
+        return THROTTLED
+    if status != "ok":
+        return None
+    return [(p.get("title", ""), p.get("location", "Unknown")) for p in postings]
+
+
 def _names_non_us(loc: str) -> bool:
     """True if a lowercased location string carries a non-US country, region,
     or city marker. Shared by us_reachable() and tier3_location_ok()."""
@@ -1676,6 +1838,108 @@ def _throttle_clause(res) -> str:
     return (f" {len(pairs)} probe(s) were rate-limited (HTTP 429) and never "
             f"answered ({_throttle_summary(pairs)}), so a board at one of those "
             f"addresses was not ruled out.")
+
+
+def probe_adp(cid: str, budget=None, get=None):
+    """Validate a KNOWN ADP WorkforceNow cid: None, [], or [(title, loc), ...].
+
+    ADP is hand-enrolled like Paylocity: a cid is a GUID with no relationship
+    to a company name (see ats_adp.py's module docstring), so this function
+    can VALIDATE a cid someone already found -- a careers-page link, a
+    posting URL, a job-alert email -- but can never DISCOVER one by name. It
+    is deliberately NOT wired into CHEAP_ATSES / probe_cheap's automatic
+    name-variant walk, the same way no probe_paylocity exists at all; call it
+    directly (e.g. via --names once a cid is known) instead. The `no_board`
+    reason text below says so explicitly, mirroring the existing Paylocity
+    caveat.
+
+    Paginates exactly like poll_ats.fetch_adp (same ADP_PAGE_SIZE /
+    ADP_MAX_POSTINGS / de-dup-by-itemID logic, kept in ats_adp.py so both
+    copies can't drift), through this module's own `_get`/`_pace`/Budget/
+    THROTTLED machinery -- a first-page failure (404 for an unknown cid,
+    confirmed live) or malformed body means no board; a LATER page failing is
+    a truncated read of a real board and keeps what was already collected,
+    same rule as the SmartRecruiters and Workday probes.
+
+    `get` is an injectable `(url, timeout) -> response-like object with
+    .status_code and .json()` callable. Two uses: pipeline/test_adp.py's
+    synthetic "real board, zero postings" / "malformed JSON body" fixtures
+    (no live ADP board with either was found among the five backlog
+    companies), and pipeline/test_adp_budget.py's simulated-hang proof, which
+    points it at a local socket that never answers to prove the BUDGET is
+    honored even when this path is taken. `budget`, when given, still gates
+    it exactly like the default `_get` path: `budget.expired()` is checked
+    before every page and `budget.timeout()` (floored at 1s) is passed as
+    `timeout` instead of the fixed constant, so an injected `get` that
+    actually respects its `timeout` argument (a real socket/requests client
+    does) cannot overrun the per-company cap. Leave `get` as None for every
+    production call; that path goes through `_get`/`_pace` and additionally
+    honors THROTTLED.
+    """
+    import ats_adp
+
+    def _fetch_page(skip):
+        url = ats_adp.requisitions_url(cid, skip=skip, top=ats_adp.ADP_PAGE_SIZE)
+        if get is not None:
+            if budget is not None and budget.expired():
+                return "NO_BOARD"
+            timeout = TIMEOUT if budget is None else budget.timeout()
+            r = get(url, timeout)
+            if r is None or getattr(r, "status_code", None) != 200:
+                return "NO_BOARD"
+            try:
+                return r.json()
+            except ValueError:
+                return "NO_BOARD"
+        r = _get(url, budget)
+        if r is THROTTLED:
+            return "THROTTLED"
+        if r is None:
+            return "NO_BOARD"
+        try:
+            return r.json()
+        except ValueError:
+            return "NO_BOARD"
+
+    def _as_result(postings):
+        out = []
+        for req in postings:
+            if ats_adp.is_internal(req):
+                continue
+            norm = ats_adp.normalize(req, cid)
+            out.append((norm["title"], norm["_adp_location"]))
+        return out
+
+    postings: list[dict] = []
+    seen_ids: set = set()
+    total = None
+    skip = 0
+    while skip < ats_adp.ADP_MAX_POSTINGS:
+        data = _fetch_page(skip)
+        if data == "THROTTLED":
+            return THROTTLED if not postings else _as_result(postings)
+        if data == "NO_BOARD":
+            return None if not postings else _as_result(postings)
+        page, page_total = ats_adp.extract_page(data)
+        if page_total is not None:
+            total = page_total
+        if not page:
+            break
+        new_count = 0
+        for req in page:
+            iid = req.get("itemID")
+            if iid is not None and iid in seen_ids:
+                continue
+            if iid is not None:
+                seen_ids.add(iid)
+            postings.append(req)
+            new_count += 1
+        skip += len(page)
+        if total is not None and len(seen_ids) >= total:
+            break
+        if new_count == 0:
+            break
+    return _as_result(postings)
 
 
 def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
@@ -2471,13 +2735,17 @@ def main():
         entry = {"name": name, "ats": None, "slug": None, "rejected_date": today,
                   "reason": ("No board resolved: no deterministic name-variant slug matched "
                              "Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/"
-                             f"JazzHR/SmartRecruiters; {workday_clause}; {comeet_clause}. "
+                             f"JazzHR/iCIMS/Gem/SmartRecruiters; {workday_clause}; {comeet_clause}. "
                              "May still be pollable under a "
                              "non-obvious slug, on a careers page this script could not "
                              "guess the domain of, or on an ATS with no adapter yet "
-                             "(Paylocity boards are GUID-addressed and can never be "
-                             "auto-resolved). Worth one manual look at the company's own "
-                             "careers page if the company matters."),
+                             "(Paylocity and ADP WorkforceNow boards are GUID-addressed "
+                             "and SuccessFactors boards are per-company-host RMK sites; "
+                             "none can ever be auto-resolved by name. probe_adp and "
+                             "probe_successfactors can validate a cid or host found by "
+                             "hand, e.g. from a careers-page link or job-alert email, but "
+                             "cannot discover one). Worth one manual look at the "
+                             "company's own careers page if the company matters."),
                   "recheck_if_resurfaced": True,
                   "unpollable": True}
         pending_entry = pending_by_name.get(name.lower(), {})
