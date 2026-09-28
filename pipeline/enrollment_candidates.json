@@ -3111,6 +3111,62 @@
       "via": "harvest_ats.py",
       "source": "LinkedIn alert",
       "first_seen": "2026-09-28"
+    },
+    {
+      "name": "Rippling",
+      "ats": "rippling",
+      "slug": "rippling",
+      "enrolled_date": "2026-09-28",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Wabtec",
+      "ats": "smartrecruiters",
+      "slug": "wabtec",
+      "enrolled_date": "2026-09-28",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Canva",
+      "ats": "smartrecruiters",
+      "slug": "canva",
+      "enrolled_date": "2026-09-28",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Checkout.com",
+      "ats": "ashby",
+      "slug": "checkout.com",
+      "enrolled_date": "2026-09-28",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "NextGen Healthcare",
+      "ats": "workday",
+      "slug": "nextgen",
+      "enrolled_date": "2026-09-28",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "SGS",
+      "ats": "smartrecruiters",
+      "slug": "sgs",
+      "enrolled_date": "2026-09-28",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "ICE",
+      "ats": "icims",
+      "slug": "ice",
+      "enrolled_date": "2026-09-28",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Peraton",
+      "ats": "icims",
+      "slug": "peraton",
+      "enrolled_date": "2026-09-28",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -3249,11 +3305,12 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-28",
-      "reason": "Large industrial/rail transportation conglomerate (20K+ employees), surfaced via BuiltIn Atlanta dork. The fit-space role found (Customer Success & Technical Account Manager) is based in Australia, not US. No pollable Greenhouse/Ashby/Lever board identified; not worth further resolution effort for a non-US role at a company well outside target profile.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
+      "reason": "SUPERSEDED 2026-09-28: re-probed and ENROLLED on the watchlist (smartrecruiters/wabtec, 500 jobs, 2 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: Large industrial/rail transportation conglomerate (20K+ employees), surfaced via BuiltIn Atlanta dork. The fit-space role found (Customer Success & Technical Account Manager) is based in Australia, not US. No pollable Greenhouse/Ashby/Lever board identified; not worth further resolution effort for a non-US role at a company well outside target profile.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-24"
+      "weekly_report_surfaced_date": "2026-08-24",
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "Apollo.io",
@@ -4143,9 +4200,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-12",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
+      "reason": "SUPERSEDED 2026-09-28: re-probed and ENROLLED on the watchlist (rippling/rippling, 319 jobs, 19 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "Deel",
@@ -4197,11 +4255,12 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
+      "reason": "SUPERSEDED 2026-09-28: re-probed and ENROLLED on the watchlist (smartrecruiters/canva, 170 jobs, 1 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-24"
+      "weekly_report_surfaced_date": "2026-08-24",
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "Knock",
@@ -4442,11 +4501,12 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-04",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
+      "reason": "SUPERSEDED 2026-09-28: already ENROLLED on the watchlist (ashby) by a later run; this rejection predates that. This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-08-31"
+      "weekly_report_surfaced_date": "2026-08-31",
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "Honeycomb.io",
@@ -5165,9 +5225,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-15",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
+      "reason": "SUPERSEDED 2026-09-28: re-probed and ENROLLED on the watchlist (ashby/checkout.com, 179 jobs, 1 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "Placemakr",
@@ -5330,9 +5391,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-17",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
+      "reason": "SUPERSEDED 2026-09-28: re-probed and ENROLLED on the watchlist (icims/peraton, 500 jobs, 17 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. UPDATE 2026-08-18 (unpollable-backlog sweep): targeted site:myworkdayjobs.com search found no tenant. Confirmed no supported ATS exists, not just an unresolved slug guess.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "Fundamental",
@@ -5627,9 +5689,9 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-21",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): smartrecruiters/'nextgen' resolves to a Las Vegas fire-sprinkler contractor, not NextGen Healthcare. Slug collision, not a board. Left rejected.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
+      "reason": "SUPERSEDED 2026-09-28: re-probed and ENROLLED on the watchlist (workday/nextgen, 40 jobs, 1 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. Probed 2026-08-28 (enrollment-only sweep): smartrecruiters/'nextgen' resolves to a Las Vegas fire-sprinkler contractor, not NextGen Healthcare. Slug collision, not a board...",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
       "manual_review": true,
       "manual_review_why": "tier2c title 'Salesforce Administrator/Manager' (Enterprise Applications Manager); location not stated in alert subject, unverified",
       "sweep_checked_2026_08_28": true,
@@ -5637,7 +5699,8 @@
       "first_seen": "2026-08-20",
       "source_backfilled": "git-replay",
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-09-10"
+      "weekly_report_surfaced_date": "2026-09-10",
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "SPAR Solutions",
@@ -6030,9 +6093,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-26",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
+      "reason": "SUPERSEDED 2026-09-28: re-probed and ENROLLED on the watchlist (smartrecruiters/sgs, 500 jobs, 1 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "EY",
@@ -6224,14 +6288,15 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-31",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
+      "reason": "SUPERSEDED 2026-09-28: ENROLLED on the watchlist by hand (adp/8a680274-0b2e-46cf-b2cc-49bd2ef0c20f, 7 postings), horizon-7b. This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
       "manual_review": true,
       "manual_review_why": "Technical Account Manager (tier2 exact; alert copy suggests remote)",
       "manual_review_surfaced": true,
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-09-10"
+      "weekly_report_surfaced_date": "2026-09-10",
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "OnTrac",
@@ -10150,9 +10215,9 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-09-17",
-      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addressed and can never be auto-resolved). Worth one manual look at the company's own careers page if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
+      "reason": "SUPERSEDED 2026-09-28: re-probed and ENROLLED on the watchlist (icims/ice, 216 jobs, 10 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity boards are GUID-addresse...",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
       "manual_review": true,
       "manual_review_why": "Senior Manager, Systems Operations [Atlanta, GA] -- tier2c title, Atlanta; LinkedIn job 4448390265",
       "card_title": "Senior Manager, Systems Operations",
@@ -10161,7 +10226,8 @@
       "source": "LinkedIn alert",
       "first_seen": "2026-09-17",
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-09-24"
+      "weekly_report_surfaced_date": "2026-09-24",
+      "superseded_by_enrollment": "2026-09-28"
     },
     {
       "name": "Zipliens",
