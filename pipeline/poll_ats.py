@@ -3,7 +3,7 @@
 ATS Board Poller — runs as a standalone Python script BEFORE Claude's pipeline.
 
 Polls all watchlist companies' ATS endpoints (Greenhouse, Ashby, Lever, Workday,
-SmartRecruiters, Workable, Pinpoint, Rippling),
+SmartRecruiters, Workable, Pinpoint, Rippling, Gem),
 filters by target titles, deduplicates against seen_jobs.json, applies
 company cap and basic filters, and outputs a small JSON file that Claude
 reads instead of fetching/processing raw API data in-context.
@@ -40,6 +40,9 @@ JOBS_DIR = os.path.join(SCRIPT_DIR, "jobs")
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
+import ats_icims  # noqa: E402  (leaf module: parser + URL builder shared with harvest_ats.py)
+import ats_gem  # noqa: E402  (Gem's fetch/parse logic; see its module docstring)
+import ats_successfactors  # noqa: E402  (SuccessFactors fetch/parse; see module docstring)
 
 # ── Config plumbing ──────────────────────────────────────────────────────────
 # Single source of truth is watchlist_companies.json. Endpoints, the salary
@@ -60,6 +63,11 @@ SMARTRECRUITERS_MAX_POSTINGS = 500  # pagination cap for fetch_smartrecruiters; 
 # #336. Depth does not buy more shortlist slots (MAX_PER_COMPANY_PER_RUN is 2);
 # it buys better candidates for the two each board already gets.
 WORKDAY_MAX_POSTINGS = 1000
+# Shared with harvest_ats.probe_adp per ats_contract.md section 9 ("capped
+# pagination (named constant shared by probe and poller)"); the real value
+# lives in ats_adp.py so both call sites read the same number without a
+# circular import.
+from ats_adp import ADP_MAX_POSTINGS  # noqa: E402
 DEDUP_WINDOW_DAYS = 30
 MAX_PER_COMPANY_PER_RUN = 2  # diversity cap: max roles per company in the surfaced shortlist (prevents one company sweeping the run)
 # Raised 25 -> 40 on 2026-07-27. A funnel audit showed 128 title-matched jobs
@@ -907,6 +915,14 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             raw = job_data.get("PublishedDate")
             if raw:
                 return datetime.fromisoformat(raw).date()
+        elif ats == "adp":
+            # postDate is a real ISO-8601 timestamp with a UTC offset
+            # ("2026-09-18T12:36:00.000-04:00") -- unlike Workday's relative
+            # "Posted N Days Ago" string, no floor-resolution or detail-page
+            # lookup is needed. fromisoformat handles the offset directly.
+            raw = job_data.get("postDate")
+            if raw:
+                return datetime.fromisoformat(raw).date()
         elif ats == "ashby":
             raw = job_data.get("publishedAt")
             if raw:
@@ -937,6 +953,26 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             # salary. For JazzHR this means MAX_POSTING_AGE_DAYS never filters
             # its boards and they never earn the freshness bonus either.
             return None
+        elif ats == "icims":
+            # Posted date is TENANT-CONFIGURABLE, not universal: Peraton's
+            # "header right" listing field is a posted timestamp, RealPage's
+            # same slot is a bare requisition ID (verified live 2026-09-18;
+            # see ats_icims.py's docstring). ats_icims._posted_date_raw()
+            # already gates on the field's own label before returning
+            # anything, so a present-but-unparseable value here is a format
+            # this build never saw, not evidence to guess at -- same
+            # "no data -> don't filter" treatment as every other neutral ATS.
+            raw = job_data.get("posted")
+            if raw:
+                return datetime.strptime(raw, "%m/%d/%Y %I:%M %p").date()
+            return None
+        elif ats == "gem":
+            # The board-LIST query (what the daily poll reads) exposes no
+            # publish/created timestamp at all -- only the single-job detail
+            # query does (firstPublishedTsSec, used by fetch_jd.py's fetch_gem
+            # for a JD lookup, never by the poller). Always neutral here, same
+            # "no data -> don't filter" treatment as Pinpoint/Rippling/JazzHR.
+            return None
         elif ats == "comeet":
             # Comeet exposes time_updated but no creation/publication date.
             # Use it as an approximation, same precedent as greenhouse's
@@ -950,6 +986,13 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
             if raw:
                 parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
                 return parsed if parsed <= date.today() else None
+        elif ats == "successfactors":
+            # Neither feed shape exposes a real posting-creation date. The
+            # urlset shape's sitemap <lastmod> is a crawl/regeneration
+            # timestamp (verified 2026-09-18: every entry on a board shares
+            # the same day), not when the req opened, so it is not read here.
+            # Always neutral, same treatment as pinpoint/rippling/jazzhr above.
+            return None
         elif ats == "workday":
             # Workday's CXS list response has no ISO date, only a relative
             # "postedOn" string ("Posted Today" / "Posted Yesterday" /
@@ -1147,6 +1190,12 @@ def parse_location(job_data: dict, ats: str) -> str:
         loc = job_data.get("JobLocation") or {}
         return countries.stamp(job_data.get("LocationName") or "",
                                loc.get("Country")) or "Unknown"
+    elif ats == "adp":
+        # Precomputed by ats_adp.normalize() from requisitionLocations, since
+        # that same assembly is needed by harvest_ats.probe_adp too. See
+        # ats_adp.location_string() for the shortName-vs-address fallback and
+        # why country is not stamped (no non-US posting observed live yet).
+        return job_data.get("_adp_location") or "Unknown"
     elif ats == "rippling":
         locs = job_data.get("locations") or []
         names = [l.get("name") for l in locs if l.get("name")]
@@ -1156,6 +1205,12 @@ def parse_location(job_data: dict, ats: str) -> str:
         # "Atlanta, GA"), normalized in fetch_jazzhr. JazzHR has no separate
         # remote flag to second-guess it with, which given the Ashby /
         # Paylocity / Comeet history with those flags is no loss.
+        return job_data.get("location") or "Unknown"
+    elif ats == "icims":
+        # Already a flat display string off the listing page ("US-FL-MacDill
+        # AFB", "US-TX-Remote"), normalized in ats_icims.parse_icims_page. No
+        # separate country/remote field is exposed on the listing to
+        # second-guess it with -- see fetch_icims's docstring.
         return job_data.get("location") or "Unknown"
     elif ats == "comeet":
         # Comeet location: {"name": "Austin, TX", "city": ..., "state": ...,
@@ -1189,6 +1244,17 @@ def parse_location(job_data: dict, ats: str) -> str:
         parts = [p.strip() for p in [loc.get("city"), loc.get("state")] if p and p.strip()]
         full = ", ".join(parts) if parts else (loc.get("name") or "")
         return countries.stamp(full, loc.get("country")) or "Unknown"
+    elif ats == "gem":
+        # Delegated to ats_gem: see its location_string() docstring for why
+        # only a non-remote location's isoCountry is trusted for the stamp.
+        return ats_gem.location_string(job_data)
+    elif ats == "successfactors":
+        # Pre-resolved by ats_successfactors.fetch_successfactors: the "rss"
+        # feed shape gives a real <g:location> per posting; the "urlset" shape
+        # resolves it from the detail page's og:title. Neither exposes a
+        # country field to stamp, unlike Comeet/SmartRecruiters/Ashby -- see
+        # the module docstring's Known Limitations.
+        return job_data.get("_sf_location") or "Unknown"
     return "Unknown"
 
 
@@ -1210,16 +1276,26 @@ def build_apply_url(job_data: dict, ats: str, slug: str) -> str:
     elif ats == "smartrecruiters":
         jid = job_data.get("id", "")
         return f"https://jobs.smartrecruiters.com/{slug}/{jid}"
-    elif ats in ("pinpoint", "rippling", "jazzhr"):
+    elif ats in ("pinpoint", "rippling", "jazzhr", "icims"):
         return job_data.get("url", "")
     elif ats == "paylocity":
         # Precomputed in fetch_paylocity, which knows the tenant host; the
         # job objects themselves carry only a numeric JobId.
         return job_data.get("_paylocity_url", "")
+    elif ats == "adp":
+        # Precomputed by ats_adp.normalize() (reuses the same generic
+        # "_apply_url" key Workday's branch above reads). Built from the
+        # requisition's ExternalJobID, NOT its itemID -- see
+        # ats_adp.apply_url()'s docstring for the live verification.
+        return job_data.get("_apply_url", "")
     elif ats == "comeet":
         return (job_data.get("url_comeet_hosted_page")
                 or job_data.get("url_active_page")
                 or job_data.get("position_url", ""))
+    elif ats == "gem":
+        return ats_gem.apply_url(slug, job_data.get("extId", ""))
+    elif ats == "successfactors":
+        return job_data.get("_apply_url", "")
     return ""
 
 
@@ -1506,6 +1582,79 @@ def fetch_jazzhr(slug: str) -> list[dict]:
         return [{"_error": f"{type(e).__name__}: {e}"}]
 
 
+def fetch_icims(slug: str) -> list[dict]:
+    """Fetch jobs from an iCIMS board (careers-{slug}.icims.com), paginated.
+
+    Added 2026-09-18, closing the GitHub/RealPage/Avalara/Peraton gap from the
+    2026-09-11 provider sweep. Scraped, not an API: the classic listing page
+    is server-rendered HTML, one `<li class="iCIMS_JobCardItem">` per posting.
+    Parsing lives in ats_icims.py (parse_icims_page et al.) so this fetcher and
+    harvest_ats.py's icims probe branch read the exact same markup -- see that
+    module's docstring for the live evidence behind every decision below.
+
+    NO-BOARD DETECTION is a clean HTTP 404 on a bad tenant (verified against
+    six bogus tenants live), unlike JazzHR's same-status "Inactive Career
+    Page" trick, so this fetcher does not need a body-content check the way
+    fetch_jazzhr does.
+
+    ONE SHAPE THAT IS NOT "NO BOARD": a real tenant (confirmed live: GitHub's
+    careers-githubinc.icims.com, which is exactly the `base + "inc"` slug
+    slug_variants() already generates) can answer 200 with a page that is
+    nothing but a client-side redirect to a custom-skinned front end this
+    parser cannot read. ats_icims.looks_like_redirect_skin() catches that
+    shape and this fetcher reports it as an _error (an ATS-COVERAGE gap, not
+    an empty board) rather than silently returning [] -- which would read as
+    "board resolved, zero jobs" and, via _confirm_empty on the harvest side,
+    could get written up as a confirmed empty board when the true state is
+    "cannot be read this way at all".
+
+    PAGINATION is capped at ats_icims.ICIMS_MAX_POSTINGS (500, shared with the
+    probe). Page 0 failing decides no-board; a later page failing or falling
+    short just ends the walk with what was already read (ats_contract.md
+    section 3), matching every other paginated adapter here.
+    """
+    template = ATS_ENDPOINTS.get("icims")
+    jobs: list[dict] = []
+    page = 0
+    total_pages = None
+    try:
+        while len(jobs) < ats_icims.ICIMS_MAX_POSTINGS:
+            url = ats_icims.icims_search_url(slug, page, template)
+            resp = requests.get(url, timeout=REQUEST_TIMEOUT,
+                                headers={"User-Agent": "Mozilla/5.0 (resume-pipeline)"})
+            if resp.status_code == 404:
+                if page == 0:
+                    return [{"_error": f"iCIMS: no board at tenant '{slug}' "
+                                       f"(careers-{slug}.icims.com/jobs/search -> 404)"}]
+                break
+            resp.raise_for_status()
+            if page == 0 and not jobs and ats_icims.looks_like_redirect_skin(resp.text):
+                return [{"_error": f"iCIMS: tenant '{slug}' resolves but serves a "
+                                   f"custom-skinned front end (client redirect off the "
+                                   f"classic search page), which this scraper cannot "
+                                   f"read -- not a board-does-not-exist case"}]
+            page_jobs = ats_icims.parse_icims_page(resp.text)
+            if page == 0:
+                total_pages = ats_icims.icims_page_count(resp.text)
+            if not page_jobs:
+                break
+            for j in page_jobs:
+                j["url"] = ats_icims.icims_job_url(slug, j["url"])
+            jobs.extend(page_jobs)
+            page += 1
+            if total_pages is not None and page >= total_pages:
+                break
+            if len(page_jobs) < ats_icims.ICIMS_PAGE_SIZE:
+                break
+        return jobs[:ats_icims.ICIMS_MAX_POSTINGS]
+    except Exception as e:
+        if jobs:
+            # A later-page failure is a truncated read of a real board; keep
+            # what was already read rather than discarding it (section 3).
+            return jobs
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
 def fetch_pinpoint(slug: str) -> list[dict]:
     """Fetch jobs from a Pinpoint ATS board's public postings.json endpoint.
 
@@ -1604,6 +1753,77 @@ def fetch_paylocity(company: dict) -> list[dict]:
                                    f"{j.get('JobId')}")
         # Internal-only reqs are not public applications; drop them.
         return [j for j in jobs if not j.get("IsInternal")]
+    except Exception as e:
+        return [{"_error": f"{type(e).__name__}: {e}"}]
+
+
+def fetch_adp(company: dict) -> list[dict]:
+    """Fetch jobs from an ADP WorkforceNow Career Center board.
+
+    Added 2026-09-18 (five-company ADP backlog: Caliber Car Wash, Mountain
+    Seed, Parallels, RK&K, Steel Partners). ADP is HAND-ENROLLED like
+    Paylocity: `slug` holds the WorkforceNow `cid` GUID (there is no other
+    identifier), addressed at the fixed public host workforcenow.adp.com. Of
+    the three ADP URL shapes found live on the five backlog companies' own
+    careers pages (see ats_adp.py's module docstring), only this one -- cid-
+    addressed WorkforceNow -- has a public JSON API; the other two (ADP
+    Recruiting/RTI.home, myjobs.adp.com) are unsupported.
+
+    The bulk of the logic (URL building, response parsing, normalization)
+    lives in ats_adp.py, shared with harvest_ats.probe_adp and
+    fetch_jd.fetch_adp, per the horizon-build convention of keeping new-ATS
+    code out of files three other builders are editing in parallel.
+
+    PAGINATES: the API serves ADP_PAGE_SIZE (20) requisitions per page
+    regardless of the requested $top (verified live 2026-09-18 against
+    Caliber Car Wash: $top=100 still returned 20 rows), up to
+    ADP_MAX_POSTINGS. Stops on meta.totalNumber (read from whichever page
+    carries it -- unlike Workday, a later page here still returns a non-empty
+    meta) or a short/empty page, and de-duplicates by itemID: a live board can
+    shift a requisition across the skip boundary between two requests (one
+    itemID was observed in both the skip=0 and skip=20 pages of the same
+    walk against Caliber's board), so re-reading it once more is expected and
+    must not be double-counted.
+    """
+    import ats_adp
+    cid = (company.get("slug") or "").strip()
+    if not cid:
+        return [{"_error": "ADP entry missing cid (stored in slug)"}]
+    postings: list[dict] = []
+    seen_ids: set = set()
+    total = None
+    skip = 0
+    try:
+        while skip < ADP_MAX_POSTINGS:
+            url = ats_adp.requisitions_url(cid, skip=skip, top=ats_adp.ADP_PAGE_SIZE)
+            resp = requests.get(
+                url, headers={"User-Agent": "Mozilla/5.0 (resume-pipeline)"},
+                timeout=REQUEST_TIMEOUT)
+            resp.raise_for_status()
+            data = resp.json()
+            page, page_total = ats_adp.extract_page(data)
+            if page_total is not None:
+                total = page_total
+            if not page:
+                break
+            new_count = 0
+            for req in page:
+                iid = req.get("itemID")
+                if iid is not None and iid in seen_ids:
+                    continue
+                if iid is not None:
+                    seen_ids.add(iid)
+                postings.append(req)
+                new_count += 1
+            skip += len(page)
+            if total is not None and len(seen_ids) >= total:
+                break
+            if new_count == 0:
+                # Every item on this page was one already seen -- stop rather
+                # than loop forever on a board whose total we never learned.
+                break
+        return [ats_adp.normalize(req, cid) for req in postings
+                if not ats_adp.is_internal(req)]
     except Exception as e:
         return [{"_error": f"{type(e).__name__}: {e}"}]
 
@@ -1897,10 +2117,18 @@ def poll_all(run_date: date) -> dict:
             jobs = fetch_rippling(slug)
         elif ats == "paylocity":
             jobs = fetch_paylocity(company)
+        elif ats == "adp":
+            jobs = fetch_adp(company)
         elif ats == "comeet":
             jobs = fetch_comeet(company)
         elif ats == "jazzhr":
             jobs = fetch_jazzhr(slug)
+        elif ats == "icims":
+            jobs = fetch_icims(slug)
+        elif ats == "gem":
+            jobs = ats_gem.fetch_gem(slug, timeout=REQUEST_TIMEOUT)
+        elif ats == "successfactors":
+            jobs = ats_successfactors.fetch_successfactors(company)
         else:
             errors.append({"company": name, "error": f"Unknown ATS: {ats}"})
             continue

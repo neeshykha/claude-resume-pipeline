@@ -66,6 +66,19 @@ import urllib.parse
 
 import requests
 
+# Sibling imports (same pattern poll_ats.py and harvest_ats.py use): the
+# ats_<provider>.py modules hold the URL-building/parsing each adapter shares
+# between the poller, the discovery probe, and this file's fetch_<ats>().
+# This file is sometimes imported from a different cwd, so put its own
+# directory on sys.path rather than relying on script-directory insertion.
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+import ats_adp  # noqa: E402  (needs SCRIPT_DIR on the path first)
+import ats_icims  # noqa: E402
+import ats_gem  # noqa: E402
+import ats_successfactors  # noqa: E402  (SuccessFactors JD fetch; shares its parser)
+
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 TIMEOUT = 45
@@ -706,9 +719,187 @@ def fetch_paylocity(url):
     }
 
 
+def fetch_adp(url):
+    """ADP WorkforceNow (cid-addressed), single-requisition detail endpoint.
+
+    Added 2026-09-18. Matches a recruitment.html?cid=<GUID>...&jobId=<id> URL
+    -- the same shape poll_ats.py's _apply_url stashes for an ADP posting
+    (see ats_adp.apply_url()). jobId is the requisition's ExternalJobID, not
+    its itemID.
+
+    Uses the single-requisition DETAIL endpoint
+    (.../job-requisitions/{jobId}?cid=<cid>), found by network capture while
+    verifying the live board, not the LISTING endpoint poll_ats.fetch_adp /
+    harvest_ats.probe_adp paginate through. The detail endpoint returns one
+    extra field the listing omits entirely: `requisitionDescription`, the
+    full posting body as HTML (complete with inline base64 <img> data on the
+    live Caliber Car Wash posting verified against -- strip_html drops it for
+    free, since the whole data: URI sits inside the tag's attributes and the
+    generic `<[^>]+>` removal takes the tag and its attributes together).
+    """
+    parsed = ats_adp.parse_recruitment_url(url)
+    if not parsed:
+        return None
+    cid, job_id = parsed
+    if not job_id:
+        return {"ats": "adp", "error":
+                "recruitment.html URL has no jobId= parameter -- this is a "
+                "board/search-results link, not a single posting. Open the "
+                "specific requisition (its apply link carries &jobId=<id>) "
+                "and use that URL instead."}
+    d = get(ats_adp.detail_url(cid, job_id)).json()
+    if not d or not d.get("requisitionTitle"):
+        return {"ats": "adp", "error":
+                f"no requisition found for jobId={job_id} at cid={cid} "
+                f"(closed, or the URL's cid/jobId is wrong)"}
+    return {
+        "ats": "adp",
+        "title": d.get("requisitionTitle"),
+        "location": ats_adp.location_string(d),
+        "remote": None,
+        "posted": ats_adp.posted_date(d),
+        "salary": ats_adp.salary_range(d),
+        "body": strip_html(d.get("requisitionDescription")),
+    }
+
+
+ICIMS_DETAIL_RE = re.compile(
+    r"careers-([a-z0-9-]+)\.icims\.com/jobs/(\d+)/", re.I)
+
+# Sections whose heading names a comp figure. Tenant-configurable label text
+# (Peraton/RealPage both use "Pay Range" live, but nothing here guarantees
+# every tenant does), matched loosely on purpose -- same reasoning as
+# fetch_paylocity's salary_label detection.
+ICIMS_SALARY_HEADING_RE = re.compile(r"salary|pay\s*range|compensation", re.I)
+
+
+def fetch_icims(url):
+    """iCIMS, scraped from the server-rendered job detail page.
+
+    Added 2026-09-18 alongside the poll_ats.py/harvest_ats.py adapter. There
+    is no JSON API (same situation as Paylocity/JazzHR): the detail page at
+    careers-{tenant}.icims.com/jobs/{id}/{title-slug}/job is plain HTML, one
+    `<h2 class="iCIMS_InfoMsg iCIMS_InfoField_Job">Heading</h2>` per section
+    followed by its `iCIMS_Expandable_Text` content -- verified live against
+    RealPage req 14575 ("Customer Success Manager II - HOA/Real Estate":
+    Overview / Responsibilities / Qualifications / Pay Range sections).
+
+    Location is read with the SAME regex the listing-page parser uses
+    (ats_icims.ICIMS_LOCATION_RE) -- the detail page repeats the identical
+    "header left" div shape, confirmed live on the same req. Posted date goes
+    through ats_icims.posted_date_raw() for the same reason: it is only ever
+    trustworthy when the tenant's own field label says so (RealPage's "header
+    right" slot on this very page holds the requisition ID, not a date), so an
+    untrusted tenant reads back None rather than a guess.
+    """
+    m = ICIMS_DETAIL_RE.search(url)
+    if not m:
+        return None
+    tenant = m.group(1)
+    resp = get(url)
+    page = resp.text
+
+    title = None
+    tm = re.search(r'<h1\s+class="iCIMS_Header"[^>]*>\s*(.*?)\s*</h1>', page, re.S | re.I)
+    if tm:
+        title = strip_html(tm.group(1)) or None
+
+    location = None
+    lm = ats_icims.ICIMS_LOCATION_RE.search(page)
+    if lm:
+        location = strip_html(lm.group(1)) or None
+
+    sections, salary = [], None
+    for hm in re.finditer(
+            r'<h2\s+class="iCIMS_InfoMsg iCIMS_InfoField_Job">\s*(.*?)\s*</h2>'
+            r'\s*<div\s+class="iCIMS_InfoMsg iCIMS_InfoMsg_Job">(.*?)</div>\s*</div>\s*</div>',
+            page, re.S | re.I):
+        label = strip_html(hm.group(1))
+        value = strip_html(hm.group(2))
+        if not label or not value:
+            continue
+        sections.append(f"### {label}\n\n{value}")
+        if salary is None and ICIMS_SALARY_HEADING_RE.search(label):
+            salary = value
+    if not sections:
+        return {"ats": "icims", "error":
+                f"no iCIMS_InfoField_Job sections on {url} (page shape changed, "
+                f"or this tenant '{tenant}' uses a custom-skinned front end -- "
+                f"see ats_icims.py's GitHub case)"}
+    body = "\n\n".join(sections)
+
+    return {
+        "ats": "icims",
+        "title": title,
+        "location": location,
+        "remote": "remote" in (location or "").lower() or None,
+        "posted": ats_icims.posted_date_raw(page),
+        "salary": salary,
+        "body": body,
+    }
+
+
+GEM_URL_RE = re.compile(r"https?://jobs\.gem\.com/([^/?#]+)/([^/?#]+)")
+
+
+def fetch_gem(url):
+    """Gem, via the same POST GraphQL endpoint the board itself uses.
+
+    Added 2026-09-18 alongside the poller/discovery adapter (ats_gem.py --
+    see its module docstring for the endpoint and the board-exists gotcha).
+    A job-detail URL is `https://jobs.gem.com/<boardId>/<extId>`; the bare
+    board-list URL (`https://jobs.gem.com/<boardId>`, no second segment)
+    does not match here and falls through to WebSearch, same as Pinpoint and
+    Rippling below.
+
+    `firstPublishedTsSec` -- unlike the board-LIST query the poller reads,
+    the single-posting query DOES carry a real publish timestamp, so `posted`
+    is populated here even though poll_ats.extract_posted_date always returns
+    None for Gem.
+    """
+    m = GEM_URL_RE.match(url)
+    if not m:
+        return None
+    board_id, ext_id = m.group(1), m.group(2)
+    payload = ats_gem.build_detail_payload(board_id, ext_id)
+    r = requests.post(ats_gem.GRAPHQL_URL, json=payload, headers=UA, timeout=TIMEOUT)
+    r.raise_for_status()
+    posting = r.json()[0]["data"].get("oatsExternalJobPosting")
+    if not posting:
+        return None
+    sections = posting.get("jobPostSectionHtml") or {}
+    body = "\n\n".join(strip_html(h) for h in
+                       (sections.get("introHtml"), posting.get("descriptionHtml"),
+                        sections.get("outroHtml")) if h)
+    job = posting.get("job") or {}
+    posted = None
+    ts = posting.get("firstPublishedTsSec")
+    if ts:
+        posted = dt.datetime.fromtimestamp(int(ts), tz=dt.timezone.utc).date().isoformat()
+    return {
+        "ats": "gem",
+        "title": posting.get("title"),
+        "location": ats_gem.location_string(posting),
+        "remote": (job.get("locationType") or "").upper() == "REMOTE",
+        "posted": posted,
+        "salary": strip_html(posting.get("compensationHtml")) or None,
+        "body": body,
+    }
+
+
+def fetch_successfactors(url):
+    """SAP SuccessFactors RMK job detail page. See ats_successfactors.py's
+    module docstring and fetch_jd_successfactors for the full read-path story
+    (og:title / canonical-link parsing, shared with the urlset-shape poll
+    branch). Host-agnostic match on the /job/<slug>/<id>/ path convention,
+    same reasoning as fetch_paylocity's host-agnostic GUID match above.
+    """
+    return ats_successfactors.fetch_jd_successfactors(url, get=get)
+
+
 FETCHERS = (fetch_ashby, fetch_workday, fetch_greenhouse, fetch_lever,
             fetch_smartrecruiters, fetch_comeet, fetch_paylocity, fetch_workable,
-            fetch_ukg)
+            fetch_ukg, fetch_adp, fetch_icims, fetch_gem, fetch_successfactors)
 
 
 def fetch(url):
@@ -721,8 +912,11 @@ def fetch(url):
             return out
     return {"error": "no fetcher matched this URL. Supported: Ashby, Workday, "
                      "Greenhouse, Lever, SmartRecruiters, Comeet, Paylocity, "
-                     "Workable, UKG Pro Recruiting. Pinpoint/Rippling have no per-posting JSON "
-                     "endpoint; use WebSearch for those."}
+                     "Workable, UKG Pro Recruiting, ADP WorkforceNow, iCIMS, Gem, "
+                     "SuccessFactors. Pinpoint/Rippling have no per-posting JSON "
+                     "endpoint; use WebSearch for those. ADP Recruiting/RTI.home and "
+                     "myjobs.adp.com boards are unsupported (no public JSON API found); "
+                     "use WebSearch for those too."}
 
 
 def render(url, rec, limit):
