@@ -1374,6 +1374,10 @@
       "priority": "high",
       "headcount_band": "2000+",
       "reason": "IoT/fleet — direct fit for Aneesh's IoT hardware background",
+      "history_reset": {
+        "date": "2026-09-29",
+        "note": "Slate wiped at Aneesh's ask 2026-09-29: he wants to re-approach Samsara fresh (IoT, large Atlanta presence, remote-friendly). Tracker rows before this date stay as recorded (several were real sends), but they no longer count against Samsara: do not hand-apply the company cap from them, do not add 'Nth Samsara application' friction to picks, and treat a new req of a previously applied title as fresh. The poller's own 60-day cap still applies to applications made after this date."
+      },
       "vertical_flag_added": "2026-08-26 (backfill: enrolled before the flag existed)",
       "score_bonus": 0,
       "bonus_reason": "No vertical bonus (classified 2026-08-28). Connected-operations platform for physical fleets: IoT gateways, dash cams, telematics. NOT AI-native (AI is a feature inside the dash cam and safety products, not the product itself) and NOT developer/infra tooling (the audience is fleet and facilities operators, not developers). Its real lift is the separate IoT company-level bonus (+15) applied at scoring time, not a vertical bonus."
