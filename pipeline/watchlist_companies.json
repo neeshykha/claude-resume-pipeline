@@ -7089,6 +7089,16 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "needs_vertical_classification": true,
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (500 jobs) with 9 fit-titles at harvest time (8 tier2, 1 tier2c), e.g. 'Senior Manager, AI Delivery Lead - Legal & RegTech' [San Francisco, CA, United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Ottimate",
+      "ats": "workable",
+      "slug": "ottimate",
+      "priority": "low",
+      "enrolled_date": "2026-09-29",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Manager, Implementation & Enablement' [Remote United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }

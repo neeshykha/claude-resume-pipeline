@@ -3239,6 +3239,13 @@
       "via": "harvest_ats.py",
       "source": "LinkedIn alert",
       "first_seen": "2026-09-29"
+    },
+    {
+      "name": "Ottimate",
+      "ats": "workable",
+      "slug": "ottimate",
+      "enrolled_date": "2026-09-29",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -14298,8 +14305,8 @@
       "ats": "pinpoint",
       "slug": "ottimate",
       "rejected_date": "2026-09-27",
-      "reason": "Board RESOLVED at pinpoint/ottimate but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: pinpoint/ottimate, pinpoint/Ottimate.) 4 probe(s) were rate-limited (HTTP 429) and never answered (workable x4), so a board at one of those addresses was not ruled out.",
-      "recheck_if_resurfaced": true,
+      "reason": "SUPERSEDED 2026-09-29: re-probed and ENROLLED on the watchlist (workable/ottimate, 8 jobs, 1 fit-titles). Kept as the record of the original rejection, not as a live verdict. Original reason: Board RESOLVED at pinpoint/ottimate but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: pinpoint/ot...",
+      "recheck_if_resurfaced": false,
       "unpollable": false,
       "throttled": true,
       "throttled_probes": [
@@ -14310,7 +14317,8 @@
       ],
       "source": "LinkedIn alert",
       "first_seen": "2026-09-17",
-      "superseded_note": "Supersedes the 2026-09-17 record: Board RESOLVED at pinpoint/ottimate but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual si..."
+      "superseded_note": "Supersedes the 2026-09-17 record: Board RESOLVED at pinpoint/ottimate but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual si...",
+      "superseded_by_enrollment": "2026-09-29"
     },
     {
       "name": "Benevity",
@@ -16374,6 +16382,21 @@
       "superseded_note": "Supersedes the 2026-09-18 record: UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 18 probe(s) were refused with HTTP 429 even after one r..."
     },
     {
+      "name": "Busey",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-09-29",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/iCIMS/Gem/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity and ADP WorkforceNow boards are GUID-addressed and SuccessFactors boards are per-company-host RMK sites; none can ever be auto-resolved by name. probe_adp and probe_successfactors can validate a cid or host found by hand, e.g. from a careers-page link or job-alert email, but cannot discover one). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-21",
+      "card_title": "Business Systems Manager",
+      "card_job_id": "4469528202",
+      "card_url": "https://www.linkedin.com/jobs/view/4469528202/",
+      "superseded_note": "Supersedes the 2026-09-21 record: UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 14 probe(s) were refused with HTTP 429 even after one r..."
+    },
+    {
       "name": "WEKA",
       "ats": null,
       "slug": null,
@@ -16388,22 +16411,7 @@
       "card_title": "Manager of Technical Services",
       "card_job_id": "4466562156",
       "card_url": "https://www.linkedin.com/jobs/view/4466562156/",
-      "superseded_note": "Supersedes the 2026-09-18 record: UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 15 probe(s) were refused with HTTP 429 even after one r..."
-    },
-    {
-      "name": "Busey",
-      "ats": null,
-      "slug": null,
-      "rejected_date": "2026-09-29",
-      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/iCIMS/Gem/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity and ADP WorkforceNow boards are GUID-addressed and SuccessFactors boards are per-company-host RMK sites; none can ever be auto-resolved by name. probe_adp and probe_successfactors can validate a cid or host found by hand, e.g. from a careers-page link or job-alert email, but cannot discover one). Worth one manual look at the company's own careers page if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-21",
-      "card_title": "Business Systems Manager",
-      "card_job_id": "4469528202",
-      "card_url": "https://www.linkedin.com/jobs/view/4469528202/",
-      "superseded_note": "Supersedes the 2026-09-21 record: UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 14 probe(s) were refused with HTTP 429 even after one r..."
+      "superseded_note": "Supersedes the 2026-09-29 rejection, which carried unpollable=true: the flag that stops a company being re-checked and that feeds the weekly unpollable punch list. This probe reached a different verdict, so that claim is FALSIFIED, not merely stale. It read: No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/iCIMS/Gem/SmartRecrui..."
     }
   ]
 }
