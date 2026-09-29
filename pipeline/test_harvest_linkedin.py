@@ -271,6 +271,48 @@ def main() -> int:
         print(f"FAIL non-job senders leaked into missing ids: {cm['missing_body_message_ids']}")
         fails += 1
 
+    # Transcript path (2026-09-29): get_message results live inside .jsonl lines as a
+    # JSON *string*, so the sender field arrives escaped (sender\":\"...). The old
+    # pre-filter only matched the unescaped form, which spilled tool-result files
+    # have, so a helper agent's records (never spilled) were silently dropped. Build
+    # that exact shape, a main session plus a subagent log, and require both records.
+    import tempfile
+    with tempfile.TemporaryDirectory() as tdir:
+        def tool_result_line(rec: dict) -> str:
+            inner = json.dumps(rec)
+            return json.dumps({"message": {"role": "user", "content": [
+                {"type": "tool_result", "tool_use_id": "t",
+                 "content": [{"type": "text", "text": inner}]}]}}) + "\n"
+        rec_a = {"id": "tx1", "threadId": "tt1", "sender": HL.JOB_SENDERS[0],
+                 "subject": "alert", "date": "2026-09-29T06:00:00Z",
+                 "plaintextBody": _mini_body("5551000004")}
+        rec_b = dict(rec_a, id="tx2", threadId="tt2", plaintextBody=_mini_body("5551000005"))
+        os.makedirs(os.path.join(tdir, "sess0001", "subagents"))
+        with open(os.path.join(tdir, "sess0001.jsonl"), "w") as f:
+            # a prompt that merely mentions an address must parse to nothing
+            f.write(json.dumps({"message": {"role": "user",
+                                            "content": f"fetch mail from {HL.JOB_SENDERS[0]}"}}) + "\n")
+        with open(os.path.join(tdir, "sess0001", "subagents", "agent-helper01.jsonl"), "w") as f:
+            f.write(tool_result_line(rec_a) + tool_result_line(rec_b))
+        if '"sender":"' in open(os.path.join(tdir, "sess0001", "subagents",
+                                              "agent-helper01.jsonl")).read():
+            print("FAIL fixture: sender field should be escaped inside the transcript line")
+            fails += 1
+        loaded = HL.load_transcripts(tdir, dt.date(2026, 9, 28))
+        ids_loaded = sorted(r["id"] for r in loaded)
+        if ids_loaded != ["tx1", "tx2"]:
+            print(f"FAIL transcript: helper-log records not read from escaped lines: {ids_loaded}")
+            fails += 1
+        res_tx = HL.harvest(loaded, grader, dt.date(2026, 9, 29),
+                            {"query": "q", "window_used": "2d", "input_mode": "fixture"})
+        by_src = res_tx["counters"]["bodies_by_source"]
+        if by_src != {"transcript:sess0001/agent-helper01": 2}:
+            print(f"FAIL transcript: per-source counts {by_src}")
+            fails += 1
+        if res_tx["counters"]["helper_messages_by_log"] != {"transcript:sess0001/agent-helper01": 2}:
+            print(f"FAIL transcript: helper counts {res_tx['counters']['helper_messages_by_log']}")
+            fails += 1
+
     print(f"{len(EXPECT)} graded expectations, {len(res['cards'])} cards, "
           f"{'ALL PASS' if not fails else str(fails) + ' FAIL'}")
     return 1 if fails else 0
