@@ -338,19 +338,39 @@ def _records_from_json_text(text: str, source: str) -> list[dict]:
 def load_transcripts(tdir: str, since: dt.date) -> list[dict]:
     """LinkedIn job-sender records from session transcripts modified on/after `since`.
 
-    Reads the .jsonl session logs plus any oversized tool results the harness spilled
-    to <session>/tool-results/. Only lines that mention a LinkedIn job sender are
-    parsed, so a long transcript costs a grep, not a JSON parse per line.
+    Reads the .jsonl session logs, the helper-agent logs under <session>/subagents/,
+    plus any oversized tool results the harness spilled to <session>/tool-results/.
+    Only lines that mention a LinkedIn job sender are parsed, so a long transcript
+    costs a grep, not a JSON parse per line.
+
+    The subagents glob (2026-09-28) is what lets Step 1d-2b hand the get_message calls
+    to a Haiku helper: the bodies land in the helper's log instead of the main run's
+    context, where each one was re-read on every later turn (42 bodies on 2026-09-28).
     """
     if not os.path.isdir(tdir):
         return []
     cutoff = dt.datetime.combine(since, dt.time.min).timestamp()
-    needles = tuple(f'"sender":"{s}"' for s in JOB_SENDERS)
+    # Bare addresses, NOT '"sender":"<addr>"' (fixed 2026-09-29). Inside a .jsonl
+    # transcript line every tool result is a JSON *string*, so its quotes arrive
+    # escaped ('sender\":\"...') and the quoted needle never matched. It only ever
+    # matched the spilled tool-result files below, which is why inline fetches
+    # worked and the 09-28 Haiku-helper handoff silently read nothing: the helper's
+    # bodies stay in its log instead of spilling. The line is json-decoded before
+    # parsing, so the escaping is irrelevant past this pre-filter, and a line that
+    # merely mentions an address (a prompt, a spec read) parses to no records.
+    needles = JOB_SENDERS
     records: list[dict] = []
-    for path in sorted(glob.glob(os.path.join(tdir, "*.jsonl"))):
+    paths = (glob.glob(os.path.join(tdir, "*.jsonl"))
+             + glob.glob(os.path.join(tdir, "*", "subagents", "*.jsonl")))
+    for path in sorted(paths):
         if os.path.getmtime(path) < cutoff:
             continue
         sid = os.path.basename(path)[:8]
+        if os.path.basename(os.path.dirname(path)) == "subagents":
+            # <session>/subagents/agent-<id>.jsonl: name the helper and its session,
+            # so the per-source counts show which log the records came from.
+            session = os.path.basename(os.path.dirname(os.path.dirname(path)))[:8]
+            sid = f"{session}/{os.path.basename(path)[:14]}"
         with open(path, encoding="utf-8", errors="replace") as f:
             for line in f:
                 if not any(n in line for n in needles):
@@ -723,6 +743,26 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
         (r["id"] or key) for key, r in seen_msgs.items() if not r["body"].strip())
     job_alert_messages_seen = len(seen_msgs)
     job_alert_messages_with_body = job_alert_messages_seen - len(missing_body_message_ids)
+    # Per-source counts (added 2026-09-29): which transcript, helper log, or file each
+    # graded body came from. The 2026-09-29 failure graded 25 bodies carried over from
+    # the previous day's session and zero from the helper that fetched today's 35, and
+    # the totals alone looked plausible. A source missing here is visible; an absence
+    # inside a total is not.
+    bodies_by_source: dict[str, int] = {}
+    for r in bodies:
+        bodies_by_source[r["source"]] = bodies_by_source.get(r["source"], 0) + 1
+    # Counted BEFORE the cross-source dedupe above: a message the previous day's
+    # session also fetched is credited to that session in `bodies_by_source`, so the
+    # helper's share there undercounts what it actually delivered. The
+    # --expect-messages check compares against this, never the grand total, which the
+    # previous day's overlap alone can satisfy. Kept PER HELPER LOG: other sessions'
+    # helpers can fetch LinkedIn mail inside the same window (verified 2026-09-29,
+    # two helpers in another session added 18), so a sum across logs overcounts.
+    helper_ids_by_log: dict[str, set] = {}
+    for r in job_records:
+        if "/agent-" in r["source"] and r["body"].strip():
+            helper_ids_by_log.setdefault(r["source"], set()).add(r["id"] or r["thread_id"])
+    helper_messages_by_log = {k: len(v) for k, v in sorted(helper_ids_by_log.items())}
 
     cards_by_id: dict[str, dict] = {}
     order: list[str] = []
@@ -812,6 +852,8 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
         "job_alert_messages_seen": job_alert_messages_seen,
         "job_alert_messages_with_body": job_alert_messages_with_body,
         "missing_body_message_ids": missing_body_message_ids,
+        "bodies_by_source": dict(sorted(bodies_by_source.items())),
+        "helper_messages_by_log": helper_messages_by_log,
         "digest_bodies_opened": sum(1 for r in bodies if r["sender"] == JOB_SENDERS[1]),
         "non_job_threads_skipped": len({(r["thread_id"] or r["source"]) for r in records
                                         if r["sender"] not in JOB_SENDERS}),
@@ -871,6 +913,9 @@ def main() -> int:
     ap.add_argument("--date", help="run date (YYYY-MM-DD) for output names; default today")
     ap.add_argument("--out-dir", default=JOBS_DIR)
     ap.add_argument("--quiet", action="store_true", help="skip the card block on stdout")
+    ap.add_argument("--expect-messages", type=int,
+                    help="job-alert messages the fetch helper reported fetching; fewer "
+                         "graded bodies than this prints a SHORTFALL")
     args = ap.parse_args()
 
     today = dt.date.fromisoformat(args.date) if args.date else dt.date.today()
@@ -959,6 +1004,22 @@ def main() -> int:
               f"(across {c['job_alert_threads_seen']} thread(s) seen, {c['bodies_read']} "
               f"thread(s) with at least one body); missing message ids: {ids}. Fetch these "
               f"specifically and re-run.")
+    src_counts = c["bodies_by_source"]
+    print("bodies by source: " + (", ".join(f"{k} {v}" for k, v in src_counts.items())
+                                  or "none"))
+    # The check above can only see messages the INPUT mentions. When the helper's
+    # records never reach the script at all, nothing is "missing" from its point of
+    # view (2026-09-29). Comparing against the helper's own count closes that.
+    if args.expect_messages is not None:
+        by_log = c["helper_messages_by_log"]
+        got = max(by_log.values(), default=0)
+        if got < args.expect_messages:
+            print(f"SHORTFALL: the fetch helper reported {args.expect_messages} message(s) "
+                  f"but no helper log yielded that many bodies (best: {got}; per log: "
+                  f"{by_log or 'none'}). Its records are not reaching this script.")
+        else:
+            print(f"helper check: a helper log yielded {got} message(s), "
+                  f"{args.expect_messages} expected (per log: {by_log})")
     if not args.quiet:
         print("\nLinkedIn alert cards, graded")
         print(block)

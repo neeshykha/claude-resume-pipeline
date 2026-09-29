@@ -11,7 +11,8 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 - ATS polling is Python (`poll_ats.py`) — read its small output, never WebFetch boards inline
 - PDFs via `render_pdf.py` + JSON data files — never copy/edit `generate_pdf.py`
 - Coverage checks via `check_coverage.py` on the `_data.json` — never hand-rolled bash loops
-- LinkedIn alert bodies via `harvest_linkedin.py` (Step 1d-2) — fetch them, never read them
+- LinkedIn alert bodies via `harvest_linkedin.py` (Step 1d-2) — a Haiku helper fetches them,
+  you never fetch or read them
 - Full JDs via `fetch_jd.py` (Step 3) — never WebFetch an Ashby/Workday/Comeet posting, they
   are JS-rendered or templated and return the title only, which costs retries and search budget
 - Tracking updates via `update_tracking.py` — never hand-edit `seen_jobs.json`
@@ -773,19 +774,35 @@ MANUAL FALLBACK, used only when the script fails, and the fallback is what the h
 that list is about.**
 
 a. Window, unchanged: `.venv/bin/python pipeline/linkedin_window.py`.
-b. Fetch the bodies through the MCP, and **do not read them.** Run the Step 1d-2 query with
-   `search_messages`, then call `get_message` (`messageFormat: PLAIN_TEXT`) on EVERY thread
-   from `jobalerts-noreply@` or `jobs-noreply@`, newest first. Do not extract, grade, or
-   summarize anything from a result; the only purpose of the call is that the record lands
-   in the session transcript, where the script picks it up. Each call still costs the body's
-   input tokens (the part only a Gmail API credential could remove, which does not exist
-   yet); it no longer costs reasoning or output tokens, and it must not: a model that reads
-   the body "just to check" has paid the full price the script exists to avoid.
-c. Grade, dedupe, and queue:
+b. **Hand the fetch to ONE Haiku helper (Agent tool, `model: haiku`), and do not fetch the
+   bodies yourself (changed 2026-09-28).** Give it the resolved Step 1d-2 query and this
+   brief: run it with `search_messages`; call `get_message` (`messageFormat: PLAIN_TEXT`) on
+   EVERY message from `jobalerts-noreply@` or `jobs-noreply@`, newest first, including every
+   stacked message inside a thread; do not extract, grade, or summarize anything; answer in
+   ONE line: `threads=N messages_fetched=M` plus any ids that errored. The records land in
+   the helper's own log under `<session>/subagents/`, which `harvest_linkedin.py` reads the
+   same as the main transcript. Why: every body fetched here used to sit in this run's
+   context and get re-read on every later turn (42 bodies, ~8k tokens each, on 2026-09-28,
+   when the main context peaked at 817k). The helper pays each body once.
+   **Fallback:** if the Agent tool is unavailable, or step c then reports records missing,
+   fetch the missing ids yourself exactly as before (search, then `get_message` each, never
+   reading the result), and note `linkedin_fetch: inline fallback` in the run record. The
+   message-level SHORTFALL line in step c is the check either way.
+c. Grade, dedupe, and queue, passing the helper's `messages_fetched=M` as the expectation:
 
    ```bash
-   .venv/bin/python pipeline/harvest_linkedin.py --from-transcripts
+   .venv/bin/python pipeline/harvest_linkedin.py --from-transcripts --expect-messages M
    ```
+
+   **A `SHORTFALL` naming the helper is a hard stop for this step (added 2026-09-29).** It
+   means the helper fetched the bodies but its log is not reaching the script, which the
+   script's own message-level check cannot see: that check only counts messages the input
+   mentions, and records it never read are not "missing" from its point of view. That is
+   exactly how 2026-09-29 went wrong: the pre-filter matched only the unescaped
+   `"sender":"..."` form, a helper's log stores it escaped, so the first pass graded 25
+   bodies left over from the previous day's session, reported no shortfall, and dropped
+   today's 35. Fixed the same day, but the guard stays. Also read the `bodies by source`
+   line: today's helper log should appear in it by name.
 
    Read its stdout (the card block and the UNKNOWN list are short), then re-run with
    `--apply` to append the UNKNOWN companies to `pending`. `--apply` is the only write to
