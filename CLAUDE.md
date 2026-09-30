@@ -171,7 +171,7 @@ The replacement is scope, not volume. Claim: Python for tooling and evaluation h
 
 **Always pair a named gap with a concrete ramp commitment (added 2026-08-20, Aneesh's direct ask).** Naming the gap is half the move; the other half is showing he intends to close it and can. A bare admission leaves the reader to decide how much it costs them. Do NOT write generic filler — "I'm a fast learner," "I pick things up quickly," "eager to grow" are exactly the vague fluff the style guide bans, and they read as padding. The commitment has to be specific enough to be checkable, and ideally starts before he's asked:
 
-- **Name when he'll start, and make it early.** A dated, checkable claim about behavior (he has already begun, or begins before the first conversation) beats any adjective about learning speed. **Do not reuse a fixed sentence for this.** A mandated move plus a quoted sentence becomes a template across documents, and the per-letter voice gate can't see it. Vary the construction every time: a start date, a named resource already opened, a first concrete step taken. [D5](DECISIONS.md#d5-ramp-commitments-converged-on-one-sentence)
+- **Name when he'll start, and make it early.** A dated, checkable claim about behavior beats any adjective about learning speed. **Don't build it on a stock construction.** Pick the form that fits this gap: something he's already working through this week, a named resource with a start date, a first concrete step already taken, or what he'll have done by the end of his first week in the role. Before saving, read the ramp sentence in the last five letters in `tailored/` and don't reuse its structure; the per-letter voice gate can't see repetition across letters. Promise only work he'll actually do, because a sent letter commits him to it. [D5](DECISIONS.md#d5-ramp-commitments-converged-on-one-sentence), [D28](DECISIONS.md#d28-the-ramp-line-converged-again)
 - **Re-read what the requirement actually demands, then aim at that.** Requirements are often looser than they look. Framer's bar was "enough to read our code and dig in from day one," which is a *reading* bar, not a writing one; naming that distinction turned the weakest paragraph in the letter into an argument. Check for this before conceding a requirement wholesale.
 - **Cite evidence he ramps fast rather than asserting it.** Real precedents, all in `master_resume.md` (take the numbers from there): sole integration partner on the Maven AGI deployment with no prior AI-vendor experience at the company; training the Resideo agents to absorb an entire support function; the support-org scale-up; teaching himself the Claude Agent SDK and MCP server development (both on the AI & Automation skills line; it gives no automation count, so don't quote one). One concrete precedent beats three claims.
 - **Keep it to two or three sentences, in or beside the gap paragraph.** This is a beat inside the honesty moment, not its own section, and it must never turn into a plea.
@@ -653,8 +653,7 @@ that file (its Track Source File feature) and refreshes the page in place under 
   to a search link built from `query`.
 - An off-schedule rebuild is the same one command. It redraws from the tracker only; it does not
   read Gmail, so new confirmations still wait for Step 0.5.
-- **Open:** verify the first scheduled run by the mtime of `~/Downloads/job_dashboard.html`
-  (next run Mon 2026-09-21). Phase two is an Interviews section fed by a small
+- **Open:** Phase two is an Interviews section fed by a small
   `pipeline/interviews.json` cache written by the interview scan; not started. Deferred on
   purpose: adapters for the Jobvite and Gem boards a few manual-check companies use, and the
   queue rows that report "N PDFs match" instead of one resume path.
@@ -684,12 +683,9 @@ Spec: `daily_task_prompt.md` Step 2-JD and Step 6.7.
   (`WORKABLE_MAX_VARIANTS`), and Step 6.7 re-probes the 10 oldest `throttled` rejections late
   in the run via `throttle_recheck_pick.py`. Dry run: 10 of 10 resolved, 0 throttled.
 - Cost: ~150K Sonnet tokens per worker, ~10 workers a run.
-- **Open:** never yet run inside a scheduled session. The 2026-09-28 run is the first;
-  `NEXT_RUN_NOTES.md` flags it and the one-off task `jd-screen-first-run-check` (Mon 10 AM)
-  posts the result to #fleet-manage. If the Agent tool is unavailable in scheduled runs, the
-  documented fallback reads the cached JDs for the top 8 inline.
-- Pre-existing, unrelated: `test_harvest_cheap_walk.py → reduced_form_nofit_is_held_not_returned`
-  fails on the untouched harvester too (the reduced-name collision case).
+- It works inside scheduled sessions (first scheduled run 2026-09-28, no fallback needed). If
+  the Agent tool is ever unavailable, the documented fallback reads the cached JDs for the top
+  8 inline.
 
 ## Assisted Apply (on-demand skill)
 
@@ -739,7 +735,6 @@ Keeps `master_resume.md` current with the week's real work.
   ssh host (the script is sent on stdin; nothing is installed or written there). Worktree
   sessions are kept on purpose: they're distinct sessions, not copies. Wispr Flow is a
   possible future source, low priority.
-- **Open:** verify the first run by the candidates file's mtime (first run Fri 2026-09-25).
 
 ## LinkedIn Browser Sweep (on-demand skill)
 
