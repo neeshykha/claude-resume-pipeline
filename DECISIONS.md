@@ -517,3 +517,17 @@ Built 2026-08-28 after a Workday application form was abandoned mid-way. Aimed a
 high-effort ATSes (Workday, Paylocity, Taleo, iCIMS) that make him retype his whole work
 history after an upload, which is a plausible contributor to the 38% send rate and
 31-day median at `stage=surfaced`.
+
+## D28. The ramp line converged again
+
+_Added 2026-09-29._
+
+Of the letters written in the first two days after the 2026-09-27 restructure, five carried a
+ramp commitment, and four used the same construction: "I'll [work through a named resource]
+before a first conversation" (or "before a first interview"). Only one varied it ("This week I'm working
+through..."). That's the 2026-09-02 failure from D5 again, and the likely seed was the rule's own
+parenthetical, "(he has already begun, or begins before the first conversation)": a quoted
+example turned into the default sentence. The rule now lists kinds of commitment without an
+example phrase and asks for a check against the last five letters. The four promises also named
+specific training or reading, which a sent letter holds him to, so the rule now says to promise only work
+he'll actually do.
