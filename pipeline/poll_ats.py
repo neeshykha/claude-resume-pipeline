@@ -2213,7 +2213,10 @@ def poll_all(run_date: date) -> dict:
                     and not is_ai_wildcard and not is_ai_eng_stretch):
                 continue  # Not relevant at all
 
-            location = parse_location(job_data, ats)
+            # `or ""`: an adapter can return None for a posting with no location
+            # field at all, which crashed the whole poll on 2026-09-30 after ~35
+            # minutes. Treat it like any other empty/geo-free location.
+            location = parse_location(job_data, ats) or ""
 
             # Location filter
             if not location_relevant(location, title):
