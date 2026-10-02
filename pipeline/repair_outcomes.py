@@ -148,7 +148,16 @@ LEGACY_V4 = LEGACY_V3 + ["furthest_stage"]
 # column and must not be backfilled by assumption -- same three-state rule as
 # hard_req_cap_trigger and furthest_stage. IC scope is decided from the JD body
 # at daily_task_prompt.md Step 3, because the title routinely lies about it.
-CANONICAL = LEGACY_V4 + ["ic_scope"]
+# Schema in force 2026-09-07 through 2026-09-30. Recognized input shape:
+# shape "Q" widens these rows by one column.
+LEGACY_V5 = LEGACY_V4 + ["ic_scope"]
+# Added 2026-09-30: Aneesh's own verdict on a tailored role, set by hand with
+# mark_verdict.py when he sends or passes on it. Interview rate alone cannot
+# judge the pipeline when the strategy is to aim high, and ~58% of tailored
+# roles were going unsent with nothing recording why. Vocabulary in
+# HIS_VERDICTS below; "" means NOT RECORDED, same three-state rule as the
+# columns above, and must never be backfilled by assumption.
+CANONICAL = LEGACY_V5 + ["his_verdict"]
 DEFAULT_CHANNEL = "pipeline"
 
 # Ordered weakest to strongest. `furthest_stage` only ever moves right.
@@ -158,6 +167,11 @@ DEFAULT_CHANNEL = "pipeline"
 # and "checked, never interviewed" are different facts and conflating them is
 # exactly what made `outcome` useless here.
 FURTHEST_STAGES = ["", "applied", "assessment", "interview", "onsite", "offer"]
+
+# his_verdict vocabulary. sent_* answers "were the materials good enough";
+# skip_* answers "why not", which is the signal that was missing.
+HIS_VERDICTS = ["", "sent_as_is", "sent_edited", "skip_fit", "skip_materials",
+                "skip_time", "skip_other"]
 
 
 def is_url(v):
@@ -208,6 +222,8 @@ def classify(row):
 
     if len(row) == len(CANONICAL) and row[9].strip() in KNOWN_CHANNELS:
         return "ok", row
+    if len(row) == len(LEGACY_V5) and row[9].strip() in KNOWN_CHANNELS:
+        return "Q", pad(row)
     if len(row) == len(LEGACY_V4) and row[9].strip() in KNOWN_CHANNELS:
         return "P", pad(row)
     if len(row) == len(LEGACY_V3) and row[9].strip() in KNOWN_CHANNELS:
@@ -249,13 +265,14 @@ def main():
     with open(OUTCOMES, newline="", encoding="utf-8") as f:
         raw = list(csv.reader(f))
     header, rows = raw[0], raw[1:]
-    if header not in (CANONICAL, LEGACY_V4, LEGACY_V3, LEGACY_V2, LEGACY_V1, CORE):
+    if header not in (CANONICAL, LEGACY_V5, LEGACY_V4, LEGACY_V3, LEGACY_V2,
+                      LEGACY_V1, CORE):
         print(f"header is not a recognized schema: {header}", file=sys.stderr)
         return 2
 
     out = []
     counts = {"ok": 0, "A": 0, "B": 0, "C": 0, "L": 0, "M": 0, "N": 0, "O": 0,
-              "P": 0}
+              "P": 0, "Q": 0}
     unknown = []
     for i, row in enumerate(rows, start=2):
         shape, repaired = classify(row)
@@ -267,13 +284,15 @@ def main():
         out.append(repaired)
 
     total_fixed = (counts["A"] + counts["B"] + counts["C"] + counts["L"]
-                   + counts["M"] + counts["N"] + counts["O"] + counts["P"])
+                   + counts["M"] + counts["N"] + counts["O"] + counts["P"]
+                   + counts["Q"])
     print(f"rows: {len(rows)} | already canonical: {counts['ok']}")
     print(f"repairable: {total_fixed} "
           f"(A trailing-pdf: {counts['A']}, B transposed: {counts['B']}, "
           f"C shifted: {counts['C']}, L legacy-9col: {counts['L']}, "
           f"M widen-v1: {counts['M']}, N widen-v2: {counts['N']}, "
-          f"O widen-v3: {counts['O']}, P widen-v4: {counts['P']})")
+          f"O widen-v3: {counts['O']}, P widen-v4: {counts['P']}, "
+          f"Q widen-v5: {counts['Q']})")
     if unknown:
         print(f"UNRECOGNIZED, left untouched: {len(unknown)}")
         for ln, n, head in unknown:

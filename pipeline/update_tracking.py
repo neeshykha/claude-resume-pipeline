@@ -57,7 +57,7 @@ OUTCOMES_HEADER = ["applied_date", "company", "title", "url", "fit_score",
                    "jd_coverage_pct", "stage", "outcome", "notes",
                    "source_channel", "surfaced_date", "unmet_hard_reqs",
                    "vendor_tool_named_in_jd", "hard_req_cap_trigger",
-                   "furthest_stage", "ic_scope"]
+                   "furthest_stage", "ic_scope", "his_verdict"]
 
 
 def load_json(path, default):
@@ -198,7 +198,11 @@ def main() -> int:
                         # OUTCOMES_HEADER on 2026-08-27 and NOT here, so every
                         # row appended for a month came out one column short and
                         # mark_applied.py silently skipped all of them.
-                        j.get("ic_scope", "")])
+                        j.get("ic_scope", ""),
+                        # his_verdict: added 2026-09-30, header and writerow in
+                        # the same commit for the reason above. Always "" here:
+                        # only Aneesh sets it, via mark_verdict.py.
+                        ""])
             appended += 1
 
     print(f"seen_jobs: +{len(added)} new, {len(touched)} re-touched, "

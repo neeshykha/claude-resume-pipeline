@@ -223,8 +223,13 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | `outcomes.csv` outcome (rejected/interview/offer) | `mark_outcome.py` | infer an outcome from silence |
 | `outcomes.csv` schema migrations | `repair_outcomes.py` | hand-fix drifted rows |
 
-**`outcomes.csv` canonical schema (16 columns as of 2026-09-07, when `ic_scope` landed):**
-`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage,ic_scope`
+**`outcomes.csv` canonical schema (17 columns as of 2026-09-30, when `his_verdict` landed):**
+`applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage,ic_scope,his_verdict`
+
+**`his_verdict`** is Aneesh's own call on a tailored role, set only by him through
+`pipeline/mark_verdict.py` (`--todo` lists rows still missing one). Vocabulary:
+`sent_as_is`, `sent_edited`, `skip_fit`, `skip_materials`, `skip_time`, `skip_other`.
+Empty means not recorded; never fill it in for him and never infer it from `stage`.
 
 **`furthest_stage`** records the furthest point a role ever reached and **only ever moves right**.
 `outcome` is a single terminal-state column, so a role that reached an interview and was then
@@ -297,6 +302,31 @@ whether Aneesh clears the hiring manager's bar. Step 6 tailors every resume towa
 so the metric has almost no variance and no amount of outcome data will make it predictive.
 Use it exactly one way: as a gate at 80% during tailoring. For readiness, use `unmet_hard_reqs`.
 [D12](DECISIONS.md#d12-jd_coverage_pct-has-no-variance)
+
+### Measuring pipeline quality (set 2026-09-30, Aneesh's call)
+
+The strategy is to **aim high**, so interview rate on its own is not the measure of whether
+the pipeline is working: a low rate can mean bad picks or ambitious ones. Judge it on three
+separate questions, which `pipeline/pipeline_quality.py` (read-only, on demand) reports:
+
+1. **Are the picks the ones he'd choose?** Send rate, and the `skip_*` split in `his_verdict`.
+   Mostly `skip_fit` points at scoring; mostly `skip_materials` points at tailoring.
+2. **Are the materials good enough to send?** `sent_as_is` vs `sent_edited`.
+3. **Is aiming high getting traction?** Advance rate split into fit vs reach (reach = the
+   hard-req cap fired, or 2+ unmet hard reqs). Zero reach advances over ~40 reach sends means
+   the ceiling is too high or the materials can't carry a reach; the verdicts say which.
+
+Plus a monthly trend of what gets tailored (median score, pay midpoint, reach share), so "aim
+high" is checked as a behavior. Every rate is post-epoch and prints its n; samples are small,
+so don't act on a single month.
+
+- **Do not cut the tailoring cap to raise the send rate.** He wants everything over the
+  threshold available; a low send rate is a signal to read through `his_verdict`, not a
+  volume problem to solve by producing less.
+- **Judge a pipeline change by the thing it fixed**, not by outcome metrics. A plumbing fix
+  (LinkedIn body counts, a poller crash) won't move interview rate, and expecting it to makes
+  good fixes look useless.
+- The weekly channel report (Step 6.5) carries this report's output so it's seen weekly.
 
 Title matching is config-driven: `poll_ats.py` builds its matcher at runtime from `watchlist_companies.json → _title_scoring_tiers` + `_poller_config` (stemmed-token matching, so word-form and word-order variants match automatically). To teach the poller a new title, edit the JSON; `poll_ats.py` carries no title lists, endpoints, or scoring numbers of its own. Any `_title_scoring_tiers` key starting with `tier` (except the specially-handled `tier2b_ai_wildcard`) loads automatically as a tier. After ANY hand edit to `watchlist_companies.json` or `enrollment_candidates.json`, run `.venv/bin/python pipeline/validate_config.py` (syntax + schema check). The daily run also runs it at Step 1-pre, and `poll_ats.py` refuses to poll against a malformed watchlist. [D13](DECISIONS.md#d13-config-driven-title-matching)
 
