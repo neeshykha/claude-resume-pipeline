@@ -18,7 +18,7 @@
         "notes": "KEPT ACTIVE 2026-09-03 when BuiltIn Remote was disabled for poll_builtin.py, because it is NOT fully subsumed. The feeder harvests companies and every lead needs harvest_ats.py to resolve a board; when no board resolves, the company is rejected as unpollable and any live role at it is lost. This dork surfaces the ROLE directly off builtin.com/job, so it still reaches exactly that class -- the RethinkFirst case (real tier1 Atlanta role, no resolvable board for three days) is the shape. Atlanta is also the higher-signal, lower-competition half by the same reasoning as the Atlanta Board Sweep, so the non-overlap is worth a rotation slot here and was not worth one for Remote. Left at frequency 'daily', which the 1c rotation already means 'about every 3 days'; websearch_rotation.py supports only daily/monthly, so do not invent a 'weekly' value. NOTE: this is a judgement call, not a measurement -- channel_stats.websearch aggregates all sources and carries no per-source attribution, so neither dork's yield is actually known. If per-source stats ever land, re-test whether this one earns its slot. Original notes: Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount <=200. Query broadened 2026-06-25 to include customer success + solutions engineer terms.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-28"
+        "last_run": "2026-10-01"
       },
       {
         "name": "BuiltIn Remote",
@@ -46,7 +46,7 @@
         "status": "active",
         "frequency": "daily",
         "scoring_notes": "Apply +20 AI bonus + tier2b_ai_wildcard title match (+18) = strong signal. Verify salary floor.",
-        "last_run": "2026-09-28"
+        "last_run": "2026-10-01"
       },
       {
         "name": "Ashby Boards - Target Roles",
@@ -62,7 +62,7 @@
         "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-28"
+        "last_run": "2026-10-01"
       },
       {
         "name": "Lever Boards - Target Roles",
@@ -134,7 +134,7 @@
         "notes": "Closes the Workday blind spot found 2026-07-02: a Crowe 'AI Enablement Manager' (Atlanta, Tier-2 title, salary in range) was invisible to the pipeline because board dorks only covered Ashby/Greenhouse/Lever and Crowe isn't watchlist material. Workday hosts the enterprise segment specifically. Individual myworkdayjobs.com pages are JS-rendered — do NOT WebFetch them; verify hits via the Workday CXS API instead (POST https://{host}/wday/cxs/{tenant}/{site}/jobs with searchText — see _workday_notes / verify_workday.py). Enroll recurring-fit companies onto the watchlist with wd_host/wd_tenant/wd_site.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-28"
+        "last_run": "2026-10-01"
       },
       {
         "name": "Passion Verticals (EV/Health/Agtech/SportsTech discovery)",
@@ -142,7 +142,7 @@
         "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config → passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias. 'sports technology'/'sports analytics'/'player tracking' added 2026-07-22 for the new sports_technology domain -- this targets companies with real CSM/TAM/implementation-shaped roles (e.g. Sportradar, Catapult, Trackman, Zebra Sports), not field-hardware-technician titles like Hawk-Eye Innovations' actual Atlanta postings, which are a genuinely different job function and don't clear the title-tier bar regardless of the passion bonus. 'solar', 'home energy', and 'battery storage' added 2026-09-14 on Aneesh's ask after he asked whether home-solar companies like Sunrun were covered: they already scored under electrification_ev (+10) but no discovery source named them, and the watchlist had no residential-solar company. Expect installer boards to be mostly sales and field crews; the fitting roles sit at the software, battery, and home-energy-management end.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-28"
+        "last_run": "2026-10-01"
       },
       {
         "name": "Industrial IoT / Physical-World Hardware (discovery only, no scoring bonus)",
@@ -150,7 +150,7 @@
         "notes": "Added 2026-07-18 after Aneesh described being drawn to physical-world/industrial-equipment sensing (anchor example: a sensor device on spinning machinery) — narrower than generic 'hardware' or 'wireless communication' on purpose, to avoid pulling in consumer telecom/carrier noise or double-counting his existing consumer-IoT background (First Alert/Newell/Luma), which already scores normally via keyword overlap. A plain (non-site-scoped) version of this query was tested first and returned mostly generic aggregator category pages (ZipRecruiter/Indeed/SimplyHired), not enrollable individual companies -- switched to the ATS-host-scoped pattern (same shape as the Ashby/Greenhouse/Lever 'Boards - Target Roles' sources) since that's what actually surfaces live individual postings; first live run found AssetWatch (industrial condition-monitoring platform), Advanced Technology Services, and ANYbotics (industrial robotics/predictive maintenance). UNLIKE the Passion Verticals source above, this is discovery/enrollment-only: hits get NO passion-domain scoring bonus (Aneesh explicitly deferred that decision -- see memory user_profile.md 'Open item, deliberately deferred'). Companies surfaced here go through the normal enrollment verification and are scored on the standard rubric like any other company -- no bonus, no special treatment, just a wider discovery net. Do not add a passion_domains entry for this vertical unless Aneesh explicitly asks. RESOLVED 2026-09-08, and the answer was NOT a passion domain: asked directly (prompted by Seeq's Technical Account Manager, which scored 76 with zero company bonus against a real fit), Aneesh chose to score this vertical with the EXISTING IoT company-level bonus (+15) instead. So this source stays discovery-only and passion-domain-free exactly as written, and the lift arrives through the IoT line of the Step 2c rubric at scoring time. Apply it the way Samsara and Axon already do: leave score_bonus at 0, write the +15 as a SCORING NOTE in bonus_reason, and remember it counts toward the +30 company cap.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-09-28"
+        "last_run": "2026-10-01"
       },
       {
         "name": "PropTech / Resident Experience (vertical discovery)",
@@ -166,7 +166,7 @@
         "notes": "Added 2026-07-27. NOT a title or company query -- an EVENT query, and that's the point. M&A in Aneesh's exact vertical is structurally invisible to a discovery layer keyed on titles and company names, yet it both kills watchlist entries and creates new ones. Two such events have now been found purely by accident: Moveworks -> ServiceNow (found 2026-07-15 while investigating a 404) and Zendesk -> Forethought (found 2026-07-27 the same way, completed 2026-03-26, ~$200M+). In both cases the acquired company's board went 404 and the pipeline burned weekly recovery searches against a permanently dead slug for weeks, while the ACQUIRER -- hiring for the exact same function under a new title convention ('AI Success Strategist' at Zendesk) -- was either absent from the watchlist entirely or not connected to the dead entry. Run on/after the 1st of each month (see frequency); this is quarterly-scale news, not daily. On a hit: (1) mark the acquired company's board_status permanent if its board is dead, (2) verify and enroll the acquirer if it's off-watchlist, (3) check whether the absorbed team hires under a NEW title convention and add that title to _title_scoring_tiers.",
         "status": "active",
         "frequency": "monthly",
-        "last_run": "2026-09-01"
+        "last_run": "2026-10-01"
       },
       {
         "name": "Tier-1 Manager-Title Sweep (Greenhouse)",
@@ -174,7 +174,7 @@
         "notes": "SPLIT FROM 'Tier-1 Manager-Title Sweep (all 3 ATSes at once)' ON 2026-09-07 into three single-site queries. DO NOT RE-COMBINE. Same regression as the Atlanta Board Sweep: `(site:A OR site:B OR site:C)` grouping stopped returning ATS-hosted results, while a single site: operator on identical content still works. Splitting is FREE here in a way it is not for the Atlanta sweep, because monthly sources never consume a rotation slot (see run_instructions), so all three hosts were recreated rather than two. Note the 2026-08-21 yield complaint below is now partly re-openable: two of the eight results that run were aggregators (Jobgether, Swooped), which in hindsight was the multi-site shape beginning to degrade rather than pure watchlist saturation. Give the split version one clean monthly run before judging the source on the old numbers. Original notes follow. Added 2026-07-14 after a test run: a rare-exact-title sweep surfaces companies the broader 'customer success/technical account/implementation' dorks miss (those get crowded out by large, well-known companies). Found Model N (Manager, Support Operations) and Aledade (Director, Application Support Operations -- health-tech passion domain) on the first run; also produced the Lumimeds, AssetWatch, and Boulevard enrollments dated 2026-07-17 and 2026-07-28, which is the evidence that the multi-site shape genuinely worked in July. Deliberately scoped to Manager-level Tier-1 titles only -- 'Head of Support' and 'Director of Support Operations' excluded per Aneesh: those read as above his current level/purview, even though they are still scored as tier1_true_match in _title_scoring_tiers for ATS-poller hits. DEMOTED daily -> monthly 2026-08-21 on Aneesh's approval, on a yield argument: that run returned 8 results and ZERO new companies (2 aggregators, 1 role already applied to at Customer.io, and 3 confirmed-CLOSED listings at already-rejected companies -- Apollo.io, Model N, Cloudbeds). Cloudbeds is the sharpest case: harvest_ats rejected it for zero fit-titles earlier the SAME DAY, this dork surfaced a 'Senior Support Operations Manager' there, and fetching that req returned 404. The search index serves dead reqs. Likely root cause was watchlist saturation: at 300+ enrolled companies the reachable tier1-title space is largely already polled daily. Re-promote to daily only if a monthly run produces multiple real enrollments.",
         "status": "active",
         "frequency": "monthly",
-        "last_run": "2026-09-10"
+        "last_run": "2026-10-01"
       },
       {
         "name": "Tier-1 Manager-Title Sweep (Ashby)",
@@ -182,7 +182,7 @@
         "notes": "SPLIT FROM 'Tier-1 Manager-Title Sweep (all 3 ATSes at once)' ON 2026-09-07 -- see the Greenhouse sibling for the canonical writeup, the regression evidence, and the standing yield caveat. Monthly, so it costs no rotation slot.",
         "status": "active",
         "frequency": "monthly",
-        "last_run": "2026-09-10"
+        "last_run": "2026-10-01"
       },
       {
         "name": "Tier-1 Manager-Title Sweep (Lever)",
@@ -190,7 +190,7 @@
         "notes": "SPLIT FROM 'Tier-1 Manager-Title Sweep (all 3 ATSes at once)' ON 2026-09-07 -- see the Greenhouse sibling for the canonical writeup, the regression evidence, and the standing yield caveat. Monthly, so it costs no rotation slot. Lever is the smallest of the three hosts on the watchlist (38 of 315 boards across Greenhouse/Ashby/Lever as of 2026-09-07) and was omitted from the Atlanta Board Sweep split for exactly that reason; it is kept here because monthly sources are free and because Lever demonstrably hosts Atlanta fit-space roles (Aprio's Tax Technology Automation Manager, the top-scoring role of the 2026-09-07 run at 97).",
         "status": "active",
         "frequency": "monthly",
-        "last_run": "2026-09-10"
+        "last_run": "2026-10-01"
       },
       {
         "name": "SmartRecruiters Boards - Target Roles",
@@ -282,8 +282,8 @@
         "name": "Amazon / AWS",
         "why": "Atlanta offices. Huge TAM/support org. Custom careers site.",
         "query": "site:amazon.jobs (\"technical account manager\" OR \"customer success\" OR \"support operations\") Atlanta",
-        "last_checked": "2026-09-25",
-        "last_hit": "no Atlanta-confirmed fit-space role in amazon.jobs results (TAM reqs are EMEA/LATAM or location unstated); LinkedIn cards show Sr. TAM + TAM Strategic Industries Atlanta still alerting",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: Sr. Technical Account Manager, Atlanta, $153.6K-$207.8K live on amazon.jobs (job 10517549; also 10517525, 10502532, 10558497)",
         "careers_url": "https://www.amazon.jobs/en/search"
       },
       {
@@ -306,8 +306,8 @@
         "name": "AppFolio",
         "why": "Property management SaaS for residential and commercial real estate; direct adjacency to iApartments. Added 2026-08-21 after the PropTech dork was disabled and its named targets were finally checked by hand. Confirmed unpollable the same day: harvest_ats resolved no board from name variants across Greenhouse/Ashby/Lever/Workable, and the documented site:myworkdayjobs.com fallback returned only OTHER employers' reqs that list AppFolio as a required skill (Armanino, DCX, Zego) rather than an AppFolio tenant. Runs a custom careers site.",
         "query": "\"appfolio\" careers (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation manager\" OR \"technical support manager\") remote OR Atlanta",
-        "last_checked": "2026-09-24",
-        "last_hit": "2026-09-14: aggregator pages only (Indeed, Glassdoor, ZipRecruiter); no direct ATS link. Separately, a LinkedIn alert carried 'Revenue Operations Manager - Customer Success' (Atlanta, job 4455380639); a startup.jobs mirror of an older req of that title reads closed, so the new alert id may be a repost. Surfaced in digest Manual channel for a hand check.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: aggregator snippets (Indeed/ZipRecruiter) list Strategic Customer Success Manager, Atlanta, $114K-$143K and Manager, Onboarding Services, $104K-$130K; no direct posting URL surfaced, currency unverified",
         "careers_url": "https://www.appfolio.com/open-roles"
       },
       {
@@ -354,8 +354,8 @@
         "name": "InComm Payments",
         "why": "Atlanta HQ payments technology, mid-tier operating company. No pollable board identified.",
         "query": "\"InComm Payments\" careers (\"customer success\" OR \"technical account manager\" OR \"implementation\" OR \"client support\") Atlanta",
-        "last_checked": "2026-09-25",
-        "last_hit": "no qualifying fit-space role found",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: Director I, IT Customer Success, Atlanta, $91.8K-$139.9K seen on ZipRecruiter only; no InComm-hosted URL",
         "careers_url": "https://jobs.incommpayments.com/jobs"
       },
       {
@@ -386,108 +386,108 @@
         "name": "Barracuda",
         "why": "'Manager, Technical Support' role confirmed via LinkedIn job 4446133973, Alpharetta GA (Hybrid), tier-1 word-order variant. Apply resolves to app.jobvite.com, an ATS the poller doesn't speak.",
         "query": "\"Barracuda\" careers \"Technical Support\" Alpharetta OR Atlanta",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: Aggregator snippets still reference a 'Technical Support Manager' for the Alpharetta team; directly visible openings are Technical Support Representative (Tier 1, $17-24/hr) and Technical Support Representative 2. No direct link to the manager req resolved. Treat the manager role as unconfirmed-live.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: Technical Support Manager, Alpharetta still referenced by aggregators ($70K-$95K aggregator figure, under the floor); Jobvite board has a Technical Support category; posting date unconfirmed.",
         "careers_url": "https://www.barracuda.com/company/careers"
       },
       {
         "name": "Mission Communications LLC",
         "why": "'Customer Experience and Technical Support Manager' confirmed via LinkedIn job 4423044898, Norcross GA (Hybrid), tier-1 loose match. No ATS board found under any deterministic slug guess.",
         "query": "\"Mission Communications\" careers \"Technical Support Manager\" Norcross OR Atlanta",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: Only 'Technical Support Specialist' ($42-59K, Norcross) visible. No Technical Support Manager listing found. No hit.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: 'Customer Experience and Technical Support Manager', Norcross, est. $47K-$70K (Glassdoor/Indeed snippets; apply by email). Under the salary floor.",
         "careers_url": "https://tasimeasurement.rec.pro.ukg.net/TAS1500TASI/JobBoard/2fb92a77-0aea-4e34-864b-11b2e6f60345/"
       },
       {
         "name": "Institute for AI Policy and Strategy",
         "why": "80,000 Hours lead: 'People Operations Manager', Remote US/UK, $105K-$115K -- real title, real salary, tier fit. Apply link is careers.rethinkpriorities.org (fiscal-sponsor custom career site), not a supported ATS.",
         "query": "\"Institute for AI Policy and Strategy\" OR \"IAPS\" careers site:careers.rethinkpriorities.org",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: IAPS itself shows only the AI Policy Fellowship. Parent site surfaced 'AI Integration Lead - Remote' at Rethink Priorities (careers.rethinkpriorities.org, custom site). tier2b-shaped, remote; noted, not scored.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: researcher and fellowship roles only on careers.rethinkpriorities.org. No hit.",
         "careers_url": "https://www.iaps.ai/careers"
       },
       {
         "name": "EV Connect",
         "why": "'Customer Success Manager' role, EV charging passion domain, surfaced via Passion Verticals discovery. No Greenhouse/Ashby/Lever board found.",
         "query": "\"EV Connect\" careers \"Customer Success Manager\"",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Enterprise Client Success Manager' (United States, remote-eligible) open per LinkedIn; earlier 'Customer Success Manager' listing on app.trinethire.com (TriNet Hire, unsupported ATS). tier3, remote US, EV passion domain. Manual-channel candidate.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: Customer Success Manager posting is El Segundo CA, not Atlanta or confirmed remote. No hit.",
         "careers_url": "https://www.evconnect.com/careers"
       },
       {
         "name": "Assiduus Global",
         "why": "Atlanta-based AI-powered middleware platform for cross-border e-commerce, $25M pre-Series B (Bajaj Finserv, March 2026). Genuinely AI-native and Atlanta -- double passion/geo fit. Own site mentions active Operations roles but no supported ATS found.",
         "query": "\"Assiduus Global\" careers Atlanta \"Operations\"",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: Only Product Manager (Atlanta) and CFO visible. No fit-space role. No hit.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: no fit-space role (intern/warehouse, Product Manager, CFO). No hit.",
         "careers_url": "https://www.assiduusglobal.com/careers/"
       },
       {
         "name": "Fusion Risk Management",
         "why": "'Customer Success Manager' role, surfaced via BuiltIn Remote. No Greenhouse/Ashby/Lever board found (WebSearch keeps surfacing an unrelated company, Commonwealth Fusion Systems).",
         "query": "\"Fusion Risk Management\" careers \"Customer Success Manager\"",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Customer Success Manager' and 'Principal Customer Success Manager' live on BuiltIn Chicago/NYC/SF. tier3, no Atlanta or explicit remote-US signal, so it fails the tier3 location gate. No hit.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: Customer Success Manager, remote or hybrid, $100K-$120K on aggregators (BuiltIn, purpose.jobs); remote-US status and currency unverified. tier3.",
         "careers_url": "https://www.fusionrm.com/about-us/careers/"
       },
       {
         "name": "ModelOp",
         "why": "'Customer Success' role helping enterprises implement AI governance workflows -- AI-governance vertical discovery hit. Greenhouse slug guess 'modelop' 404'd.",
         "query": "\"ModelOp\" careers \"Customer Success\"",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: No specific fit-space opening surfaced; only a CS team/leadership page. No hit.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: careers page lists AI Enablement Engineer and Enterprise AE; no Customer Success role. No hit.",
         "careers_url": "https://www.modelop.com/company/careers"
       },
       {
         "name": "Espressive",
         "why": "AI service desk platform -- 'would be a fit' per the original discovery note. Greenhouse slug 'espressive' 404'd.",
         "query": "\"Espressive\" careers \"Customer Success\" OR \"Support\"",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: No specific opening surfaced; careers page and LinkedIn jobs only. No hit.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: now part of Resolve; no open CS/support roles surfaced. No hit.",
         "careers_url": "https://resolve.io/careers"
       },
       {
         "name": "InVue",
         "why": "'Customer Support Manager-Americas' confirmed role, Charlotte NC. Uses Jobvite (jobs.jobvite.com/invue), unsupported ATS.",
         "query": "\"InVue\" careers \"Customer Support Manager\" Charlotte",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Customer Support Manager (B2B)' Charlotte still live (LinkedIn/Glassdoor; hosted on jobs.jobvite.com/invue, Jobvite unsupported). 5-7 yrs customer service/support ops, ~$76K. On-site Charlotte scores 0 for location. Noted, not a pick.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: Customer Support Manager still live on jobs.jobvite.com/invue, Charlotte NC (wrong city). No hit.",
         "careers_url": "https://jobs.jobvite.com/invue/search"
       },
       {
         "name": "Transluce",
         "why": "'Operations Generalist' role, SF Bay Area, AI-safety org. Hosts on jobs.gem.com, an ATS the poller doesn't speak.",
         "query": "\"Transluce\" AI safety careers \"Operations\"",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Operations Generalist' (SF, people ops/finance/compliance) and 'AI Systems Engineer'. Neither is fit-space. No hit.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: only Operations Generalist, San Francisco (people ops/finance/compliance). No hit.",
         "careers_url": "https://jobs.gem.com/transluce"
       },
       {
         "name": "RealPage",
         "why": "Named target company in the PropTech discovery source notes. Re-confirmed 2026-08-18 (targeted site:myworkdayjobs.com search) still has no resolvable board -- likely a custom or unresolved Workday tenant.",
         "query": "\"RealPage\" careers \"Customer Success\" OR \"Implementation Manager\" OR \"Support Operations\"",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: 'Senior Manager - Customer Success', 'Customer Success Manager - Remote', and 'Solution Consultant' (Strategic Implementation org) live on BuiltIn/LinkedIn; ~20 open US roles. MULTIFAMILY / RENTAL HOUSING SaaS: the exact vertical iApartments serves. Strongest hit in this sweep alongside AppFolio. ATS still unresolved (custom host); worth one manual site:myworkdayjobs.com search.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: Customer Success Manager III and Implementation Consultant in Richardson TX; no Atlanta or remote-US listing. No hit.",
         "careers_url": "https://join.realpage.com/join/jobs/categories"
       },
       {
         "name": "Avanos Medical",
         "why": "Health-tech passion domain. Confirmed custom career site (careers.avanos.com), not on Greenhouse/Ashby/Lever/Workday -- a genuine no-board case, not a slug-guessing miss. A fit-space Systems-shaped role was seen at discovery time.",
         "query": "site:careers.avanos.com \"Customer Success\" OR \"Support Operations\" OR \"Implementation\"",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: careers.avanos.com shows Salesforce Architect, Patient Access Manager (remote), Distributor Experience Analyst and Business Process Support Consultant (both Alpharetta). None is fit-space. No hit.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: Distributor Experience Analyst (Alpharetta), Salesforce Architect, Analytics & AI Delivery Lead (Atlanta); none clearly fit-space. No hit.",
         "careers_url": "https://careers.avanos.com/"
       },
       {
         "name": "West Physics",
         "why": "Atlanta-based medical imaging accreditation/radiation-physics consulting firm, recapitalized by Incline Equity Partners (PE, June 2026). Custom career site (westphysics.com/about/careers/), Atlanta-geo relevance even without a strong confirmed role yet.",
         "query": "\"West Physics\" Atlanta careers \"Operations\" OR \"Support\"",
-        "last_checked": "2026-09-02",
-        "last_hit": "2026-09-02: Only 'Clinical Application Physicist in Support Operations' (a physicist role) plus scheduling coordinator. No hit.",
+        "last_checked": "2026-10-01",
+        "last_hit": "2026-10-01: physicist and residency openings only. No hit.",
         "careers_url": "https://westphysics.com/about/careers/"
       }
     ],
-    "last_monthly_run": "2026-09-02"
+    "last_monthly_run": "2026-10-01"
   },
   "_endpoints": {
     "greenhouse": "https://boards-api.greenhouse.io/v1/boards/{slug}/jobs",
@@ -566,7 +566,7 @@
     "notes": "Light tailoring for IC-level roles 78-87. Full tailoring for 88+. Skip below 78. Capped companies require 110+ regardless of tier. Cap rule: count entries where applied=true AND outcome=null (pending applications). If that count ≥ company_cap_max_applied_pending, new roles need company_cap_threshold to surface. Queued/unapplied roles do NOT count toward the cap — only submitted applications do.",
     "passion_domains": {
       "bonus": 10,
-      "notes": "Mission-alignment bonus for Aneesh's personal interest areas (added 2026-07-02, from direct user input). Apply +10 ONCE per job if the company's product/mission sits in ANY of these domains; do not stack across domains. This is a COMPANY-LEVEL bonus and counts toward the +30 company-bonus cap alongside AI/ML, watchlist, Atlanta, IoT, small-company. Claude applies it SEMANTICALLY at Step 2c (company mission/product, not keyword accidents like 'patient rollout'). The poller uses poller_keywords only for a small pre_score lift so passion companies reach the shortlist.",
+      "notes": "Mission-alignment bonus for Aneesh's personal interest areas (added 2026-07-02, from direct user input). Apply +10 ONCE per job if the company's product/mission sits in ANY of these domains; do not stack across domains. This is a COMPANY-LEVEL bonus and counts toward the +30 company-bonus cap alongside AI/ML, watchlist, Atlanta, IoT, small-company. Claude applies it SEMANTICALLY at Step 2c (company mission/product, not keyword accidents like 'patient rollout'). The poller uses poller_keywords only for a small pre_score lift so passion companies reach the shortlist. 2026-10-01: abundance_politics_civic_tech and yimby_housing_supply added; health_tech explicitly kept; bonus left at +10 under the +30 cap (Aneesh's call, all three). A rule change that RAISES scores is not reconciled by --sweep-drift, so queued rows at companies in the two new domains are under-scored by up to 10 until re-measured.",
       "domains": {
         "electrification_ev": {
           "description": "EVs, charging, batteries, energy storage, grid, clean energy, climate tech",
@@ -625,6 +625,35 @@
             "biomechanics",
             "optical tracking",
             "tennis technology"
+          ]
+        },
+        "abundance_politics_civic_tech": {
+          "description": "Abundance-style policy and civic technology (added 2026-10-01): pro-growth, pro-housing policy work. Think tanks and advocacy orgs working on housing and land-use reform, land value tax, permitting reform, state capacity, and energy and infrastructure buildout; plus civic technology and government digital services that make public systems work. Partisan campaign tooling is adjacent, not the core of the interest. An interest signal only, never a filter against any company; his case-by-case call on individual roles is unchanged.",
+          "poller_keywords": [
+            "abundance",
+            "land value tax",
+            "georgist",
+            "permitting reform",
+            "state capacity",
+            "civic tech",
+            "civic technology",
+            "government digital services",
+            "think tank",
+            "public policy"
+          ]
+        },
+        "yimby_housing_supply": {
+          "description": "YIMBY and housing supply: permitting software, zoning and land-use reform, housing-policy and pro-housing advocacy orgs, housing-production tech (ADUs, modular and prefab, site planning). Added 2026-10-01 at Aneesh's direction. NOT property management or leasing software as such; that is his current industry, not this interest. Apply semantically: the company's mission has to be more homes or easier building.",
+          "poller_keywords": [
+            "yimby",
+            "housing supply",
+            "housing production",
+            "permitting",
+            "zoning",
+            "land use",
+            "affordable housing",
+            "accessory dwelling",
+            "modular housing"
           ]
         }
       }
@@ -717,7 +746,9 @@
         "AgentOps",
         "LLMOps",
         "AI Agent Operations",
-        "AI Agent Evaluation"
+        "AI Agent Evaluation",
+        "Product Adoption Manager",
+        "Adoption Manager"
       ],
       "agentops_family_note": "The four Agent/LLMOps titles were added 2026-09-07, after Aneesh brought back an outside analysis of how the operating role for AI agents is being named. The market has not settled on one: AgentOps, AI Ops Manager, Agent Owner, Agent Supervisor, AI Enablement Lead, Agent QA Lead are all in use for overlapping work, and the analysis splits them into an ENABLEMENT half (L&D plus program management, softer and more crowded) and an OPS half (SRE adapted to non-deterministic tool-using systems: tracing, evals, cost and latency control, guardrails, incident response, and the rarer of the two). The config already covered the enablement half thoroughly -- 'AI Enablement Manager/Lead', 'AI Adoption Manager', 'AI Operations Manager/Lead', plus the tier2b wildcard. It covered the ops half not at all: a grep for agentops/agent ops/agent owner/agent supervisor/agent qa across this entire file returned ZERO hits, and tier2b cannot rescue them because its gate requires 'AI' as a WORD-BOUNDARY TOKEN and 'AgentOps' is a single token. WHY ONLY THESE FOUR, AND WHY THE OBVIOUS ONES ARE DELIBERATELY MISSING: 'agent' is a homonym in Aneesh's domain. In master_resume.md an agent is a PERSON -- he leads 8, trained 24 at Resideo, scaled a team from 1 to 18. In AgentOps an agent is software. So 'Agent Supervisor' and 'Agent QA Lead' mean evaluating AI output in one world and auditing humans' calls in the other, and the second is a rung BELOW his current job: he built the auditing system that does it. The $100K salary floor does not reliably screen those out either, because healthcare and insurance contact centers pay supervisors above it. Bare 'Agent Operations' is excluded for the same reason (insurance agents), which is why the entry is qualified as 'AI Agent Operations'. 'Agent Evaluation' is qualified to 'AI Agent Evaluation' because contact-center QA teams evaluate agents too. DO NOT 'complete the set' by adding Agent Supervisor, Agent QA Lead, or bare Agent Operations; the false-positive cost is worse than the miss, and it is a downgrade-shaped false positive rather than a merely irrelevant one. All four are also in jd_verification_required_titles, following the AI Operations Lead/Manager precedent from 2026-08-10 and the harder-won FDE lesson: a title minted by the AI-infra market can drift to mean 'customer-facing engineer who ships production code' within months. Scale AI's version of this role is titled 'Engineering Manager, AgentOps'. BEFORE this change it was blocked twice over: 'Engineering Manager' sits in function_mismatch_titles, and tier2b's exclude_if_contains lists 'engineer', so the wildcard could not rescue it either. AFTER this change it resolves to tier2 +22 on the 'AgentOps' token, and because function_mismatch_titles.protected_tiers includes tier2_strong_overlap, that tier2 match now PROTECTS it from the Engineering Manager demotion and it reaches the shortlist. That reversal is intended -- visibility into a forming category is the point -- but it is also precisely how FDE went wrong at tier2, so read jd_verification_required_titles.agentops_flag_note before touching any of this.",
       "agentops_evidence_note": "Scoring these titles at +22 is a claim about title fit, not about readiness, and the gap is specific enough to state. From master_resume.md Aneesh has real material for three of the ops half's four pillars: EVALS (the auditing system grading 24 calls and sampling 40 cases weekly is an eval harness, pointed at humans rather than models), COST (cost per ticket down ~50%, 600 to 1,200 cases at flat headcount, already stated in unit-economics terms), LIFECYCLE (vendor selection through deployment through KB feedback loop through T1 training, owned end to end), and INCIDENT RESPONSE (~1,000 escalations/month at Resideo, Tier 3 ownership). He has NOTHING for tracing, latency control, or guardrails on non-deterministic systems, and the 85% Maven AGI deflection figure is an outcome metric rather than an eval suite -- a distinction an AgentOps interviewer will probe. Expect these roles to carry 2-3 unmet hard reqs and to be capped to light tier often. Surface them anyway: the category is forming now and the enablement half is the crowded one. ONE KNOWN FALSE POSITIVE THIS DOES NOT GUARD: an IC role titled literally 'AgentOps Engineer' or 'LLMOps Engineer' matches these tier2 entries at +22, because tier2b's exclude_if_contains ['engineer'] governs the WILDCARD only and has no effect on exact-tier matching. The jd_verification flag is what catches it at Step 3, before anything is tailored. Do not solve this by removing the titles; a same-day test of the AgentOps discovery dork found that essentially every current Greenhouse posting carrying this vocabulary is an engineering IC role, so the false positive is the COMMON case right now and the flag is doing real work. Revisit if the ops-manager version of the title becomes the norm."
@@ -3630,17 +3661,17 @@
     },
     {
       "name": "Hawk-Eye Innovations",
-      "ats": "workable",
-      "slug": "hawk-eye-innovations",
+      "ats": "ashby",
+      "slug": "hawkeyeinnovations",
       "priority": "low",
       "enrolled_date": "2026-07-30",
       "enrolled_via": "LinkedIn alert audit 2026-07-30",
       "reason": "Sony-owned sports officiating and tracking technology (ball tracking, SMART replay, 20+ sports): the anchor company for the sports_technology passion domain, which Aneesh named directly and which had produced ZERO surfaced roles in eight weeks. Workable endpoint resolves (HTTP 200) but returned 0 open jobs on 2026-07-30, so enrollment is a placeholder that will start producing when they post. Workable ATS support was only added to the poller 2026-07-27, which is why this was unreachable before. His LinkedIn alert for this company is deliberately KEPT as a cross-check while the board reads empty.",
-      "board_status": "empty_seen_2026-08-18",
       "board_status_note": "RESOLVED 2026-08-18: harvest_ats.py's poller endpoint (v1/widget/accounts, correct per _endpoints) 404'd during --prune, but a direct probe of the correct Workable widget URL confirms the board is live (HTTP 200, valid company payload), just 0 open jobs -- same state as the original 2026-07-30 enrollment. The 2026-08-04 DEAD flag was a false alarm, likely a transient Workable outage or the poller hitting a stale/wrong endpoint variant that day. Not permanently dead; still a placeholder pending real postings. RECURRED 2026-08-26: --prune again reported this board DEAD(404) while the daily poll raised no error for it. That is now twice from the same source, so treat a Hawk-Eye DEAD line from --prune as a known artifact of that script's Workable endpoint, not evidence: only act on it if poll_ats.py itself starts erroring on this company. Left enrolled deliberately.",
       "headcount_band": "201-500",
       "score_bonus": 0,
-      "bonus_reason": "Neither (+0): sports officiating and tracking technology."
+      "bonus_reason": "Neither (+0): sports officiating and tracking technology.",
+      "board_moved_note": "2026-10-01: moved from workable/hawk-eye-innovations (empty since 2026-08-18) to ashby/hawkeyeinnovations, verified live with 32 jobs, all UK/Budapest on that date."
     },
     {
       "name": "Databricks",
@@ -4358,15 +4389,16 @@
     },
     {
       "name": "Latch",
-      "ats": "lever",
-      "slug": "latch",
+      "ats": "rippling",
+      "slug": "door",
       "priority": "low",
       "enrolled_date": "2026-08-21",
       "enrolled_via": "Hand-enrolled at Aneesh's direction after harvest_ats rejected it on fit-space.",
       "reason": "Smart-lock and smart-building hardware for multifamily, now trading as DOOR. The closest hardware analogue to iApartments on the whole watchlist: in-unit device support, property-manager stakeholders, and resident-facing workflows are literally his day job, so fit-space roles here should score unusually well on keyword overlap. Same enrollment rationale as Entrata: lever/latch resolved live with only 2 jobs and 0 fit-titles on 2026-08-21, enrolled anyway because a live board in his exact vertical is worth polling daily. Small board, so expect long stretches of nothing. Prune via --prune if it dies.",
       "score_bonus": 0,
       "bonus_reason": "Neither (+0): smart-lock and smart-building hardware. IoT (+15) applies at scoring.",
-      "headcount_band": "201-500"
+      "headcount_band": "201-500",
+      "board_moved_note": "2026-10-01: repointed from lever/latch (stale) to rippling/door; the company trades as DOOR and posts at ats.rippling.com/door/jobs (Partner Operations & Success Manager, remote, seen that day)."
     },
     {
       "name": "Workday",
@@ -4622,7 +4654,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (15 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Customer Success Engineer' [Remote, US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 20,
-      "bonus_reason": "Developer/infra tooling (+20) -- classified 2026-08-21. Cloud privileged access management (PAM) and just-in-time access for multi-cloud and SaaS. Security tooling, same category as Wiz, Saviynt, and 1Password. Re-enrolled 2026-08-21 on 'Senior Customer Success Engineer | Remote, US' after tier3 was location-gated; previously rejected 2026-08-14 for having no tier1/tier2/tier2c title."
+      "bonus_reason": "Developer/infra tooling (+20) -- classified 2026-08-21. Cloud privileged access management (PAM) and just-in-time access for multi-cloud and SaaS. Security tooling, same category as Wiz, Saviynt, and 1Password. Re-enrolled 2026-08-21 on 'Senior Customer Success Engineer | Remote, US' after tier3 was location-gated; previously rejected 2026-08-14 for having no tier1/tier2/tier2c title.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Sonatype",
@@ -4633,7 +4666,8 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (33 jobs) with 2 fit-titles at harvest time (2 tier3(location-gated)), e.g. 'Federal Customer Success Manager - DevOps' [US - Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
       "score_bonus": 20,
-      "bonus_reason": "Developer/infra tooling (+20) -- classified 2026-08-21. Software supply chain security and the Nexus artifact repository: dependency scanning, SBOM, open-source governance. Developer tooling in the most literal sense, since Nexus is infrastructure developers build against daily. Re-enrolled 2026-08-21 on two remote-US tier3 roles (Federal CSM - DevOps, Senior Solutions Delivery Engineer - DevOps) after tier3 was location-gated; previously rejected 2026-08-14."
+      "bonus_reason": "Developer/infra tooling (+20) -- classified 2026-08-21. Software supply chain security and the Nexus artifact repository: dependency scanning, SBOM, open-source governance. Developer tooling in the most literal sense, since Nexus is infrastructure developers build against daily. Re-enrolled 2026-08-21 on two remote-US tier3 roles (Federal CSM - DevOps, Senior Solutions Delivery Engineer - DevOps) after tier3 was location-gated; previously rejected 2026-08-14.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Dexory",
@@ -6432,8 +6466,9 @@
       "priority": "low",
       "enrolled_date": "2026-09-21",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (2 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Account Manager ' [Remote-US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (2 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Account Manager ' [Remote-US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): AI-powered online and social media screening is the product (classified 2026-10-01)"
     },
     {
       "name": "DailyPay",
@@ -6442,8 +6477,9 @@
       "priority": "low",
       "enrolled_date": "2026-09-21",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (22 jobs) with 3 fit-titles at harvest time (2 tier2, 1 tier3(location-gated)), e.g. 'Strategic Implementation Manager' [US-Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (22 jobs) with 3 fit-titles at harvest time (2 tier2, 1 tier3(location-gated)), e.g. 'Strategic Implementation Manager' [US-Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus: earned-wage-access fintech; product is neither an AI system nor developer tooling (classified 2026-10-01)"
     },
     {
       "name": "Rain",
@@ -6452,8 +6488,9 @@
       "priority": "low",
       "enrolled_date": "2026-09-21",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (45 jobs) with 3 fit-titles at harvest time (3 tier2), e.g. 'AI Operations Lead' [New York, NY]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (45 jobs) with 3 fit-titles at harvest time (3 tier2), e.g. 'AI Operations Lead' [New York, NY]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "No vertical bonus: stablecoin payments platform; neither AI-native nor developer tooling, and crypto roles are hard-filtered at Step 2b (classified 2026-10-01)"
     },
     {
       "name": "KnowBe4",
@@ -7136,6 +7173,267 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "needs_vertical_classification": true,
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (74 jobs) with 3 fit-titles at harvest time (1 tier1, 2 tier2c), e.g. 'Senior Manager, Business Systems' [US-Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Cotiviti",
+      "ats": "icims",
+      "slug": "cotiviti",
+      "priority": "low",
+      "enrolled_date": "2026-09-30",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (84 jobs) with 2 fit-titles at harvest time (2 tier2), e.g. 'AI Program/Project Manager-AI/ML Solutions' [US-Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "LocalStack",
+      "ats": "ashby",
+      "slug": "localstack",
+      "priority": "low",
+      "enrolled_date": "2026-09-30",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (13 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Account Manager' [United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Counterpart Health",
+      "ats": "greenhouse",
+      "slug": "counterparthealth",
+      "priority": "low",
+      "enrolled_date": "2026-09-30",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Implementation Manager' [Remote - USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Evergreen Nephrology",
+      "ats": "greenhouse",
+      "slug": "evergreennephrology",
+      "priority": "low",
+      "enrolled_date": "2026-09-30",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (6 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Implementation Manager' [Remote - All Locations]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "TEECOM",
+      "ats": "lever",
+      "slug": "teecom",
+      "priority": "low",
+      "enrolled_date": "2026-09-30",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (12 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Project Management' [Remote - US, UK, or India]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Wheel",
+      "ats": "ashby",
+      "slug": "wheel",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Director, Customer Support' [Remote, USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Unanet",
+      "ats": "greenhouse",
+      "slug": "unanet",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (6 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier3(location-gated)), e.g. 'Senior Customer Success Manager (AEC)' [Anywhere in the United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Glow",
+      "ats": "ashby",
+      "slug": "glow",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (16 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Account Manager ' [United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Marqeta",
+      "ats": "ashby",
+      "slug": "marqeta-inc",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (42 jobs) with 1 fit-titles at harvest time (1 tier2c), e.g. 'Lead Product Manager, Enterprise AI & Automation' [Remote - USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Texture",
+      "ats": "ashby",
+      "slug": "texture",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Implementation Specialist' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Code for America",
+      "ats": "greenhouse",
+      "slug": "codeforamerica",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (8 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier3(location-gated)), e.g. 'Emerging Technology & AI Governance & Enablement Lead' [Remote (in the U.S.)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Raptor Maps",
+      "ats": "rippling",
+      "slug": "raptor-maps-inc",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (2 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Director of Customer Success' [Somerville, MA, Remote (United States)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Sword Health",
+      "ats": "greenhouse",
+      "slug": "swordhealth",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (41 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Customer Success Manager, Enterprise' [Remote - US]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Hinge Health",
+      "ats": "ashby",
+      "slug": "hinge-health",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (84 jobs) with 3 fit-titles at harvest time (1 tier2c, 2 tier3(location-gated)), e.g. 'Business Systems Analyst ' [San Francisco-HQ]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Carbon Robotics",
+      "ats": "greenhouse",
+      "slug": "carbonrobotics",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (18 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Sr. Manager, Autonomous Support Operations' [Seattle, WA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Hudl",
+      "ats": "greenhouse",
+      "slug": "hudl",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (35 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Implementation Consultant (North America - Ice Hockey)' [United States (Remote)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Genius Sports",
+      "ats": "greenhouse",
+      "slug": "geniussports",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (38 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Delivery Manager - Customer Operations' [New York, New York, United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "WHOOP",
+      "ats": "ashby",
+      "slug": "whoop",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (152 jobs) with 5 fit-titles at harvest time (2 tier2, 3 tier2c), e.g. 'Senior Business Systems Analyst (Membership Services)' [Boston, MA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Accela",
+      "ats": "greenhouse",
+      "slug": "accela",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "Hand-enrolled 2026-10-01 from the interest scan at Aneesh's direction; board found by exact slug during the research pass.",
+      "needs_vertical_classification": true,
+      "reason": "Government permitting and licensing software (owns OpenCounter). YIMBY/housing-supply interest domain. Five remote-US roles on 2026-10-01 (Product Adoption Manager, two Sr. Project Managers, Senior Consultant, Consultant); the morning harvest rejected it because none of those titles matched a tier, which is why 'Product Adoption Manager' was added to tier2 the same day."
+    },
+    {
+      "name": "Voltera",
+      "ats": "greenhouse",
+      "slug": "volterapower",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "Hand-enrolled 2026-10-01 from the interest scan at Aneesh's direction; board found by exact slug during the research pass.",
+      "needs_vertical_classification": true,
+      "reason": "Builds, owns, and operates EV-charging infrastructure for fleets and autonomous vehicles. Electrification interest domain. Small board (3 jobs); Director, Integrated Operations Center (remote) tailored 2026-10-01. Slug is volterapower, not derivable from the name."
+    },
+    {
+      "name": "Coperniq",
+      "ats": "ashby",
+      "slug": "coperniq",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "Hand-enrolled 2026-10-01 from the interest scan at Aneesh's direction; board found by exact slug during the research pass.",
+      "needs_vertical_classification": true,
+      "reason": "AI operating platform for solar and electrical contractors. Electrification interest domain. Remote Customer Success Manager (onboarding, implementation, configuration) live 2026-10-01."
+    },
+    {
+      "name": "Coefficient Giving",
+      "ats": "ashby",
+      "slug": "coefficientgiving",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "Hand-enrolled 2026-10-01 from the interest scan at Aneesh's direction; board found by exact slug during the research pass.",
+      "needs_vertical_classification": true,
+      "reason": "Philanthropic funder formerly named Open Philanthropy; runs an Abundance & Growth fund and describes itself as the earliest major funder of the YIMBY movement. Abundance-politics interest domain. Fully remote, publishes pay. Its open systems role on 2026-10-01 is a Senior Salesforce Administrator and Business Analyst (demoted admin title); enrolled for what comes next."
+    },
+    {
+      "name": "Pulley",
+      "ats": "ashby",
+      "slug": "withpulley",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "Hand-enrolled 2026-10-01 from the interest scan at Aneesh's direction; board found by exact slug during the research pass.",
+      "needs_vertical_classification": true,
+      "reason": "Permitting software and services for builders (withpulley.com). YIMBY/housing-supply interest domain. Remote Project Manager, Permitting at $120K-$140K seen 2026-10-01. Slug is withpulley; ashby/pulley is not this company."
+    },
+    {
+      "name": "SB Energy",
+      "ats": "greenhouse",
+      "slug": "sbenergy",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "Hand-enrolled 2026-10-01 from the interest scan at Aneesh's direction; board found by exact slug during the research pass.",
+      "needs_vertical_classification": true,
+      "reason": "SoftBank-backed solar, storage, and data-center power developer. Electrification interest domain. Its Enterprise AI Enablement Manager (2026-04-09) is tagged on site in Redwood City; enrolled to catch a remote enablement role."
+    },
+    {
+      "name": "Intersect",
+      "ats": "lever",
+      "slug": "intersect",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "Hand-enrolled 2026-10-01 from the interest scan at Aneesh's direction; board found by exact slug during the research pass.",
+      "needs_vertical_classification": true,
+      "reason": "Co-located data-center power, solar, and storage (Google-owned). Electrification interest domain. Remote AI Solutions Architect at $188K-$195K live 2026-10-01; enrolled for adjacent enablement and operations roles."
+    },
+    {
+      "name": "Wattch",
+      "ats": "jazzhr",
+      "slug": "wattch",
+      "priority": "low",
+      "enrolled_date": "2026-10-01",
+      "enrolled_via": "Hand-enrolled 2026-10-01 from the interest scan at Aneesh's direction; board found by exact slug during the research pass.",
+      "needs_vertical_classification": true,
+      "reason": "Atlanta energy-IoT company (~16 people): monitoring and control software for solar, storage, EV charging, and hydro sites. Electrification interest domain and Atlanta startup. One open role on 2026-10-01, Technical Project Manager (Customer Success dept, Atlanta, 3 days in office), tailored the same day at Aneesh's ask. Board is wattch.applytojob.com.",
+      "headcount_band": "1-50"
     }
   ]
 }
