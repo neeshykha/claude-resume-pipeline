@@ -125,7 +125,7 @@ only through the subject match: Zocdoc (`careers@`, 2026-08-02) and Datadog
 Deleting the subject filters would silently drop that class of confirmation.
 
 1. Search Gmail for
-   `deliveredto:{{CONFIRM_ALIAS}} -from:linkedin.com newer_than:3d` (the 3-day window
+   `deliveredto:{{CONFIRM_ALIAS}} -from:linkedin.com -from:donotreply@jobalert.indeed.com -from:donotreply@match.indeed.com newer_than:3d` (the 3-day window
    gives safe overlap across runs; already-promoted rows won't match again since matching
    only looks at `stage=surfaced` rows).
 
@@ -134,6 +134,13 @@ Deleting the subject filters would silently drop that class of confirmation.
    consumed by Step 1d-2 as company discovery. Without the exclusion they would flow into
    this step's confirmation matcher, which is looking for "did he apply" evidence and would
    find dozens of roles he has never applied to.
+
+   **The two Indeed exclusions exist for the same reason (added 2026-09-30).** Aneesh set a
+   filter forwarding Indeed's job-alert and "Match" emails to this alias so their cards can be
+   read as company discovery. They are alerts, not receipts. The exclusion names the two alert
+   senders exactly rather than all of indeed.com, because an Indeed Apply confirmation from any
+   other Indeed address is a real receipt and must still reach this step. Nothing in the daily
+   run parses the Indeed alerts yet; whether it should is the Oct 26 freeze decision.
 
    **Use `deliveredto:`, not `to:`.** Gmail forwarding preserves the original `To:` header,
    so a forwarded confirmation still reads `to:{{APPLY_ACCOUNT}}` and the old
@@ -145,8 +152,9 @@ Deleting the subject filters would silently drop that class of confirmation.
    email currently carries BOTH the JobLeads and JobConfirmations labels. A label-only query
    would pull ~20 job alerts a day into the confirmation matcher, which is looking for evidence
    that Aneesh applied. If `deliveredto:` ever breaks, the safe fallback is
-   `label:{{CONFIRMATIONS_LABEL_ID}} -from:linkedin.com`. The `-from:linkedin.com` clause is
-   what keeps the two streams apart, whichever selector is used.
+   `label:{{CONFIRMATIONS_LABEL_ID}} -from:linkedin.com -from:donotreply@jobalert.indeed.com -from:donotreply@match.indeed.com`.
+   The sender exclusions are what keep the alert streams apart from receipts, whichever
+   selector is used.
 2. For each result, read the sender/subject/body to identify the company and, if stated, the
    specific requisition URL. **Always try to extract the URL from the email body first** —
    confirmation emails from Greenhouse/Ashby/Lever/Workday usually restate the job link or a
@@ -1344,8 +1352,8 @@ score >110 to surface. Queued/unapplied roles do NOT count. Trust the poller's
 - Watchlist +10 · Atlanta-startup +20 · Atlanta-enterprise +10 · IoT +15
 - Small-company: per `_scoring_config → small_company_bonus` by `headcount_band`
   (absent band = 0, never guess)
-- **Passion-domain +10** (`_scoring_config → passion_domains`: electrification/EV, health
-  tech, agriculture/gardening/food). Apply SEMANTICALLY to the company's mission/product,
+- **Passion-domain +10** (`_scoring_config → passion_domains`; that JSON is the only list of
+  domains, don't restate it here). Apply SEMANTICALLY to the company's mission/product,
   once per job even if multiple domains hit; ignore keyword accidents ("patient rollout").
   Poller entries may carry a `passion_domain` tag as a hint — confirm it, don't trust it.
 
@@ -2103,7 +2111,8 @@ re-examines it.
    This updates `seen_jobs.json`, `seen_urls.json`, and `pipeline/outcomes.csv`
    (canonical header: `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,
    outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,
-   hard_req_cap_trigger,furthest_stage,ic_scope` — 16 columns as of 2026-09-07)
+   hard_req_cap_trigger,furthest_stage,ic_scope,his_verdict` — 17 columns as of 2026-09-30;
+   `his_verdict` is always written empty here, only Aneesh sets it)
    atomically. `surfaced_date` is written automatically from the run date; never set it
    by hand and never update it on an existing row. **Never hand-edit `seen_jobs.json`** —
    hand edits corrupted it on 2026-06-30. NOTE: `pipeline/jobs/outcomes.csv` is a stale
@@ -2351,6 +2360,12 @@ not folded into the daily digest.
      WebSearch calls a day for a handful of already-known companies). Include the full
      unpollable-companies batch as its own section, one line per company (name, rejected date,
      reason) — this is the part Aneesh actually acts on, don't compress it away.
+   - **Include a "Pipeline quality" section (added 2026-09-30).** Run
+     `.venv/bin/python pipeline/pipeline_quality.py` (read-only) and include its output, with
+     one interpretive line per numbered question using the actual numbers. Say plainly when
+     `his_verdict` is still mostly unrecorded, because questions 1 and 2 can't be answered
+     without it; don't guess verdicts from `stage`. The framing (aim high, interview rate is not
+     the measure, don't cut the tailoring cap) is in CLAUDE.md "Measuring pipeline quality".
    - **Include the LinkedIn disposition section in full, links and all.** It is the answer to
      a question he asked directly, and the unreachable list is the actionable half. Keep the
      LinkedIn job links live in the HTML; a punch list he cannot click is a punch list he
