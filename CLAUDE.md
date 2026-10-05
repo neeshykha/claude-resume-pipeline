@@ -200,6 +200,23 @@ The daily pipeline runs this plus an `avoid-ai-writing` detect pass at Step 4.5.
   drift only shows in aggregate, which is why it's a script and not a habit.
   [D6](DECISIONS.md#d6-voice-gate-and-the-contraction-slip)
 
+### 9. Email the package (interactive tailoring only)
+**Standing rule, Aneesh's call 2026-10-04: when a role is tailored outside the daily run, email
+it to him when it's done, without asking.** He had to ask "did you send the email" twice in one
+week. The daily run already sends its digest (`daily_task_prompt.md` Step 5); this covers
+everything else: a pasted JD, a user-surfaced find, a scan, a "tailor that one."
+
+- Recipient is `DIGEST_RECIPIENT` from `pipeline/local_config.json` (gitignored). Never write the
+  address into a tracked file.
+- Create the draft, then send it (same two calls as Step 5). One email per session's batch is
+  fine; don't send one per role when several finish together.
+- Contents: a table with title, company, location, pay, score, unmet hard reqs, scope, and the
+  apply link; coverage and the genuine gaps; **every commitment a cover letter makes, called out
+  for him to confirm before sending**; anything unverified; and the PDF filenames in
+  `tailored/apply_now/`. No attachments, same reasoning as the digest.
+- Same HTML rules as the digest: raw HTML, plain `<th>`, every role carries its link.
+- This authorizes the email to him only. It never authorizes sending anything to an employer.
+
 ## Important Rules
 - NEVER invent experience, certifications, or skills that aren't in `master_resume.md`
 - NEVER modify `master_resume.md` — it is the source of truth
@@ -765,6 +782,28 @@ Keeps `master_resume.md` current with the week's real work.
   ssh host (the script is sent on stdin; nothing is installed or written there). Worktree
   sessions are kept on purpose: they're distinct sessions, not copies. Wispr Flow is a
   possible future source, low priority.
+
+## LinkedIn Role Follow-through (built 2026-10-05)
+
+Spec: `daily_task_prompt.md` Step 1d-3. `pipeline/linkedin_followup.py` reads the day's graded
+alert cards, fetches the JD for up to 24 that the company-only harvest would lose (unresolved
+companies, aggregator reposts, rejected companies) from LinkedIn's public guest endpoint, and
+writes them where the Step 2-JD workers and `jd_screen_table.py --date <date>_linkedin` read
+them unchanged.
+
+- **LinkedIn's plain-text alert email and its public job page both omit the Remote/Hybrid
+  tag.** A card reading "New York, NY" may be "New York, NY (Remote)" in the app. A US-city
+  location on a card means workplace unknown, not on-site; only the source posting settles it.
+- Aggregator cards with a strong title now get a digest line (`aggregator repost, employer
+  unknown`); the aggregator itself is still never queued.
+- `check_company.hit()`: a one-token name matches a longer one only when at most one core
+  token is left over, so "Echo" no longer hits "Echo Base Global".
+- The LinkedIn body fetch is split across helpers of 12 message ids; one helper ran out of
+  context three runs in a row.
+- **Open:** bare "Support Manager" and "AI Services Lead" titles match no tier (Elastic,
+  phData); adding them needs a measured scan across boards first. `harvest_ats.py` resolved
+  `echo.ai` to an unrelated `greenhouse/echo`; dotted names that are literally the Ashby slug
+  should be tried on Ashby first.
 
 ## LinkedIn Browser Sweep (on-demand skill)
 

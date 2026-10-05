@@ -777,14 +777,34 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
             cards_by_id[c["job_id"]] = c
             order.append(c["job_id"])
 
-    graded, dropped_aggregators = [], []
+    graded, dropped_aggregators, aggregator_flagged = [], [], []
     for jid in order:
         c = cards_by_id[jid]
         if grader.is_aggregator(c["company"]):
             if c["company"] not in dropped_aggregators:
                 dropped_aggregators.append(c["company"])
+            # The aggregator is dropped as a COMPANY (never queued, never enrolled),
+            # but a strong title in a qualifying location is still a real role at
+            # some employer (added 2026-10-05). TalentHop's "AI Operations Manager
+            # (Remote)" alerted six times in four days and appeared nowhere, because
+            # dropping the reposter's name discarded the role with it. These cards
+            # stay out of `cards` and the company roll-up; they get their own digest
+            # lines so the role is seen once and the employer can be looked up.
+            g = grader.grade(c)
+            if g["manual_review"]:
+                g.update(aggregator=True, company_status=["aggregator repost, employer unknown"],
+                         company_known=True, blind_spot=False)
+                aggregator_flagged.append(g)
             continue
         graded.append(grader.grade(c))
+    # One line per distinct title: aggregators re-send the same role under new job ids.
+    seen_titles: set[tuple[str, str]] = set()
+    aggregator_cards = []
+    for g in sorted(aggregator_flagged, key=sort_key):
+        k = (grader.norm(g["company"]), grader.norm(g["title"]))
+        if k not in seen_titles:
+            seen_titles.add(k)
+            aggregator_cards.append(g)
 
     # Company roll-up: one entry per normalized name, best card first.
     companies: dict[str, dict] = {}
@@ -859,6 +879,8 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
                                         if r["sender"] not in JOB_SENDERS}),
         "cards_parsed": len(order),
         "aggregators_dropped": dropped_aggregators,
+        "aggregator_roles_flagged": [f"{c['company']} - {c['title']} [{c['location']}]"
+                                     for c in aggregator_cards],
         "companies_extracted": len(companies),
         "unknown_after_dedupe": len(unknown),
         "newly_queued": len(queued),
@@ -873,10 +895,11 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
         "run_date": today.isoformat(),
         "counters": counters,
         "cards": graded_sorted,
+        "aggregator_cards": aggregator_cards,
         "unknown_companies": [e["name"] for e in ordered_unknown],
         "pending_entries": pending_entries,
-        "digest_lines": [digest_line(c) for c in graded_sorted],
-        "digest_html_lines": [digest_html_line(c) for c in graded_sorted],
+        "digest_lines": [digest_line(c) for c in graded_sorted + aggregator_cards],
+        "digest_html_lines": [digest_html_line(c) for c in graded_sorted + aggregator_cards],
     }
 
 
@@ -1012,13 +1035,21 @@ def main() -> int:
     # view (2026-09-29). Comparing against the helper's own count closes that.
     if args.expect_messages is not None:
         by_log = c["helper_messages_by_log"]
-        got = max(by_log.values(), default=0)
+        # Summed per SESSION, not per log (changed 2026-10-05): the fetch is now
+        # split across several helpers in one session (one helper ran out of
+        # context three runs in a row), so the expectation is the batches' total.
+        # Still never summed ACROSS sessions, for the overlap reason given above.
+        by_session: dict[str, int] = {}
+        for src, n in by_log.items():
+            sess = src.split("/agent-")[0]
+            by_session[sess] = by_session.get(sess, 0) + n
+        got = max(by_session.values(), default=0)
         if got < args.expect_messages:
-            print(f"SHORTFALL: the fetch helper reported {args.expect_messages} message(s) "
-                  f"but no helper log yielded that many bodies (best: {got}; per log: "
-                  f"{by_log or 'none'}). Its records are not reaching this script.")
+            print(f"SHORTFALL: the fetch helpers reported {args.expect_messages} message(s) "
+                  f"but no session's helper logs yielded that many bodies (best: {got}; "
+                  f"per log: {by_log or 'none'}). Their records are not reaching this script.")
         else:
-            print(f"helper check: a helper log yielded {got} message(s), "
+            print(f"helper check: one session's helper logs yielded {got} message(s), "
                   f"{args.expect_messages} expected (per log: {by_log})")
     if not args.quiet:
         print("\nLinkedIn alert cards, graded")
@@ -1027,6 +1058,9 @@ def main() -> int:
           ", ".join(result["unknown_companies"]) or "none")
     if c["aggregators_dropped"]:
         print("aggregators dropped:", ", ".join(c["aggregators_dropped"]))
+    if c["aggregator_roles_flagged"]:
+        print("aggregator roles worth a look (employer unknown):",
+              "; ".join(c["aggregator_roles_flagged"]))
     if c["manual_review_flagged"]:
         print("manual_review:", "; ".join(c["manual_review_flagged"]))
     if c["blind_spot_qualifying"]:

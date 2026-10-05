@@ -3,7 +3,7 @@
 
 Usage:
     .venv/bin/python pipeline/mark_verdict.py "<company>" <verdict> [--title "<fragment>"] [--note "<text>"]
-    .venv/bin/python pipeline/mark_verdict.py --todo      # post-epoch rows with no verdict yet
+    .venv/bin/python pipeline/mark_verdict.py --todo      # rows since VERDICT_SINCE with no verdict yet
 
 Verdicts (repair_outcomes.HIS_VERDICTS):
     sent_as_is      sent the materials without changes
@@ -34,6 +34,10 @@ from repair_outcomes import HIS_VERDICTS
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
 EPOCH = "2026-07-28"
+# Verdicts are only asked for from here on (Aneesh, 2026-10-02): 201 rows had
+# piled up with none recorded, and the older ones weren't worth reconstructing.
+# The outcome-data epoch above is unchanged; this narrows the verdict ask only.
+VERDICT_SINCE = "2026-09-01"
 
 
 def load(path):
@@ -59,12 +63,12 @@ def find(header, rows, company, title):
 def todo(header, rows):
     ci = {n: header.index(n) for n in ("surfaced_date", "company", "title", "stage", "fit_score", "his_verdict")}
     out = [r for r in rows if len(r) == len(header)
-           and (r[ci["surfaced_date"]] or "") >= EPOCH and not r[ci["his_verdict"]].strip()]
+           and (r[ci["surfaced_date"]] or "") >= VERDICT_SINCE and not r[ci["his_verdict"]].strip()]
     out.sort(key=lambda r: r[ci["surfaced_date"]])
     for r in out:
         print(f"{r[ci['surfaced_date']]}  {r[ci['stage']]:<10} {r[ci['fit_score']]:>4}  "
               f"{r[ci['company']]}: {r[ci['title']]}")
-    print(f"\n{len(out)} post-epoch rows without a verdict")
+    print(f"\n{len(out)} rows since {VERDICT_SINCE} without a verdict")
 
 
 def main(argv=None, path=OUTCOMES):

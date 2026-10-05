@@ -18,6 +18,23 @@
   "pending": [],
   "enrolled": [
     {
+      "name": "Clio",
+      "ats": "workday",
+      "slug": "clio",
+      "enrolled_date": "2026-10-05",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-08-25"
+    },
+    {
+      "name": "Echo",
+      "ats": "ashby",
+      "slug": "echo.ai",
+      "enrolled_date": "2026-10-05",
+      "headcount_band": "1-50",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-05"
+    },
+    {
       "name": "US Bank",
       "ats": "workday",
       "slug": "usbank",
@@ -3674,6 +3691,13 @@
       "slug": "superblocks",
       "enrolled_date": "2026-10-05",
       "via": "harvest_ats.py"
+    },
+    {
+      "name": "Comet",
+      "ats": "greenhouse",
+      "slug": "comet",
+      "enrolled_date": "2026-10-05",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -6503,9 +6527,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-25",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
+      "reason": "SUPERSEDED 2026-10-05: enrolled by hand on workday (clio.wd3.myworkdayjobs.com, site ClioCareerSite). Original finding: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-10-05"
     },
     {
       "name": "CGI",
