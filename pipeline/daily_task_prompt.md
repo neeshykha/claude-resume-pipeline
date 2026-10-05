@@ -664,6 +664,14 @@ For each entry processed:
    vanish silently. Do not tailor it and do not score it: the digest line is the deliverable,
    and he decides whether to pursue it by hand.
 
+   **A flagged entry parked on a rate limit or a timeout is surfaced too (added
+   2026-10-05).** `throttled` and `timed_out` rejections are not "no board" findings, so the
+   rule above skipped them, and a tier1 Atlanta card at a company whose lookup was merely
+   rate-limited (Arclin) reached nobody. If such an entry carries `manual_review: true`,
+   give it one line in the same section, say the lookup is unresolved rather than that no
+   board exists, and set `manual_review_surfaced: true`. Step 1d-3 will usually have read
+   its JD by then; use that read for the line.
+
    **Probable name collisions get the same treatment (added 2026-09-10).** `harvest_ats.py` now
    writes a `collision_suspected: true` reject, printed as `[??]`, when a LinkedIn-sourced
    company resolves to a board that has jobs but none matching the card's title (`card_title`,
@@ -796,7 +804,15 @@ b. **Hand the fetch to ONE Haiku helper (Agent tool, `model: haiku`), and do not
    fetch the missing ids yourself exactly as before (search, then `get_message` each, never
    reading the result), and note `linkedin_fetch: inline fallback` in the run record. The
    message-level SHORTFALL line in step c is the check either way.
-c. Grade, dedupe, and queue, passing the helper's `messages_fetched=M` as the expectation:
+
+   **Split the fetch when the search returns more than ~15 job-alert messages (changed
+   2026-10-05).** One helper ran out of context ("Prompt is too long") on 09-30, 10-02, and
+   10-05, the last time after 20 of 56 bodies. Run the search yourself first (subjects and
+   ids only, it is small), then hand each helper a list of at most **12 message ids** and
+   the same no-reading brief, all helpers in one message so they run together. Three
+   helpers of 12 fetched 36 bodies with no errors on 10-05. `M` in step c is the TOTAL
+   across this session's helpers; the script sums helper logs per session.
+c. Grade, dedupe, and queue, passing the helpers' total `messages_fetched=M` as the expectation:
 
    ```bash
    .venv/bin/python pipeline/harvest_linkedin.py --from-transcripts --expect-messages M
@@ -1057,8 +1073,81 @@ credential-backed path that is written but unverified and cannot run until a tok
 
 **Do NOT** score, fetch JDs for, or tailor anything from this step, except the narrow
 blind-spot auto-trigger in step 3b, which does one verification WebSearch and stops at a
-digest line, never a tailored pick. Otherwise: if a specific LinkedIn role is worth
-assessing, Aneesh pastes it and the User-Surfaced Finds Protocol handles it.
+digest line, never a tailored pick. Role-level follow-through is Step 1d-3 below, which has
+its own selection and its own cap.
+
+**Aggregator reposts keep their role (changed 2026-10-05).** An aggregator is still never
+queued or enrolled, but a strong-title card in a qualifying location is no longer discarded
+with the reposter's name: `harvest_linkedin.py` prints those under `aggregator roles worth a
+look` and appends them to the card block with the status `aggregator repost, employer
+unknown`, one line per distinct title. TalentHop's "AI Operations Manager (Remote)" alerted
+six times in four days and appeared nowhere; it was a watchlist company's role.
+
+### 1d-3. LinkedIn role follow-through (added 2026-10-05, from Aneesh's audit of one day's alerts)
+
+Step 1d-2 harvests companies and, by design, drops the role. That is right when the poller
+can then watch the company and wrong everywhere else. Auditing the 10-05 alerts card by card
+found a remote Technical Account Manager at a 35-person security-tooling company (Echo) that
+three separate faults had hidden: it arrived under an aggregator's alert, its name matched a
+different company's old rejection, and its location read "New York, NY" because **LinkedIn's
+plain-text alert body omits the Remote/Hybrid tag that the app and the HTML email show.**
+Verified against the raw bodies: "United States (Remote)" in the app is "United States" in
+the text, and the public job page omits the tag too. No parser can recover it.
+
+What can be read without a login is LinkedIn's guest posting endpoint, which returns the
+full JD for any job id. So, after `harvest_linkedin.py --apply`:
+
+```bash
+.venv/bin/python pipeline/linkedin_followup.py
+```
+
+It selects up to 24 cards (strong tier or AI wildcard; not non-US, demoted, or VP-level;
+not at a watchlist company, since the poller reads those boards; not already in
+`outcomes.csv`; never fetched before), ordered never-resolved companies first, then
+aggregator reposts, then rejected and manual-rotation companies. It fetches each JD once
+and writes them to `pipeline/jobs/jd_cache/<date>_linkedin/` in the Step 2-JD shape, with
+`batch_NN.json` files. It drops closed postings and US-city cards whose own JD says on-site
+or hybrid without saying remote, and prints both. Ids cut by the cap are not marked seen, so
+they roll to the next run. A 429 stops the walk and says so.
+
+Then dispatch **one Sonnet worker per batch file with the exact Step 2-JD worker prompt**
+(paths under `<date>_linkedin/`), in the same message as the Step 2-JD workers when the
+timing allows, and read the result with:
+
+```bash
+.venv/bin/python pipeline/jd_screen_table.py --date <date>_linkedin
+```
+
+Treat the rows like any other screened role, with three differences:
+
+- **`loc?` is the normal state here, not a warning.** The JD body often states no work
+  arrangement. For a PASS or CHECK row you would otherwise pick, find the source posting
+  (the company's own board; at most 6 WebSearches for this step) and read the location
+  there before scoring. The source posting is also the apply link: never send him to the
+  LinkedIn URL when the ATS URL is known.
+- **An aggregator row's employer is whoever the body describes.** Check that company with
+  `check_company.py`; if it is on the watchlist the role belongs to the poller, and the
+  useful output is why the poller is not showing it.
+- **A company that turns out to have a pollable board gets enrolled by hand** with the
+  board you actually read, not by re-running the resolver on its name: on 10-05 the
+  resolver given `echo.ai` returned an unrelated `greenhouse/echo`.
+
+Rows that clear go through normal Step 2c scoring and compete for the five tailoring slots;
+the rest that score at or above the light threshold go on "Cleared, not tailored". Digest:
+a short section, **"LinkedIn roles followed up"**, one line per PASS/CHECK row with the gate
+result and the best link found, plus the dropped and deferred counts. Record
+`run_[date].json → linkedin_followup`: selected, fetched, dropped, deferred, pass, check,
+fail, source postings found, zeros included.
+
+Cost: about 40 seconds of fetching and three Sonnet workers. First run, 10-05: 24 selected,
+21 fetched, PASS 6 / CHECK 12 / FAIL 3.
+
+**Two gaps this step does not close, on purpose.** A card at a WATCHLIST company whose
+title the poller's matcher misses is skipped here and missed there (phData's "AI Services
+Lead - Client Services" and Elastic-style bare "Support Manager" titles match no tier);
+that is a title-config question and needs the measure-before-adding rule in
+`tier2b_ai_wildcard`. And a "Remote" header that the JD body contradicts still reads as
+remote until a worker reads the body.
 
 **Setup dependency:** this needs the forwarding filter on `{{APPLY_ACCOUNT}}`
 (`from:(linkedin.com)` + job-alert subject terms → forward to `{{CONFIRM_ALIAS}}`).

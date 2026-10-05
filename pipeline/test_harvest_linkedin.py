@@ -186,6 +186,41 @@ def main() -> int:
     if any(g["company"] in DROPPED for g in res["cards"]):
         print("FAIL aggregator card reached the graded list")
         fails += 1
+    # Added 2026-10-05: an aggregator is still never queued or graded as a company,
+    # but a strong-title card in a qualifying location gets its own digest line.
+    # Neither fixture aggregator card carries a tier title, so none may be flagged.
+    if res["aggregator_cards"] or c["aggregator_roles_flagged"]:
+        print(f"FAIL aggregator cards flagged without a tier title: {c['aggregator_roles_flagged']}")
+        fails += 1
+    agg_body = (f"Your job alert for technical account manager in United States\n\n"
+                f"New jobs match your preferences.\n\n"
+                f"Technical Account Manager (Remote)\nSwooped\nUnited States\n"
+                f"View job: https://www.linkedin.com/comm/jobs/view/4461000090/{TRK}\n\n{RULE}\n\n"
+                f"Technical Account Manager (Remote)\nSwooped\nUnited States\n"
+                f"View job: https://www.linkedin.com/comm/jobs/view/4461000091/{TRK}\n\n"
+                f"See all jobs on LinkedIn: https://www.linkedin.com/comm/jobs/search-results/?x=y\n")
+    res_agg = HL.harvest([{"id": "ag1", "thread_id": "tag1", "sender": HL.JOB_SENDERS[0],
+                           "subject": "alert", "date": "2026-10-05T06:00:00Z",
+                           "body": agg_body, "source": "fixture"}],
+                         grader, dt.date(2026, 10, 5),
+                         {"query": "q", "window_used": "2d", "input_mode": "fixture"})
+    if len(res_agg["aggregator_cards"]) != 1:
+        print(f"FAIL aggregator role: want 1 deduped flagged card, got {res_agg['aggregator_cards']}")
+        fails += 1
+    if res_agg["cards"] or res_agg["pending_entries"]:
+        print("FAIL aggregator role leaked into cards or the pending queue")
+        fails += 1
+    if not any("aggregator repost" in ln for ln in res_agg["digest_lines"]):
+        print(f"FAIL aggregator role missing from digest lines: {res_agg['digest_lines']}")
+        fails += 1
+    from check_company import hit
+    for q, cand, want in [("Echo", "Echo Base Global", False), ("Stripe", "Stripe Payments", True),
+                          ("Hawk-Eye", "Hawk-Eye Innovations", True),
+                          ("Amazon Web Services (AWS)", "Amazon / AWS", True),
+                          ("Blueprint", "Blueprint Technologies", True)]:
+        if hit(q, cand) != want:
+            print(f"FAIL hit({q!r}, {cand!r}) = {hit(q, cand)}, want {want}")
+            fails += 1
     if not by_id["4461000006"]["blind_spot"]:
         print("FAIL Google should resolve to _blind_spot_companies")
         fails += 1

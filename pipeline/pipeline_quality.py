@@ -26,6 +26,8 @@ import re
 import statistics
 from collections import Counter, defaultdict
 
+from mark_verdict import VERDICT_SINCE
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
 EPOCH = "2026-07-28"
@@ -83,8 +85,9 @@ def report(rows):
     expired = [r for r in rows if r["stage"].strip() == "expired"]
     out(f"Tailored: {len(rows)} | sent: {pct(len(sent), len(rows))} | still open: {len(open_)} | expired unsent: {len(expired)}")
 
-    out("\n1-2. His verdicts (the judgment signal)")
-    v = Counter((r.get("his_verdict") or "").strip() or "(not recorded)" for r in rows)
+    out(f"\n1-2. His verdicts (the judgment signal; rows surfaced {VERDICT_SINCE} onward)")
+    asked = [r for r in rows if (r.get("surfaced_date") or "") >= VERDICT_SINCE]
+    v = Counter((r.get("his_verdict") or "").strip() or "(not recorded)" for r in asked)
     recorded = sum(n for k, n in v.items() if k != "(not recorded)")
     for k, n in sorted(v.items(), key=lambda kv: -kv[1]):
         out(f"  {k:<16} {n}")

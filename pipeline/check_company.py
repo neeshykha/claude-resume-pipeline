@@ -65,7 +65,19 @@ def hit(query: str, candidate: str) -> bool:
     if q == c:
         return True
     qt, ct = _tokens(query), _tokens(candidate)
-    return bool(qt and ct) and (qt <= ct or ct <= qt)
+    if not (qt and ct) or not (qt <= ct or ct <= qt):
+        return False
+    # A ONE-token name may match a longer one only if at most one core token is
+    # left over (added 2026-10-05). 'Stripe' / 'Stripe Payments' and 'Hawk-Eye' /
+    # 'Hawk-Eye Innovations' keep matching, and so does any multi-token subset
+    # ('Amazon / AWS' inside 'Amazon Web Services (AWS)'); 'Echo' no longer hits
+    # 'Echo Base Global'. That hit marked a LinkedIn card for Echo (echo.ai, a
+    # remote TAM role) as an already-rejected company on the strength of a
+    # different company's timeout record. Same asymmetry as the 2026-09-01
+    # rewrite: a false UNKNOWN costs one cheap re-probe, a false already-known
+    # discards the company.
+    small, large = (qt, ct) if len(qt) <= len(ct) else (ct, qt)
+    return len(small) > 1 or len(large - small) <= 1
 
 
 # Manual-coverage blocks in watchlist_companies.json. These hold companies the
