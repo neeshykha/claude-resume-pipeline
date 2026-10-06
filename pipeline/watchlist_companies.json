@@ -18,7 +18,7 @@
         "notes": "KEPT ACTIVE 2026-09-03 when BuiltIn Remote was disabled for poll_builtin.py, because it is NOT fully subsumed. The feeder harvests companies and every lead needs harvest_ats.py to resolve a board; when no board resolves, the company is rejected as unpollable and any live role at it is lost. This dork surfaces the ROLE directly off builtin.com/job, so it still reaches exactly that class -- the RethinkFirst case (real tier1 Atlanta role, no resolvable board for three days) is the shape. Atlanta is also the higher-signal, lower-competition half by the same reasoning as the Atlanta Board Sweep, so the non-overlap is worth a rotation slot here and was not worth one for Remote. Left at frequency 'daily', which the 1c rotation already means 'about every 3 days'; websearch_rotation.py supports only daily/monthly, so do not invent a 'weekly' value. NOTE: this is a judgement call, not a measurement -- channel_stats.websearch aggregates all sources and carries no per-source attribution, so neither dork's yield is actually known. If per-source stats ever land, re-test whether this one earns its slot. Original notes: Atlanta tech companies, mid-size focus. Atlanta small company bonus (+20) applies for HQ Atlanta headcount <=200. Query broadened 2026-06-25 to include customer success + solutions engineer terms.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-10-01"
+        "last_run": "2026-10-06"
       },
       {
         "name": "BuiltIn Remote",
@@ -46,7 +46,7 @@
         "status": "active",
         "frequency": "daily",
         "scoring_notes": "Apply +20 AI bonus + tier2b_ai_wildcard title match (+18) = strong signal. Verify salary floor.",
-        "last_run": "2026-10-01"
+        "last_run": "2026-10-06"
       },
       {
         "name": "Ashby Boards - Target Roles",
@@ -62,7 +62,7 @@
         "notes": "Discovers Greenhouse-hosted companies off the watchlist. Same enroll guidance as Ashby: surface unfamiliar companies, verify board, add to watchlist. Added 2026-06-25. Broadened \"customer success manager\" -> \"customer success\" 2026-07-10 after Tailscale's Customer Success Engineer (Greenhouse, exact-phrase Tier-3 target title) was invisible to this query for missing the word-form variant -- same fix as Ashby's query already had. 'enablement' added 2026-07-13 after Superhuman's Partner Technical Enablement Manager (Tier-3 target title class, Remote US, $154K-200K) was invisible to all three board dorks — none carried an enablement term.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-10-01"
+        "last_run": "2026-10-06"
       },
       {
         "name": "Lever Boards - Target Roles",
@@ -134,7 +134,7 @@
         "notes": "Closes the Workday blind spot found 2026-07-02: a Crowe 'AI Enablement Manager' (Atlanta, Tier-2 title, salary in range) was invisible to the pipeline because board dorks only covered Ashby/Greenhouse/Lever and Crowe isn't watchlist material. Workday hosts the enterprise segment specifically. Individual myworkdayjobs.com pages are JS-rendered — do NOT WebFetch them; verify hits via the Workday CXS API instead (POST https://{host}/wday/cxs/{tenant}/{site}/jobs with searchText — see _workday_notes / verify_workday.py). Enroll recurring-fit companies onto the watchlist with wd_host/wd_tenant/wd_site.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-10-01"
+        "last_run": "2026-10-06"
       },
       {
         "name": "Passion Verticals (EV/Health/Agtech/SportsTech discovery)",
@@ -142,7 +142,7 @@
         "notes": "Vertical discovery for Aneesh's passion domains (see _scoring_config → passion_domains). Hits get the +10 passion bonus (under the +30 company cap). Unfamiliar companies with a Greenhouse/Ashby/Lever board go to the enrollment queue like any other discovery hit; passion-domain companies get the same sub-500 enrollment bias. 'sports technology'/'sports analytics'/'player tracking' added 2026-07-22 for the new sports_technology domain -- this targets companies with real CSM/TAM/implementation-shaped roles (e.g. Sportradar, Catapult, Trackman, Zebra Sports), not field-hardware-technician titles like Hawk-Eye Innovations' actual Atlanta postings, which are a genuinely different job function and don't clear the title-tier bar regardless of the passion bonus. 'solar', 'home energy', and 'battery storage' added 2026-09-14 on Aneesh's ask after he asked whether home-solar companies like Sunrun were covered: they already scored under electrification_ev (+10) but no discovery source named them, and the watchlist had no residential-solar company. Expect installer boards to be mostly sales and field crews; the fitting roles sit at the software, battery, and home-energy-management end.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-10-01"
+        "last_run": "2026-10-06"
       },
       {
         "name": "Industrial IoT / Physical-World Hardware (discovery only, no scoring bonus)",
@@ -150,7 +150,7 @@
         "notes": "Added 2026-07-18 after Aneesh described being drawn to physical-world/industrial-equipment sensing (anchor example: a sensor device on spinning machinery) — narrower than generic 'hardware' or 'wireless communication' on purpose, to avoid pulling in consumer telecom/carrier noise or double-counting his existing consumer-IoT background (First Alert/Newell/Luma), which already scores normally via keyword overlap. A plain (non-site-scoped) version of this query was tested first and returned mostly generic aggregator category pages (ZipRecruiter/Indeed/SimplyHired), not enrollable individual companies -- switched to the ATS-host-scoped pattern (same shape as the Ashby/Greenhouse/Lever 'Boards - Target Roles' sources) since that's what actually surfaces live individual postings; first live run found AssetWatch (industrial condition-monitoring platform), Advanced Technology Services, and ANYbotics (industrial robotics/predictive maintenance). UNLIKE the Passion Verticals source above, this is discovery/enrollment-only: hits get NO passion-domain scoring bonus (Aneesh explicitly deferred that decision -- see memory user_profile.md 'Open item, deliberately deferred'). Companies surfaced here go through the normal enrollment verification and are scored on the standard rubric like any other company -- no bonus, no special treatment, just a wider discovery net. Do not add a passion_domains entry for this vertical unless Aneesh explicitly asks. RESOLVED 2026-09-08, and the answer was NOT a passion domain: asked directly (prompted by Seeq's Technical Account Manager, which scored 76 with zero company bonus against a real fit), Aneesh chose to score this vertical with the EXISTING IoT company-level bonus (+15) instead. So this source stays discovery-only and passion-domain-free exactly as written, and the lift arrives through the IoT line of the Step 2c rubric at scoring time. Apply it the way Samsara and Axon already do: leave score_bonus at 0, write the +15 as a SCORING NOTE in bonus_reason, and remember it counts toward the +30 company cap.",
         "status": "active",
         "frequency": "daily",
-        "last_run": "2026-10-01"
+        "last_run": "2026-10-06"
       },
       {
         "name": "PropTech / Resident Experience (vertical discovery)",
@@ -249,8 +249,8 @@
         "name": "Cargill",
         "why": "Opening an Atlanta office hub and hiring up to 400 tech and engineering roles. This is the rare company where two of the biggest scoring levers stack: Atlanta location, and agriculture/food, which is an explicit passion domain in _scoring_config. Added 2026-08-21 from an exploratory hub-expansion search. Confirmed unpollable the same day: harvest_ats resolved no board from name variants, and the documented site:myworkdayjobs.com fallback returned only OTHER companies' Cargill-adjacent reqs (Marmon, Goddard, Cushman & Wakefield). Cargill runs its own site at careers.cargill.com, so a targeted search is the only way it surfaces. Re-check for a Workday tenant occasionally; a real one would make it enrollable.",
         "query": "site:careers.cargill.com OR \"careers.cargill.com\" (\"customer success\" OR \"technical account manager\" OR \"support operations\" OR \"implementation manager\" OR \"technical operations\") Atlanta OR remote",
-        "last_checked": "2026-09-29",
-        "last_hit": "No US fit-space role. Notable signal: Cargill has announced new Digital Technology and Data roles coming to Atlanta; watch for a fit-space posting.",
+        "last_checked": "2026-10-06",
+        "last_hit": "2026-10-06: no US fit-space role; dork returned only Schiphol food TAM reqs and a Personal Care account manager (sales). Notable signal: Cargill has announced new Digital Technology and Data roles coming to Atlanta; watch for a fit-space posting.",
         "careers_url": "https://careers.cargill.com/"
       },
       {
@@ -322,16 +322,16 @@
         "name": "Intuit / Mailchimp",
         "why": "Mailchimp is Atlanta-based and now Intuit-owned. Workday tenant returned 401 on 2026-07-27, so it is auth-gated rather than public.",
         "query": "site:jobs.intuit.com (\"customer success\" OR \"support operations\" OR \"technical account\") Atlanta OR Mailchimp",
-        "last_checked": "2026-09-28",
-        "last_hit": "2026-09-21: REAL HIT, unchanged shape from 2026-08-31 and still live. jobs.intuit.com carries an Atlanta 'Customer Success Manager' (3+ yrs client-facing, 2+ managing a book of business), 'Customer Success Manager, Mailchimp', and two 'Senior Customer Success Manager (Mailchimp)' reqs, all at the Atlanta Mailchimp HQ, plus a 'Revenue Operations Senior Associate, Product Support (Mailchimp)'. The 08-31 'Manager, Customer Success (Mid-Market, Premium Experiences)' did not resurface in this dork. Surfaced in the digest under Manual channel; these are IC CSM rungs, so the IC-scope floor applies if one is ever pursued.",
+        "last_checked": "2026-10-06",
+        "last_hit": "2026-10-06: 'Head of Customer Success (Mailchimp)' (Atlanta) newly seen in this dork, plus 'Manager, Customer Success' (Atlanta, 4-6 direct reports) and 'Customer Success Manager (Mailchimp)' still live. Surfaced under Manual channel. Prior 2026-09-21: REAL HIT, unchanged shape from 2026-08-31 and still live. jobs.intuit.com carries an Atlanta 'Customer Success Manager' (3+ yrs client-facing, 2+ managing a book of business), 'Customer Success Manager, Mailchimp', and two 'Senior Customer Success Manager (Mailchimp)' reqs, all at the Atlanta Mailchimp HQ, plus a 'Revenue Operations Senior Associate, Product Support (Mailchimp)'. The 08-31 'Manager, Customer Success (Mid-Market, Premium Experiences)' did not resurface in this dork. Surfaced in the digest under Manual channel; these are IC CSM rungs, so the IC-scope floor applies if one is ever pursued.",
         "careers_url": "https://jobs.intuit.com/"
       },
       {
         "name": "Delta Air Lines",
         "why": "Atlanta HQ and a personal-interest employer for Aneesh (SkyMiles/Medallion loyalty). Uses Avature, which the poller does not speak. Target its tech/digital org, not airport operations.",
         "query": "site:delta.avature.net OR site:jobs.delta.com (\"customer experience\" OR \"technical\" OR \"operations manager\" OR \"customer success\") technology",
-        "last_checked": "2026-09-29",
-        "last_hit": "2026-09-21: identical to 2026-08-18, 08-31 and 09-10. Customer Service Manager MRO, Regional Sales Manager Technical Operations, Specialist Customer Experience Strategy, Software Engineering Manager, and several Product Leader reqs. No tier1/tier2 title. Fourth identical result in a row; repeat-near-miss suppression applies, so no digest line.",
+        "last_checked": "2026-10-06",
+        "last_hit": "2026-10-06: no fit-space hit; dork returned only corporate-careers landing pages and other Delta-named companies. Prior 2026-09-21: identical to 2026-08-18, 08-31 and 09-10. Customer Service Manager MRO, Regional Sales Manager Technical Operations, Specialist Customer Experience Strategy, Software Engineering Manager, and several Product Leader reqs. No tier1/tier2 title. Fourth identical result in a row; repeat-near-miss suppression applies, so no digest line.",
         "careers_url": "https://delta.avature.net/en_US/careers"
       },
       {
@@ -7699,6 +7699,56 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "needs_vertical_classification": true,
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (2 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Account Manager (TAM)' [New York/Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Teal Communications, Inc.",
+      "ats": "jazzhr",
+      "slug": "tealcommunicationsinc",
+      "priority": "low",
+      "enrolled_date": "2026-10-06",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (6 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Technical Support Manager' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Anaconda",
+      "ats": "rippling",
+      "slug": "anaconda",
+      "priority": "low",
+      "enrolled_date": "2026-10-06",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (25 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Technical Customer Success Manager - Enterprise, East' [Remote (United States)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Adyen",
+      "ats": "greenhouse",
+      "slug": "adyen",
+      "priority": "low",
+      "enrolled_date": "2026-10-06",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (226 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Team Lead - Technical Support' [Chicago]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Pomelo Care",
+      "ats": "ashby",
+      "slug": "pomelo-care",
+      "priority": "low",
+      "enrolled_date": "2026-10-06",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (76 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier2c), e.g. 'Senior Revenue Cycle Strategy and Operations Manager' [United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Timeleft",
+      "ats": "greenhouse",
+      "slug": "timeleft",
+      "priority": "low",
+      "enrolled_date": "2026-10-06",
+      "enrolled_via": "harvest_ats.py automated slug resolution",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'CX Enablement & Operations Manager' [Remote - Alicante]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     }
   ]
 }
