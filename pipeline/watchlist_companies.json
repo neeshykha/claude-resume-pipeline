@@ -7707,8 +7707,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (6 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Technical Support Manager' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (6 jobs) with 1 fit-titles at harvest time (1 tier1), e.g. 'Technical Support Manager' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20): programmable eSIM connectivity platform and APIs that device makers build on. IoT (+15) also applies at scoring. LinkedIn says 51-200; one source says 49. Classified 2026-10-06.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Anaconda",
@@ -7717,8 +7719,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (25 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Technical Customer Success Manager - Enterprise, East' [Remote (United States)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (25 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'Senior Technical Customer Success Manager - Enterprise, East' [Remote (United States)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 20,
+      "bonus_reason": "Developer/infra tooling (+20): Python distribution and package platform for data science and AI teams. Headcount ~570-615; one source says 413. Classified 2026-10-06.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Adyen",
@@ -7727,8 +7731,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (226 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Team Lead - Technical Support' [Chicago]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (226 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Team Lead - Technical Support' [Chicago]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): payments processing. Classified 2026-10-06.",
+      "headcount_band": "2000+"
     },
     {
       "name": "Pomelo Care",
@@ -7737,8 +7743,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (76 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier2c), e.g. 'Senior Revenue Cycle Strategy and Operations Manager' [United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (76 jobs) with 2 fit-titles at harvest time (1 tier2, 1 tier2c), e.g. 'Senior Revenue Cycle Strategy and Operations Manager' [United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): virtual maternity and newborn care. Health-tech passion domain is computed at scoring. Classified 2026-10-06.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Timeleft",
@@ -7747,8 +7755,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'CX Enablement & Operations Manager' [Remote - Alicante]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (4 jobs) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. 'CX Enablement & Operations Manager' [Remote - Alicante]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): consumer social-dining app. Enrollment itself is doubtful: the one qualifying title was 'Remote - Alicante'. Classified 2026-10-06.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Hark",
@@ -7757,8 +7767,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Personal-AI hardware (Brett Adcock); 47 jobs, all San Jose, hardware and firmware engineering; no support or deployment roles yet. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Personal-AI hardware (Brett Adcock); 47 jobs, all San Jose, hardware and firmware engineering; no support or deployment roles yet. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): personal AI models shipped on the company's own native hardware; the AI is the product. IoT (+15) may also apply at scoring. Headcount ~70 per May 2026 press. Classified 2026-10-06.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Simbe Robotics",
@@ -7767,8 +7779,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Retail inventory robots; 16 jobs incl. a remote 'Enterprise Solutions Engineer - Retail Tech' (tier3). Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Retail inventory robots; 16 jobs incl. a remote 'Enterprise Solutions Engineer - Retail Tech' (tier3). Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): autonomous retail-inventory robots; computer vision and shelf intelligence are the product. Headcount ~105 per LinkedIn. Classified 2026-10-06.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Apptronik",
@@ -7777,8 +7791,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Humanoid robots; 79 jobs incl. two tier2c business-systems roles, Austin only. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Humanoid robots; 79 jobs incl. two tier2c business-systems roles, Austin only. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): general-purpose humanoid robots (physical AI). Headcount ~350-390; one source says 511, so the band is near its upper edge. Classified 2026-10-06.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Nuro",
@@ -7787,8 +7803,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Autonomous vehicles; 105 jobs, one weak tier2 research title in Mountain View. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Autonomous vehicles; 105 jobs, one weak tier2 research title in Mountain View. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): autonomous-driving system; autonomy is the core product. Classified 2026-10-06.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Eight Sleep",
@@ -7797,8 +7815,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Smart bed; 36 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Smart bed; 36 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): smart mattress cover and sleep analytics; consumer health hardware, same call as Oura. Health-tech passion domain and IoT are computed at scoring. Headcount ~190-200, LOW confidence: sits on the 200 boundary. Classified 2026-10-06.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Formlabs",
@@ -7807,8 +7827,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. 3D printers; 231 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. 3D printers; 231 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): 3D printers and materials; not an AI product and not developer tooling. Classified 2026-10-06.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Agility Robotics",
@@ -7817,8 +7839,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Humanoid robots; 77 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Humanoid robots; 77 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): humanoid warehouse robots (physical AI). Classified 2026-10-06.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Gecko Robotics",
@@ -7827,8 +7851,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Inspection robots; 22 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Inspection robots; 22 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): inspection robots plus an AI data platform for industrial asset health; IoT (+15) may also apply at scoring. Classified 2026-10-06.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Plaud",
@@ -7837,8 +7863,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. AI voice recorder; 56 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. AI voice recorder; 56 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): AI note-taking recorder; transcription and summarization are the product. Headcount ~90, possibly stale. Classified 2026-10-06.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Tonal",
@@ -7847,8 +7875,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Smart gym; 22 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Smart gym; 22 jobs, no US fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): connected strength-training hardware; consumer fitness, IoT computed at scoring. Headcount ~390; older sources say 501-1000. Classified 2026-10-06.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Matic",
@@ -7857,8 +7887,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Robot vacuum; 9 jobs, no fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Robot vacuum; 9 jobs, no fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): vision-only autonomous home robot; on-device perception is the product. Classified 2026-10-06.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Locus Robotics",
@@ -7867,8 +7899,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Warehouse robots; 5 jobs, no fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Warehouse robots; 5 jobs, no fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): autonomous mobile robots for warehouses; fleet autonomy is the product. Headcount ~350, upper estimates near 500. Classified 2026-10-06.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Dexterity",
@@ -7877,8 +7911,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Robot arms; 16 jobs, no fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core, where his IoT support background and AI deployment work overlap. Robot arms; 16 jobs, no fit-titles at enrollment. Board verified live by harvest_ats.py dry run the same day. Enrolled WITHOUT a current fit-title on purpose, to catch the first support, deployment, or customer-success hire; do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): AI-driven robot arms for logistics (physical AI). Headcount ~190-210, LOW confidence: sits on the 200 boundary. Classified 2026-10-06.",
+      "headcount_band": "51-200"
     },
     {
       "name": "Zipline",
@@ -7887,8 +7923,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core. Drone delivery; 346 jobs incl. 'Program Lead, Support Operations & Partner Experience' (South San Francisco) and several support-operations and deployment titles, none Atlanta or remote-US at enrollment. The resolver had landed on an empty workable/zipline; the real board is flyzipline. Board verified live by direct API call the same day. Do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core. Drone delivery; 346 jobs incl. 'Program Lead, Support Operations & Partner Experience' (South San Francisco) and several support-operations and deployment titles, none Atlanta or remote-US at enrollment. The resolver had landed on an empty workable/zipline; the real board is flyzipline. Board verified live by direct API call the same day. Do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): autonomous delivery drones; same call as Skydio, autonomy is the core product. Classified 2026-10-06.",
+      "headcount_band": "501-2000"
     },
     {
       "name": "Brain Corp",
@@ -7897,8 +7935,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core. Robot autonomy software, San Diego; 10 jobs, no fit-titles at enrollment. The resolver had landed on an empty workable/brain; the real board is braincorporation. Board verified live by direct API call the same day. Do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core. Robot autonomy software, San Diego; 10 jobs, no fit-titles at enrollment. The resolver had landed on an empty workable/brain; the real board is braincorporation. Board verified live by direct API call the same day. Do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20): BrainOS robot autonomy software licensed to equipment makers. Classified 2026-10-06.",
+      "headcount_band": "201-500"
     },
     {
       "name": "Hyperfine",
@@ -7907,8 +7947,10 @@
       "priority": "low",
       "enrolled_date": "2026-10-06",
       "enrolled_via": "hand-enrolled, AI-hardware interest scan (user-surfaced: Hark)",
-      "needs_vertical_classification": true,
-      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core. Portable MRI; 11 jobs incl. a remote 'Clinical Support Specialist - West' (clinical, not a fit-title). Slug is not derivable from the name. Board verified live by direct API call the same day. Do not de-enroll on an empty fit-space alone."
+      "reason": "Hand-enrolled 2026-10-06 at Aneesh's direction after he surfaced Hark: an interest watch on companies shipping physical products with AI at the core. Portable MRI; 11 jobs incl. a remote 'Clinical Support Specialist - West' (clinical, not a fit-title). Slug is not derivable from the name. Board verified live by direct API call the same day. Do not de-enroll on an empty fit-space alone.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): portable MRI system; medical device. Health-tech passion domain is computed at scoring. Headcount 102 per its 10-K. Classified 2026-10-06.",
+      "headcount_band": "51-200"
     }
   ]
 }
