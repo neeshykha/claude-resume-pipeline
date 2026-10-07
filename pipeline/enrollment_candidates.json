@@ -3743,6 +3743,150 @@
       "via": "harvest_ats.py",
       "source": "BuiltIn directory",
       "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Hark",
+      "ats": "greenhouse",
+      "slug": "hark",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Simbe Robotics",
+      "ats": "lever",
+      "slug": "SimbeRobotics",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Apptronik",
+      "ats": "greenhouse",
+      "slug": "apptronik",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Nuro",
+      "ats": "greenhouse",
+      "slug": "nuro",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Eight Sleep",
+      "ats": "ashby",
+      "slug": "eightsleep",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Formlabs",
+      "ats": "greenhouse",
+      "slug": "formlabs",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Agility Robotics",
+      "ats": "greenhouse",
+      "slug": "agilityrobotics",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Gecko Robotics",
+      "ats": "ashby",
+      "slug": "gecko-robotics",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Plaud",
+      "ats": "ashby",
+      "slug": "plaud",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Tonal",
+      "ats": "ashby",
+      "slug": "tonal",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Matic",
+      "ats": "greenhouse",
+      "slug": "matic",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Locus Robotics",
+      "ats": "greenhouse",
+      "slug": "locusrobotics",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Dexterity",
+      "ats": "lever",
+      "slug": "dexterity",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Zipline",
+      "ats": "greenhouse",
+      "slug": "flyzipline",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Brain Corp",
+      "ats": "greenhouse",
+      "slug": "braincorporation",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
+    },
+    {
+      "name": "Hyperfine",
+      "ats": "greenhouse",
+      "slug": "hyperfine53",
+      "enrolled_date": "2026-10-06",
+      "via": "hand",
+      "source": "user_surfaced (AI-hardware interest scan)",
+      "first_seen": "2026-10-06"
     }
   ],
   "rejected": [
