@@ -11,6 +11,10 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 - ATS polling is Python (`poll_ats.py`) — read its small output, never WebFetch boards inline
 - PDFs via `render_pdf.py` + JSON data files — never copy/edit `generate_pdf.py`
 - Coverage checks via `check_coverage.py` on the `_data.json` — never hand-rolled bash loops
+- Tailored packages are drafted by writer subagents (Step 4-W) and gated by ONE command,
+  `fit_check.py`: coverage, voice, em-dashes, both renders, and both page counts in a single
+  report — never a separate call for each, and never a page count improvised with `mdls`
+  or a throwaway script
 - LinkedIn alert bodies via `harvest_linkedin.py` (Step 1d-2) — a Haiku helper fetches them,
   you never fetch or read them
 - Full JDs via `fetch_jd.py` (Step 3) — never WebFetch an Ashby/Workday/Comeet posting, they
@@ -18,7 +22,8 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 - Tracking updates via `update_tracking.py` — never hand-edit `seen_jobs.json`
 - Application-confirmation promotions via `mark_applied.py` (Step 0.5) — never hand-edit
   `outcomes.csv`'s `stage`/`applied_date` columns
-- Read `master_resume.md` ONCE, reuse for all tailorings
+- Read `master_resume.md` ONCE, for scoring and for briefing the writers; each Step 4-W
+  writer reads its own copy
 - JD reading for the shortlist is FANNED OUT at Step 2-JD: Python fetches, parallel Sonnet
   workers read and write compact cards, you read one table. Never pull 40+ raw JDs into
   this context.
@@ -67,8 +72,10 @@ brief digest saying so rather than guessing an address.
 3. **Read `/Users/aneesh/.claude/projects/-Users-aneesh/memory/user_writing_style.md` in
    full, every run, before any drafting.** It governs all resume, cover letter, and digest
    prose, and it changes over time. Standing hard rule from it: prefer colons/semicolons
-   over em-dashes; max 2 em-dashes per document. Verify before rendering any PDF with
-   `grep -c '—' <file>` (allow-listed) and rewrite if over.
+   over em-dashes; max 2 em-dashes per document. For tailored packages `fit_check.py`
+   (Step 4-W) counts them in the text that renders and fails the package when over. For
+   anything else the run writes, `grep -c '—' <file>` is allow-listed, but it counts
+   LINES containing a dash, not dashes: a paragraph is one line, so read the hits.
 4. **Read `.claude/skills/career-narrative/SKILL.md` in full, every run, before any
    drafting.** It is the source of truth for Aneesh's POSITIONING: the four signature
    frameworks, STAR story bank, transferable-parallel template, and material style rules.
@@ -1542,7 +1549,8 @@ run_[date])". Re-assess only if something changed — new salary, retitled, or a
 change that would plausibly move its score. (Cato Networks' AI Security PSC was re-listed
 with the identical conclusion in every digest from 07-15 through 07-19.)
 
-**Read `master_resume.md` NOW** — once, reused for all tailorings below.
+**Read `master_resume.md` NOW** — once. You need it to judge gaps and to brief the Step 4-W
+writers; they read it themselves before they draft.
 
 ## Step 3: Fetch full JDs
 
@@ -1807,8 +1815,169 @@ Both lessons stand, and they compose:
    clean zero, verify the file's SHAPE (`grep` the raw file for the literal key) before
    building any conclusion on it.
 
-Follow the CLAUDE.md tailoring workflow for each top job (JD analysis → top-15 phrases →
-ATS optimization → tailor → verify). Per job:
+### 4-W. Writers: one subagent per job, one fit check per round (added 2026-10-09)
+
+**A writer subagent drafts each package. You brief it and gate it; you never edit its
+prose.** The global model router sends writing that goes out under Aneesh's name to Fable,
+and runs had been doing that with a prompt improvised each morning. Measured on 2026-10-09:
+five writers were 54% of the run's cost. Each made 46 to 101 tool calls across 14 to 28
+requests, and every request re-reads the writer's whole conversation (88K tokens before it
+has opened a file, 212K-256K by the end). The words were 2-3% of that. The rest was three
+things this section removes:
+
+- **Hunting for context.** No paths were given, so each writer listed `tailored/` (2,100+
+  files), read 8 to 13 files from earlier packages, and read all 59 KB of the opener log
+  for its last five lines. Three also read the source of `check_voice.py`.
+- **A fit loop with no measure of distance.** All five first-draft resumes rendered to three
+  pages and every first-draft letter ran 400 to 460 words. Nothing said how far over a draft
+  was, so one writer trimmed its resume five times, and each round was four to eight
+  separate commands.
+- **No page count anywhere.** Nothing in `pipeline/` counted pages. Two writers never
+  checked, and both of those resumes reached `tailored/apply_now/` at three pages.
+
+The split: **you choose the angle and the files, the writer writes every word,
+`fit_check.py` measures.**
+
+1. **Collect what the writers share** (two commands, once per run, nothing chained):
+
+   ```bash
+   tail -n 8 tailored/_cover_openers.md
+   ```
+   ```bash
+   .venv/bin/python pipeline/fit_check.py --recent 5
+   ```
+
+   The first is the opener lines every writer must steer clear of. The second is the five
+   most recently written letters, as absolute paths, which CLAUDE.md's ramp-sentence rule
+   checks a new letter against. Never list `tailored/` to find them.
+
+2. **Decide the angle for each job before dispatching**, from the Step 0 reads and the JD
+   card: the one framework, the lead story, and which projects are worth the space. **Give
+   every writer in the run a different lead story.** The writers cannot see each other, and
+   on 2026-10-09 two of them opened on the same story in nearly the same sentence. Also pick
+   ONE calibration package per job: the most recent package for the nearest title family
+   that Aneesh sent or that is still in `tailored/apply_now/`. It shows shape and length; it
+   is not a source of sentences. Pick it from this, once per run, never from a listing of
+   `tailored/` (2,100+ files):
+
+   ```bash
+   .venv/bin/python pipeline/fit_check.py --recent 15 --resumes
+   ```
+
+   One line per package, newest first: the date, the tracker stage, `letter` when it has
+   one, `apply_now` when its PDF is still in the apply folder, and the path. The role is in
+   the stem.
+
+   **Then claim every stem before any writer is dispatched** (one command, all stems):
+
+   ```bash
+   .venv/bin/python pipeline/fit_check.py --claim Aneesh_Khan_[Company]_[Role] Aneesh_Khan_[Company2]_[Role2]
+   ```
+
+   It reads the tracker and `tailored/` and writes nothing. Exit 1 means a stem already
+   belongs to an earlier package: a repost with the same company and role abbreviation
+   derives the same stem, and a writer handed it would overwrite that package's files
+   before any gate could object, sent or not. Each `TAKEN` line names the first free
+   suffix (`Aneesh_Khan_[Company]_[Role]_2`). Use that stem everywhere from here on: the
+   writer's prompt, the final gate, and the Step 6 tracking row. Exit 2 with the message
+   `cannot read pipeline/outcomes.csv` means nothing can be told apart: dispatch no
+   writers and say so at the top of the digest. (Any other exit 2 is a usage message;
+   fix the command and run it again.) The `--recent 15 --resumes` listing stops the same
+   way, for the same reason.
+
+3. **Dispatch one writer per job, ALL IN ONE MESSAGE**: the Agent tool, `subagent_type:
+   "general-purpose"`, `model: "fable"`, and exactly this prompt with the slots filled in
+   (absolute paths; drop a line whose slot is empty):
+
+   > You are a tailoring writer. Your instructions are /Users/aneesh/Documents/resume_project/pipeline/tailor_worker.md; follow them exactly. In ONE first message, Read that file and all of these: /Users/aneesh/.claude/projects/-Users-aneesh/memory/user_writing_style.md, /Users/aneesh/Documents/resume_project/.claude/skills/career-narrative/SKILL.md, /Users/aneesh/Documents/resume_project/master_resume.md, /Users/aneesh/Documents/resume_project/portfolio_projects.md, the JD at [absolute path under pipeline/jobs/jd_cache/[date]/], the calibration package [tailored/[stem]_data.json and tailored/[stem]_cover.md], the sibling package [same two files, or drop this clause], the last five letters [the five paths from fit_check.py --recent 5], and /Users/aneesh/.claude/skills/avoid-ai-writing/SKILL.md, /Users/aneesh/.claude/skills/avoid-ai-writing/references/voice-profile.md, /Users/aneesh/.claude/skills/avoid-ai-writing/references/pattern-catalog.md.
+   > Package stem: Aneesh_Khan_[Company]_[Role]. Tier: [full | light]. ATS variant: [yes | no].
+   > Role: [company], "[title]", [location], [pay], posted [date], [apply URL]. [Manages a team | IC].
+   > Sibling package, already sent, never edit: [stem, with one line on what must differ].
+   > Known gaps, already judged from the JD: [each gap, with the JD's own wording]. Hard-requirement cap trigger: [verbatim | none].
+   > Angle: framework [n]; lead story [name]. Other writers today are leading with [stories]; do not lead with those. Projects worth considering: [names].
+   > Recent openers, do not reuse the structure of the last five: [the eight lines from the opener log].
+
+   The file list is in the prompt, not only in the brief, so the writer can read everything
+   in its first message instead of spending one to find out what to read. Fill the slots
+   with facts and names only. **Never put a sample sentence in a writer's prompt**: a quoted
+   example becomes the sentence every letter uses (CLAUDE.md's ramp rule exists because of
+   exactly that). A light-tier job drops the letters, the three avoid-ai-writing files, the
+   sibling line, and the openers line.
+
+4. **While they run**, carry on with the steps that do not depend on them (Step 6.7 fits
+   here). Each writer answers once, in the fixed fields `tailor_worker.md` lists.
+
+5. **Final gate: one command for every package this run wrote.** This, not the writer's
+   own report, is where the gates are enforced:
+
+   ```bash
+   .venv/bin/python pipeline/fit_check.py --drafted-now Aneesh_Khan_[Company]_[Role]:full Aneesh_Khan_[Company2]_[Role2]:light
+   ```
+
+   **Every stem carries the tier you dispatched it at, `:full` or `:light`.** The script
+   cannot tell a light-tier package from a full-tier one whose writer died before the
+   letter (both are a resume with no cover files), so you tell it: a `:full` stem with no
+   letter is a FAIL, and the command refuses to run (exit 2) when a stem has no marker.
+
+   It re-renders both PDFs for each package into `tailored/apply_now/` and prints, per
+   package: schema, JD coverage, em-dash count, the `check_voice.py` gate, whether the
+   letter's `.md` and JSON carry the same prose, and both page counts, then one
+   `FIT CHECK: N pass, M fail` line. Exit 1 means at least one package failed a gate. For
+   Workday, Paylocity, Taleo, and iCIMS roles, run it once more for those stems with
+   `--ats` added.
+
+   - `[FAIL ]` is a gate: resume over two pages (a hard limit, Aneesh's call 2026-10-09),
+     letter over one, more than two em-dashes, the voice gate, a letter whose two files
+     disagree, a full-tier package with no letter, a schema error, a missing phrases file
+     (`coverage`), an ATS variant that would not render (`ats`), or a check that broke
+     partway (`crash`; the line carries the error). **A package with a FAIL line is not
+     ready.**
+   - `[FAIL ] claim` is different in kind: the tracker already has a row for that stem
+     from an earlier day, so the script rendered nothing and the package on disk may be
+     one Aneesh already sent, now overwritten. That is not a wording problem and not yours
+     to repair: put it at the top of the digest and leave the files alone. The item 2
+     claim check exists so this line never prints.
+   - `[CHECK]` is coverage under 80%. That is allowed when the missing phrases are genuine
+     gaps the writer named; it is not allowed when the writer never looked.
+   - `[note ]` is size. Read it, do not act on it.
+
+6. **Read the run's letters side by side, once.** They are about 400 words each. The
+   per-letter gates cannot see two letters built on the same story or the same construction,
+   and you are the only one who sees all of them. **Then run the Step 4.5 item 2 detect
+   pass on each letter**, so that everything a writer has to hear arrives in one message.
+
+7. **Anything that changes wording goes back to its writer.** Use SendMessage to the same
+   agent with the failing `fit_check.py` lines verbatim, the problem you found at item 6
+   described in a sentence, and the detect-pass findings, all in ONE message. Describe the
+   problem; do not supply the replacement
+   words. One round per package, then re-run item 5 for that stem. **Never edit a
+   `_data.json`, `_cover.md`, or `_cover_data.json` yourself, not even one phrase.** On
+   2026-10-09 two resume summaries were reworded by the orchestrator after the writers
+   returned and re-rendered with no page count. If the writer cannot be resumed, dispatch
+   one fresh writer for that package with the same prompt plus the failing lines.
+
+   A package still failing after its round stays where it is, and the digest says so at the
+   top: the role, the failing line, and "not ready to send". Do not quietly ship it and do
+   not delete it.
+
+8. **Append the opener log yourself**, after the final gate, one line per letter from the
+   first sentence each writer reported (Step 4-spec item 5). Writers never touch that file:
+   five of them appending at once would overwrite each other.
+
+**Fallback when the Agent tool or the Fable model is unavailable, or a writer returns
+nothing:** write that package yourself from Step 4-spec, gate it with the same
+`fit_check.py` command, and say in the digest that the orchestrator wrote it rather than a
+writer. A failed dispatch can cost the voice, but never the gates and never the run.
+
+Record in `run_[date].json → tailor`: `writers_dispatched`, per package the writer's
+`fit_rounds` and whether it was sent back, any stem the claim check renamed, how many
+letters the detect pass ran on, the final `FIT CHECK` line, and `fallback`.
+
+### 4-spec. What a package is
+
+What a writer produces, and what you follow yourself in the fallback: the CLAUDE.md
+tailoring workflow for each top job (JD analysis → top-15 phrases → ATS optimization →
+tailor → verify). Per job:
 
 **Career narrative application (from the Step 0 read of
 `.claude/skills/career-narrative/SKILL.md`):**
@@ -1840,9 +2009,21 @@ rotates that folder; nothing here needs to clean it up.
    measured is what ships. Write a markdown copy only if Aneesh asks for one.
 2. (retired 2026-09-02; see item 1. Older tailored versions keep their `.md` files and
    `check_coverage.py` still reads those.)
-3. `.venv/bin/python pipeline/render_pdf.py resume <data.json> tailored/apply_now/<name>.pdf`
+3. **Render and fit, one command (changed 2026-10-09):**
+   ```bash
+   .venv/bin/python pipeline/fit_check.py --drafted-now Aneesh_Khan_[Company]_[Role]:full
+   ```
+   (`:light` on the light tier; the marker is required, see Step 4-W item 5.)
+   It renders the resume (and the letter, when there is one) into `tailored/apply_now/` with
+   the same code `render_pdf.py` runs, then checks everything in items 4, 5, and 7 and the
+   Step 4.5 mechanical gate. **The resume is two pages at most and the letter is one.** The
+   letter's limit is CLAUDE.md Step 8. The resume's was never written down: 137 of the 150
+   most recent resumes are two pages, writers had been inferring the limit by counting pages
+   on old PDFs, and 13 slipped through at three, at least four of them already sent. `render_pdf.py`
+   still works on its own for a one-off render.
 
-   **Also render an ATS variant for high-effort ATSes (added 2026-08-28):**
+   **Also render an ATS variant for high-effort ATSes (added 2026-08-28):** add `--ats` to
+   that command, or run
    ```bash
    .venv/bin/python pipeline/render_pdf.py ats <data.json> tailored/apply_now/<name>_ATS.pdf
    ```
@@ -1864,34 +2045,49 @@ rotates that folder; nothing here needs to clean it up.
    it through a real Workday autofill settles that. Don't claim more than the contact-block
    result until someone has.`
 4. **Coverage check, against the JSON:** write the JD's top-15 phrases to
-   `tailored/Aneesh_Khan_[Company]_[Role]_phrases.json`, then
-   `.venv/bin/python pipeline/check_coverage.py <data.json> <phrases.json>`
-   (it flattens summary, competencies, titles, bullets, education, skills, and community,
-   with the renderer's markup stripped). Target ≥80% (12/15). Below that: apply the
-   second-pass rule (CLAUDE.md Step 6), edit the JSON, re-run, re-render. One file, one
-   edit per fix. Never fabricate to close a gap — flag genuine gaps honestly.
-5. Cover letter (full-tailoring tier only) → `_cover.md` + `_cover_data.json` +
-   `.venv/bin/python pipeline/render_pdf.py cover <cover_data.json> tailored/apply_now/<name>_cover.pdf`
+   `tailored/Aneesh_Khan_[Company]_[Role]_phrases.json`. `fit_check.py` runs
+   `check_coverage.py`'s match on it (summary, competencies, titles, bullets, projects,
+   education, skills, and community, with the renderer's markup stripped) and prints the
+   missing phrases. Target ≥80% (12/15). Below that it prints `[CHECK]`: apply the
+   second-pass rule (CLAUDE.md Step 6), edit the JSON, run it again. One file, one edit per
+   fix. Never fabricate to close a gap — flag genuine gaps honestly. A missing phrases file
+   is a `[FAIL ]`, because the gate did not run.
+5. Cover letter (full-tailoring tier only) → `_cover.md` + `_cover_data.json`, rendered to
+   `tailored/apply_now/<name>_cover.pdf` by the item 3 command
    - Apply ALL voice rules from CLAUDE.md Step 8 (opener, structure variety, banned
      phrases, specific close, honesty moments)
-   - **Opener anti-template check:** read `tailored/_cover_openers.md` (create if missing);
-     the new letter's first sentence must not reuse the structure of the last 5 openers
-     logged there. After writing the letter, append one line:
-     `- [date] [Company]: "first sentence"`
+   - **The two files carry the same prose, word for word.** The PDF renders from the JSON
+     and the voice gate reads the `.md`; `fit_check.py` fails the package when they differ.
+   - **Opener anti-template check:** the new letter's first sentence must not reuse the
+     structure of the last 5 openers logged in `tailored/_cover_openers.md` (create if
+     missing). Take them with `tail -n 8`; the file is 59 KB and only its end matters.
+     After the final gate, append one line: `- [date] [Company]: "first sentence"`
 6. **Tailoring diff** (for the digest): summary changes, bullet reorders/drops, terminology
    swaps, skills reorder, coverage N/15; cover letter hook + achievements featured +
    JD language mirrored + which career-narrative framework/story was used (so Aneesh can
    spot-check the framework fits the role before applying). Bullets, no prose.
 
-7. **Style check (before rendering each PDF):** the document must comply with the writing
-   style guide read in Step 0. Minimum mechanical check: `grep -c '—' <file>` must be ≤2;
-   then apply the guide's Gut Check ("does this sound like a real person wrote it?").
+7. **Style check:** the document must comply with the writing style guide read in Step 0.
+   The mechanical half is `fit_check.py`'s em-dash line, which must read ≤2 for the resume
+   and for the letter (it counts characters in the text that renders; `grep -c` counted
+   lines, so three dashes in one paragraph read as 1). The other half is the guide's Gut
+   Check ("does this sound like a real person wrote it?"), which no script runs: it is the
+   writer's job before it hands back and yours at Step 4-W item 6.
 
 **NEVER fabricate experience, certifications, or skills.**
 
 ## Step 4.5: AI-writing pass on the cover letters (added 2026-09-01, Aneesh's request)
 
 Runs **after all tailoring, before the digest**, so fixes land before the PDFs are final.
+
+**Where each part lands since Step 4-W (2026-10-09).** The mechanical gate (item 1) runs
+inside `fit_check.py`, once in the writer's own loop and once more in your final gate. The
+judgment pass (item 2) is still yours to RUN, as an independent check on each letter after
+the writers return; what moved is who applies it, because the writer is the one allowed to
+change words. Re-rendering (item 3) is the same `fit_check.py` command. Item 0 binds
+everyone, and `fit_check.py` enforces it for PDFs too: it will not re-render a package
+whose row is in a sent stage, or whose row was surfaced on an earlier day. What stays with
+you is the detect pass, the side-by-side read (Step 4-W item 6), and the report (item 4).
 
 **Cover letters only.** Do not run this on resumes: resume bullets are deliberately terse,
 verb-initial fragments, and the pattern catalog would flag a register that is correct there.
@@ -1935,6 +2131,10 @@ state for the current run's own letters and cannot be used as a proxy for "unsen
 
 ### 1. Mechanical gate
 
+`fit_check.py --drafted-now` calls this check for every package it is given and prints its
+result on the `voice` line, so the Step 4-W final gate already covers it. The standalone
+form, for a letter outside a package check:
+
 ```bash
 .venv/bin/python pipeline/check_voice.py --drafted-now tailored/Aneesh_Khan_[Company]_[Role]_cover.md ...
 ```
@@ -1955,10 +2155,20 @@ of output. The tell is the aggregate, and only counting finds it.
 
 ### 2. Judgment pass
 
-Invoke the **`avoid-ai-writing`** skill in **detect mode** on each letter written this run. It
-defaults to Aneesh's voice profile. Read its output and apply the clear problems; leave the
-judgment calls unless one is obviously right. **The item 0 stage gate binds here too**: audit
-a sent letter if it is useful, but the output is a lesson for the next letter, not an edit.
+**You run this, on every letter written this run, after the writers return** (Step 4-W
+item 6). Invoke the **`avoid-ai-writing`** skill in **detect mode**; it defaults to Aneesh's
+voice profile. Load it once and audit all of the run's letters in that one pass. Each writer
+has already held its letter against the same catalog while drafting (`tailor_worker.md` has
+it read the catalog first, so most tells never get written) and reports what it flagged,
+but a writer's "clean" is a self-report and not this check. The pass did not run at all on
+2026-10-08 or 2026-10-09, which is why it stays an independent step (Aneesh, 2026-10-09).
+
+**You find; the writer fixes.** Send the clear problems back to that letter's writer in the
+Step 4-W item 7 message, described and not rewritten, and leave the judgment calls out
+unless one is obviously right. A letter with nothing clear gets no send-back. Never apply a
+finding to a letter file yourself. In the fallback, where you wrote the letter, you apply
+them. **The item 0 stage gate binds here too**: audit a sent letter if it is useful, but
+the output is a lesson for the next letter, not an edit.
 
 **Protected — never "fix" these**, they are the voice and the skill's own profile carves them
 out: the opening line (the anti-template log in Step 4 item 5 governs it, not this step), the
@@ -1973,15 +2183,15 @@ rather than laundering it.
 
 ### 3. Re-render whatever changed
 
-Any letter whose markdown you edited needs its PDF rebuilt, and the ATS variant too if one
-exists:
+Any letter whose text changed needs its PDF rebuilt, and the ATS variant too if one exists.
+That is the Step 4-W item 5 command again for that stem:
 
 ```bash
-.venv/bin/python pipeline/render_pdf.py cover <cover_data.json> tailored/apply_now/<name>_cover.pdf
+.venv/bin/python pipeline/fit_check.py --drafted-now Aneesh_Khan_[Company]_[Role]:full
 ```
-Remember the `_cover_data.json` carries the prose separately from the `.md`. **Edit both**, or
-the PDF silently keeps the old text. This is the easiest way for this step to appear to work
-while changing nothing.
+Remember the `_cover_data.json` carries the prose separately from the `.md`. **Both get the
+edit**, or the PDF silently keeps the old text. This was the easiest way for this step to
+appear to work while changing nothing; the `twin` line in the report is what catches it now.
 
 ### 4. Report
 
@@ -2147,6 +2357,13 @@ re-examines it.
      "unmet_hard_reqs": 0, "vendor_tool_named_in_jd": "", "ic_scope": ""}]}
    ```
    (tailored picks only, not near-misses or the cleared-not-tailored list)
+
+   **`notes` always names the package's PDFs** (written down 2026-10-09; runs had been
+   doing it by habit): somewhere in it, `tailored/apply_now/[stem].pdf + _cover.pdf`, with
+   `+ _ATS.pdf` when there is one, using the stem the Step 4-W claim check settled on.
+   That filename is the only link between a tracker row and a package:
+   `fit_check.py`, `check_voice.py`, and `rotate_apply_folder.py` all find the row by it,
+   so a row without it is a package nothing can recognise as sent.
 
    **Also write `pipeline/jobs/screened_[date].json` (added 2026-09-25)** with the Write
    tool, for the Shelf dashboard's "Cleared, not tailored" section:
@@ -2532,6 +2749,117 @@ warns that no baseline was found, Step 0 item 5 was skipped — it falls back to
 
 If push is rejected: `git pull --rebase` once, push again; still failing → note in digest
 and move on. Never force-push.
+
+## Step 8: Handoff file and final message (added 2026-10-09)
+
+**The run's last act is to write a small handoff file and tell Aneesh to take his
+follow-ups to a new session.** He uses each run as the day's job-search workspace and
+comes back hours apart: "what are the eight", a screenshot of a role for a second look,
+"score these two properly", "tailor that one", "commit". By then this session holds
+440K-760K tokens and its cache has expired, so each return re-reads all of it at full
+price before it answers. On 2026-10-05 he came back five times, and those returns were
+3.5M of that session's 13.3M weighted tokens. A new session in this repo starts near 100K,
+with CLAUDE.md already loaded, and needs only to be told what happened today.
+
+Almost all of that is already on disk: `screened_[date].json` is the cleared list,
+`track_[date].json` the picks, `run_[date].json` the stats and near-misses, and today's
+`SESSION_STATE.md` entry the open items. What was missing is one short file that says where
+they are, so the handoff is an index, not a second copy. **Point at files; paste nothing a
+file already holds.**
+
+1. **Write `pipeline/jobs/handoff.md`** with the Write tool, overwriting yesterday's. One
+   stable name, so the line he pastes never changes; the date inside it says which run it
+   describes. `pipeline/jobs/` is gitignored, and it has to stay there: a handoff names
+   companies, scores, and what he has and hasn't sent, and anything tracked in this repo is
+   published at Step 7. Never write it to `pipeline/` itself or to the repo root.
+
+   Copy this skeleton exactly and fill in the bracketed parts. Keep the whole file under
+   about 80 lines. The lower half is the same every day on purpose: a follow-up session
+   should not have to guess a command.
+
+   ````markdown
+   # Job search handoff: [YYYY-MM-DD] ([weekday]) run
+
+   Run finished [HH:MM local]. Digest sent (Gmail message [id]). Repo [pushed | NOT pushed: why].
+   If that date is not today's, say so before answering anything: a newer run may have failed.
+
+   ## For the session reading this
+   You are a follow-up session, not the run. CLAUDE.md is already loaded and has the
+   tailoring workflow, the scoring tiers, the user-surfaced finds protocol, and which script
+   owns which tracking file. What it does not tell you:
+   - Never read `pipeline/daily_task_prompt.md` whole (180 KB) or `pipeline/SESSION_STATE.md`
+     whole (750 KB+). Grep for the heading you need and Read that range.
+   - The files below are today's evidence. Answer from them before re-deriving anything.
+   - Before you finish, add what you did under "Since the run" (two lines an item). The next
+     session starts from this file, not from your conversation.
+
+   ## Tailored today
+   | Score | Role | Tier, scope | Package stem | Confirm before sending |
+   |---|---|---|---|---|
+   | [n] | [Company: Title] | [full, IC] | [Aneesh_Khan_Company_Role] | [each commitment the letter makes, in a few words] |
+
+   Files are `tailored/[stem]_*`; the PDFs to upload are in `tailored/apply_now/`.
+   Not ready to send: [package and the reason, or "none"].
+
+   ## Cleared, not tailored: [N]
+   `pipeline/jobs/screened_[date].json` has all [N]: score, pay, scope, why it cleared, the
+   main gap, and the apply link. "What are the [N]" is answered from that file.
+
+   ## Waiting on him
+   - [still-live packages he has not sent, outcomes since the last run, anything the run could
+     not finish; the same lines as today's SESSION_STATE entry, one each]
+
+   ## Where today's evidence is
+   - The run in prose: the first entry of `pipeline/SESSION_STATE.md` (Read with limit 40).
+   - Stats, near-misses, run notes: `pipeline/jobs/run_[date].json`.
+   - Each pick's score breakdown: `pipeline/jobs/track_[date].json`.
+   - Every JD read today: `pipeline/jobs/jd_cache/[date]/`. One role's card:
+     `.venv/bin/python pipeline/jd_screen_table.py --show "<company>"`. The whole table: the
+     same script with no arguments.
+   - LinkedIn alert cards as graded: `pipeline/jobs/linkedin_cards_[date].txt`. Grep the
+     company. No line can mean an aggregator posted it; `run_[date].json` lists the
+     aggregators dropped.
+   - Poll hits: `pipeline/jobs/ats_hits_[date].json`. Grep it; do not read it.
+   - Apply queue and applications gone quiet: `~/Downloads/job_dashboard.html`.
+
+   ## One more role
+   - Seen before? `grep -i "<company>" pipeline/outcomes.csv`, then
+     `.venv/bin/python pipeline/check_company.py "<Company>"`.
+   - Get the JD: `.venv/bin/python pipeline/fetch_jd.py <url>`. Never WebFetch an Ashby,
+     Workday, or Comeet posting.
+   - Score it: the rubric runs from `### 2b. Hard filters` to `## Step 3` in
+     `pipeline/daily_task_prompt.md`; the numbers are in
+     `pipeline/watchlist_companies.json` under `_scoring_config`.
+   - Tailor it: CLAUDE.md "Default Behavior", Steps 0 to 9. Step 9 emails him the package.
+   - Track it: write `pipeline/jobs/track_[date]b.json` in the Step 6 shape, then
+     `.venv/bin/python pipeline/update_tracking.py pipeline/jobs/track_[date]b.json`.
+   - Commit: a local commit on `main` is as good as published. Show him what is staged first.
+
+   ## Since the run
+   (nothing yet)
+   ````
+
+2. **End the final message with the handoff line, set apart, worded like this:**
+
+   > **For follow-ups today, start a new session in `/Users/aneesh/Documents/resume_project` and paste:** `Read pipeline/jobs/handoff.md, then answer: `
+   > This session is at [N]K tokens. A reply here after an hour re-reads all of it before it answers; a new session starts near 100K.
+
+   Fill in [N] from this session's size. Keep the rest of the final message as it is, and
+   keep it short: he reads the digest for detail.
+
+3. **If he replies in this session anyway, answer.** The whole context was re-read the
+   moment his message arrived, so refusing saves nothing. Answer, add what you did under
+   "Since the run" in the handoff, and say once, in one line, that the next question is
+   cheaper in a new session. Do not repeat it on every reply.
+
+4. **Write the handoff on quiet days too.** Zero matches still leaves a cleared list, open
+   items, and the "one more role" commands. The only run that skips it is one stopped by
+   the Step 0 duplicate-trigger guard, which leaves the earlier run's handoff in place.
+
+A follow-up session that tailors, scores, or changes a pipeline rule still records it the
+way an interactive session always has (tracking through the owner scripts, a dated entry
+in `SESSION_STATE.md`). The "Since the run" lines are the short version for the next
+session to start from, not a replacement for either.
 
 ## Important rules
 
