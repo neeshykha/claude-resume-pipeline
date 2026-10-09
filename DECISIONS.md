@@ -531,3 +531,23 @@ example turned into the default sentence. The rule now lists kinds of commitment
 example phrase and asks for a check against the last five letters. The four promises also named
 specific training or reading, which a sent letter holds him to, so the rule now says to promise only work
 he'll actually do.
+
+## D29. Why tailoring got a fixed brief and one fit check
+
+_Added 2026-10-09._
+
+On the 2026-10-09 run the five Fable writers were 54% of the run's cost. Each sent 14 to 28
+requests and made 46 to 101 tool calls, re-reading its whole conversation every time; the
+writing was a few percent of that. No prompt named the files to read, so each writer listed
+`tailored/` and read 8 to 13 earlier files. Nothing in `pipeline/` counted pages: all five
+first-draft resumes rendered to three pages, two writers never checked, and both of those
+reached `tailored/apply_now/` at three. Two writers opened on the same story, and the
+orchestrator reworded two summaries after the writers returned and re-rendered with no page
+count. The `avoid-ai-writing` pass didn't run on 2026-10-08 or 2026-10-09.
+
+The fix kept Fable writing every word and removed the hunting and the loop: a fixed brief,
+budgets up front, and `fit_check.py`. A Fable review before install found that a full-tier
+package with no letter passed as light tier and that a reused stem could overwrite a sent
+package before any guard ran; the tier marker and `--claim` came from that. Only about 150
+of 377 tracker rows named a PDF at the time, which is why `--claim` also looks at
+`tailored/` and why Step 6 now requires the filename in `notes`.
