@@ -7,6 +7,9 @@ public — surfaced companies, scores, Gmail draft IDs, and the application queu
 committed. Read and update `pipeline/SESSION_STATE.md` for the latest run summary, company caps,
 and action queue. Do **not** restore that state into this file.
 
+**For a follow-up on today's run, read `pipeline/jobs/handoff.md` first** (gitignored,
+rewritten by each run's Step 8). It's an index of the day's evidence and says where the rest is.
+
 **A local commit on `main` here is as good as published.** Other sessions commit and push this
 branch (the daily run at Step 7, the portfolio routine). Decide whether something is fit for a
 public repo when you commit it, not when you push. [D1](DECISIONS.md#d1-a-local-commit-reached-origin-within-the-hour)
@@ -31,8 +34,9 @@ it. This is not optional and not satisfied by memory of a previous session — t
 (e.g., 2026-07-01 it flagged that past resumes and cover letters were saturated with em-dashes).
 Non-negotiables that have already been violated in shipped documents:
 - **Em-dash rule:** prefer colons and semicolons for asides and clarifications. Hard cap:
-  2 em-dashes per document. Before rendering any PDF, count them (`grep -c '—' <file>` is
-  allow-listed) and rewrite until under the cap.
+  2 em-dashes per document. `fit_check.py` (Step 5) counts them in the text that renders and
+  fails the package when over. `grep -c '—' <file>` is still allow-listed for anything else,
+  but it counts lines containing a dash, so read the hits.
 - No AI tells (phrase or structural), no corporate speak, varied sentence rhythm, confident
   voice. Run the guide's Gut Check on every finished document.
 
@@ -97,20 +101,31 @@ Before tailoring, apply these principles based on how modern ATS (Greenhouse, Le
 - Use `Aneesh_Khan_` prefix — recruiter inboxes and ATS systems often surface the filename; including the candidate name improves recognition and reduces the chance of misrouted files
 - Use TitleCase for company, short role abbreviation (TAM, CSM, SAM, SE, IC)
 
-### 5. Generate PDF
-**Preferred (pipeline mode):** Render the JSON from Step 4:
-- Run: `.venv/bin/python pipeline/render_pdf.py resume tailored/Aneesh_Khan_[Company]_[Role]_data.json tailored/Aneesh_Khan_[Company]_[Role].pdf`
-- This is dramatically cheaper on tokens than writing a full Python script per resume
+### 5. Claim, Render, and Check
+**Before writing any file for a new package (before Step 4), claim the stem:**
+`.venv/bin/python pipeline/fit_check.py --claim Aneesh_Khan_[Company]_[Role]`
+Exit 1 means an earlier package already uses it. Take the suffix it prints.
+
+**Once the resume and letter files exist (after Step 8), one command renders and gates:**
+`.venv/bin/python pipeline/fit_check.py --drafted-now Aneesh_Khan_[Company]_[Role]:full`
+Use `:light` when there's no letter, and add `--ats` for Workday, Paylocity, Taleo, and iCIMS.
+It renders into `tailored/apply_now/` and reports schema, coverage, em-dashes, the voice gate,
+the letter's twin check, and both page counts. **The resume is two pages at most and the
+letter is one.** Clear every `[FAIL ]` line before the Step 7 summary.
+
+**Adjusting a package from an earlier day:** `fit_check.py` won't render it, on purpose,
+because it may already have been sent. Confirm with Aneesh that it hasn't gone out, render
+with `render_pdf.py`, then run `fit_check.py [stem]` with no flags to read the page count.
 
 **Fallback (manual mode):** If `render_pdf.py` is unavailable:
 - Copy `generate_pdf.py` to `tailored/Aneesh_Khan_[Company]_[Role]_pdf.py`
 - Update the content in the copy to match the tailored resume
 - Run it using the venv: `.venv/bin/python3 tailored/Aneesh_Khan_[Company]_[Role]_pdf.py`
 
-Output PDF to `tailored/Aneesh_Khan_[Company]_[Role].pdf`
+Output PDF to `tailored/apply_now/Aneesh_Khan_[Company]_[Role].pdf`
 
 ### 6. Verify JD Keyword Coverage
-- Write the JD's top 15 exact phrases (from Step 1) to `tailored/Aneesh_Khan_[Company]_[Role]_phrases.json` and run `.venv/bin/python pipeline/check_coverage.py tailored/Aneesh_Khan_[Company]_[Role]_data.json tailored/Aneesh_Khan_[Company]_[Role]_phrases.json`. It reports each phrase as a literal, case-insensitive substring of the resume JSON (summary, competencies, titles, bullets, education, skills, community; renderer markup stripped). It also still accepts a `.md` path for older tailored versions.
+- Write the JD's top 15 exact phrases (from Step 1) to `tailored/Aneesh_Khan_[Company]_[Role]_phrases.json`. The `coverage` line of the Step 5 report is this check: each phrase as a literal, case-insensitive substring of the resume JSON (summary, competencies, titles, bullets, projects, education, skills, community; renderer markup stripped). A missing phrases file is a FAIL. `.venv/bin/python pipeline/check_coverage.py <data.json> <phrases.json>` still runs standalone and still accepts a `.md` path for older tailored versions.
 - **Target: ≥80% (12 of 15).** If below 80%, revise the JSON: reorder bullets, swap terminology, or re-surface skills — **without fabricating experience** — then re-run the check and re-render the PDF
 - **Second-pass rule (apply before accepting any missing phrase as a gap):** For each phrase still missing after the first tailoring pass, check whether a real experience in `master_resume.md` justifies that language. Ask: "Is there something Aneesh actually did that this phrase describes?" If yes, work the phrase in — don't leave achievable coverage on the table. Only flag a phrase as a genuine gap if no honest mapping exists.
 - If a JD phrase genuinely cannot be covered because Aneesh doesn't have that experience, flag it in the Step 7 summary as a true gap, don't fake it
@@ -131,8 +146,8 @@ After generating, display:
 ### 8. Generate Cover Letter
 Always generate a tailored cover letter alongside the resume:
 - Save markdown to `tailored/Aneesh_Khan_[Company]_[Role]_cover.md`
-- **Preferred:** Save cover data to `tailored/Aneesh_Khan_[Company]_[Role]_cover_data.json` and run:
-  `.venv/bin/python pipeline/render_pdf.py cover tailored/Aneesh_Khan_[Company]_[Role]_cover_data.json tailored/Aneesh_Khan_[Company]_[Role]_cover.pdf`
+- **Preferred:** Save cover data to `tailored/Aneesh_Khan_[Company]_[Role]_cover_data.json`; it's
+  rendered to `tailored/apply_now/Aneesh_Khan_[Company]_[Role]_cover.pdf` by the Step 5 command
 - **Fallback:** Write a `*_cover_pdf.py` script only if `render_pdf.py` is unavailable
 - Mirror the JD's language just like the resume
 - Keep it under one page (4–5 short paragraphs)
@@ -187,8 +202,9 @@ The move is: gap, dated commitment, re-read the requirement, aim at what it actu
 
 **Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific. (3) Check the opener log for structural repetition.
 
-**Mechanical voice gate:** run
-`.venv/bin/python pipeline/check_voice.py --drafted-now <cover.md>` before rendering. It checks
+**Mechanical voice gate:** the Step 5 command runs it and prints the result on its `voice`
+line. For a letter outside a package check, run
+`.venv/bin/python pipeline/check_voice.py --drafted-now <cover.md>`. It checks
 the contraction ratio, the em-dash cap, and sentence-length uniformity, and exits 1 on failure.
 The daily pipeline runs this plus an `avoid-ai-writing` detect pass at Step 4.5.
 - **Never edit a letter that has already been sent** — the file is the record of what the
@@ -733,6 +749,37 @@ Spec: `daily_task_prompt.md` Step 2-JD and Step 6.7.
 - It works inside scheduled sessions (first scheduled run 2026-09-28, no fallback needed). If
   the Agent tool is ever unavailable, the documented fallback reads the cached JDs for the top
   8 inline.
+
+## Tailoring Writers + Fit Check (built 2026-10-09)
+
+In the daily run, a Fable writer subagent drafts each package from a fixed brief and one
+script gates it. [D29](DECISIONS.md#d29-why-tailoring-got-a-fixed-brief-and-one-fit-check)
+Spec: `daily_task_prompt.md` Step 4-W, Step 4.5, and Step 8.
+
+- `pipeline/tailor_worker.md` is the writer's brief, and the Step 4-W dispatch prompt names
+  every file to read. The orchestrator picks the angle and the files; the writer writes every
+  word. The orchestrator never edits a package file, not even one phrase: wording problems go
+  back to the writer, described and not rewritten.
+- `pipeline/fit_check.py` is the only gate command: schema, coverage, em-dashes, the voice
+  gate, the letter's `.md`-against-JSON twin check, both renders, and both page counts in one
+  report. Its thresholds are imported from `check_coverage.py` and `check_voice.py`; change
+  one there, never in `fit_check.py`.
+- **A resume is two pages, hard (Aneesh, 2026-10-09).** Over is a FAIL. A letter is one page,
+  and its length is a note at 370 words, never a gate.
+- `--claim` runs before a writer is dispatched and refuses a stem an earlier package already
+  uses. `--drafted-now [stem]:full` (or `:light`) renders and gates, and the tier marker is
+  required. It won't render a package whose tracker row is in a sent stage or was surfaced
+  on an earlier day.
+- **A Step 6 tracking row's `notes` must name the package's PDFs**
+  (`tailored/apply_now/[stem].pdf + _cover.pdf`). That filename is how `fit_check.py`,
+  `check_voice.py`, and `rotate_apply_folder.py` find the row.
+- The orchestrator runs the `avoid-ai-writing` detect pass on every letter after the writers
+  return and sends the findings back. A writer's "clean" is a self-report, not this check.
+- The run ends by writing `pipeline/jobs/handoff.md` (gitignored). A follow-up on the day's
+  run starts in a new session that reads that file first. Never write it anywhere tracked.
+- **Open:** the first real run is Mon 2026-10-12. Unverified until then: whether a writer
+  subagent's relative Bash command resolves to the repo and inherits the allow-list, and the
+  request count per writer. The ATS variant's page count is a note, not a gate.
 
 ## Assisted Apply (on-demand skill)
 
