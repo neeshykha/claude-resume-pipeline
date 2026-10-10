@@ -18313,12 +18313,12 @@
     },
     {
       "name": "Tufts University",
-      "ats": "workable",
-      "slug": "tufts-university",
+      "ats": null,
+      "slug": null,
       "rejected_date": "2026-10-08",
-      "reason": "Board RESOLVED at workable/tufts-university but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/tufts-university.)",
+      "reason": "CORRECTED 2026-10-09 (user-surfaced 'AI Platform Manager', req 23731). The 2026-10-08 harvest resolved this to workable/tufts-university, which exists but is empty and is NOT Tufts' board. The real board is iCIMS tenant 'tuftscareers' (careers-tuftscareers.icims.com) behind a custom-skinned front end at jobs.tufts.edu; fetch_icims reports it as a redirect skin it cannot read, the same shape as GitHub. jobs.tufts.edu/api/jobs is a clean JSON API that carries the work arrangement in tags1 ('Remote'), but no adapter exists for it. Unpollable until one does; checked monthly via _unpollable_backlog_companies.",
       "recheck_if_resurfaced": true,
-      "unpollable": false,
+      "unpollable": true,
       "source": "LinkedIn alert",
       "first_seen": "2026-10-08"
     },
