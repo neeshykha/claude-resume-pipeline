@@ -302,15 +302,15 @@ For each company in the `errors` array with a 404:
   (`"[Company]" jobs site:greenhouse.io OR site:lever.co OR site:ashbyhq.com`). Log the
   result, then set `recheck_after` 7 days out. **Do not re-investigate confirmed-dead
   boards every run** — that burned time on Moveworks/Forethought for a week straight.
-- If a live board is found: fix the slug/ats in the watchlist and poll just that company.
-
   The page comes first because on 2026-10-10 the search had been returning only cached
   Greenhouse pages for Hightouch, Postman, Arcadia, and Aisera for weeks, and each
   company's careers page answered in one or two fetches.
-### 1c. Supplemental WebSearch (discovery beyond the watchlist)
+- If a live board is found: fix the slug/ats in the watchlist and poll just that company.
   Take the slug from a link on the company's own site, never from a guess:
   `ashby/hightouch` answers 200 with a single 2021 posting, and the real board is
   `ashby/hightouch-inc`.
+
+### 1c. Supplemental WebSearch (discovery beyond the watchlist)
 
 **ROTATED as of 2026-08-23. Do not go back to running every active daily source.**
 
