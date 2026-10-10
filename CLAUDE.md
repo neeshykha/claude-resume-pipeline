@@ -841,8 +841,14 @@ them unchanged.
 - **LinkedIn's plain-text alert email and its public job page both omit the Remote/Hybrid
   tag.** A card reading "New York, NY" may be "New York, NY (Remote)" in the app. A US-city
   location on a card means workplace unknown, not on-site; only the source posting settles it.
-- Aggregator cards with a strong title now get a digest line (`aggregator repost, employer
-  unknown`); the aggregator itself is still never queued.
+- Aggregator cards with a strong title are kept in `aggregator_cards` and the `.txt` record
+  (`aggregator repost, employer unknown`) so this step reads their JDs; the aggregator
+  itself is still never queued.
+- **The digest's LinkedIn block is a short list (Aneesh, 2026-10-10), not every card.**
+  `harvest_linkedin.py` writes only review-flagged cards that aren't aggregator reposts,
+  aren't at a watchlist company, and weren't listed on an earlier day
+  (`CHECK_LOOKBACK_DAYS`), under one sentence counting what was left out. The full graded
+  list is still `jobs/linkedin_cards_[date].txt`. Don't grow the block back.
 - `check_company.hit()`: a one-token name matches a longer one only when at most one core
   token is left over, so "Echo" no longer hits "Echo Base Global".
 - The LinkedIn body fetch is split across helpers of 12 message ids; one helper ran out of

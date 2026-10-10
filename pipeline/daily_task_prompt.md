@@ -840,7 +840,7 @@ c. Grade, dedupe, and queue, passing the helpers' total `messages_fetched=M` as 
    a tracked file; it caps at 30 (flagged cards first, then order of appearance), carries
    `manual_review` / `manual_review_why` per item 2, and runs `validate_config.py` after.
    The dry run is idempotent and only writes `pipeline/jobs/linkedin_cards_[date].json`
-   and the `.txt` digest block.
+   plus its `.txt` (every card as graded) and `.html` (the digest block) twins.
 d. Record: copy the script's `counters` object into `run_[date].json ->
    step_1d_2_linkedin_harvest` verbatim; it carries every field required above
    (`job_alert_threads_seen`, `bodies_read`, `companies_extracted`, `newly_queued`,
@@ -849,10 +849,15 @@ d. Record: copy the script's `counters` object into `run_[date].json ->
    `job_alert_messages_with_body`, `missing_body_message_ids`) that is the real shortfall
    gate as of 2026-09-17. If it prints `SHORTFALL`, name the shortfall in the digest and
    fetch the ids it lists.
-e. Digest: the `.html` block (`linkedin_cards_[date].html`: the same lines as the `.txt`,
-   with each LinkedIn job id as a tappable link since 2026-09-10) goes in verbatim as its own
-   section, **"LinkedIn alert cards, graded"** (Step 5). Every card, one line, in the script's order. Do not trim it to the
-   good ones; Aneesh asked to see what the alerts contained and how each was scored.
+e. Digest: the `.html` block (`linkedin_cards_[date].html`) goes in verbatim as its own
+   section, **"LinkedIn cards to check by hand"** (Step 5). **Changed 2026-10-10, Aneesh's
+   call.** The block used to be every graded card, 130 to 290 lines a day, and he asked for
+   it cut to the ones worth opening by hand. The script now writes only the review-flagged
+   cards that are not aggregator reposts, not at a watchlist company (the poller reads
+   those boards daily), and not already listed on an earlier day, under one sentence that
+   counts what was left out. On the 10-09 cards that is 7 lines where the old block had
+   161. Do not add lines to it and do not rebuild the long list from the `.txt`: the `.txt`
+   is the full graded record for grep and for handoff, not digest content.
 f. Item 3b below still applies by hand: the script lists the qualifying cards under
    `blind_spot_qualifying`; you decide which of them (max 3) get a verification search.
 
@@ -1086,9 +1091,13 @@ its own selection and its own cap.
 **Aggregator reposts keep their role (changed 2026-10-05).** An aggregator is still never
 queued or enrolled, but a strong-title card in a qualifying location is no longer discarded
 with the reposter's name: `harvest_linkedin.py` prints those under `aggregator roles worth a
-look` and appends them to the card block with the status `aggregator repost, employer
-unknown`, one line per distinct title. TalentHop's "AI Operations Manager (Remote)" alerted
-six times in four days and appeared nowhere; it was a watchlist company's role.
+look` and keeps them in `aggregator_cards` and the `.txt` record with the status
+`aggregator repost, employer unknown`, one line per distinct title. TalentHop's "AI
+Operations Manager (Remote)" alerted six times in four days and appeared nowhere; it was a
+watchlist company's role. **Since 2026-10-10 they are not in the digest block** (Aneesh's
+call): with the employer unknown there is nothing for him to open. Step 1d-3 still reads
+their JDs, and a repost that clears the screen reaches the digest under "LinkedIn roles
+followed up" with the employer the body names.
 
 ### 1d-3. LinkedIn role follow-through (added 2026-10-05, from Aneesh's audit of one day's alerts)
 
@@ -2298,14 +2307,18 @@ re-examines it.
   LinkedIn alert inbox; no scoring, no tailoring diffs. If an entry was promoted to full
   scoring under the Step 1a exception, say so where it appears in the main table instead.
   Report `stats.tier1_guaranteed` alongside the other provenance counts in housekeeping.
-- **"LinkedIn alert cards, graded"** section (added 2026-09-02): the `.html` block written by
-  `harvest_linkedin.py` at Step 1d-2 (job ids are tappable links since 2026-09-10), verbatim, one line per card in the script's order:
-  `[tier | location] Company: Title | linkedin job id | status  (flags)`. Status is `new` or
-  the surface the company already sits on (watchlist, pending, rejected, blind_spot);
-  flags are `review`, a seniority term, or `loose:tierN`. FYI parity with the alert inbox,
-  same as the section above; nothing here is scored or tailored, and a tier1 line at a
-  `rejected` company is information, not a pick. Include the section even when it is long.
-  Omit it only when zero cards parsed, and then say why.
+- **"LinkedIn cards to check by hand"** section (called "LinkedIn alert cards, graded" and
+  carrying every card from 2026-09-02 to 2026-10-09; cut down 2026-10-10, see Step 1d-2
+  item e): the `.html` block written by `harvest_linkedin.py`, verbatim. It opens with the
+  script's one-sentence count, then one line per card in the script's order:
+  `[tier | location] Company: Title | linkedin job id | status  (flags)`, job ids tappable.
+  Status is `new` or the surface the company already sits on (pending, rejected,
+  blind_spot); flags are a seniority term or `loose:tierN`. Each line is a target title in
+  Atlanta or remote at a company the poller does not read, in the alerts for the first
+  time today. Nothing here is scored or tailored, and a tier1 line at a `rejected` company
+  is information, not a pick. The block is short now, so it goes inside the digest and
+  does not get an email of its own. Include it whenever cards parsed, even on a day the
+  sentence says nothing is new; omit it only when zero cards parsed, and then say why.
 - "Also live (FYI)" lines for same-company extras; near-misses section at the bottom
   (one line each with reason tag, e.g. "scored 74" / "pay $92K midpoint"); omit if none
 - **"Manual channel — no pollable board"** section: companies rejected at Step 1d that carried
