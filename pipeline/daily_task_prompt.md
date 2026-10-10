@@ -293,13 +293,24 @@ For each company in the `errors` array with a 404:
 - First-time 404 (no `board_status` in `watchlist_companies.json`): log it in
   `run_[date].json → pipeline_notes`, set `board_status: "404_seen_[date]"`, move on.
 - `board_status: "404_confirmed"`: only re-check if its `recheck_after` date is today or
-  past (or missing). Run one recovery WebSearch
-  (`"[Company]" jobs site:greenhouse.io OR site:lever.co OR site:ashbyhq.com`), log the
+  past (or missing). **Read the company's own careers page first**: fetch it and look for
+  the ATS host its job links or embed point at. If the listing shows none, fetch one job
+  page and read its apply link. A redirect to another company's careers site means an
+  acquisition: set `board_status: "404_permanent_acquired"` and
+  `board_status_permanent: true`, name the acquirer in `board_status_note`, and check the
+  acquirer is enrolled. Only when the page settles nothing, run one recovery WebSearch
+  (`"[Company]" jobs site:greenhouse.io OR site:lever.co OR site:ashbyhq.com`). Log the
   result, then set `recheck_after` 7 days out. **Do not re-investigate confirmed-dead
   boards every run** — that burned time on Moveworks/Forethought for a week straight.
 - If a live board is found: fix the slug/ats in the watchlist and poll just that company.
 
+  The page comes first because on 2026-10-10 the search had been returning only cached
+  Greenhouse pages for Hightouch, Postman, Arcadia, and Aisera for weeks, and each
+  company's careers page answered in one or two fetches.
 ### 1c. Supplemental WebSearch (discovery beyond the watchlist)
+  Take the slug from a link on the company's own site, never from a guess:
+  `ashby/hightouch` answers 200 with a single 2021 posting, and the real board is
+  `ashby/hightouch-inc`.
 
 **ROTATED as of 2026-08-23. Do not go back to running every active daily source.**
 
