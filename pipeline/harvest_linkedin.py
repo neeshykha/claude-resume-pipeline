@@ -8,7 +8,7 @@ Usage:
     .venv/bin/python pipeline/harvest_linkedin.py --gmail [--newer-than 3d]     # needs a credential
     .venv/bin/python pipeline/test_harvest_linkedin.py          # parser + grading self-check
 
-Read-only by default: it prints the graded card block and the UNKNOWN company list and
+Read-only by default: it prints the check-by-hand block and the UNKNOWN company list and
 writes nothing but the run artifacts under pipeline/jobs/ (gitignored). `--apply` is the
 only flag that touches enrollment_candidates.json, and it runs validate_config.py after.
 
@@ -128,6 +128,15 @@ else is checked against the watchlist, the blind-spot and unpollable blocks, and
 enrollment buckets through check_company.lookup(), so the same name never queues twice.
 Only UNKNOWN companies are queued, in the standard pending schema, at most 30 per run;
 cards carrying manual_review go first, then order of appearance.
+
+WHAT THE DIGEST GETS (changed 2026-10-10, Aneesh's call)
+--------------------------------------------------------
+The digest used to carry every graded card, 130 to 290 lines a day, and he asked for it
+cut to the ones worth opening by hand. The `.html` block is now that short list: cards
+carrying manual_review, minus aggregator reposts, minus watchlist companies (the poller
+reads those boards every day), minus roles an earlier day's block already listed. It opens
+with one sentence that counts what was left out. The full graded list is unchanged in the
+`.txt` and the `.json`, which is what the follow-up, the weekly report, and grep read.
 """
 import argparse
 import datetime as dt
@@ -176,6 +185,10 @@ LOCATION_DISPLAY = {"atlanta": "Atlanta", "atlanta-hybrid": "Atlanta hybrid",
                     "remote": "Remote US", "us-national": "US (unspecified)",
                     "non-us": "non-US", "unknown": "?"}
 STRONG_TIERS = ("tier1_true_match", "tier2_strong_overlap", "tier2c_tooling_systems")
+# How many days back an earlier cards file counts a role as already listed in the
+# digest's check-by-hand block. A role that leaves the alerts for longer than this and
+# comes back is listed again. Set to 0 to list every qualifying card every day.
+CHECK_LOOKBACK_DAYS = 30
 
 # Metro-Atlanta suburbs that appear on LinkedIn cards as the city instead of Atlanta.
 METRO_ATLANTA = ("alpharetta", "marietta", "sandy springs", "roswell", "duluth, ga",
@@ -649,7 +662,7 @@ def sort_key(card: dict):
     return (ti, li, -card.get("title_prescore", 0), card["company"].lower())
 
 
-def digest_line(card: dict) -> str:
+def digest_line(card: dict, review_tag: bool = True) -> str:
     verdict = card["location_verdict"]
     loc = LOCATION_DISPLAY.get(verdict, card["location"] or "?")
     if verdict == "other":
@@ -661,7 +674,7 @@ def digest_line(card: dict) -> str:
         s.replace("_companies", "") for s in card["company_status"])
     line = f"[{tier} | {loc}] {card['company']}: {card['title']} | {card['job_id']} | {status}"
     tags = []
-    if card["manual_review"]:
+    if card["manual_review"] and review_tag:
         tags.append("review")
     if card["seniority_flags"]:
         tags.append(",".join(card["seniority_flags"]))
@@ -670,16 +683,100 @@ def digest_line(card: dict) -> str:
     return line + (f"  ({'; '.join(tags)})" if tags else "")
 
 
-def digest_html_line(card: dict) -> str:
+def digest_html_line(card: dict, review_tag: bool = True) -> str:
     """digest_line() with the LinkedIn job id as a tappable link (added 2026-09-10).
 
     The plain-text block went into the digest inside <pre>, so every card named a
     job id nobody could tap; acting on one meant searching LinkedIn by hand.
     """
-    text = html.escape(digest_line(card))
+    text = html.escape(digest_line(card, review_tag))
     jid = html.escape(str(card["job_id"]))
     url = card.get("url") or f"https://www.linkedin.com/jobs/view/{card['job_id']}/"
     return text.replace(f"| {jid} |", f'| <a href="{html.escape(url)}">{jid}</a> |', 1)
+
+
+# ── The digest's short list ──────────────────────────────────────────────────
+
+def needs_hand_check(card: dict) -> bool:
+    """True for a card nothing else will act on unless he opens it himself.
+
+    Review-flagged, not an aggregator repost (the employer is unknown, so there is
+    nothing to open; a strong one still gets its JD read at Step 1d-3), and not at
+    a watchlist company, whose board the poller reads every day.
+    """
+    return (bool(card.get("manual_review")) and not card.get("aggregator")
+            and "watchlist" not in (card.get("company_status") or []))
+
+
+def load_listed_before(out_dir: str, today: dt.date, norm,
+                       days: int = CHECK_LOOKBACK_DAYS) -> tuple[set, set]:
+    """Job ids and (company, title) keys an earlier day's block already listed.
+
+    Read from the earlier `linkedin_cards_<date>.json` files, never today's, so the
+    dry run and the --apply run of one day produce the same block. Measured on the
+    2026-10-02..10-09 files: 26 to 59 cards a day qualified and 4 to 29 of them were
+    new that day; the rest were the same roles LinkedIn re-sends for weeks. A cards
+    file marks its roles listed whether or not that day's digest went out, so a run
+    that dies between this step and the email hides those roles from the next one;
+    they stay in that day's `.txt`.
+    """
+    ids, roles = set(), set()
+    for path in glob.glob(os.path.join(out_dir, "linkedin_cards_*.json")):
+        stamp = os.path.basename(path)[len("linkedin_cards_"):-len(".json")]
+        try:
+            day = dt.date.fromisoformat(stamp)
+        except ValueError:
+            continue
+        if not today - dt.timedelta(days=days) <= day < today:
+            continue
+        try:
+            with open(path, encoding="utf-8") as f:
+                doc = json.load(f)
+        except (OSError, ValueError):
+            continue
+        for c in doc.get("cards") or []:
+            if needs_hand_check(c):
+                ids.add(c["job_id"])
+                roles.add((norm(c["company"]), norm(c["title"])))
+    return ids, roles
+
+
+def check_block(cards: list[dict], aggregator_cards_seen: int,
+                listed_before: tuple[set, set], norm) -> dict:
+    """Split the graded cards into the ones to list today and counts of the rest.
+
+    `cards` is the sorted, non-aggregator list. Every card lands in exactly one
+    bucket, so shown plus the left-out counts equals the cards parsed.
+    """
+    listed_ids, listed_roles = listed_before
+    shown, today_roles = [], set()
+    left = {"aggregator": aggregator_cards_seen, "no_match": 0, "watchlist": 0,
+            "listed_before": 0, "same_role_again": 0}
+    for c in cards:
+        role = (norm(c["company"]), norm(c["title"]))
+        if not c["manual_review"]:
+            left["no_match"] += 1
+        elif not needs_hand_check(c):
+            left["watchlist"] += 1
+        elif c["job_id"] in listed_ids or role in listed_roles:
+            left["listed_before"] += 1
+        elif role in today_roles:      # one role under a second job id or city
+            left["same_role_again"] += 1
+        else:
+            today_roles.add(role)
+            shown.append(c)
+    total = len(cards) + aggregator_cards_seen
+    wording = [("no_match", "without a target title in Atlanta or remote"),
+               ("watchlist", "at companies the poller already reads"),
+               ("listed_before", "listed on an earlier day"),
+               ("same_role_again", "posted twice (listed once)"),
+               ("aggregator", "from aggregators")]
+    parts = [f"{left[k]} {text}" for k, text in wording if left[k]]
+    head = (f"{len(shown)} new to check by hand" if shown
+            else "Nothing new to check by hand") + f", of {total} cards in the alerts."
+    summary = head + (f" Not listed: {', '.join(parts)}." if parts else "")
+    return {"shown": shown, "summary": summary,
+            "counts": dict(left, shown=len(shown), cards=total)}
 
 
 # ── Orchestration ────────────────────────────────────────────────────────────
@@ -697,7 +794,8 @@ def default_window(today: dt.date) -> tuple[str, str]:
     return f"{w['window']}d", w["note"]
 
 
-def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict) -> dict:
+def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict,
+            listed_before: tuple[set, set] = (frozenset(), frozenset())) -> dict:
     job_records = [r for r in records if r["sender"] in JOB_SENDERS]
     # Threads are counted per thread id (that is what the search returns), but
     # bodies are kept per MESSAGE: LinkedIn re-sends a saved search into the same
@@ -778,9 +876,11 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
             order.append(c["job_id"])
 
     graded, dropped_aggregators, aggregator_flagged = [], [], []
+    aggregator_cards_seen = 0
     for jid in order:
         c = cards_by_id[jid]
         if grader.is_aggregator(c["company"]):
+            aggregator_cards_seen += 1
             if c["company"] not in dropped_aggregators:
                 dropped_aggregators.append(c["company"])
             # The aggregator is dropped as a COMPANY (never queued, never enrolled),
@@ -788,8 +888,11 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
             # some employer (added 2026-10-05). TalentHop's "AI Operations Manager
             # (Remote)" alerted six times in four days and appeared nowhere, because
             # dropping the reposter's name discarded the role with it. These cards
-            # stay out of `cards` and the company roll-up; they get their own digest
-            # lines so the role is seen once and the employer can be looked up.
+            # stay out of `cards` and the company roll-up; they go in
+            # `aggregator_cards`, which linkedin_followup.py reads so the JD is
+            # fetched and the employer found. They are in the `.txt` record but not
+            # the digest's check-by-hand block (2026-10-10): with the employer
+            # unknown there is nothing for him to open.
             g = grader.grade(c)
             if g["manual_review"]:
                 g.update(aggregator=True, company_status=["aggregator repost, employer unknown"],
@@ -852,6 +955,7 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
     graded_sorted = sorted(graded, key=sort_key)
     blind_spot = [g for g in graded_sorted if g["blind_spot"] and
                   (g["tier_name"] in STRONG_TIERS or g["loose_tier"])]
+    check = check_block(graded_sorted, aggregator_cards_seen, listed_before, grader.norm)
 
     jobalerts_seen = sum(1 for r in threads.values() if r["sender"] == JOB_SENDERS[0])
     jobs_noreply_seen = sum(1 for r in threads.values() if r["sender"] == JOB_SENDERS[1])
@@ -890,6 +994,7 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
                                   for c in graded_sorted if c["manual_review"]],
         "blind_spot_qualifying": [f"{c['company']} - {c['title']} [{c['location']}]"
                                   for c in blind_spot],
+        "check_by_hand": check["counts"],
     }
     return {
         "run_date": today.isoformat(),
@@ -898,8 +1003,12 @@ def harvest(records: list[dict], grader: Grader, today: dt.date, run_meta: dict)
         "aggregator_cards": aggregator_cards,
         "unknown_companies": [e["name"] for e in ordered_unknown],
         "pending_entries": pending_entries,
+        # The full graded list: the `.txt` record, not the digest.
         "digest_lines": [digest_line(c) for c in graded_sorted + aggregator_cards],
-        "digest_html_lines": [digest_html_line(c) for c in graded_sorted + aggregator_cards],
+        # The digest block. Every line here is review-flagged, so the tag is left off.
+        "check_summary": check["summary"],
+        "check_lines": [digest_line(c, review_tag=False) for c in check["shown"]],
+        "check_html_lines": [digest_html_line(c, review_tag=False) for c in check["shown"]],
     }
 
 
@@ -986,7 +1095,8 @@ def main() -> int:
 
     result = harvest(records, grader, today,
                      {"query": query_placeholder, "window_used": f"{window} ({window_note})",
-                      "input_mode": input_mode})
+                      "input_mode": input_mode},
+                     load_listed_before(args.out_dir, today, grader.norm))
     c = result["counters"]
 
     os.makedirs(args.out_dir, exist_ok=True)
@@ -998,13 +1108,16 @@ def main() -> int:
         f.write("\n")
     with open(txt_path, "w", encoding="utf-8") as f:
         f.write("LinkedIn alert cards, graded\n" + block + "\n")
-    # HTML twin of the block (added 2026-09-10): same lines, job ids as tappable
-    # LinkedIn links. This is the version that goes into the digest; the .txt stays
-    # for grep and for the weekly report.
+    # The digest block (2026-10-10): the short check-by-hand list, job ids as tappable
+    # LinkedIn links, under one sentence counting what was left out. The .txt above
+    # stays the full graded list, for grep and for the weekly report.
     html_path = os.path.join(args.out_dir, f"linkedin_cards_{today.isoformat()}.html")
-    html_block = "\n".join(result["digest_html_lines"]) or "(no cards parsed)"
+    check_text = result["check_summary"] if c["cards_parsed"] else "(no cards parsed)"
     with open(html_path, "w", encoding="utf-8") as f:
-        f.write('<pre style="white-space:pre-wrap;font-size:12px">\n' + html_block + "\n</pre>\n")
+        f.write(f'<p style="font-size:13px">{html.escape(check_text)}</p>\n')
+        if result["check_html_lines"]:
+            f.write('<pre style="white-space:pre-wrap;font-size:12px">\n'
+                    + "\n".join(result["check_html_lines"]) + "\n</pre>\n")
 
     print(f"window {c['window_used']} | input {c['input_mode']}")
     print(f"threads_returned={c['threads_returned']} job_alert_threads_seen="
@@ -1052,8 +1165,11 @@ def main() -> int:
             print(f"helper check: one session's helper logs yielded {got} message(s), "
                   f"{args.expect_messages} expected (per log: {by_log})")
     if not args.quiet:
-        print("\nLinkedIn alert cards, graded")
-        print(block)
+        print("\nLinkedIn cards to check by hand")
+        print(check_text)
+        for line in result["check_lines"]:
+            print(line)
+        print(f"(every card as graded: {txt_path})")
     print("\nUNKNOWN companies (queue order):",
           ", ".join(result["unknown_companies"]) or "none")
     if c["aggregators_dropped"]:

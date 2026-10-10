@@ -348,6 +348,85 @@ def main() -> int:
             print(f"FAIL transcript: helper counts {res_tx['counters']['helper_messages_by_log']}")
             fails += 1
 
+    # The digest's check-by-hand block (2026-10-10): review-flagged cards only, minus
+    # aggregator reposts, watchlist companies, and roles an earlier day listed. The
+    # full graded list stays in `digest_lines`, which the tests above still read.
+    def card(jid, company, title, review=True, status=()):
+        return {"job_id": jid, "company": company, "title": title,
+                "manual_review": review, "company_status": list(status)}
+    synthetic = [
+        card("1", "Acme Corp", "Support Operations Manager"),                      # listed
+        card("2", "Polled Co", "Support Operations Manager", status=("watchlist", "enrolled")),
+        card("3", "Acme Corp", "Account Executive", review=False),
+        card("4", "Old Co", "Technical Account Manager", status=("rejected",)),   # same job id as before
+        card("5", "Older Co", "Implementation Manager", status=("rejected",)),    # same role, new job id
+        card("6", "Acme Corp", "Support Operations Manager"),                      # second posting of card 1
+    ]
+    blk = HL.check_block(synthetic, 2, ({"4"}, {("olderco", "implementationmanager")}),
+                         grader.norm)
+    want_counts = {"shown": 1, "aggregator": 2, "no_match": 1, "watchlist": 1,
+                   "listed_before": 2, "same_role_again": 1, "cards": 8}
+    if [c["job_id"] for c in blk["shown"]] != ["1"] or blk["counts"] != want_counts:
+        print(f"FAIL check block: shown {[c['job_id'] for c in blk['shown']]}, counts {blk['counts']}")
+        fails += 1
+    if not blk["summary"].startswith("1 new to check by hand, of 8 cards"):
+        print(f"FAIL check block summary: {blk['summary']!r}")
+        fails += 1
+    empty = HL.check_block(synthetic[1:3], 0, (set(), set()), grader.norm)
+    if empty["shown"] or not empty["summary"].startswith("Nothing new to check by hand, of 2"):
+        print(f"FAIL check block on a day with nothing new: {empty['summary']!r}")
+        fails += 1
+
+    # Every card lands in one bucket, on the fixture run too, and no shown line is an
+    # aggregator, a watchlist company, or tagged "review" (they all are, so it is noise).
+    k = c["check_by_hand"]
+    if k["cards"] != c["cards_parsed"] or sum(v for n, v in k.items() if n != "cards") != k["cards"]:
+        print(f"FAIL check block buckets do not add up to cards parsed: {k} vs {c['cards_parsed']}")
+        fails += 1
+    if len(res["check_lines"]) != k["shown"] or len(res["check_html_lines"]) != k["shown"]:
+        print(f"FAIL check lines disagree with the shown count: {res['check_lines']}")
+        fails += 1
+    if any("review" in ln or "aggregator" in ln or "watchlist" in ln for ln in res["check_lines"]):
+        print(f"FAIL check lines carry a card that should be left out: {res['check_lines']}")
+        fails += 1
+    if res_agg["check_lines"] or res_agg["counters"]["check_by_hand"]["aggregator"] != 2:
+        print(f"FAIL aggregator repost reached the check block: {res_agg['check_lines']}, "
+              f"{res_agg['counters']['check_by_hand']}")
+        fails += 1
+
+    # Listed once: the same card on a later day is counted, not listed again.
+    once = [{"id": "lb1", "thread_id": "lb-1", "sender": HL.JOB_SENDERS[0], "subject": "alert",
+             "date": "2026-10-09T06:00:00Z", "body": _mini_body("5551000006"), "source": "fixture"}]
+    meta = {"query": "q", "window_used": "2d", "input_mode": "fixture"}
+    first_day = HL.harvest(once, grader, dt.date(2026, 10, 9), meta)
+    if not HL.needs_hand_check(first_day["cards"][0]):
+        print(f"FAIL fixture: the Acme Corp card should need a hand check: {first_day['cards'][0]}")
+        fails += 1
+    if len(first_day["check_lines"]) != 1 or "5551000006" not in first_day["check_html_lines"][0]:
+        print(f"FAIL first sighting not listed: {first_day['check_lines']}")
+        fails += 1
+    with tempfile.TemporaryDirectory() as jdir:
+        def cards_file(day, cards):
+            with open(os.path.join(jdir, f"linkedin_cards_{day}.json"), "w") as f:
+                json.dump({"cards": cards}, f)
+        cards_file("2026-10-09", first_day["cards"])
+        cards_file("2026-10-08", [card("77", "Polled Co", "Support Operations Manager",
+                                       status=("watchlist",))])
+        cards_file("2026-08-01", [card("88", "Long Gone Co", "Support Operations Manager")])
+        cards_file("2026-10-10", [card("99", "Today Co", "Support Operations Manager")])
+        listed = HL.load_listed_before(jdir, dt.date(2026, 10, 10), grader.norm)
+        if listed[0] != {"5551000006"}:
+            print(f"FAIL listed-before ids: {listed[0]} (want only the 10-09 card: not the "
+                  f"watchlist one, not the one past the lookback, not today's)")
+            fails += 1
+        next_day = HL.harvest(once, grader, dt.date(2026, 10, 10), meta, listed)
+        if next_day["check_lines"] or next_day["counters"]["check_by_hand"]["listed_before"] != 1:
+            print(f"FAIL repeat listed a second day: {next_day['check_lines']}")
+            fails += 1
+        if not next_day["digest_lines"]:
+            print("FAIL the full graded list lost the repeat; only the digest block should")
+            fails += 1
+
     print(f"{len(EXPECT)} graded expectations, {len(res['cards'])} cards, "
           f"{'ALL PASS' if not fails else str(fails) + ' FAIL'}")
     return 1 if fails else 0
