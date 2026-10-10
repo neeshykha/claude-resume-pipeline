@@ -41,7 +41,7 @@
       },
       {
         "name": "AI-Titled Roles (Broad Discovery)",
-        "query": "(\"AI Success Manager\" OR \"AI Outcomes Manager\" OR \"AI Adoption\" OR \"AI Enablement Manager\" OR \"AI Operations Manager\" OR \"AI Transformation Lead\" OR \"AI Value Partner\" OR \"AI Engagement Lead\" OR \"AI Delivery Manager\" OR \"AI GTM\") jobs remote 2026",
+        "query": "(\"AI Success Manager\" OR \"AI Outcomes Manager\" OR \"AI Adoption\" OR \"AI Enablement Manager\" OR \"AI Operations Manager\" OR \"AI Transformation Lead\" OR \"AI Value Partner\" OR \"AI Engagement Lead\" OR \"AI Delivery Manager\" OR \"AI GTM\" OR \"AI Platform Manager\") jobs remote 2026",
         "notes": "Catch-all WebSearch for novel AI-prefixed role titles that don't match named tiers. Companies are still coining these. Run every pipeline pass. Apply AI/LLM bonus (+20) to any hits. Check for salary floor before surfacing. Score against tier2b_ai_wildcard (+18) if no higher tier matches. ('AI Enablement Manager' added 2026-07-02 after a Crowe posting with that exact Tier-2 title was missed by every discovery source. 'AI Operations Manager' added 2026-07-24 after Clutch's 'AI Operations Manager, Emma' posting was missed by this query despite the exact phrase already being a poller supplemental_exact_titles entry -- the WebSearch query and the ATS-poller title list had drifted apart.)",
         "status": "active",
         "frequency": "daily",
@@ -493,6 +493,14 @@
         "last_checked": "2026-10-02",
         "last_hit": "2026-10-02: 'AI Success Architect' live, Atlanta hybrid (also DC, Austin, Miami, Chicago, Charlotte), $91K-$130K + bonus, updated 2026-09-26. User-surfaced from the LinkedIn Jobs feed.",
         "careers_url": "https://meltwatercareers.ttcportals.com/search/jobs"
+      },
+      {
+        "name": "Tufts University",
+        "why": "Tufts Technology Services posted 'AI Platform Manager' (req 23731, tagged Remote, $108.2K-$162.4K, one-year limited term), surfaced by Aneesh 2026-10-09. Board is iCIMS tenant 'tuftscareers' behind a custom skin at jobs.tufts.edu that fetch_icims cannot read. The Remote tag is only on Tufts' own site; LinkedIn shows 'Massachusetts'.",
+        "query": "site:jobs.tufts.edu (\"AI\" OR \"platform\" OR \"systems manager\" OR \"support manager\") remote",
+        "last_checked": "2026-10-09",
+        "last_hit": "2026-10-09: 'AI Platform Manager' live, tagged Remote, posted 2026-10-06. Four roles on the board carry the Remote tag.",
+        "careers_url": "https://jobs.tufts.edu/jobs?tags1=Remote"
       }
     ],
     "last_monthly_run": "2026-10-01"
@@ -899,6 +907,7 @@
         "Support Tooling Manager",
         "Automation Manager",
         "Automation Program Manager",
+        "AI Platform Manager",
         "GTM Systems Manager",
         "Sales Systems Manager",
         "Revenue Systems Manager",
@@ -1059,6 +1068,7 @@
         "LLMOps",
         "AI Agent Operations",
         "AI Agent Evaluation",
+        "AI Platform Manager",
         "Operations Generalist",
         "Business Operations Generalist",
         "BizOps Generalist",
@@ -2987,10 +2997,11 @@
       "name": "Mixpanel",
       "ats": "greenhouse",
       "slug": "mixpanel",
+      "priority": "high",
       "headcount_band": "501-2000",
       "enrolled_date": "2026-07-08",
       "enrolled_via": "Greenhouse board dork 2026-07-08",
-      "reason": "Product analytics platform. Verified live: Customer Success Architect (SF/NYC hybrid), Senior Customer Strategy & Operations Manager (SF/NYC hybrid).",
+      "reason": "Product analytics platform. Verified live: Customer Success Architect (SF/NYC hybrid), Senior Customer Strategy & Operations Manager (SF/NYC hybrid). Launched Agent Intelligence (AI agent monitoring) around 2026-10-06; priority raised from the unset default (medium) to high on 2026-10-09 at Aneesh's ask.",
       "score_bonus": 20,
       "bonus_reason": "Developer/infra tooling (+20)"
     },
