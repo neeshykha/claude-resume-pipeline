@@ -2029,6 +2029,32 @@ def is_within_dedup_window(seen_entry: dict, today: date) -> bool:
         return False
 
 
+# Georgia as the boards spell it. The standalone "ga" token is what catches
+# Workday's street-address form ("Kennesaw, GA, 30144 USA"), which names neither
+# Atlanta nor Georgia. Boundary-matched, so "Gainesville, FL" stays out.
+_FYI_GEORGIA_RE = _boundary_pattern(["atlanta", "georgia", "ga"])
+
+
+def _fyi_place(location) -> int:
+    """0 Georgia, 1 remote, 2 anywhere else. Used for ordering only; nothing is
+    gated on it, so a misread costs a line its position and never its place in
+    the output. "remote" is the same plain substring pre_score_job() uses."""
+    loc = (location or "").lower()
+    if _loc_hit(_FYI_GEORGIA_RE, loc):
+        return 0
+    if "remote" in loc:
+        return 1
+    return 2
+
+
+def fyi_sort_key(job: dict) -> tuple:
+    """Order for the function_mismatch (digest FYI) list: Georgia, then remote,
+    then on-site elsewhere; newest posting first within each, undated last."""
+    age = job.get("posting_age_days")
+    return (_fyi_place(job.get("location")), age is None, age or 0,
+            job["company"], job["title"])
+
+
 def poll_all(run_date: date) -> dict:
     """
     Poll all watchlist companies, filter, dedup, and return results.
@@ -2788,10 +2814,15 @@ def poll_all(run_date: date) -> dict:
     leftover.sort(key=lambda j: -j.get("pre_score", j.get("borderline_score", 0)))
     borderline_capped = reserved + leftover[:BORDERLINE_SIZE - len(reserved)]
 
-    # Function-mismatch FYI list: dedup-suppressed against seen_jobs' 30-day
-    # window is NOT applied here (these are never tracked), so just cap the
-    # list to keep the output file readable on PM-heavy days.
-    function_mismatch.sort(key=lambda j: (j["company"], j["title"]))
+    # Function-mismatch FYI list: written whole, so stats["function_mismatch"]
+    # always equals its length. Until 2026-10-10 it was sorted by company and
+    # sliced to 40 in the return below, which on 73-82 hit days (10-05 to
+    # 10-09) dropped every company sorting after the 40th line while the stat
+    # still counted them. The seen_jobs dedup window is NOT applied here (these
+    # are never tracked), so this is the day's full population, ~315 bytes a
+    # line. Readers take this list from the top, so the order does the work a
+    # cap would: see fyi_sort_key().
+    function_mismatch.sort(key=fyi_sort_key)
 
     # NEAR-WINDOW FYI LIST (added 2026-09-01, Aneesh's pick, alongside the
     # tier1 guarantee above). The next 40 gate-passing jobs below the shortlist
@@ -2829,7 +2860,7 @@ def poll_all(run_date: date) -> dict:
         "sibling_collapsed": sibling_collapsed,
         "borderline": borderline_capped,
         "ai_engineer_stretch": ai_engineer_stretch[:AI_ENGINEER_STRETCH_SIZE],
-        "function_mismatch": function_mismatch[:40],
+        "function_mismatch": function_mismatch,
         "reseen_keys": reseen,
         "errors": errors,
         "stats": stats,

@@ -272,7 +272,10 @@ function_mismatch_titles`) are demoted out of the shortlist into this section. D
 score or tailor them; carry a compressed "also matched, function mismatch (FYI)" line or
 two into the digest only when something is notable (e.g. a role at Maven AGI). If one of
 these ever looks like a REAL fit, that's a config bug: move the specific title variant to
-a scoring tier rather than tailoring from this section.
+a scoring tier rather than tailoring from this section. As of 2026-10-10 the list is
+complete (`stats.function_mismatch` equals its length; it used to be the first 40 by
+company name) and ordered Georgia, then remote, then on-site elsewhere, newest posting
+first within each, so the top of the list is the part he could act on.
 
 Title matching is config-driven (stemmed-token matching against `_title_scoring_tiers` +
 `_poller_config` in `watchlist_companies.json`): word-form and word-order variants match
