@@ -93,4 +93,81 @@ empty = poll_ats._boundary_pattern([])
 empty_hits = [t for t in ("", "hello world.", "<p>billing software</p>", "crypto") if empty.search(t)]
 print("an empty list excludes nothing:", "yes" if not empty_hits else f"NO -> {empty_hits}")
 
-sys.exit(1 if fails or prop_fails or empty_hits else 0)
+# The drop trace (added 2026-10-11). A posting this filter drops is written to
+# the poller's output with the word that caused it, and to the lane poll's file
+# the same way. Offline: one made-up Lever board, temp watchlist and seen_jobs.
+import json, shutil, tempfile
+from datetime import date, datetime, timedelta
+import poll_lane
+
+term_cases = [("Join the leading Crypto exchange.", "crypto"), ("<strong>DeFi</strong> lending", "defi"),
+              ("Mint NFTs on public blockchains.", "nfts"), ("We're redefining support.", None), ("", None)]
+term_fails = [(t, poll_ats.excluded_industry_term(t)) for t, want in term_cases
+              if poll_ats.excluded_industry_term(t) != want]
+term_fails += [(t, "disagrees with description_excluded") for t, _, _ in CASES
+               if (poll_ats.excluded_industry_term(t) is not None) != poll_ats.description_excluded(t)]
+print("the matched word is reported, lowercased:", "yes" if not term_fails else f"NO -> {term_fails}")
+
+RUN = date(2026, 1, 15)
+CREATED = int(datetime.combine(RUN - timedelta(days=3), datetime.min.time().replace(hour=12)).timestamp() * 1000)
+TITLES = ["Quokka Desk Lead", "Quokka Bench Lead", "Quokka Yard Lead"]
+
+
+def posting(jid, title, description):
+    return {"id": jid, "text": title, "categories": {"location": "Remote - United States"},
+            "createdAt": CREATED, "hostedUrl": f"https://example.test/{jid}", "description": description}
+
+
+BOARD = [
+    posting("a", "Quokka Desk Lead", "<p>Run the support desk for a billing product.</p>"),
+    posting("b", "Quokka Bench Lead", "<p>Join the leading crypto exchange.</p>"),
+    posting("c", "Quokka Yard Lead", "<p>We're redefining how yards are run.</p>"),
+    posting("d", "Plant Electrician", "<p>Blockchain-based metering.</p>"),   # no title match: never reaches the filter
+]
+
+work = tempfile.mkdtemp(prefix="industry_test_")
+with open(poll_ats.WATCHLIST_PATH, encoding="utf-8") as f:
+    wl = json.load(f)
+wl["companies"] = [{"name": "Quokka Works", "ats": "lever", "slug": "quokka", "priority": "high"}]
+wl["_poller_config"]["supplemental_exact_titles"]["titles"] = TITLES
+wl_path, seen_path = os.path.join(work, "watchlist.json"), os.path.join(work, "seen_jobs.json")
+with open(wl_path, "w", encoding="utf-8") as f:
+    json.dump(wl, f, ensure_ascii=False)
+with open(seen_path, "w") as f:
+    json.dump({"jobs": {}}, f)
+lane_wl = dict(wl, companies=[dict(wl["companies"][0], lane="testlane")])
+lane_wl_path = os.path.join(work, "lane_watchlist.json")
+with open(lane_wl_path, "w", encoding="utf-8") as f:
+    json.dump(lane_wl, f, ensure_ascii=False)
+
+real = (poll_ats.fetch_lever, poll_ats.WATCHLIST_PATH, poll_ats.SEEN_JOBS_PATH, poll_ats.time.sleep)
+poll_ats.fetch_lever = lambda slug: [dict(p) for p in BOARD]
+poll_ats.WATCHLIST_PATH, poll_ats.SEEN_JOBS_PATH = wl_path, seen_path
+poll_ats.time.sleep = lambda s: None
+try:
+    res = poll_ats.poll_all(RUN)
+    _, lane_payload = poll_lane.run(RUN, "testlane", jobs_dir=os.path.join(work, "jobs"),
+                                    watchlist_path=lane_wl_path)
+finally:
+    poll_ats.fetch_lever, poll_ats.WATCHLIST_PATH, poll_ats.SEEN_JOBS_PATH, poll_ats.time.sleep = real
+    shutil.rmtree(work, ignore_errors=True)
+
+dropped = res["industry_excluded"]
+kept = sorted(j["title"] for j in res["matched"] + res["near_window"])
+trace_checks = [
+    (len(dropped) == 1 and dropped[0]["title"] == "Quokka Bench Lead" and dropped[0]["term"] == "crypto"
+     and dropped[0]["company"] == "Quokka Works" and dropped[0]["apply_url"] == "https://example.test/b"
+     and "location" in dropped[0],
+     f"the one drop is listed with its word: {dropped}"),
+    (res["stats"]["industry_excluded"] == 1 and res["stats"]["excluded"] >= 1,
+     f"counted on its own and still inside `excluded`: {res['stats']['industry_excluded']}, {res['stats']['excluded']}"),
+    (kept == ["Quokka Desk Lead", "Quokka Yard Lead"],
+     f"the clean posting and the 'redefining' one both surface: {kept}"),
+    (lane_payload["industry_excluded"] == dropped,
+     "the lane poll's file carries the same row"),
+]
+for ok, what in trace_checks:
+    print(f"  [{'ok ' if ok else 'FAIL'}] {what}")
+trace_fails = [what for ok, what in trace_checks if not ok]
+
+sys.exit(1 if fails or prop_fails or empty_hits or term_fails or trace_fails else 0)

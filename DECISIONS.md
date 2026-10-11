@@ -666,5 +666,6 @@ Left alone on purpose. The bare word "crypto" still excludes, which will misread
 shorthand ("crypto libraries") if a board ever uses it; 80 of the 149 control exclusions rest on
 that word alone. The filter still reads only `description` or `content`, so Ashby, Greenhouse,
 Workday, and most other adapters never reach it, and on Lever it sees the opening section only.
-The JD screen's `crypto` flag is the check that covers every shortlisted role. And a drop still
-leaves no trace.
+The JD screen's `crypto` flag is the check that covers every shortlisted role. A drop still left
+no trace that day. Since 2026-10-11 each one is written to the poller's output and the lane
+poll's file under `industry_excluded`, with the word that caused it; the digest is unchanged.

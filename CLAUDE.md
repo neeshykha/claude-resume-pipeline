@@ -690,8 +690,9 @@ the incident that set it.
   through `_boundary_pattern()`, so every spelling has to be listed ("cryptocurrency" is,
   "cryptography" isn't, on purpose), and an empty list excludes nothing. Only payloads with a
   `description` or `content` key reach it (Lever, Workable, Comeet, Pinpoint, SuccessFactors);
-  the JD screen's `crypto` flag covers the rest. A drop leaves no digest trace. Cases live in
-  `test_industry_filter.py`.
+  the JD screen's `crypto` flag covers the rest. A drop gets no digest line, but each one is
+  written to the hits file and the lane hits file under `industry_excluded`, with the word
+  that caused it. Cases live in `test_industry_filter.py`.
   [D32](DECISIONS.md#d32-the-industry-filter-matched-inside-ordinary-words)
 - **The unlisted-US-city gap is scoped out (Aneesh, 2026-09-11).** `LOCATION_INCLUDE` is a
   curated city list with a default-exclude behind it, so an on-site role in an unlisted US city

@@ -139,11 +139,14 @@ def run(run_date, lane=DEFAULT_LANE, jobs_dir=None, watchlist_path=None):
     """Poll each lane board, write lane_hits_<date>.json, return (path, payload)."""
     with open(watchlist_path or poll_ats.WATCHLIST_PATH, encoding="utf-8") as f:
         watchlist = json.load(f)
-    boards, cands = [], []
+    boards, cands, dropped = [], [], []
     for company in lane_companies(watchlist, lane):
         started = time.monotonic()
         res, error = poll_board(run_date, watchlist, company)
         got = flatten(res, run_date) if res else []
+        # Postings the poller's industry filter dropped on this board, carried
+        # through as poll_all() wrote them so a wrong drop can be seen.
+        dropped.extend((res or {}).get("industry_excluded") or [])
         boards.append({
             "company": company["name"],
             "postings_scanned": res["stats"]["total_jobs_scanned"] if res else 0,
@@ -166,6 +169,7 @@ def run(run_date, lane=DEFAULT_LANE, jobs_dir=None, watchlist_path=None):
         "boards": boards,
         "errors": [{"company": b["company"], "error": b["error"]} for b in boards if b["error"]],
         "candidates": cands,
+        "industry_excluded": dropped,
     }
     jobs_dir = jobs_dir or JOBS
     os.makedirs(jobs_dir, exist_ok=True)
@@ -197,6 +201,8 @@ def main():
         print(f"  no watchlist entry is marked lane={args.lane!r}")
     for err in p["errors"]:
         print(f"  ERROR  {err['company']}: {err['error'][:160]}")
+    for d in p["industry_excluded"]:
+        print(f"  industry filter dropped [{d['term']}] {d['company']}: {d['title']}")
     print(f"output: {path}")
     return 0
 

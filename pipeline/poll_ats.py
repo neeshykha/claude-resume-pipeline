@@ -786,6 +786,16 @@ def location_relevant(location: str, title: str) -> bool:
     return False
 
 
+def excluded_industry_term(text: str) -> str | None:
+    """The excluded-industry word a description names, lowercased, or None.
+
+    poll_all records it with each drop, so a wrong exclusion can be read off
+    the output instead of going unseen the way the substring bug did.
+    """
+    m = _EXCLUDED_TERMS_RE.search(text.lower())
+    return m.group(0) if m else None
+
+
 def description_excluded(text: str) -> bool:
     """Check if description names an excluded industry, as a whole word.
 
@@ -800,7 +810,7 @@ def description_excluded(text: str) -> bool:
     rule caught on an actual industry word is still caught. Cases live in
     test_industry_filter.py.
     """
-    return bool(_EXCLUDED_TERMS_RE.search(text.lower()))
+    return excluded_industry_term(text) is not None
 
 
 _WORKDAY_POSTING_INFO_CACHE: dict[str, dict | None] = {}
@@ -2130,6 +2140,7 @@ def poll_all(run_date: date) -> dict:
     matched = []
     borderline = []
     function_mismatch = []  # demoted title classes (PM/TPM/SalesEng...): digest FYI, never shortlisted
+    industry_excluded = []  # postings the industry filter dropped, with the word that did it
     ai_engineer_stretch = []  # AI engineer titles routed to the Step 3.5 stretch lane (2026-09-14)
     errors = []
     reseen = []  # existing jobs re-encountered (for last_seen_date update)
@@ -2146,6 +2157,7 @@ def poll_all(run_date: date) -> dict:
         "cap_suppressed": 0,
         "location_filtered": 0,
         "excluded": 0,
+        "industry_excluded": 0,
         "errors": 0,
         "lane_skipped": 0,
     }
@@ -2319,10 +2331,22 @@ def poll_all(run_date: date) -> dict:
                 stats["excluded"] += 1
                 continue
 
-            # Industry exclusion
+            # Industry exclusion. Every drop is written to the output with the
+            # word that caused it: this is the one gate that judges free text,
+            # and until 2026-10-11 a wrong hit here left only a bump in
+            # `excluded` (DECISIONS.md D32). Still counted in `excluded` too.
             desc = job_data.get("content", job_data.get("description", ""))
-            if isinstance(desc, str) and description_excluded(desc):
+            term = excluded_industry_term(desc) if isinstance(desc, str) else None
+            if term:
                 stats["excluded"] += 1
+                stats["industry_excluded"] += 1
+                industry_excluded.append({
+                    "company": name,
+                    "title": title,
+                    "location": location,
+                    "apply_url": apply_url,
+                    "term": term,
+                })
                 continue
 
             # Dedup check (try both slug-based and name-based keys)
@@ -2901,6 +2925,7 @@ def poll_all(run_date: date) -> dict:
         "borderline": borderline_capped,
         "ai_engineer_stretch": ai_engineer_stretch[:AI_ENGINEER_STRETCH_SIZE],
         "function_mismatch": function_mismatch,
+        "industry_excluded": industry_excluded,
         "reseen_keys": reseen,
         "errors": errors,
         "stats": stats,
@@ -2951,6 +2976,9 @@ def main():
     print(f"Function-mismatch demoted (PM/TPM/SalesEng..., digest FYI only): {s.get('function_mismatch', 0)}")
     print(f"Cap suppressed: {s['cap_suppressed']}")
     print(f"Excluded (salary/industry/seniority): {s['excluded']}")
+    print(f"  of which dropped by the industry filter (listed in the output): {s.get('industry_excluded', 0)}")
+    for j in results.get("industry_excluded", []):
+        print(f"    [{j['term']}] {j['company']}: {j['title']}")
     print(f"ATS errors: {s['errors']}")
     if results["errors"]:
         print(f"\nErrors:")
