@@ -5,7 +5,9 @@ part fails:
 
   1. OFFLINE CASES -- feed-shape parsing and no-board classification against
      synthetic, safe fixtures (no real company data): looks_like_rmk_feed,
-     parse_feed (both shapes), parse_detail_page, and resolve_board's status
+     parse_feed (both shapes), parse_detail_page (both og:title templates),
+     fetch_jd_successfactors's body (flat, nested, several, and unclosed
+     description spans) and posted date, and resolve_board's status
      classification (no_board / real-empty -> [] / real -> list / throttled).
   2. LIVE single-requisition integration -- resolves a real board (CRH, the
      "rss" feed shape) and parses a real, named requisition's title, location,
@@ -102,11 +104,84 @@ FAKE_DETAIL_PAGE = """<html><head>
 FAKE_DETAIL_PAGE_NOT_SF = """<html><head><title>Warehouse Lead</title></head>
 <body>Some unrelated careers page with a coincidental /job/x/8801/ URL shape.</body></html>"""
 
+# A second template, all of it made up: og:title is the BARE title (no
+# " - <Location>" after it, and this title has a hyphen of its own), the
+# location is a layout token with no itemprop or label, and the posting text
+# sits in three rich-text description spans that nest <span style=...> runs.
+FAKE_LAYOUT_LOCATION = "Springfield, Illinois, United States | Denver, Colorado, United States"
+FAKE_DETAIL_PAGE_NESTED = """<html><head>
+<title>Systems Analyst - Billing Job Details | examplecorp</title>
+<meta property="og:title" content="Systems Analyst - Billing" />
+<link rel="canonical" href="https://jobs.example-corp.test/job/Systems-Analyst-Billing/9003-en_US/" />
+</head><body>
+<div class="jobDisplayShell" itemscope itemtype="http://schema.org/JobPosting">
+<div class="joblayouttoken displayDTM marginTopMedium">
+  <span lang="en-US" itemprop="title" class="rtltextaligneligible">Systems Analyst - Billing
+  </span></div>
+<div class="joblayouttoken displayDTM ">
+  <span lang="en-US" class="rtltextaligneligible">Widgets Division
+  </span></div>
+<div class="joblayouttoken displayDTM ">
+  <span lang="en-US" class="rtltextaligneligible">""" + FAKE_LAYOUT_LOCATION + """
+  </span></div>
+<div class="joblayouttoken displayDTM ">
+  <span lang="en-US" itemprop="description" class="rtltextaligneligible"><p>&nbsp;</p>
+  <p><span style="font-size:12.0pt"><span style="color:#000000">Job ID: 9003</span></span></p>
+  <p><span style="font-size:12.0pt">Example Corp makes widgets.</span></p></span></div>
+<div class="joblayouttoken displayDTM ">
+  <span lang="en-US" itemprop="description" class="rtltextaligneligible"><p><span style="text-decoration:underline"><strong>Job Summary</strong></span></p>
+  <p><span style="font-size:12.0pt">Own the billing system end to end.</span></p>
+  <ul><li><span style="font-size:12.0pt">Five years with <span style="font-weight:bold">invoicing tools</span> required.</span></li></ul></span></div>
+<div class="joblayouttoken displayDTM ">
+  <span lang="en-US" itemprop="description" class="rtltextaligneligible"><p><span><strong><u>What We Offer</u></strong></span></p>
+  <ul><li>Paid time off</li></ul></span></div>
+<div class="joblayouttoken displayDTM ">
+  <span class="joblayouttoken-label" role="heading" aria-level="2">Posting Start Date:
+  </span>
+  <span xml:lang="en-US" lang="en-US" class="rtltextaligneligible">1/22/26
+  </span></div>
+</div></body></html>"""
+
+# Same page, the start date written for another locale, then as a non-date.
+FAKE_DETAIL_PAGE_NESTED_DE = FAKE_DETAIL_PAGE_NESTED.replace(
+    'xml:lang="en-US" lang="en-US" class="rtltextaligneligible">1/22/26',
+    'xml:lang="de-DE" lang="de-DE" class="rtltextaligneligible">22/1/26')
+FAKE_DETAIL_PAGE_NESTED_BAD_DATE = FAKE_DETAIL_PAGE_NESTED.replace("1/22/26", "13/40/26")
+
+# Same page with the location token holding something that isn't a location.
+FAKE_DETAIL_PAGE_NESTED_NO_LOC = FAKE_DETAIL_PAGE_NESTED.replace(FAKE_LAYOUT_LOCATION, "Req 9003")
+
+# The " - <Location>" template with an itemprop="title" span added: the span
+# differs from og:title, so the split must still happen.
+FAKE_DETAIL_PAGE_TITLE_SPAN = FAKE_DETAIL_PAGE.replace(
+    '<span itemprop="description">Requisition',
+    '<span itemprop="title">Warehouse Lead</span>\n<span itemprop="description">Requisition')
+
+# A description span with one more open than close: malformed, never balances.
+FAKE_DETAIL_PAGE_UNCLOSED = """<html><head>
+<meta property="og:title" content="Warehouse Lead - Denver, CO" />
+</head><body>
+<div itemscope itemtype="http://schema.org/JobPosting">
+<span itemprop="description">Requisition ID: 8802 <span style="color:#000000">is open</span>
+<p>Footer text that is not part of the posting.</p>
+</div></body></html>"""
+
+FAKE_JOB_URL = "https://jobs.example-corp.test/job/Springfield-Systems-Analyst-IL-62701/9001003/"
+
 
 class FakeResp:
     def __init__(self, text, status_code=200):
         self.text = text
         self.status_code = status_code
+
+
+def jd_record(page):
+    """fetch_jd_successfactors's record for a fixture page, no network."""
+    return sf.fetch_jd_successfactors(FAKE_JOB_URL, get=lambda url: FakeResp(page))
+
+
+def jd_body(page):
+    return jd_record(page)["body"]
 
 
 offline_cases = [
@@ -153,7 +228,8 @@ for name, get_fn, want_status, want_count, why in offline_cases:
 print(f"{len(offline_cases) - fails}/{len(offline_cases)} passed")
 fails_total += fails
 
-# looks_like_rmk_feed and parse_detail_page, in CASES form too.
+# looks_like_rmk_feed, parse_detail_page, and the JD body, in CASES form too.
+NESTED_BODY = jd_body(FAKE_DETAIL_PAGE_NESTED)
 parse_cases = [
     (sf.looks_like_rmk_feed(FAKE_RSS), True, "rss shape with g: fields -> True"),
     (sf.looks_like_rmk_feed(NOT_RMK_SITEMAP), False, "generic blog sitemap -> False"),
@@ -173,6 +249,39 @@ parse_cases = [
     (sf._strip_location_suffix("Field Technician (Contract)", "Remote"),
      "Field Technician (Contract)",
      "parenthetical that does NOT match location is left alone"),
+    # JD body: each description span read to its MATCHING close.
+    (jd_body(FAKE_DETAIL_PAGE), "Requisition ID: 8801\n\nOwn the regional warehouse team.",
+     "flat spans read as before, one paragraph per span"),
+    ("Own the billing system end to end." in NESTED_BODY, True,
+     "nested spans: text after the first inner </span> is kept"),
+    ("Five years with invoicing tools required." in NESTED_BODY, True,
+     "a span nested two deep does not end the read early"),
+    (NESTED_BODY.startswith("Job ID: 9003") and NESTED_BODY.endswith("Paid time off"), True,
+     "all three description spans, in document order"),
+    ("Posting Start Date" in NESTED_BODY or "Widgets Division" in NESTED_BODY, False,
+     "layout tokens outside the description spans stay out of the body"),
+    (jd_body(FAKE_DETAIL_PAGE_UNCLOSED), "Requisition ID: 8802 is open",
+     "a span that never balances falls back to the first-close cut, not the rest of the page"),
+    # The bare-og:title template.
+    (sf.parse_detail_page(FAKE_DETAIL_PAGE_NESTED, "fallback")["title"],
+     "Systems Analyst - Billing",
+     "og:title equals the itemprop title span: a hyphenated title is kept whole"),
+    (sf.parse_detail_page(FAKE_DETAIL_PAGE_NESTED, "fallback")["location"],
+     FAKE_LAYOUT_LOCATION,
+     "location read from the unlabelled layout token ahead of the description"),
+    (sf.parse_detail_page(FAKE_DETAIL_PAGE_NESTED_NO_LOC, "fallback")["location"], "Unknown",
+     "a token that isn't shaped like a location is not taken for one"),
+    (sf.parse_detail_page(FAKE_DETAIL_PAGE_TITLE_SPAN, "fallback")["location"], "Denver, CO",
+     "itemprop title differs from og:title: the ' - <Location>' split still applies"),
+    # Posted date: the page's labelled "Posting Start Date" token.
+    (jd_record(FAKE_DETAIL_PAGE_NESTED)["posted"], "2026-01-22",
+     "labelled start-date token on an en-US page, read month/day/year"),
+    (jd_record(FAKE_DETAIL_PAGE)["posted"], None,
+     "a page with no start-date token has no posted date"),
+    (jd_record(FAKE_DETAIL_PAGE_NESTED_DE)["posted"], None,
+     "a value span in another locale is not guessed at"),
+    (jd_record(FAKE_DETAIL_PAGE_NESTED_BAD_DATE)["posted"], None,
+     "a value that isn't a real date reads as None"),
 ]
 fails2 = 0
 for got, want, why in parse_cases:
@@ -290,22 +399,32 @@ except Exception as e:
     print(f"Wipro: FAIL {type(e).__name__}: {e}")
     live3_ok = False
 
-# 3c. CRH: rss shape, 1897 postings in ONE response (no per-item request at
-# all) -- proves the OTHER cap, SUCCESSFACTORS_MAX_POSTINGS, same way: total
-# from the feed exceeds the cap, and what's returned is capped at it.
+# 3c. CRH: rss shape, ~1,800-1,900 postings in ONE response (no per-item
+# request at all). Reads min(total, cap), the same shape as the Avanos check
+# above: a full-board completeness proof while the feed is under
+# SUCCESSFACTORS_MAX_POSTINGS, a capped read once it grows past it. Until
+# 2026-10-10 the cap was 1000 and this part asserted the capped case; the cap
+# went to 3000 when CRH was enrolled, because the feed is not in date order and
+# a capped read left a fixed slice of the board unread. The cap is still proven
+# here, by re-reading the same feed with a small explicit max_postings.
 try:
     t0 = time.monotonic()
     status, postings, total = sf.resolve_board("jobs.crh.com", _plain_get)
     elapsed = time.monotonic() - t0
     read = len(postings or [])
     cap = sf.SUCCESSFACTORS_MAX_POSTINGS
-    ok_c = status == "ok" and total is not None and total > cap and read == cap
+    ok_c = status == "ok" and total is not None and read == min(total, cap)
     print(f"CRH (rss shape): status={status}  feed_total={total}  read={read}  cap={cap}  "
          f"elapsed={elapsed:.1f}s")
-    print(f"  [{'ok ' if (total and total > cap) else 'FAIL'}] "
-         f"feed total ({total}) exceeds SUCCESSFACTORS_MAX_POSTINGS ({cap})")
-    print(f"  [{'ok ' if read == cap else 'FAIL'}] read capped at exactly {cap}, not {total}")
-    live3_ok &= ok_c
+    print(f"  [{'ok ' if ok_c else 'FAIL'}] read ({read}) == min(feed total {total}, cap {cap})"
+          + ("  -- whole board read" if (total is not None and total <= cap)
+             else "  -- capped read"))
+    # The cap itself, without depending on any live board's size: the same
+    # feed re-read with a small explicit max_postings must stop exactly there.
+    _s2, small, _t2 = sf.resolve_board("jobs.crh.com", _plain_get, max_postings=25)
+    ok_cap = len(small or []) == min(25, total or 0)
+    print(f"  [{'ok ' if ok_cap else 'FAIL'}] max_postings=25 returns {len(small or [])} postings")
+    live3_ok &= ok_c and ok_cap
 except Exception as e:
     print(f"CRH: FAIL {type(e).__name__}: {e}")
     live3_ok = False

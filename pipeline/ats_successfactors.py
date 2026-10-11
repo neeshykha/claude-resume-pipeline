@@ -47,8 +47,8 @@ share one parser" rule (section 2). `fetch_jd_successfactors` (used by
 fetch_jd.py) shares `parse_detail_page`, the same per-job-page parser the
 urlset branch uses, so a Step-3 JD pull and a urlset-shape poll can't drift.
 
-NO CIRCULAR IMPORT: this module imports only `re`, `requests`, `time`, and the
-stdlib XML parser. `poll_ats.py`, `harvest_ats.py`, and `fetch_jd.py` each
+NO CIRCULAR IMPORT: this module imports only `requests` and the standard
+library. `poll_ats.py`, `harvest_ats.py`, and `fetch_jd.py` each
 import THIS module; this module never imports any of them. harvest_ats.py's
 probe passes in its own budgeted `_raw_get`/`_pace`-backed callable rather than
 this module reaching into harvest internals, which is also what keeps a
@@ -64,6 +64,11 @@ KNOWN LIMITATIONS (report these, don't paper over them):
     stop advertising) but nothing for when it started. `extract_posted_date`
     therefore always returns None for this ATS -- same "no data -> don't
     filter" treatment as Pinpoint and Rippling get in poll_ats.py.
+    The DETAIL PAGE can carry one: the first enrolled board's template shows a
+    labelled "Posting Start Date" token (seen 2026-10-10), which
+    fetch_jd_successfactors returns as `posted` (see `_posting_start_date`).
+    That is a Step-3 read of one page. The poll of an rss board never opens a
+    detail page, so the poller still has no date for this ATS.
   - No salary field on either shape.
   - The urlset per-job-detail walk is capped far lower than
     SUCCESSFACTORS_MAX_POSTINGS (see SUCCESSFACTORS_URLSET_DETAIL_CAP) because
@@ -74,6 +79,7 @@ KNOWN LIMITATIONS (report these, don't paper over them):
 """
 import re
 import time
+from datetime import date
 from html import unescape
 from xml.etree import ElementTree as ET
 
@@ -88,7 +94,15 @@ REQUEST_TIMEOUT = 30  # seconds; mirrors poll_ats.REQUEST_TIMEOUT
 # probe so discovery judges the same board the poller will read (contract
 # section 3's "the cap is a named constant, and the probe and the poller use
 # the same cap").
-SUCCESSFACTORS_MAX_POSTINGS = 1000
+#
+# Raised 1000 -> 3000 on 2026-10-10, when CRH became the first enrolled
+# SuccessFactors board. Its feed had grown to 1,813 items and is NOT in date
+# order (measured 2026-10-09: item order is stable between requests and
+# unrelated to posting date), so a 1,000 cap did not read "the newest 1,000":
+# it read a fixed 55% of the board and left the same 60 of 135 Georgia postings
+# unread every day. Costs nothing in requests; the feed is one response at any
+# cap. Raise it again if an rss-shape board outgrows it.
+SUCCESSFACTORS_MAX_POSTINGS = 3000
 
 # Pagination cap for the "urlset" feed shape (Avanos/Wipro-style): resolving a
 # posting's title/location here costs one full HTTP GET of its detail page,
@@ -132,6 +146,18 @@ _OG_TITLE_RE = re.compile(r'<meta\s+property="og:title"\s+content="([^"]*)"', re
 _TITLE_TAG_RE = re.compile(r"<title>(.*?)</title>", re.I | re.S)
 _CANONICAL_RE = re.compile(r'<link\s+rel="canonical"\s+href="([^"]*)"', re.I)
 _JOBPOSTING_ITEMTYPE_RE = re.compile(r'itemtype="http://schema\.org/JobPosting"', re.I)
+_SPAN_TOKEN_RE = re.compile(r"<span\b[^>]*>|</span\s*>", re.I)
+_LAYOUT_TOKEN_RE = re.compile(r'<div\s+class="joblayouttoken\b', re.I)
+_ITEMPROP_RE = re.compile(r'\bitemprop="([^"]+)"', re.I)
+_POSTING_START_RE = re.compile(
+    r'<span\b[^>]*\bclass="joblayouttoken-label"[^>]*>\s*Posting Start Date:?\s*</span>\s*'
+    r"<span\b([^>]*)>([^<]*)</span>", re.I)
+_US_DATE_RE = re.compile(r"(\d{1,2})/(\d{1,2})/(\d{2}|\d{4})")
+
+# Longest text _layout_location will accept as a location. A real one is a
+# line ("City, Region, Country", a few joined by " | "); anything longer in
+# that slot is prose, and "Unknown" is the better answer.
+SF_LAYOUT_LOCATION_MAX_CHARS = 400
 
 
 def looks_like_rmk_feed(text: str) -> bool:
@@ -253,6 +279,102 @@ def parse_feed(text: str):
     return None, None
 
 
+def _itemprop_spans(html: str, prop: str) -> list[str]:
+    """Inner HTML of every `<span itemprop="<prop>">` in document order, each
+    taken to its MATCHING `</span>`.
+
+    A posting written in the rich-text editor wraps its text in nested
+    `<span style=...>` runs, so a non-greedy `(.*?)</span>` stops at the first
+    inner close and keeps a heading or two of a full posting (measured
+    2026-10-10 on the first enrolled board: 32 characters from a 103 KB page).
+    Same reasoning as fetch_jd.py's `_balanced_div`. A flat span reads exactly
+    as it did before. A span that never balances falls back to that
+    first-close cut rather than swallowing the rest of the page.
+    """
+    open_re = re.compile(r'<span\b[^>]*\bitemprop="%s"[^>]*>' % re.escape(prop), re.I)
+    parts, pos = [], 0
+    while True:
+        m = open_re.search(html, pos)
+        if not m:
+            break
+        depth, first_close, end = 1, None, None
+        for t in _SPAN_TOKEN_RE.finditer(html, m.end()):
+            if t.group(0)[1] != "/":
+                depth += 1
+                continue
+            depth -= 1
+            first_close = first_close or t
+            if depth == 0:
+                end = t
+                break
+        end = end or first_close
+        if end is None:  # no </span> anywhere after the open tag
+            break
+        parts.append(html[m.end():end.start()])
+        pos = end.end()
+    return parts
+
+
+def _flat_text(raw: str) -> str:
+    """One line of text from a fragment of page HTML, whitespace collapsed."""
+    return " ".join(_strip_html(unescape(raw)).split())
+
+
+def _layout_location(html: str) -> str | None:
+    """Location from the job-layout tokens ahead of the description, or None.
+
+    Only for a template whose og:title is the bare title (see
+    parse_detail_page). There the location is rendered once, as a layout
+    token with no itemprop, class, or label to find it by. Measured
+    2026-10-10 on four postings of the first enrolled board, all laid out the
+    same way: the title token, a division token, the location token
+    ("City, Region, Country", several joined by " | "), then the description
+    tokens. So this is a read by POSITION and shape: the last token before
+    the first description that carries no itemprop and reads as a short line
+    with a comma in it. Anything else returns None and the caller says
+    "Unknown". A tenant that lays its tokens out differently needs its own
+    look, not this rule stretched to fit.
+    """
+    starts = [m.start() for m in _LAYOUT_TOKEN_RE.finditer(html)]
+    found = None
+    for a, b in zip(starts, starts[1:] + [len(html)]):
+        block = html[a:b]
+        props = [p.lower() for p in _ITEMPROP_RE.findall(block)]
+        if "description" in props:
+            return found
+        if props:
+            continue
+        text = _flat_text(block)
+        if "," in text and len(text) <= SF_LAYOUT_LOCATION_MAX_CHARS:
+            found = text
+    return None
+
+
+def _posting_start_date(html: str) -> str | None:
+    """ISO date from a detail page's "Posting Start Date" token, or None.
+
+    Unlike the location, this token is labelled: a `joblayouttoken-label`
+    span reading "Posting Start Date:" and then a value span (seen 2026-10-10
+    on the first enrolled board, "8/10/26" and "7/23/26" among the values).
+    The value is written in the page's locale, so it is read as
+    month/day/year only when the value span says `lang="en-US"`; any other
+    locale, a missing token, or a value that isn't a real date returns None.
+    The label is whatever the tenant named the field, so a board that calls
+    it something else reads as None until that label is added here.
+    """
+    m = _POSTING_START_RE.search(html)
+    if not m or 'lang="en-us"' not in m.group(1).lower():
+        return None
+    d = _US_DATE_RE.fullmatch(m.group(2).strip())
+    if not d:
+        return None
+    month, day, year = (int(x) for x in d.groups())
+    try:
+        return date(year + 2000 if year < 100 else year, month, day).isoformat()
+    except ValueError:
+        return None
+
+
 def parse_detail_page(html: str, fallback_url: str = "") -> dict | None:
     """title/location/apply-url from an SF job detail page.
 
@@ -275,6 +397,13 @@ def parse_detail_page(html: str, fallback_url: str = "") -> dict | None:
     the `schema.org/JobPosting` microdata wrapper every live sample had --
     that second check is what stops a same-shaped-URL page on some unrelated
     site from being silently accepted as a posting.
+
+    A second template (first seen 2026-10-10, on the first enrolled board)
+    puts the BARE title in og:title, with no " - <Location>" after it. Split
+    on " - " there and a hyphenated title loses its last part to the location
+    field. The page's own `itemprop="title"` span tells the two apart: when
+    it equals og:title there is nothing to split off, the title is kept
+    whole, and the location comes from `_layout_location` or is "Unknown".
     """
     if not _JOBPOSTING_ITEMTYPE_RE.search(html):
         return None
@@ -288,7 +417,10 @@ def parse_detail_page(html: str, fallback_url: str = "") -> dict | None:
         raw = re.sub(r"\s+Job Details\s*\|.*$", "", raw).strip()
     if not raw:
         return None
-    if " - " in raw:
+    page_titles = _itemprop_spans(html, "title")
+    if page_titles and _flat_text(page_titles[0]) == " ".join(raw.split()):
+        title, location = raw, _layout_location(html) or "Unknown"
+    elif " - " in raw:
         title, location = raw.rsplit(" - ", 1)
     else:
         title, location = raw, "Unknown"
@@ -424,16 +556,17 @@ def fetch_jd_successfactors(url: str, get=None) -> dict | None:
     # Full JD body: every itemprop="description" span in document order, same
     # convention as the RSS branch's flattened description. A posting can
     # render its content across more than one such span (Avanos: a leading
-    # "Requisition ID: NNNN" span, then the real body in a second one).
-    body_parts = re.findall(r'itemprop="description"[^>]*>(.*?)</span>',
-                            html, re.S | re.I)
-    body = "\n\n".join(_strip_html(unescape(p)) for p in body_parts if p.strip()).strip()
+    # "Requisition ID: NNNN" span, then the real body in a second one). Each
+    # span is read to its matching close, since a rich-text posting nests
+    # spans inside it; see _itemprop_spans.
+    body_parts = [_strip_html(unescape(p)) for p in _itemprop_spans(html, "description")]
+    body = "\n\n".join(p for p in body_parts if p)
     return {
         "ats": "successfactors",
         "title": parsed["title"],
         "location": parsed["location"],
         "remote": None,
-        "posted": None,  # no reliable per-posting date on either feed shape; see module docstring
+        "posted": _posting_start_date(html),  # the page's own token; neither feed shape has a date
         "salary": None,  # not exposed on either feed shape
         "body": body,
     }
