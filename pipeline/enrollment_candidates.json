@@ -444,17 +444,6 @@
       "source_backfilled": "watchlist enrolled_via"
     },
     {
-      "name": "Swiftly",
-      "ats": "lever",
-      "slug": "goswift",
-      "enrolled_date": "2026-07-02",
-      "headcount_band": "51-200",
-      "enrolled_via": "Lever board dork 2026-07-02",
-      "notes": "Transit data SaaS platform. Implementation Manager (SaaS, US) and Customer Training & Adoption Specialist are direct fits.",
-      "source": "WebSearch Lever board dork (Step 1c) -> verified",
-      "source_backfilled": "watchlist enrolled_via"
-    },
-    {
       "name": "FAR.AI",
       "ats": "ashby",
       "slug": "far.ai",
@@ -1704,15 +1693,6 @@
       "via": "harvest_ats.py"
     },
     {
-      "name": "CBTS",
-      "ats": "rippling",
-      "slug": "cbts",
-      "enrolled_date": "2026-08-24",
-      "headcount_band": "2000+",
-      "source": "LinkedIn alert 2026-08-24 ('AI Solutions Manager', up to $150K), enrolled by hand after harvest_ats rejected it",
-      "source_backfilled": "watchlist enrolled_via"
-    },
-    {
       "name": "Incode Technologies",
       "ats": "greenhouse",
       "slug": "incode",
@@ -2894,15 +2874,6 @@
       "via": "harvest_ats.py",
       "source": "BuiltIn directory",
       "first_seen": "2026-09-24"
-    },
-    {
-      "name": "Progressive Insurance",
-      "ats": "smartrecruiters",
-      "slug": "progressiveinsurance",
-      "enrolled_date": "2026-09-25",
-      "via": "harvest_ats.py",
-      "source": "LinkedIn alert",
-      "first_seen": "2026-09-25"
     },
     {
       "name": "Virtuous",
@@ -4139,6 +4110,14 @@
       "slug": "crh",
       "enrolled_date": "2026-10-10",
       "via": "Hand-enrolled 2026-10-10 for the industrial lane (interactive session, Aneesh's yes on the lane proposal)"
+    },
+    {
+      "name": "Seismic",
+      "ats": "icims",
+      "slug": "seismic",
+      "enrolled_date": "2026-10-10",
+      "source": "hand-enrolled 2026-10-10: Highspot (enrolled 2026-07-07) merged into Seismic; board found by the frozen-board sweep",
+      "first_seen": "2026-10-10"
     }
   ],
   "rejected": [
@@ -19395,6 +19374,39 @@
       "card_job_id": "4468934629",
       "card_url": "https://www.linkedin.com/jobs/view/4468934629/",
       "superseded_note": "Supersedes the 2026-09-25 record: UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 19 probe(s) were refused with HTTP 429 even after one r..."
+    },
+    {
+      "name": "Swiftly",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-10",
+      "reason": "DE-ENROLLED 2026-10-10 (frozen-board sweep). Was enrolled 2026-07-02 on lever/goswift. The company moved to Kula (careers.kula.ai/swiftly), an ATS with no poller adapter; the Lever board still answers with one 2021 posting. Unpollable until a Kula adapter exists; checked monthly via _unpollable_backlog_companies.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "WebSearch Lever board dork (Step 1c) -> verified",
+      "source_backfilled": "watchlist enrolled_via"
+    },
+    {
+      "name": "CBTS",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-10",
+      "reason": "DE-ENROLLED 2026-10-10 (frozen-board sweep). Was enrolled by hand 2026-08-24 on rippling/cbts, which now returns 404. The company moved to Eightfold at jobs.cbts.com, an ATS with no poller adapter (a second board for Professional Services is at cbts.my.salesforce-sites.com/jobboard/). Unpollable until an Eightfold adapter exists; checked monthly via _unpollable_backlog_companies.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "source": "LinkedIn alert 2026-08-24 ('AI Solutions Manager', up to $150K), enrolled by hand after harvest_ats rejected it",
+      "source_backfilled": "watchlist enrolled_via"
+    },
+    {
+      "name": "Progressive Insurance",
+      "ats": "smartrecruiters",
+      "slug": "progressiveinsurance",
+      "rejected_date": "2026-10-10",
+      "reason": "DE-ENROLLED 2026-10-10 at Aneesh's call (frozen-board sweep). The harvest enrolled smartrecruiters/progressiveinsurance on 2026-09-25 because it answered with 23 postings, but it is a sandbox: the newest posting is dated 2022-10-06 and one is titled 'Maria Test Job'. The real careers site, careers.progressive.com, answers 403 to a plain fetch and its ATS was not identified. Do not re-enroll this slug.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-25"
     }
   ]
 }
