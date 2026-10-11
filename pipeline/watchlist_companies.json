@@ -546,6 +546,22 @@
         "last_hit": "2026-10-09 (hand read, industrial sweep): no manager-level support role. 89 Georgia postings; one business operations analyst in the Customer Service department (Conyers).",
         "careers_url": "https://careers.acuityinc.com/",
         "lane": "industrial"
+      },
+      {
+        "name": "Swiftly",
+        "why": "De-enrolled 2026-10-10 (frozen-board sweep). The company moved its jobs to Kula (careers.kula.ai/swiftly), which the poller has no adapter for; lever/goswift still answers with a single 2021 posting, so the poller had been reading a dead board. Transit data SaaS, San Francisco, 51-200. Was enrolled 2026-07-02 on a verified Implementation Manager (SaaS, US) and a Customer Training & Adoption Specialist, both US-remote-reachable.",
+        "query": "\"Swiftly\" transit (\"implementation manager\" OR \"customer success\" OR \"customer training\" OR \"support operations\")",
+        "last_checked": "2026-10-10",
+        "last_hit": "2026-10-10 (frozen-board sweep, second pass): 10 roles on the Kula board, none in lane (engineering, design, accounting, a Senior Account Manager, a paralegal).",
+        "careers_url": "https://careers.kula.ai/swiftly"
+      },
+      {
+        "name": "CBTS",
+        "why": "De-enrolled 2026-10-10 (frozen-board sweep). The company moved its jobs to Eightfold at jobs.cbts.com, which the poller has no adapter for; rippling/cbts returns 404. Professional Services (staff augmentation) roles post separately at cbts.my.salesforce-sites.com/jobboard/. IT managed services, 2000+. Was enrolled by hand 2026-08-24 on a LinkedIn alert for an 'AI Solutions Manager' (up to $150K).",
+        "query": "\"CBTS\" (\"AI solutions\" OR \"support operations\" OR \"customer success\" OR \"service delivery\") manager",
+        "last_checked": "2026-10-10",
+        "last_hit": "2026-10-10 (no-date board check): new board located; the check counted 55 postings on Eightfold, 25 of them in the United States. Titles were not read.",
+        "careers_url": "https://jobs.cbts.com/careers?location=United+States"
       }
     ],
     "last_monthly_run": "2026-10-01"
@@ -2771,18 +2787,6 @@
       "reason": "Voice AI dictation startup (San Francisco). Verified live 2026-07-02: Customer Engagement Manager (Remote US) is a direct fit. ~50-94 employees.",
       "score_bonus": 20,
       "bonus_reason": "AI/ML platform (+20) - voice AI product"
-    },
-    {
-      "name": "Swiftly",
-      "ats": "lever",
-      "slug": "goswift",
-      "priority": "medium",
-      "headcount_band": "51-200",
-      "enrolled_date": "2026-07-02",
-      "enrolled_via": "WebSearch Lever board dork (Step 1c) -> verified",
-      "reason": "Transit data SaaS platform (San Francisco, ~129 employees). Verified live 2026-07-02: Implementation Manager (SaaS, US) and Customer Training & Adoption Specialist, both US-remote-reachable.",
-      "score_bonus": 0,
-      "bonus_reason": "No AI/ML bonus - transit ops data platform, not an AI/CX product."
     },
     {
       "name": "FAR.AI",
@@ -5013,18 +5017,6 @@
       "headcount_band_note": "LinkedIn's self-declared bucket says 51-200 but its own live member count is ~269. Took the member count; also the conservative direction (+8 rather than +15)."
     },
     {
-      "name": "CBTS",
-      "ats": "rippling",
-      "slug": "cbts",
-      "priority": "low",
-      "headcount_band": "2000+",
-      "enrolled_date": "2026-08-24",
-      "enrolled_via": "LinkedIn alert 2026-08-24 ('AI Solutions Manager', up to $150K), enrolled by hand after harvest_ats rejected it",
-      "reason": "IT / managed-services provider (ex-Cincinnati Bell Technology Solutions) with an AI-solutions delivery practice. Board verified live at rippling/cbts (20 jobs). harvest_ats.py rejected it for '0 US fit-titles' because its qualifying tiers are tier1/tier2/tier2c plus location-gated tier3 and do NOT include tier2b_ai_wildcard -- so a company whose only fit-space role is an AI-prefixed title is auto-rejected even though poll_ats.py's ai_wildcard path is built to catch exactly that. Enrolled by hand on the strength of the alert; the poller now scans the full roster daily.",
-      "score_bonus": 0,
-      "bonus_reason": "No vertical bonus (classified 2026-08-24). IT managed services and network/infrastructure integration reselling: not an AI-native product company and not a developer/infra tooling product, even though it staffs an AI-solutions practice."
-    },
-    {
       "name": "Incode Technologies",
       "ats": "greenhouse",
       "slug": "incode",
@@ -6785,16 +6777,6 @@
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Implementation Specialist - CRM' [Remote]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     },
     {
-      "name": "Progressive Insurance",
-      "ats": "smartrecruiters",
-      "slug": "progressiveinsurance",
-      "priority": "low",
-      "enrolled_date": "2026-09-25",
-      "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
-      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (23 jobs) with 1 fit-titles at harvest time (1 tier2c), e.g. 'IT Business Systems Analyst Intermediate/Senior' [Remote Mayfield, OH, United States]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
-    },
-    {
       "name": "Virtuous",
       "ats": "ashby",
       "slug": "virtuous",
@@ -8411,6 +8393,17 @@
         "fire "
       ],
       "role_exclusion_note": "2026-10-10: LANE GUARD, not a declined role. On this kind of board 'Field Engineer', sales, project-manager, general-manager, and fire-systems titles are different jobs that pass the title gate. Measured 2026-10-09 across the three polled lane boards: 75 US-reachable title-gate hits, 31 of them field engineers; these five terms cut 41 and none of the 14 roles a hand read of the same boards had kept. 'sales ' keeps its trailing space so Salesforce titles survive. PER-COMPANY ON PURPOSE: applied to the whole watchlist the same terms would cut 63 ('field'), 27 ('sales ') and 39 ('project manager') titles that surface today, tier 1 and tier 2 matches among them. If two non-fits keep this company's two shortlist slots, add a term here rather than changing a rule."
+    },
+    {
+      "name": "Seismic",
+      "ats": "icims",
+      "slug": "seismic",
+      "priority": "medium",
+      "enrolled_date": "2026-10-10",
+      "enrolled_via": "hand-enrolled at Aneesh's yes after the frozen-board sweep found Highspot had merged into Seismic (completed 2026-08-18)",
+      "reason": "Sales enablement platform; merged with Highspot (see the Highspot entry, whose Lever board is permanently empty). Board is iCIMS tenant 'seismic' (careers-seismic.icims.com), linked from seismic.com/careers/job-listings. Verified 2026-10-10: fetch_icims('seismic') read 19 jobs with no errors, all listed as United States. Two matched the title tiers that day: 'Senior Customer Success Operations Manager' (jobs/2302) and 'Sr. Customer Success Transformation & AI Innovation Manager' (jobs/2374). The iCIMS list view carries no posting dates. headcount_band left unset on purpose: not verified.",
+      "score_bonus": 0,
+      "bonus_reason": "Neither (+0): sales enablement. Same call as Highspot."
     }
   ]
 }
