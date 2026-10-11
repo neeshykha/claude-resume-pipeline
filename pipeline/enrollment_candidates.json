@@ -4004,6 +4004,141 @@
       "via": "harvest_ats.py",
       "source": "WebSearch: Workday Boards - Target Roles",
       "first_seen": "2026-10-09"
+    },
+    {
+      "name": "PayPal",
+      "ats": "workday",
+      "slug": "paypal",
+      "enrolled_date": "2026-10-09",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "PostHog",
+      "ats": "ashby",
+      "slug": "posthog",
+      "enrolled_date": "2026-10-10",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Gainsight",
+      "ats": "ashby",
+      "slug": "gainsight",
+      "enrolled_date": "2026-10-10",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "New Relic",
+      "ats": "greenhouse",
+      "slug": "newrelic",
+      "enrolled_date": "2026-10-10",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Grafana Labs",
+      "ats": "greenhouse",
+      "slug": "grafanalabs",
+      "enrolled_date": "2026-10-10",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Elastic",
+      "ats": "greenhouse",
+      "slug": "elastic",
+      "enrolled_date": "2026-10-10",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Dash0",
+      "ats": "ashby",
+      "slug": "dash0",
+      "enrolled_date": "2026-10-10",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Kong",
+      "ats": "ashby",
+      "slug": "kong",
+      "enrolled_date": "2026-10-10",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "LogicMonitor",
+      "ats": "greenhouse",
+      "slug": "logicmonitor",
+      "enrolled_date": "2026-10-10",
+      "via": "harvest_ats.py"
+    },
+    {
+      "name": "Honeycomb",
+      "ats": "greenhouse",
+      "slug": "honeycomb",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 from the agent-monitoring company sweep (interactive session, Aneesh's ask)"
+    },
+    {
+      "name": "Braintrust",
+      "ats": "ashby",
+      "slug": "braintrust",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 from the agent-monitoring company sweep (interactive session, Aneesh's ask)"
+    },
+    {
+      "name": "Raindrop",
+      "ats": "ashby",
+      "slug": "raindrop",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 from the agent-monitoring company sweep (interactive session, Aneesh's ask)"
+    },
+    {
+      "name": "ClickHouse",
+      "ats": "ashby",
+      "slug": "clickhouse",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 from the agent-monitoring company sweep (interactive session, Aneesh's ask)"
+    },
+    {
+      "name": "Monte Carlo",
+      "ats": "ashby",
+      "slug": "montecarlodata",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 from the agent-monitoring company sweep (interactive session, Aneesh's ask)"
+    },
+    {
+      "name": "OpenObserve",
+      "ats": "ashby",
+      "slug": "openobserve-careers",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 from the agent-monitoring company sweep (interactive session, Aneesh's ask)"
+    },
+    {
+      "name": "Solidroad",
+      "ats": "ashby",
+      "slug": "solidroad",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 from the agent-monitoring company sweep (interactive session, Aneesh's ask)"
+    },
+    {
+      "name": "Carrier",
+      "ats": "workday",
+      "slug": "carrier",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 for the industrial lane (interactive session, Aneesh's yes on the lane proposal)",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-09-09"
+    },
+    {
+      "name": "Johnson Controls",
+      "ats": "workday",
+      "slug": "jci",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 for the industrial lane (interactive session, Aneesh's yes on the lane proposal)"
+    },
+    {
+      "name": "CRH",
+      "ats": "successfactors",
+      "slug": "crh",
+      "enrolled_date": "2026-10-10",
+      "via": "Hand-enrolled 2026-10-10 for the industrial lane (interactive session, Aneesh's yes on the lane proposal)"
     }
   ],
   "rejected": [
@@ -4815,7 +4950,7 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-07-15",
-      "reason": "No standard ATS board found -- apply link is encode-careers.vercel.app (custom site), not Greenhouse/Ashby/Lever/Workday/SmartRecruiters.",
+      "reason": "No standard ATS board found -- apply link is encode-careers.vercel.app (custom site), not Greenhouse/Ashby/Lever/Workday/SmartRecruiters. NOTE 2026-10-09: smartrecruiters/encodeinc is a DIFFERENT company (Encode, Inc, a government IT contractor in Virginia), not Encode AI; do not enroll it.",
       "recheck_if_resurfaced": true,
       "unpollable": true,
       "weekly_report_surfaced": true,
@@ -4934,11 +5069,13 @@
       "ats": "workday",
       "slug": null,
       "rejected_date": "2026-07-29",
-      "reason": "Pending since 2026-07-03 (26 days). Real Workday site name was resolved (Gainsight_External_Careers) but the direct CXS POST has returned 403 on every recheck: 2026-07-19, 07-20, 07-21, 07-22, 07-23, 07-27, 07-28, and again today. That is a genuine block, not a wrong site name. Rejecting to stop it consuming a Step 1d slot every run; it was the oldest thing in the queue and never resolvable by the documented fallback.",
-      "recheck_if_resurfaced": true,
+      "reason": "SUPERSEDED 2026-10-10: re-probed and ENROLLED on the watchlist (ashby/gainsight, 16 jobs, 1 fit-titles). Kept as the record of the original rejection, not as a live verdict. Original reason: Pending since 2026-07-03 (26 days). Real Workday site name was resolved (Gainsight_External_Careers) but the direct CXS POST has returned 403 on every recheck: 2026-07-19, 07-20, 07-21, 07-22, 07-23, 07-27, 07-28, and again today. That is a genuine block, not a wrong site name. Rejecting to stop it consuming a Step 1d slot every run; it was the oldest thing in the queue and never resolvable by the...",
+      "recheck_if_resurfaced": false,
       "source": "Workday board dork 2026-07-03",
       "first_seen": "2026-07-03",
-      "source_backfilled": "git-replay"
+      "source_backfilled": "git-replay",
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-10-10"
     },
     {
       "name": "Microsoft",
@@ -5350,12 +5487,13 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-04",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). BOARD FOUND AND LIVE: greenhouse/honeycomb, 16 jobs. Rejected on fit-space, NOT pollability: zero tier1/tier2/tier2c US-reachable titles today. Board does carry 'Senior Forward Deployed Engineer | Remote - United States' (stretch-lane shape) and 'Senior Solution Architect | Remote - United States'. Observability tooling, so a +20 vertical if it ever enrolls. Small board that turns over; re-check on any resurfacing and enroll immediately -- the slug is now known.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
+      "reason": "SUPERSEDED 2026-10-10: hand-enrolled on the watchlist (greenhouse/honeycomb) in the agent-monitoring sweep. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters. SEARCHED 2026-08-31 (manual punch-list sweep). BOARD FOUND AND LIVE: greenhouse/honeycomb, 16 jobs. Rejected on fit-space, NOT pollability: zero tier1/tier2/tier2c US-reac",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
       "weekly_report_surfaced": true,
       "weekly_report_surfaced_date": "2026-08-31",
-      "manual_search_done": "2026-08-31"
+      "manual_search_done": "2026-08-31",
+      "superseded_by_enrollment": "2026-10-10"
     },
     {
       "name": "The Scion Group",
@@ -7168,9 +7306,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-09-01",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
+      "reason": "SUPERSEDED 2026-10-10 by hand enrollment for the industrial lane (successfactors/crh, sf_host jobs.crh.com). This record claimed unpollable=true; it predates the SuccessFactors adapter (2026-09-18), which reads the board. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-10-10"
     },
     {
       "name": "Booz Allen Hamilton",
@@ -8597,10 +8736,12 @@
       "ats": "workday",
       "slug": "carrier",
       "rejected_date": "2026-09-09",
-      "reason": "Board resolves and is live (1101 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true,
+      "reason": "SUPERSEDED 2026-10-10 by hand enrollment for the industrial lane (workday/carrier). The zero-fit-title finding was right about the title list and wrong about the employer: its close roles carry names the matcher did not know. Kept as the record of the original rejection, not as a live verdict. Original reason: Board resolves and is live (1101 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": false,
       "source": "LinkedIn alert",
-      "first_seen": "2026-09-09"
+      "first_seen": "2026-09-09",
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-10-10"
     },
     {
       "name": "PPRO",
@@ -11771,8 +11912,10 @@
       "ats": "ashby",
       "slug": "braintrust",
       "rejected_date": "2026-09-22",
-      "reason": "Board resolves and is live (26 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
-      "recheck_if_resurfaced": true
+      "reason": "SUPERSEDED 2026-10-10: hand-enrolled on the watchlist (ashby/braintrust) in the agent-monitoring sweep. Kept as the record of the original rejection, not as a live verdict. Original reason: Board resolves and is live (26 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-10-10"
     },
     {
       "name": "Portnox",
@@ -11868,11 +12011,11 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-09-22",
-      "reason": "PROBABLE NAME COLLISION. A name variant resolved to workday/paypal (287 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'Manager, Revenue Operations' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "reason": "SUPERSEDED 2026-10-09: re-probed and ENROLLED on the watchlist (workday/paypal, 308 jobs, 1 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: PROBABLE NAME COLLISION. A name variant resolved to workday/paypal (287 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'Manager, Revenue Operations' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --nam...",
       "collision_board": "workday/paypal",
       "collision_suspected": true,
-      "recheck_if_resurfaced": true,
-      "unpollable": true,
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
       "manual_review": true,
       "manual_review_why": "Manager, Revenue Operations -- LinkedIn card role; board resolved to a different company",
       "card_title": "Manager, Revenue Operations",
@@ -11881,7 +12024,8 @@
       "source": "LinkedIn alert",
       "first_seen": "2026-09-22",
       "weekly_report_surfaced": true,
-      "weekly_report_surfaced_date": "2026-09-24"
+      "weekly_report_surfaced_date": "2026-09-24",
+      "superseded_by_enrollment": "2026-10-09"
     },
     {
       "name": "Kaiser Permanente",
