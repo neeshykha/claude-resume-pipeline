@@ -1862,8 +1862,8 @@ Mechanics:
    `jd_prefetch.py` reads the main hits file, which holds no lane entries. Each candidate
    that passes the location gate needs a direct `fetch_jd.py`
    read: **hard cap of 2 direct reads per run**, newest posting first. A body under 400
-   characters is not a read (on 2026-10-10 the SuccessFactors lane board returned its
-   section headings and nothing else): don't judge from it, don't count it against the
+   characters is not a read (until a fix on 2026-10-10, the SuccessFactors lane board
+   returned its section headings and nothing else): don't judge from it, don't count it against the
    cap, don't add the candidate to `disposed`, and carry it in item 5's count line as
    waiting on the fetcher. Skip any candidate
    a prior run already disposed of (the `disposed` list in recent `run_*.json →
@@ -1924,8 +1924,6 @@ carried two. The lane file carries all of them. What it does not fix:
 - **JD reads are the constraint now.** No lane candidate gets a card, so every one
   waits on the cap of 2 direct reads: about a week to work through the first backlog,
   then new postings only. Item 5's count line is where that shows.
-- **`fetch_jd.py` returns headings only for the SuccessFactors lane board** (item 3), so
-  its candidates cannot pass the function gate until that fetcher is fixed.
 - **The main poll skips lane entries on purpose** (`poll_ats.py`, counted in
   `stats.lane_skipped`; Aneesh's call, 2026-10-10). Do not remove the skip to get cards.
   On the dry-run day's pre-scores, a cutoff of 54 would have put about 4 lane roles in
