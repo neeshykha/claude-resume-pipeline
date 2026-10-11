@@ -1,6 +1,6 @@
 """Test bar for the SuccessFactors adapter (docs/ats_contract.md section 8).
 
-Four parts, each printing its own PASS/FAIL summary; the script exits 1 if any
+Five parts, each printing its own PASS/FAIL summary; the script exits 1 if any
 part fails:
 
   1. OFFLINE CASES -- feed-shape parsing and no-board classification against
@@ -21,6 +21,11 @@ part fails:
   4. Budget under a simulated hang -- a local socket that accepts and never
      answers, probed with a 3s Budget; must return within budget + ~1s with no
      exception, never a hang. docs/ats_contract.md section 8 item 4.
+  5. Poller wall clock under a dripping read -- a local socket that answers
+     and then sends one byte every 0.2 s, which no between-bytes timeout ever
+     catches. fetch_successfactors must give the board up at its deadline and
+     return an `_error`; a second local socket that answers in full proves the
+     same path still reads a healthy board.
 
 Live parts (2, 3) need network and hit real company career sites; they are
 read-only GETs against public job boards, same as verify_workday.py.
@@ -512,6 +517,107 @@ print(f"  [{'ok ' if returned_none else 'FAIL'}] result is None/THROTTLED, not a
 live4_ok = no_exception and within_budget and tripped and returned_none
 print(f"[{'ok ' if live4_ok else 'FAIL'}] budget-under-hang proof")
 if not live4_ok:
+    fails_total += 1
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# 5. Poller wall clock under a dripping read
+# ─────────────────────────────────────────────────────────────────────────
+section("5. Poller wall clock under a dripping read (stdlib socket, no real network)")
+
+
+def _answer(server_sock, stop, body):
+    """Answer each connection with a 200. Given a `body`, send it whole. Given
+    None, send the headers and then one byte every 0.2 s for as long as the
+    test runs: quicker than the between-bytes timeout, slower than any
+    deadline, which is the read the wall clock exists for."""
+    head = "HTTP/1.1 200 OK\r\nContent-Type: text/xml; charset=utf-8\r\nConnection: close\r\n"
+    while not stop.is_set():
+        try:
+            server_sock.settimeout(0.5)
+            conn, _ = server_sock.accept()
+        except OSError:  # accept timed out, or the test closed the socket
+            continue
+        try:
+            conn.settimeout(5)
+            conn.recv(65536)
+            if body is not None:
+                data = body.encode("utf-8")
+                conn.sendall((head + f"Content-Length: {len(data)}\r\n\r\n").encode() + data)
+            else:
+                conn.sendall((head + "Content-Length: 1000000\r\n\r\n").encode())
+                while not stop.is_set():
+                    conn.sendall(b"x")
+                    time.sleep(0.2)
+        except Exception:
+            pass
+        finally:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+
+def _local_server(body):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind(("127.0.0.1", 0))
+    s.listen(5)
+    stop = threading.Event()
+    threading.Thread(target=_answer, args=(s, stop, body), daemon=True).start()
+    return s, stop, f"127.0.0.1:{s.getsockname()[1]}"
+
+
+class _PlainHttp:
+    """Stands in for the `requests` module inside the adapter: the same GET
+    with the scheme forced to http, so a plain local socket can answer the
+    https URL fetch_successfactors builds."""
+
+    def get(self, url, **kwargs):
+        import requests
+        return requests.get(url.replace("https://", "http://", 1), **kwargs)
+
+
+TEST_DEADLINE_S = 2
+drip_srv, drip_stop, drip_host = _local_server(None)
+full_srv, full_stop, full_host = _local_server(FAKE_RSS)
+real_requests, real_deadline = sf.requests, sf.SF_BOARD_DEADLINE_S
+sf.requests, sf.SF_BOARD_DEADLINE_S = _PlainHttp(), TEST_DEADLINE_S
+healthy = dripped = exc5 = None
+try:
+    healthy = sf.fetch_successfactors({"sf_host": full_host})
+    t0 = time.monotonic()
+    try:
+        dripped = sf.fetch_successfactors({"sf_host": drip_host})
+    except Exception as e:
+        exc5 = e
+    elapsed5 = time.monotonic() - t0
+finally:
+    sf.requests, sf.SF_BOARD_DEADLINE_S = real_requests, real_deadline
+    for stop in (drip_stop, full_stop):
+        stop.set()
+    for s in (drip_srv, full_srv):
+        s.close()
+
+healthy_ok = ([p.get("title") for p in healthy or []]
+              == ["Support Operations Manager", "Field Technician (Contract)"])
+no_exception5 = exc5 is None
+gave_up = (isinstance(dripped, list) and len(dripped) == 1
+           and f"inside {TEST_DEADLINE_S} s of wall clock" in dripped[0].get("_error", ""))
+at_deadline = TEST_DEADLINE_S - 0.1 <= elapsed5 <= TEST_DEADLINE_S + 1.5
+
+print(f"deadline={TEST_DEADLINE_S}s  elapsed={elapsed5:.2f}s  result={dripped!r}  exception={exc5!r}")
+print(f"  [{'ok ' if healthy_ok else 'FAIL'}] a board that answers in full still reads "
+      f"({len(healthy or [])} postings)")
+print(f"  [{'ok ' if no_exception5 else 'FAIL'}] no exception raised")
+print(f"  [{'ok ' if gave_up else 'FAIL'}] the dripping board is an _error naming the wall clock, "
+      f"not a partial list")
+print(f"  [{'ok ' if at_deadline else 'FAIL'}] gave up at the deadline, not before and not long after "
+      f"({elapsed5:.2f}s)")
+
+live5_ok = healthy_ok and no_exception5 and gave_up and at_deadline
+print(f"[{'ok ' if live5_ok else 'FAIL'}] poller wall-clock proof")
+if not live5_ok:
     fails_total += 1
 
 

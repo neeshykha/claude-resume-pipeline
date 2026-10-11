@@ -134,6 +134,11 @@ The poller has no per-company budget. Each `fetch_<ats>` passes `timeout=REQUEST
 uses `TIMEOUT = 45` per request. A new provider's probe accepts and honors `budget`; its
 poller fetch passes `REQUEST_TIMEOUT` on every request and caps its pages.
 
+One fetcher is the exception, since 2026-10-10: `ats_successfactors.fetch_successfactors` gives
+its whole board read `SF_BOARD_DEADLINE_S` of wall clock and returns an `_error` past it. Its
+rss feed is a single 31 MB response, and a between-bytes timeout doesn't bound a read that
+drips; two did that day, for 27 and 11 minutes.
+
 ## 5. Per-service pacing
 
 Also harvest-only. `_pace(url, budget)` spaces requests to the same service by

@@ -78,6 +78,7 @@ KNOWN LIMITATIONS (report these, don't paper over them):
     a real, documented under-read, not a bug -- see the constant's docstring.
 """
 import re
+import threading
 import time
 from datetime import date
 from html import unescape
@@ -125,7 +126,17 @@ SUCCESSFACTORS_URLSET_DETAIL_CAP = 60
 # relying on a layer that does not exist here).
 SF_POLL_COURTESY_DELAY = 0.15
 
-SF_UA = "Mozilla/5.0 (resume-pipeline; SuccessFactors adapter)"
+# Wall clock for one board's whole read in the POLLER (fetch_successfactors):
+# the feed, and on a urlset board every detail page after it. REQUEST_TIMEOUT
+# bounds the gap between bytes, not the read. On 2026-10-10 two reads of the
+# first enrolled board's 31 MB feed dripped for 27 and 11 minutes before
+# failing, where a healthy read of it takes about 10 seconds. Kept under
+# poll_lane.BOARD_DEADLINE_S (150) so that this error, which names the host,
+# is the one a lane poll reports. The urlset walks measured so far took 26 to
+# 73 seconds; one that needs longer gets its own number when it is enrolled.
+SF_BOARD_DEADLINE_S = 120
+
+SF_UA ="Mozilla/5.0 (resume-pipeline; SuccessFactors adapter)"
 
 # Sentinel a caller's `get_fn` may return in place of a response, meaning "the
 # host rate-limited this request and the retry (if any) also failed -- the
@@ -491,21 +502,64 @@ def resolve_board(host: str, get_fn, budget=None,
     return "ok", postings, total
 
 
+class ReadDeadline(Exception):
+    """A read ran past its wall-clock deadline. Carries the URL it stopped at."""
+
+
+def _get_within(url: str, deadline: float):
+    """`requests.get(url)`, given up on once `time.monotonic()` passes `deadline`.
+
+    The request runs in a daemon thread and the caller waits on it only until
+    the deadline, so a body that drips in under REQUEST_TIMEOUT per byte can no
+    longer hold the poll for as long as the server cares to send. A read that
+    is given up on is not cancelled: it ends on its own or with the process.
+    A thread and not an alarm, because a process has one alarm and
+    poll_lane.py already sets it around each board.
+    """
+    box = {}
+
+    def run():
+        try:
+            box["response"] = requests.get(
+                url, timeout=REQUEST_TIMEOUT, headers={"User-Agent": SF_UA})
+        except Exception as e:  # re-raised in the caller's thread, below
+            box["error"] = e
+
+    left = deadline - time.monotonic()
+    if left > 0:
+        worker = threading.Thread(target=run, daemon=True)
+        worker.start()
+        worker.join(left)
+    got = dict(box)
+    if not got:
+        raise ReadDeadline(url)
+    if "error" in got:
+        raise got["error"]
+    return got["response"]
+
+
 def fetch_successfactors(company: dict) -> list[dict]:
     """Poller-facing fetch: `company` carries `sf_host` (see
     watchlist_companies.json -> _successfactors_notes). Returns postings in the
     shape poll_ats.poll_all's shared loop expects, or the `_error` sentinel.
+
+    The whole board read gets SF_BOARD_DEADLINE_S of wall clock; past it the
+    board is an `_error` for this run, never a partial list.
     """
     host = (company.get("sf_host") or "").strip()
     if not host:
         return [{"_error": "SuccessFactors entry missing sf_host"}]
+    deadline = time.monotonic() + SF_BOARD_DEADLINE_S
 
     def _get(url):
         time.sleep(SF_POLL_COURTESY_DELAY)
-        return requests.get(url, timeout=REQUEST_TIMEOUT, headers={"User-Agent": SF_UA})
+        return _get_within(url, deadline)
 
     try:
         status, postings, _total = resolve_board(host, _get)
+    except ReadDeadline as e:
+        return [{"_error": f"SuccessFactors: no complete read of {host} inside "
+                           f"{SF_BOARD_DEADLINE_S} s of wall clock (stopped at {e})"}]
     except Exception as e:
         return [{"_error": f"{type(e).__name__}: {e}"}]
     if status != "ok":
