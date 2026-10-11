@@ -363,6 +363,8 @@ so don't act on a single month.
 
 Title matching is config-driven: `poll_ats.py` builds its matcher at runtime from `watchlist_companies.json → _title_scoring_tiers` + `_poller_config` (stemmed-token matching, so word-form and word-order variants match automatically). To teach the poller a new title, edit the JSON; `poll_ats.py` carries no title lists, endpoints, or scoring numbers of its own. Any `_title_scoring_tiers` key starting with `tier` (except the specially-handled `tier2b_ai_wildcard`) loads automatically as a tier. After ANY hand edit to `watchlist_companies.json` or `enrollment_candidates.json`, run `.venv/bin/python pipeline/validate_config.py` (syntax + schema check). The daily run also runs it at Step 1-pre, and `poll_ats.py` refuses to poll against a malformed watchlist. [D13](DECISIONS.md#d13-config-driven-title-matching)
 
+**Only `hard_exclude_title_terms` reaches a tier-1 match.** An exact tier-1 match overrides `TITLE_EXCLUDE` and is a protected tier for `function_mismatch_titles`, and since 2026-09-01 every tier-1 match that clears the gates is shortlisted whatever its rank. The matcher ignores word order, which is how "X Operations Support Manager" read as "Support Operations Manager". Cases live in `pipeline/test_title_matcher.py`. **Open:** tier 1's override of the "product manager" exclusion still lets PM roles through. [D30](DECISIONS.md#d30-three-false-title-matches)
+
 **JSON escaping is per-file and load-bearing (set 2026-09-07).** `enrollment_candidates.json` is stored ESCAPED (`json.dump(..., indent=2)`, `ensure_ascii` left at its default True); `watchlist_companies.json` is stored RAW (`ensure_ascii=False`). Every writer must match its file, and each write ends with a single `f.write("\n")`. A writer on the wrong setting rewrites every non-ASCII line in a 350-430KB file, so whichever script ran last flips the escaping of the whole file and buries a two-line logical change in a ~180-line diff — in a repo that is pushed publicly. Writers of the queue: `harvest_ats.py`, `poll_builtin.py`, `harvest_linkedin.py`, `poll_remotive.py`, `poll_80k.py`, `harvest_hn_hiring.py`, `harvest_vc_portfolios.py`, `weekly_channel_report.py`. Of the watchlist: `harvest_ats.py`, `websearch_rotation.py`. `harvest_ats.py` writes both in one loop and branches on `ensure_ascii=(path == QUEUE)` — don't collapse that to one setting. Hand edits must also round-trip: a stray `,` on its own line in the watchlist (fixed 2026-09-07) was valid JSON that no writer would emit, so it reflowed on the next run.
 
 ## Pipeline Pre-Run: One-Time Notes
@@ -539,6 +541,22 @@ roles carrying an operating word (poller output `ai_engineer_stretch`, config
 borderline cap).
 Same 2-read cap, same strict coding gate; the domain gate widens to internal AI automation
 for those titles only.
+
+**Industrial lane (trial, added 2026-10-10, review 2026-11-09):** a short list of
+non-software Atlanta employers gets its own bounded review; spec is `daily_task_prompt.md`
+Step 3.6 (location gate, then a function gate from the JD, own digest section capped at 3
+lines, at most one tailored package a run outside the five, logged even at zero). Its
+candidates come from a lane-only poll, `pipeline/poll_lane.py`, which writes
+`jobs/lane_hits_[date].json`. The main poll skips every entry carrying a `lane` marker
+(`stats.lane_skipped`), so lane roles never take a shortlist slot or a Step 2-JD card. The list
+is the watchlist entries marked `"lane": "industrial"`: polled ones in `companies`, manual
+ones in `_blind_spot_companies` and `_unpollable_backlog_companies`. Lane entries are never
+scored in Step 2, because the rubric over-ranks them on location and company points. Six
+review-only titles reach the lane through `function_mismatch_titles`, and each polled entry
+carries a `role_exclusions` guard that is per-company on purpose: don't promote those
+terms to `hard_exclude_title_terms`. No new bonus and no tier change. Tailored lane rows
+carry `lane:industrial` in `notes`.
+[D31](DECISIONS.md#d31-the-industrial-lane-and-what-was-measured-first)
 
 ## Supplemental WebSearch Sources (Atlanta + Startup Discovery)
 

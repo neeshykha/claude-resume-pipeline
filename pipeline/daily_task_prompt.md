@@ -277,6 +277,11 @@ complete (`stats.function_mismatch` equals its length; it used to be the first 4
 company name) and ordered Georgia, then remote, then on-site elsewhere, newest posting
 first within each, so the top of the list is the part he could act on.
 
+**Lane companies are not in this file (2026-10-10).** The poller skips every watchlist
+entry that carries a `lane` marker and counts them in `stats.lane_skipped`, so their roles
+cannot take a shortlist slot. Step 3.6 polls those boards itself, the six review-only
+titles included.
+
 Title matching is config-driven (stemmed-token matching against `_title_scoring_tiers` +
 `_poller_config` in `watchlist_companies.json`): word-form and word-order variants match
 automatically, and each `matched` entry carries `title_tier` + `title_prescore` (which
@@ -1223,7 +1228,10 @@ scoring time from `passion_domains` / `headcount_band` and are NOT set here.
 
 ## Step 2: Filter and score
 
-Combine ATS hits + promoted borderline titles + WebSearch finds.
+Combine ATS hits + promoted borderline titles + WebSearch finds. **Roles at a company
+marked `"lane": "industrial"` are not part of this step**: the main poll skips those
+entries, and anything found at one another way (a Step 1c-2 or 1c-3 hit) is scored and
+surfaced only at Step 3.6.
 
 ### 2a-pre. AI-wildcard borderline review (mandatory, not optional)
 
@@ -1793,6 +1801,147 @@ Mechanics; hard cap of 2 JD reads per run for this lane:
    `run_[date].json` every run, zeros included: a logged zero is verifiable, while an
    absent section is indistinguishable from a skipped step (the Step 1d-2 lesson).
 
+## Step 3.6: Industrial lane — non-software Atlanta employers, trial (added 2026-10-10)
+
+Aneesh's call, 2026-10-10, after a one-off sweep of 40 non-software metro-Atlanta employers
+(2026-10-09) found roles in his line at building-technology and materials companies that
+this pipeline had never shown him. The lane makes a short list of those employers VISIBLE
+without letting them into the main shortlist, where the rubric would over-rank them:
+Atlanta location, pay, and company bonuses put a wrong-function title near 75 before role
+fit is read at all, and on these boards 39 of 65 title-gate hits were different jobs
+(field engineers, sales support, controls and fire systems, general managers). So here the
+JD read is the control, not the score. No new bonus and no tier change. **This is a trial
+with a review date of 2026-11-09.** What was measured before any of it was added:
+`DECISIONS.md` D31.
+
+**Who is in the lane.** Watchlist entries carrying `"lane": "industrial"`: the polled ones
+in `companies` (each with a `role_exclusions` guard list, which the poller applies before
+anything else) and the manual ones in `_blind_spot_companies` and
+`_unpollable_backlog_companies`, whose boards no adapter reads. The JSON is the list;
+don't restate the names here. The main poll skips the polled ones; `poll_lane.py` (item 1)
+is the only thing that reads their boards.
+
+Mechanics:
+
+1. **Poll the lane on its own.** The main poll skips lane entries, so the candidate
+   list is the lane file and nothing else. If `pipeline/jobs/lane_hits_{today}.json`
+   does not exist yet, run this as one plain command (about two minutes, no tokens;
+   give the Bash call a 10-minute timeout, since the helper allows each board 150
+   seconds):
+
+   ```bash
+   .venv/bin/python pipeline/poll_lane.py
+   ```
+
+   It runs the real `poll_all()` on each polled lane entry alone, with the two list
+   caps lifted, and writes `counts`, one line per board, and one flat `candidates`
+   list: every title match that passes the poller's gates, with the same `pre_score`
+   the main poll would give it, as `source` `tier_match` (what the main poll files
+   under `matched` or `near_window`), `borderline`, `function_mismatch`, or
+   `ai_engineer_stretch`. It writes no hits file and never touches `seen_jobs.json`.
+   Copy its first line into `industrial_lane.poll`. A board that errors or runs out
+   of time is named in `errors`: say so under housekeeping and carry on, since its
+   candidates will be there on the next run. A failed lane poll never stops the run.
+
+   Lane candidates are that list plus any Step 1c-2 or 1c-3 hit at a manual lane
+   entry. They are NOT scored in Step 2 and never appear in the picks, "Cleared, not
+   tailored", the near-misses, "Below the cutoff", or "also live (FYI)", and they
+   never take one of the five tailoring slots. An `ai_engineer_stretch` candidate is
+   judged here under this step's gates, not at Step 3.5. (The six review-only titles
+   in `function_mismatch_titles._industrial_lane_review_only_2026_10_10` arrive as
+   `function_mismatch` candidates at a lane company. At any other company they stay
+   plain FYI lines.)
+2. **Location gate first, at no cost.** Keep metro Atlanta, and remote US where Georgia
+   qualifies; drop the rest without reading anything. The poller's location gate is
+   US-wide, so most hits from these boards are other states. One lane employer files
+   remote roles under a single home state: treat "Remote, <one state>" as unconfirmed
+   until the JD body says Georgia is eligible. Gate on the listing `location`. The lane
+   file's `place` (georgia, remote, elsewhere) is the poller's reading of that same
+   string. It orders the list; the gate is still your read of `location`.
+3. **Function gate, from the JD.** No lane candidate has a Step 2-JD card:
+   `jd_prefetch.py` reads the main hits file, which holds no lane entries. Each candidate
+   that passes the location gate needs a direct `fetch_jd.py`
+   read: **hard cap of 2 direct reads per run**, newest posting first. A body under 400
+   characters is not a read (on 2026-10-10 the SuccessFactors lane board returned its
+   section headings and nothing else): don't judge from it, don't count it against the
+   cap, don't add the candidate to `disposed`, and carry it in item 5's count line as
+   waiting on the fetcher. Skip any candidate
+   a prior run already disposed of (the `disposed` list in recent `run_*.json →
+   industrial_lane`): the poller does not mark an untailored role seen, so the same
+   titles come back daily, and re-reading them is the waste the repeat-near-miss rule
+   exists to stop. A candidate passes ONLY if both hold:
+   - **It runs or builds a function he works in**: support, customer experience, contact
+     center, or the business systems behind them. People leadership counts, and so does
+     owning the tooling, the automation, or an AI rollout.
+   - **Nothing required is a trade or a number he can't claim.** A trade licence or stated
+     years in a trade (HVAC, controls, fire, electrical), a sales quota, or P&L ownership
+     fails closed.
+   A failed gate costs one housekeeping line ("checked, disqualified by <quoted
+   requirement>") and no further budget.
+4. **Score a passing role on the normal Step 2c rubric, with nothing added.** A
+   review-only title has no tier: score it as the nearest real tier by function, the
+   existing rule for `supplemental` hits. The watchlist +10 applies only to the polled
+   entries; a manual entry's line carries the unpollable note from CLAUDE.md's Scoring
+   Guardrails ("about 10 of that gap is the unearnable watchlist bonus"). IoT +15 applies
+   to the connected-building employers the way it does to the smart-building companies
+   already on the watchlist. The +30 company cap, the IC-scope floor, and the
+   HARD-REQUIREMENT TIER CAP apply as written.
+5. **Digest: its own section, "Industrial lane (trial)", at most 3 lines per run**,
+   highest score first: `[score] Company: Title | location | pay | manages or IC | AI and
+   systems content | gap | apply link`. "AI and systems content" is one honest clause on
+   how much hands-on AI, automation, or tooling work the JD holds. It is what he said he
+   would judge this lane on, so write "none stated" when that is the answer. When more
+   passed than fit, or candidates are still waiting behind the read cap, end the section
+   with one count line ("4 more lane titles waiting, oldest posted <date>"). Omit the
+   section when nothing passed.
+6. **Tailoring: at most ONE lane package per run, outside the five.** Only for a role
+   that passed both gates and honestly clears `light_tailoring_threshold`, at the tier
+   its score earns. It goes through Step 4 like any pick (already-applied guard, writer,
+   fit check) and into the Step 6 track file with **`lane:industrial` in `notes`**, which
+   is how the review finds these rows. If two clear on one run, tailor the higher score
+   and list the other in the section; he can ask for it by name.
+7. Log `industrial_lane: {poll, candidates_seen, location_dropped, direct_reads,
+   passed, surfaced_titles, tailored, disposed: [{company, title, why}]}` in
+   `run_[date].json` every run, zeros included. `poll` is `poll_lane.py`'s first line.
+   `disposed` is what item 3's skip check reads, so it has to name every candidate the
+   run finished with, passed or failed.
+
+**Judging it on 2026-11-09.** `his_verdict` on the `lane:industrial` rows (did he send
+any; mostly `skip_fit` points at the gate or the employers, mostly `skip_materials` at
+the resume), the `industrial_lane` counters (fewer than about 3 passes in four weeks is
+too thin to keep polling for), and how many surfaced lines held real AI work. The sample
+will be single digits: the call is keep, narrow, or drop on the roles themselves, not on
+a rate.
+
+**Known limits.** Until the lane poll (added 2026-10-10, hours after the lane itself) a
+tier-matched lane role reached this step only if it cleared the main poll's shortlist
+cutoff or sat in the 40-entry window under it. The helper's first dry run that evening
+found 32 candidates on the three polled boards, 14 of them in Georgia or remote. Of the
+10 tier matches among those 14, one pre-scored at or above the 2026-10-09 cutoff of 54
+and one more fell in the window that ran down to 50, so the main hits file would have
+carried two. The lane file carries all of them. What it does not fix:
+
+- **JD reads are the constraint now.** No lane candidate gets a card, so every one
+  waits on the cap of 2 direct reads: about a week to work through the first backlog,
+  then new postings only. Item 5's count line is where that shows.
+- **`fetch_jd.py` returns headings only for the SuccessFactors lane board** (item 3), so
+  its candidates cannot pass the function gate until that fetcher is fixed.
+- **The main poll skips lane entries on purpose** (`poll_ats.py`, counted in
+  `stats.lane_skipped`; Aneesh's call, 2026-10-10). Do not remove the skip to get cards.
+  On the dry-run day's pre-scores, a cutoff of 54 would have put about 4 lane roles in
+  the main `matched` list (6 at a cutoff of 48), 3 of them in other states, each holding
+  a shortlist slot and a JD card for a role this step then drops on location. Do not
+  move the entries off `companies` either: `check_company.py`, `harvest_ats.py`,
+  `audit_scores.py`, and the watchlist +10 all read that list as "enrolled".
+- **The lane poll uses the poller's gates as they stand**, the description filter in
+  D31 included, so a posting the main poll would drop is dropped here too.
+- A non-fit that keeps coming back costs nothing after its first read (`disposed`). A
+  whole class of them is another term in that entry's `role_exclusions`, not a rule
+  here.
+- Two of the polled boards are larger than the adapter's read (the newest 1,000 of a
+  Workday board), which a daily poll tolerates. The manual entries are only as good as
+  the rotation's WebSearch and his own look from the dashboard.
+
 ## Step 4: Tailor resumes and cover letters
 
 ### 4-pre. ALREADY-APPLIED GUARD (mandatory, before writing a single line of any resume)
@@ -2342,6 +2491,10 @@ re-examines it.
 - **"Stretch lane (FDE/SE) — risk accepted"** section (Step 3.5): at most 2 lines, each
   with apply link, gates passed, and the remaining gap. Omit the section entirely when
   nothing passed; a "checked, disqualified by X" line goes in housekeeping instead.
+- **"Industrial lane (trial)"** section (Step 3.6): at most 3 lines, each with its apply
+  link, the AI-and-systems clause, and the gap, plus one count line when more are waiting.
+  Omit the section when nothing passed; a "checked, disqualified by X" line goes in
+  housekeeping. Lane roles appear here and nowhere else in the digest.
 - **Apply-folder line.** Carry the `DIGEST LINE:` printed by `rotate_apply_folder.py` at
   Step 0 whenever it names any evictions, and point the file manifest at
   `tailored/apply_now/`. Omit the line entirely when nothing was evicted for being unsent —
@@ -2367,6 +2520,9 @@ re-examines it.
     count, and each slice's cursor position — a slice stuck at the same page across
     runs means the cursor is not being saved (it advances only under `--apply`).
   - Blind-spot rotation: which named employers were checked this run
+  - Industrial lane (Step 3.6): the lane poll's summary line, candidates seen, dropped on
+    location, direct reads, passed, tailored. Print it with zeros; an absent line reads as
+    a skipped step.
   - Unpollable-backlog monthly check: due/not-due, and if due, what was found (skip this line
     entirely on a not-due day — silent housekeeping, same as monthly WebSearch sources)
   - LinkedIn email-alert harvest: threads found, companies extracted, what happened to each
@@ -2383,7 +2539,8 @@ re-examines it.
      "title": "...", "url": "...", "score": 0, "jd_coverage_pct": 0, "notes": "",
      "unmet_hard_reqs": 0, "vendor_tool_named_in_jd": "", "ic_scope": ""}]}
    ```
-   (tailored picks only, not near-misses or the cleared-not-tailored list)
+   (tailored picks only, not near-misses or the cleared-not-tailored list; a Step 3.6
+   lane package is a tailored pick and goes in with `lane:industrial` in its `notes`)
 
    **`notes` always names the package's PDFs** (written down 2026-10-09; runs had been
    doing it by habit): somewhere in it, `tailored/apply_now/[stem].pdf + _cover.pdf`, with

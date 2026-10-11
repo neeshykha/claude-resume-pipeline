@@ -273,6 +273,11 @@ _TOKEN_ALIASES = {
     "mgmt": "manag",
     "tech": "technical",
     "eng": "engin",
+    # Kept whole. The "ist" suffix rule turns "generalist" into "general", so
+    # tier2d's "Operations Generalist" matched "General Manager, DC Operations"
+    # (2026-10-09). strategist/strategy still collapse; that one is intended.
+    "generalist": "generalist",
+    "generalists": "generalist",
 }
 
 # Suffixes stripped longest-first, repeatedly, with a minimum stem of 4 chars.
@@ -2116,9 +2121,18 @@ def poll_all(run_date: date) -> dict:
         "location_filtered": 0,
         "excluded": 0,
         "errors": 0,
+        "lane_skipped": 0,
     }
 
     for company in companies:
+        # Lane entries (watchlist `lane` marker) are read by poll_lane.py alone;
+        # see daily_task_prompt.md Step 3.6. Skipped here so their roles cannot
+        # take a shortlist slot: on 2026-10-10 three low-priority lane boards
+        # would have put about 4 roles in this shortlist at a cutoff of 54, 3 of
+        # them in other states. poll_lane.py drops the marker from its own copy.
+        if company.get("lane"):
+            stats["lane_skipped"] += 1
+            continue
         name = company["name"]
         ats = company["ats"]
         slug = company["slug"]
@@ -2895,6 +2909,7 @@ def main():
     s = results["stats"]
     print(f"\n=== ATS Polling Complete ===")
     print(f"Companies polled: {s['companies_polled']}")
+    print(f"Lane entries skipped (poll_lane.py reads them): {s.get('lane_skipped', 0)}")
     print(f"Total jobs scanned: {s['total_jobs_scanned']}")
     print(f"Title matches (pre-filter): {s['title_matched']}")
     print(f"Top {SHORTLIST_SIZE} by pre-score → output (from {s.get('total_matched_before_cap', s['title_matched'])})")

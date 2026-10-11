@@ -551,3 +551,86 @@ package with no letter passed as light tier and that a reused stem could overwri
 package before any guard ran; the tier marker and `--claim` came from that. Only about 150
 of 377 tracker rows named a PDF at the time, which is why `--claim` also looks at
 `tailored/` and why Step 6 now requires the filename in `notes`.
+
+## D30. Three false title matches
+
+_Added 2026-10-09._
+
+A one-off sweep of non-software Atlanta employers ran its titles through the live matcher, and
+three matched that shouldn't have: "General Manager, DC Operations" (tier2d, because `_stem`
+cut "generalist" down to "general"), "Technical Sales Support Manager" (tier 1 through
+"Technical Support Manager"), and "Director, Engineering & Operations Support" (tier 1 through
+"Director of Support Operations"). Each was measured against all 85 hit files, the LinkedIn
+card files, and the enrollment queue before anything changed. The first had never fired in
+pipeline data. The second had graded one LinkedIn card tier 1. The third's shape, "X Operations
+Support", had put two roles on the shortlist for 12 run-days through the tier-1 guarantee and
+graded four card titles tier 1, three of which queued a board probe.
+
+The fixes: "generalist" is kept whole in `_TOKEN_ALIASES`, and "operations support" and "sales
+support" joined the hard-exclude list, since the softer lists can't reach a tier-1 match. Two
+things were left alone on purpose: the "Ops Support" spelling, where the title doesn't say
+whether the role is wrong, and the "ist" suffix rule itself, because dropping it would also
+undo the strategist/strategy collapse.
+
+The same scan showed a larger class this didn't touch. Tier 1's override of the "product
+manager" exclusion put four PM roles on the shortlist about 60 times in four weeks.
+
+## D31. The industrial lane and what was measured first
+
+_Added 2026-10-10._
+
+The 2026-10-09 sweep in D30 found roles in Aneesh's line at building-technology and materials
+employers the pipeline had never shown him, and he picked a narrow lane of eight employers over a
+broad one. Before anything was enrolled, each board was tested against the adapters the poller
+already has, and each proposed title and guard term was measured on the lane boards and on the
+595 watchlist boards that answered that night (50,092 postings).
+
+The measuring changed the plan in three ways. Only three of the eight boards were readable as
+they stood: two Workday boards, and a SuccessFactors rss feed whose 1,813 postings had outgrown
+a 1,000 cap in no date order, so the cap was reading a fixed 55% of it. A fourth, a
+SuccessFactors urlset board, reads 60 of 283 at its cap and stayed on the manual list with the
+four that have no adapter. The six "missing" titles turned out to matter little: as review-only
+entries they would have surfaced one lane role and four watchlist lines that day. The guard
+mattered more. The three polled boards produce 75 title-gate hits, 31 of them field engineers,
+and five per-company `role_exclusions` terms cut 41 without touching any of the 14 roles a hand
+read of the same boards had kept. Applied to the whole watchlist, the same terms would have cut
+63, 27, and 39 titles that surface today, tier 1 and tier 2 matches among them, which is why the
+guard is per company.
+
+Why a lane of its own rather than plain enrollment: the rubric already pays these employers
+well. Atlanta location, pay, and 20 to 25 company points put a wrong-function title near 75 on
+structure alone, three points under light tailoring. Step 3.6 therefore gates on location and
+on a JD read, caps its own digest section, and keeps lane roles out of Step 2.
+
+Left alone on purpose: adapters for the four manual boards and the urlset cap, field-service
+and shop-service titles, any new bonus, and a second stem collision the sweep exposed. One lane
+employer's subsidiary is named "Automated Logic", which stems to the same token as "Automation",
+so any of its titles that also says Manager matches tier 2c "Automation Manager". The guard
+catches most of them by other words; the stem rule itself was not touched.
+
+Two things the measuring missed, found the same day by running the real `poll_all()` on the
+three lane entries instead of replaying its title gate. First, counting title-gate hits is not
+counting what a run sees: the shortlist cutoff sat at a pre-score of 54, and low-priority
+enterprise entries mostly pre-score under it, so only one of ten lane title matches in metro
+Atlanta or remote cleared it. Step 3.6 reads `near_window` for that reason and names the limit.
+Second, the replay had skipped the poller's description filter as negligible. It is not: the
+filter is a substring match that includes "defi", so a posting whose description says "define"
+or "defined" is dropped as crypto on any board whose feed carries descriptions. That removed 104
+of 1,805 postings on the SuccessFactors board, three lane title matches among them. The filter
+was left as it was and flagged for its own fix.
+
+The lane-only poll followed that evening: `pipeline/poll_lane.py` runs the same `poll_all()` on
+each lane entry alone and writes its own file. Its first clean dry run found 32 candidates on
+the three boards, 14 of them in Georgia or remote, where the main hits file would have carried
+two. Building it turned up three more things. The SuccessFactors feed is one 31 MB response, and
+twice in an hour it dripped for 11 and 27 minutes before failing, because the adapters' timeouts
+bound the gap between bytes and not the whole read; the helper gives each board 150 seconds of
+wall clock for that reason, and the main poll has no such bound. `fetch_jd.py` returns only
+section headings for that same board, so its candidates can be found but not yet read. And the
+low-priority lane entries were not quiet in the main poll: on that day's pre-scores about four
+lane roles would have sat in the main shortlist at a cutoff of 54, three of them in other
+states, each taking a slot and a JD card for a role the lane's location gate then drops. Aneesh's
+call the same evening: the main poll skips any entry carrying a `lane` marker, and the lane poll
+is the only reader of those boards. The entries stay in `companies`, because that list is what
+`check_company.py`, `harvest_ats.py`, `audit_scores.py`, and the watchlist +10 read as enrolled.
+The price is that no lane role gets a Step 2-JD card; every lane JD is a direct read, two a run.
