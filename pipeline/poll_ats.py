@@ -561,7 +561,13 @@ def _boundary_pattern(terms) -> re.Pattern:
     match "Remote U.S.", since the trailing `\\b` wants a word character after
     the final period and there isn't one. harvest_linkedin.py's `has_us` regex
     has that exact bug.
+
+    An empty list compiles to a pattern that never matches. Without the guard
+    the alternation is empty and matches at every separator, so emptying a list
+    to switch a check off would fire it on nearly every string instead.
     """
+    if not terms:
+        return re.compile(r"(?!)")
     alt = "|".join(re.escape(t) for t in sorted(terms, key=len, reverse=True))
     return re.compile(rf"(?<![a-z0-9])(?:{alt})(?![a-z0-9])")
 
@@ -622,8 +628,17 @@ TITLE_EXCLUDE = [
     "thai speaking", "arabic speaking",
 ]
 
-# Industry exclusions
-EXCLUDED_TERMS = ["crypto", "web3", "blockchain", "defi", "nft"]
+# Industry exclusions, matched as whole words (see description_excluded). Every
+# spelling is listed because nothing here is a substring any more:
+# "cryptocurrency" has to be named, and "cryptography" stays out on purpose.
+# Compiled once at import, so edit the list here; appending to it at runtime
+# does nothing.
+EXCLUDED_TERMS = [
+    "crypto", "cryptos", "cryptocurrency", "cryptocurrencies",
+    "cryptoasset", "cryptoassets",
+    "web3", "blockchain", "blockchains", "defi", "nft", "nfts",
+]
+_EXCLUDED_TERMS_RE = _boundary_pattern(EXCLUDED_TERMS)
 
 # Unconditional title kill-list, loaded from
 # _poller_config.hard_exclude_title_terms. Unlike TITLE_EXCLUDE (overridable by
@@ -772,9 +787,20 @@ def location_relevant(location: str, title: str) -> bool:
 
 
 def description_excluded(text: str) -> bool:
-    """Check if description contains excluded industry terms."""
-    t = text.lower()
-    return any(term in t for term in EXCLUDED_TERMS)
+    """Check if description names an excluded industry, as a whole word.
+
+    Until 2026-10-10 this was a substring test, and "defi" fired inside define,
+    defined, defining, redefining, definition, and deficiencies. Measured that
+    day on the watchlist's Lever, Workable, Comeet, Pinpoint, and SuccessFactors
+    boards, the only adapters whose payload hands this a description: 559 of
+    4,376 descriptions tripped it, every one on a "defi" word and none a crypto
+    posting, and 15 of those had cleared every other gate (a tier1 title among
+    them). A dropped posting leaves no trace in the digest, which is how it ran
+    unnoticed. On real crypto boards the same day, everything the substring
+    rule caught on an actual industry word is still caught. Cases live in
+    test_industry_filter.py.
+    """
+    return bool(_EXCLUDED_TERMS_RE.search(text.lower()))
 
 
 _WORKDAY_POSTING_INFO_CACHE: dict[str, dict | None] = {}

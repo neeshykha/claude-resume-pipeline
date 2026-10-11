@@ -686,6 +686,13 @@ the incident that set it.
   `harvest_linkedin.py`'s `has_us` still carries the trailing-period bug. Cases live in
   `test_tier3_gate.py → POLL_CASES`.
   [D22](DECISIONS.md#d22-boundary-based-location-matching)
+- **The industry filter matches whole words.** `description_excluded()` runs `EXCLUDED_TERMS`
+  through `_boundary_pattern()`, so every spelling has to be listed ("cryptocurrency" is,
+  "cryptography" isn't, on purpose), and an empty list excludes nothing. Only payloads with a
+  `description` or `content` key reach it (Lever, Workable, Comeet, Pinpoint, SuccessFactors);
+  the JD screen's `crypto` flag covers the rest. A drop leaves no digest trace. Cases live in
+  `test_industry_filter.py`.
+  [D32](DECISIONS.md#d32-the-industry-filter-matched-inside-ordinary-words)
 - **The unlisted-US-city gap is scoped out (Aneesh, 2026-09-11).** `LOCATION_INCLUDE` is a
   curated city list with a default-exclude behind it, so an on-site role in an unlisted US city
   drops. Adding state names and USPS codes is the fix whenever it becomes worth the wider

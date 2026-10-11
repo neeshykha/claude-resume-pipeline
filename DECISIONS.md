@@ -634,3 +634,37 @@ call the same evening: the main poll skips any entry carrying a `lane` marker, a
 is the only reader of those boards. The entries stay in `companies`, because that list is what
 `check_company.py`, `harvest_ats.py`, `audit_scores.py`, and the watchlist +10 read as enrolled.
 The price is that no lane role gets a Step 2-JD card; every lane JD is a direct read, two a run.
+
+## D32. The industry filter matched inside ordinary words
+
+_Added 2026-10-10._
+
+The poller's industry filter was a substring test over five terms, and one of them was "defi".
+It fired inside define, defined, defining, redefining, definition, and deficiencies, and a hit
+drops the posting with a bump to `stats["excluded"]` and no line anywhere in the digest. D31's
+dry run is what exposed it.
+
+Measured before anything changed, by re-reading every board whose payload hands the filter a
+description (Lever, Workable, Comeet, Pinpoint, and SuccessFactors: 77 boards that day, and the
+other 553 never reach it). 559 of 4,376 descriptions tripped it, on 50 boards. Every one was a
+"defi" word. None was a crypto posting, and no description held "crypto", "web3", "blockchain",
+or "nft" in any form, "cryptography" included. One board lost 70 of its 76 postings to a single
+boilerplate sentence with "redefining" in it, and four boards lost every posting they had. Most
+of the 559 would have died at the title gate anyway: 50 passed it, and 15 cleared every gate and
+were dropped by this one, a tier-1 title among them. Replayed through the real `poll_all()`,
+those 15 were 12 title matches, 2 borderline, and 1 FYI line.
+
+The fix: `EXCLUDED_TERMS` is a list of whole words matched through `_boundary_pattern()`, the
+helper the location lists already use. Each spelling is listed, so "cryptocurrency" and
+"cryptoassets" are named and "cryptography" stays out on purpose. The control was seven real
+crypto employers' boards: the old rule excluded 154 of 183 descriptions and the new one 149, and
+the five it lets go had been caught only by "redefine" and "tradefi". A review of the patch found
+that an empty term list would have compiled to a pattern matching at every separator, so
+`_boundary_pattern([])` now matches nothing. Cases live in `test_industry_filter.py`.
+
+Left alone on purpose. The bare word "crypto" still excludes, which will misread security
+shorthand ("crypto libraries") if a board ever uses it; 80 of the 149 control exclusions rest on
+that word alone. The filter still reads only `description` or `content`, so Ashby, Greenhouse,
+Workday, and most other adapters never reach it, and on Lever it sees the opening section only.
+The JD screen's `crypto` flag is the check that covers every shortlisted role. And a drop still
+leaves no trace.
