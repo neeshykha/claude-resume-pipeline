@@ -155,6 +155,10 @@ below that changed.
   what an employer read.
 - Commit, push, or send anything anywhere.
 - Promise work in a letter that he would not actually do. A sent letter commits him to it.
+- Promise work that uses his employer's systems or data. A ramp commitment runs on his own
+  public repos and the data in them, or on the hiring company's free tier. On 2026-10-10 a
+  writer, told its artifact might come out empty, promised the hiring company his employer's
+  routine telemetry.
 
 ## Your final message
 
