@@ -766,3 +766,39 @@ machine and puts a connector in an unattended run's path).
 The same change cut the digest to the picks, alerts, and what each letter promises, and moved
 the rest to the page through `brief_[date].json`. The 2026-10-09 digest had carried about 80
 role lines to deliver 5 picks.
+
+## D35. Contact details in published files
+
+_Added 2026-10-12._
+
+The spec keeps Aneesh's mail-routing addresses out of this repo with `{{PLACEHOLDER}}` tokens
+filled from `pipeline/local_config.json`. That rule was written about addresses a run sends to,
+and it covered them. It didn't cover an address that is only shown. On 2026-08-30 the
+ATS-renderer passage in `daily_task_prompt.md` quoted a raw text extraction of the resume's
+contact line as its example of the defect, with the phone number and the apply-account address
+in it. A quoted tool output reads as evidence, not as a value, and it went in.
+
+Looking for other copies on 2026-10-12 found the same two values as string literals in
+`pdf_helpers.py` (the styled contact line, the ATS renderer's plain lines, and a docstring
+example) and in `generate_pdf.py`. The renderers need the real values and had always carried
+them inline. The sweep covered every tracked file: six lines in three files, no other
+phone-shaped string, and no other address except third-party alert senders.
+
+The fix. `pdf_helpers.load_contact()` reads phone and email from
+`pipeline/application_profile.json`, which is gitignored and already held both, and all three
+builders call it. It raises on a missing file, a missing key, a blank, or `NEEDS_ANEESH`,
+because a resume with an empty contact line still looks finished. `generate_pdf.py` reads the
+same file; Aneesh waived its never-modify rule for this one change. The spec's example and the
+docstring now use `555-555-0100` and `jane.doe@example.com`, and the spec says they're
+placeholders so a later session doesn't correct them back. Four renders (styled, ATS, cover,
+and the legacy script) were compared before and after: same pages, text, links, and drawn
+content.
+
+`pipeline/test_contact_source.py` holds the line. It fails when a tracked `.py` or `.md` file
+has a phone-shaped string outside the 555-01xx example block, or an address at a personal
+mailbox provider, and it reads no real value to do that. It skips `.json` on purpose: the
+candidate queue carries scraped posting text and would trip it.
+
+Left alone on purpose. The name, city, and LinkedIn URL stay in the renderer. A worktree or a
+fresh clone has no profile and can't render until it's given one, the same as every other
+gitignored input.

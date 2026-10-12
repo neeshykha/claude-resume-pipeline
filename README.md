@@ -124,6 +124,10 @@ pip install reportlab requests
 
 # Add your master resume
 # Create master_resume.md in the project root (gitignored)
+
+# Add your contact details
+# Create pipeline/application_profile.json (gitignored) holding
+# {"contact": {"phone": "...", "email": "..."}}; the PDF renderers read both from it
 ```
 
 Then open the project in Claude Code. From there, paste any job description and the tailoring workflow runs automatically per `CLAUDE.md`.

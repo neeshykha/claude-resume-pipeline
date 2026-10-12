@@ -14,6 +14,12 @@ rewritten by each run's Step 8). It's an index of the day's evidence and says wh
 branch (the daily run at Step 7, the portfolio routine). Decide whether something is fit for a
 public repo when you commit it, not when you push. [D1](DECISIONS.md#d1-a-local-commit-reached-origin-within-the-hour)
 
+**Aneesh's phone number and email addresses never go in a tracked file**, not as a default, not
+as an example, and not inside quoted tool output. The PDF renderers read phone and email from
+`pipeline/application_profile.json`; examples use `555-555-0100` and `jane.doe@example.com`.
+`pipeline/test_contact_source.py` fails when one comes back.
+[D35](DECISIONS.md#d35-contact-details-in-published-files)
+
 **This file holds current rules only. The incidents behind them live in `DECISIONS.md`**, and a
 rule that came from one links to its entry (`[D7]` and so on). Read an entry when you're about to
 change or question that rule, not by default. When a new incident produces a rule, the rule goes

@@ -1,3 +1,5 @@
+import json
+
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -6,6 +8,11 @@ from reportlab.lib.colors import HexColor
 from reportlab.lib.enums import TA_CENTER
 
 output_path = "/Users/aneesh/Documents/resume_project/Aneesh_Khan_Resume.pdf"
+
+# Phone and email come from the gitignored application profile, never from this
+# published file. A missing file or key stops the script here.
+with open("/Users/aneesh/Documents/resume_project/pipeline/application_profile.json") as f:
+    CONTACT = json.load(f)["contact"]
 
 # Color palette — teal accent with warm contrast
 ACCENT = "#0e7c6b"       # Deep teal — headers, name, lines
@@ -62,7 +69,8 @@ story.append(Paragraph("ANEESH KHAN", name_style))
 
 # Contact
 story.append(Paragraph(
-    'Atlanta, GA | Remote &nbsp;&bull;&nbsp; 555-555-0100 &nbsp;&bull;&nbsp; jane.doe@example.com &nbsp;&bull;&nbsp; '
+    f'Atlanta, GA | Remote &nbsp;&bull;&nbsp; {CONTACT["phone"]} &nbsp;&bull;&nbsp; '
+    f'{CONTACT["email"]} &nbsp;&bull;&nbsp; '
     f'<a href="https://www.linkedin.com/in/aneesh-khan-1820b6b5/" color="{ACCENT}">LinkedIn</a>',
     contact_style
 ))

@@ -2296,6 +2296,7 @@ rotates that folder; nothing here needs to clean it up.
    well (Greenhouse, Ashby, Lever).
 
    The confirmed defect it fixes: in the styled template the centered contact line extracts as
+   below (phone and email swapped for placeholders; the real ones stay out of this file):
    `' Atlanta, GA | Remote  \x7f  555-555-0100  \x7f  jane.doe@example.com  \x7f  LinkedIn'`
    — the `&bull;` separator comes back as **DEL (0x7f)**, so the whole contact block is one
    line delimited by control characters, and the LinkedIn URL is unrecoverable because it

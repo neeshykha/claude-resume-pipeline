@@ -49,6 +49,9 @@ Usage:
 }
 """
 
+import json
+import os
+
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -61,11 +64,40 @@ ACCENT_LIGHT = "#12a08a"
 DARK         = "#1a1a1a"
 MEDIUM       = "#4a4a4a"
 
+# Phone and email are read at render time from application_profile.json, which
+# is gitignored. This file is published, so neither value is written in it.
+PROFILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "application_profile.json")
+
 CONTACT_LINE = (
-    'Atlanta, GA | Remote &nbsp;&bull;&nbsp; 555-555-0100 &nbsp;&bull;&nbsp; '
-    'jane.doe@example.com &nbsp;&bull;&nbsp; '
+    'Atlanta, GA | Remote &nbsp;&bull;&nbsp; {phone} &nbsp;&bull;&nbsp; '
+    '{email} &nbsp;&bull;&nbsp; '
     '<a href="https://www.linkedin.com/in/aneesh-khan-1820b6b5/" color="{accent}">LinkedIn</a>'
 )
+
+
+def load_contact(path: str = PROFILE_PATH) -> dict:
+    """Return {"phone", "email"} from the application profile, or raise.
+
+    There is no fallback on purpose. A resume that renders with a blank or
+    placeholder contact line still looks finished, so a missing file, a
+    missing key, or a value still reading NEEDS_ANEESH stops the render.
+    """
+    try:
+        with open(path) as f:
+            contact = json.load(f)["contact"]
+        found = {key: contact[key] for key in ("phone", "email")}
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        raise RuntimeError(
+            f"No contact phone/email: could not read them from {path} ({e!r}). "
+            "That file is gitignored, so a fresh clone or a worktree needs its "
+            "own copy."
+        ) from e
+    for key, value in found.items():
+        if not isinstance(value, str) or not value.strip() or "NEEDS_ANEESH" in value:
+            raise RuntimeError(f"contact.{key} in {path} has not been filled in.")
+    return found
+
 
 # --------------------------------------------------------------------------
 # Schema guard
@@ -233,7 +265,7 @@ def build_resume_pdf(data: dict, output_path: str) -> None:
 
     # Header
     story.append(Paragraph("ANEESH KHAN", s["name"]))
-    story.append(Paragraph(CONTACT_LINE.format(accent=ACCENT), s["contact"]))
+    story.append(Paragraph(CONTACT_LINE.format(accent=ACCENT, **load_contact()), s["contact"]))
     _hr_thick(story)
 
     # Summary
@@ -382,7 +414,8 @@ def build_ats_resume_pdf(data: dict, output_path: str) -> None:
     story = []
 
     story.append(Paragraph("Aneesh Khan", s["name"]))
-    for line in ("Atlanta, GA", "555-555-0100", "jane.doe@example.com",
+    contact = load_contact()
+    for line in ("Atlanta, GA", contact["phone"], contact["email"],
                  "linkedin.com/in/aneesh-khan-1820b6b5"):
         story.append(Paragraph(line, s["contact"]))
 
@@ -437,7 +470,7 @@ def build_cover_pdf(data: dict, output_path: str) -> None:
 
     # Header
     story.append(Paragraph("ANEESH KHAN", s["name"]))
-    story.append(Paragraph(CONTACT_LINE.format(accent=ACCENT), s["contact"]))
+    story.append(Paragraph(CONTACT_LINE.format(accent=ACCENT, **load_contact()), s["contact"]))
     _hr_thick(story)
 
     # Date + recipient
