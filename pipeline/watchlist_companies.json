@@ -6973,7 +6973,8 @@
       "priority": "low",
       "enrolled_date": "2026-09-28",
       "enrolled_via": "harvest_ats.py automated slug resolution",
-      "needs_vertical_classification": true,
+      "score_bonus": 20,
+      "bonus_reason": "AI/ML platform (+20) (classified 2026-10-12). Fraud decisioning platform built on machine-learning risk scores.",
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Account Manager' [Remote - USA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
     },
     {
