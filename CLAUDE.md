@@ -656,6 +656,12 @@ the incident that set it.
   `_confirm_empty`, which would confirm a slug collision onto a company's permanent record. It
   probes last among the cheap ATSes for the same reason, and `prune()` skips SmartRecruiters on
   purpose. [D19](DECISIONS.md#d19-harvest-layer-and-ats-coverage)
+- **A bulk `--names-file` run is dry-run only; never pair it with `--apply`.** The harvester's
+  name-collision check runs only for pending entries that carry a LinkedIn card title, so names
+  fed in by file skip it and short or generic names land on other companies' boards (a
+  272-name backlog sweep on 2026-09-30 resolved AT&T to `ashby/attio` and FICO to `lever/fi`
+  with `collision=0`). Read the dry run, then apply the verified names one at a time with
+  `--names`. The same sweep found nothing new on JazzHR, iCIMS, or Gem.
 - **Comeet** boards resolve from the company's own careers page (`probe_comeet`); the JS-API
   embed (`COMEET.init`) is read from inside the init object only, so a stray analytics `token:`
   can't pair with anything. `pipeline/test_comeet_credentials.py` covers all three embed shapes.

@@ -2723,12 +2723,15 @@ Two commands, nothing chained onto either:
 It prints the backlog size and the path of a names file (the 10 oldest parked names). Then:
 
 ```bash
-.venv/bin/python pipeline/harvest_ats.py --names-file pipeline/jobs/throttle_recheck_[date].json --apply
+.venv/bin/python pipeline/harvest_ats.py --names-file pipeline/jobs/throttle_recheck_[date].json
 ```
 
-`harvest_ats.py` supersedes each old record with whatever it finds now: an enrollment, a real
-rejection, or a fresh throttled record dated today (which sends that name to the back of the
-queue). Run `validate_config.py` afterwards, as after any harvest. Record
+**Dry run only (Aneesh's call, 2026-10-12).** This command carried `--apply` until then,
+which contradicted CLAUDE.md's rule that a bulk `--names-file` run is never paired with
+`--apply`: names fed in by file skip the name-collision check. Read the dry run and put any
+name it resolves to a board with fit titles in the digest's housekeeping; applying one is a
+`--names "<name>" --apply` run he asks for. Nothing is written, so a name that is still
+throttled keeps its place in the backlog. Record
 `run_[date].json → throttle_recheck`: backlog before, picked, enrolled, no_board, empty,
 still throttled. Enrollments made here are polled from tomorrow's run; nothing is perishable,
 because these steps find companies, not reqs. If the backlog is 0, skip the harvest command
