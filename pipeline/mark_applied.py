@@ -45,6 +45,15 @@ Behavior:
   set) for any dedup_key whose URL matches, keeping both files consistent.
 - Prints a summary: promoted / ambiguous (skipped) / not-found. Never
   silently guesses on an ambiguous match.
+- A URL that matches no surfaced row but DOES match a row at another stage
+  ends the search for that confirmation (added 2026-10-12). The URL names one
+  requisition, so the confirmation is about that row: already recorded when the
+  row is in a sent stage, reported for a hand look when it is not (an expired
+  row he applied to late). Before this, such a URL fell through to the company
+  match and could promote a DIFFERENT surfaced row at the same company, because
+  a title is matched as a substring. Rows marked Sent on the dashboard are
+  promoted before their confirmation email arrives, which would have made that
+  the common path rather than a rare one.
 """
 import csv
 import json
@@ -58,7 +67,7 @@ SEEN_JOBS = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
 
 
 def norm_url(u):
-    return (u or "").rstrip("/").lower()
+    return (u or "").strip().rstrip("/").lower()
 
 
 def main() -> int:
@@ -100,6 +109,8 @@ def main() -> int:
     promoted, ambiguous, not_found = [], [], []
     promoted_urls = []
     unverified = []
+    already, elsewhere = [], []
+    sent_stages = {"applied", "rejected", "closed", "interview", "assessment"}
 
     for c in confirmations:
         target_url = norm_url(c.get("url"))
@@ -111,6 +122,14 @@ def main() -> int:
         matches = []
         if target_url:
             matches = [r for r in candidates if norm_url(r[col["url"]]) == target_url]
+            if not matches:
+                same_url = [r for r in data_rows
+                            if well_formed(r) and norm_url(r[col["url"]]) == target_url]
+                if same_url:
+                    r = same_url[0]
+                    where = (r[col["company"]], r[col["title"]], r[col["stage"]] or "blank")
+                    (already if r[col["stage"]] in sent_stages else elsewhere).append(where)
+                    continue
         if not matches and company:
             matches = [r for r in candidates if r[col["company"]].strip().lower() == company]
             # A supplied title is a REQUIREMENT, not a tie-breaker -- same rule
@@ -187,6 +206,15 @@ def main() -> int:
               f"title given): {len(unverified)}")
         for company, title in unverified:
             print(f"  {company} — {title}   <-- confirm this is the right req")
+    if already:
+        print(f"ALREADY RECORDED (the URL's row is past surfaced; nothing changed): {len(already)}")
+        for company, title, stage in already:
+            print(f"  {company} — {title} [{stage}]")
+    if elsewhere:
+        print(f"URL MATCHES A ROW THAT IS NOT SURFACED AND NOT SENT (not promoted; "
+              f"look at it by hand): {len(elsewhere)}")
+        for company, title, stage in elsewhere:
+            print(f"  {company} — {title} [{stage}]   <-- a late send to a retired row?")
     if ambiguous:
         print(f"AMBIGUOUS (skipped, multiple surfaced rows, no URL to disambiguate): {len(ambiguous)}")
         for c in ambiguous:

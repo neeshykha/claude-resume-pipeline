@@ -70,7 +70,11 @@ def main():
 
     cards = {}
     bad_batches = []
-    for p in sorted(glob.glob(os.path.join(cache, "cards_batch_*.json"))):
+    # Later files win per JD. The reused-cards file (jd_prefetch.py, 2026-10-12) is read
+    # FIRST so a card a worker wrote today always replaces a copy of an older read.
+    paths = sorted(glob.glob(os.path.join(cache, "cards_batch_*.json")),
+                   key=lambda p: (not p.endswith("cards_batch_cached.json"), p))
+    for p in paths:
         try:
             with open(p, encoding="utf-8") as f:
                 for c in json.load(f):

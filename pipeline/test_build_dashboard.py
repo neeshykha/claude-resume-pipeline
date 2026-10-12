@@ -17,7 +17,8 @@ import build_dashboard as bd  # noqa: E402
 
 HEADER = ["applied_date", "company", "title", "url", "fit_score", "jd_coverage_pct", "stage",
           "outcome", "notes", "source_channel", "surfaced_date", "unmet_hard_reqs",
-          "vendor_tool_named_in_jd", "hard_req_cap_trigger", "furthest_stage", "ic_scope"]
+          "vendor_tool_named_in_jd", "hard_req_cap_trigger", "furthest_stage", "ic_scope",
+          "his_verdict"]
 TODAY = date(2026, 9, 19)
 
 
@@ -148,6 +149,121 @@ def test_pdf_matching():
     assert q["Nothing Inc"]["note"] == "no PDF matched"
 
 
+def test_ats_variant_is_part_of_the_package_not_a_second_resume():
+    fixture([row(company="Smith & Sons", stage="surfaced", surfaced_date="2026-09-10"),
+             row(company="Lone Variant", stage="surfaced", surfaced_date="2026-09-10")],
+            pdfs=["apply_now/Aneesh_Khan_SmithSons_AIAdoption.pdf",
+                  "apply_now/Aneesh_Khan_SmithSons_AIAdoption_ATS.pdf",
+                  "apply_now/Aneesh_Khan_SmithSons_AIAdoption_cover.pdf",
+                  "apply_now/Aneesh_Khan_LoneVariant_TAM_ATS.pdf"])
+    q = {i["company"]: i for i in build()["queue"]}
+    s = q["Smith & Sons"]
+    assert "note" not in s, "the ATS variant must not read as '2 PDFs match'"
+    assert s["resume"].endswith("AIAdoption.pdf") and s["ats"].endswith("AIAdoption_ATS.pdf")
+    assert s["cover"].endswith("_cover.pdf")
+    assert q["Lone Variant"]["resume"] == "" and q["Lone Variant"]["ats"].endswith("_TAM_ATS.pdf")
+
+
+def test_notes_naming_the_package_beat_the_company_slug():
+    fixture([row(company="Dotted.io", stage="surfaced", surfaced_date="2026-09-10",
+                 notes="Full tier. tailored/apply_now/Aneesh_Khan_Dotted_OpsLead.pdf + _cover.pdf"),
+             row(company="Two Named", stage="surfaced", surfaced_date="2026-09-10",
+                 notes="Aneesh_Khan_TwoNamed_A.pdf, sibling of Aneesh_Khan_TwoNamed_B.pdf")],
+            pdfs=["apply_now/Aneesh_Khan_Dotted_OpsLead.pdf", "apply_now/Aneesh_Khan_Dotted_OpsLead_cover.pdf",
+                  "apply_now/Aneesh_Khan_Dotted_OpsLead_ATS.pdf", "Aneesh_Khan_Dotted_OpsLead.pdf",
+                  "Aneesh_Khan_TwoNamed_A.pdf", "Aneesh_Khan_TwoNamed_B.pdf"])
+    q = {i["company"]: i for i in build()["queue"]}
+    d = q["Dotted.io"]
+    assert d["resume"].endswith("apply_now/Aneesh_Khan_Dotted_OpsLead.pdf"), d
+    assert d["cover"].endswith("_cover.pdf") and d["ats"].endswith("_ATS.pdf") and d["in_apply_now"]
+    assert "2 PDFs match" in q["Two Named"]["note"], "notes naming two packages settle nothing"
+
+
+def test_skip_verdict_leaves_the_queue_and_rows_carry_a_mark_key():
+    fixture([row(company="Keep", stage="surfaced", surfaced_date="2026-09-18", url="https://Example.com/Jobs/1/"),
+             row(company="Sent Verdict", stage="surfaced", surfaced_date="2026-09-18",
+                 url="https://example.com/2", his_verdict="sent_as_is"),
+             row(company="Skipped", stage="surfaced", surfaced_date="2026-09-18",
+                 url="https://example.com/3", his_verdict="skip_fit"),
+             row(company="No Url Co", title="Some Role", stage="surfaced", surfaced_date="2026-09-18", url="")])
+    d = build()
+    q = {i["company"]: i for i in d["queue"]}
+    assert set(q) == {"Keep", "Sent Verdict", "No Url Co"}, set(q)
+    assert d["counts"]["skipped"] == 1
+    assert q["Keep"]["key"] == "https://example.com/jobs/1", "same normalization shelf_inbox.py matches on"
+    assert q["No Url Co"]["key"] == "nourlco|somerole"
+
+
+def test_mark_key_and_inbox_contract_with_shelf_inbox():
+    import shelf_inbox
+    fixture([row(company="A", stage="surfaced", surfaced_date="2026-09-18")])
+    html = bd.render(build())
+    assert "IKEY='%s'" % shelf_inbox.INBOX_KEY in html, "page and shelf_inbox.py must share the storage key"
+    for reason in shelf_inbox.SKIP_VERDICTS:
+        assert reason + ":'" in html, f"skip reason {reason} missing from the page"
+    assert "function canMark(q){return /^https?:\\/\\//.test(q.key)&&keyN[q.key]===1}" in html, \
+        "rows shelf_inbox.py could never match (no link, or a shared link) must not take marks"
+    assert bd.norm_url(" https://X.example/a/ ") == shelf_inbox.norm_url(" https://X.example/a/ ")
+    assert 'data-act="bulk"' in html and "bulk:true" in html and 'data-act="unbulk"' in html, \
+        "the one-click clear and its undo; shelf_inbox.py reads the `bulk` flag"
+
+
+def brief_file(day, payload):
+    with open(os.path.join(bd.JOBS_DIR, f"brief_{day}.json"), "w", encoding="utf-8") as f:
+        json.dump(payload, f)
+
+
+def test_brief_newest_wins_is_capped_and_survives_junk():
+    fixture([row(company="A", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/a")])
+    assert build()["brief"] is None
+    brief_file("2026-09-10", {"note": "too old to show"})
+    assert build()["brief"] is None, "a brief older than the window is ignored"
+    brief_file("2026-09-17", {"note": "older"})
+    brief_file("2026-09-18", {
+        "note": "x" * 2000, "alerts": ["one", 7, ""],
+        "picks": [{"url": "https://Example.com/a/", "read": "why", "commitment": "a promise",
+                   "check": ["phrase", None], "changes": ["c1", "c2"]},
+                  {"read": "no url, dropped"}, "junk"],
+        "sections": [{"title": "Near-misses", "note": "n", "lines": ["plain string",
+                      {"text": "with link", "url": "https://example.com/x", "label": "board"}, {"url": "no text"}]},
+                     {"lines": ["untitled section, dropped"]}, 5]})
+    b = build()["brief"]
+    assert b["run_date"] == "2026-09-18" and len(b["note"]) == 900
+    assert b["alerts"] == ["one"]
+    assert list(b["picks"]) == ["https://example.com/a"], "picks are keyed like queue rows"
+    assert b["picks"]["https://example.com/a"]["check"] == ["phrase"]
+    assert len(b["sections"]) == 1 and [l["text"] for l in b["sections"][0]["lines"]] == ["plain string", "with link"]
+    brief_file("2026-09-19", ["not", "an", "object"])
+    assert build()["brief"]["run_date"] == "2026-09-18", "an unreadable newer brief falls back, it doesn't blank the page"
+    json.loads(re.search(r'<script id="data" type="application/json">(.*?)</script>',
+                         bd.render(build()), re.S).group(1))
+
+
+def test_field_sheet_embeds_only_sections_marked_non_personal():
+    d = fixture([row(company="Smith & Sons", stage="surfaced", surfaced_date="2026-09-10"),
+                 row(company="No Sheet", stage="surfaced", surfaced_date="2026-09-10")],
+                pdfs=["apply_now/Aneesh_Khan_SmithSons_AIAdoption.pdf",
+                      "apply_now/Aneesh_Khan_SmithSons_AIAdoption_ATS.pdf",
+                      "apply_now/Aneesh_Khan_NoSheet_TAM.pdf"])
+    with open(os.path.join(d, "tailored", "Aneesh_Khan_SmithSons_AIAdoption_fields.json"), "w", encoding="utf-8") as f:
+        json.dump({"stem": "x", "sections": [
+            {"title": "My information", "personal": True, "fields": [{"label": "Phone", "value": "555-0100"}]},
+            {"title": "Unflagged", "fields": [{"label": "Street", "value": "1 Private Way"}]},
+            {"title": "Work experience 1", "personal": False, "fields": [
+                {"label": "Job title", "value": "Ops Lead"}, {"label": "From", "value": "MM/2020", "needs_you": True},
+                {"value": "no label, dropped"}]},
+            {"title": "Only you", "personal": False, "fields": [
+                {"label": "Legally authorized to work in the US? (a profile question)", "value": "", "needs_you": True}]}]}, f)
+    q = {i["company"]: i for i in build()["queue"]}
+    f = q["Smith & Sons"]["fields"]
+    assert [s["title"] for s in f] == ["Work experience 1"], "personal and unflagged sections never reach the page"
+    assert [x["label"] for x in f[0]["fields"]] == ["Job title", "From"] and f[0]["fields"][1]["needs_you"] is True
+    assert "fields" not in q["No Sheet"]
+    html = bd.render(build())
+    assert "555-0100" not in html and "1 Private Way" not in html
+    assert "a profile question" not in html, "a section with nothing to paste stays in the .md sheet"
+
+
 def test_manual_links_and_live_hits():
     watch = {"_scoring_config": {},
              "_blind_spot_companies": {"description": "x", "companies": [
@@ -176,6 +292,26 @@ def test_hostile_notes_produce_valid_embedded_json():
     blob = re.search(r'<script id="data" type="application/json">(.*?)</script>', html, re.S).group(1)
     assert "</script" not in blob
     assert json.loads(blob)["queue"][0]["company"].startswith("Evil </script>")
+
+
+def test_page_script_parses_as_javascript():
+    # The other tests never execute the page. On 2026-10-12 a one-character slip in the
+    # embedded script left every list blank and all of them still passed.
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        print("    (skipped: node is not installed, so the page script was not syntax-checked)")
+        return
+    d = fixture([row(company="A", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/a")])
+    html = bd.render(build())
+    scripts = re.findall(r"<script>(.*?)</script>", html, re.S)
+    assert len(scripts) == 1, "expected exactly one executable script block"
+    path = os.path.join(d, "page_script.js")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(scripts[0])
+    r = subprocess.run([node, "--check", path], capture_output=True, text=True)
+    assert r.returncode == 0, "the page's script does not parse:\n" + r.stderr[:600]
 
 
 def test_failure_exits_zero_and_writes_nothing():

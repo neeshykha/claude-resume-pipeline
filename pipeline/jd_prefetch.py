@@ -5,6 +5,7 @@ Usage:
     .venv/bin/python pipeline/jd_prefetch.py                    # today's ats_hits
     .venv/bin/python pipeline/jd_prefetch.py --date 2026-09-24
     .venv/bin/python pipeline/jd_prefetch.py --batch-size 8
+    .venv/bin/python pipeline/jd_prefetch.py --no-reuse         # every JD to a worker
 
 Reads pipeline/jobs/ats_hits_<date>.json and fetches, with fetch_jd.fetch():
   - every `matched` entry (the shortlist, tier1 guarantees included),
@@ -27,9 +28,31 @@ cards instead of raw JDs. Nothing here scores, filters, or decides anything.
 
 Also marks entries whose URL is already in outcomes.csv (with its stage), so a
 worker is not spent on a role Aneesh already applied to or was rejected from.
+
+Card reuse (added 2026-10-12). Most of a day's shortlist is yesterday's
+shortlist: across the 2026-09-24..10-09 cache dirs, 784 times a URL was fetched
+on two runs in a row, and 762 of those files came back byte for byte the same.
+A worker reading the same text writes the same card, so after fetching, each JD
+is checked against the cards earlier runs left in jd_cache/<YYYY-MM-DD>/. Same
+URL, same text, card readable, and a worker read it recently enough (see
+max_age_days: REUSE_MAX_AGE_DAYS plus a few days fixed per URL, so postings
+first read on the same run don't all come due together): the card is copied
+into today's cards_batch_cached.json
+(`file` pointed at today's txt, `reused_from` = the day a worker read it) and
+the JD is left out of the batches. It stays in manifest entries, so
+jd_screen_table.py joins it like any other card. Nothing is stored between
+runs; the earlier cache dirs are the only state. `reused_from` is carried
+forward unchanged on every later reuse, so a posting gets a fresh read once the
+original is too old however many days it has been reused. --no-reuse sends
+everything to a worker; use it once after jd_screen_worker.md or the card
+schema changes, because an old card is only as good as the brief it was
+written under. Reuse can only take work away: any bad or missing old dir, card
+file, or card is skipped, and any failure in the reuse pass reads everything.
 """
 import argparse
 import csv
+import glob
+import hashlib
 import json
 import os
 import re
@@ -47,6 +70,24 @@ OUTCOMES = os.path.join(HERE, "outcomes.csv")
 MAX_BODY = 20000
 WORKERS = 6
 PER_ATS = 2   # concurrent requests per ATS, so one host never sees a burst
+RULE = "-" * 70   # divides the header from the JD body in a cached txt
+
+REUSE_LOOKBACK_DAYS = 21   # how far back to look for an earlier card
+REUSE_MAX_AGE_DAYS = 14    # a worker's read stands at least this long, then it is redone
+# ...plus 0 to this many days, fixed per URL. Replaying 2026-09-24..10-09 with a flat
+# 14 days, everything first read on 09-24 came due on the same run and that day's
+# reuse fell from about 75 cards to 54. Spreading the due dates flattens that.
+REUSE_JITTER_DAYS = 6
+# jd_screen_table.py globs cards_batch_*.json, so this name needs no change there.
+REUSED_CARDS = "cards_batch_cached.json"
+DAY_DIR = re.compile(r"\d{4}-\d{2}-\d{2}")   # main-run dirs only, not <date>_linkedin
+# Header lines left out of the reuse hash. POSTED moves when an ATS re-stamps a
+# posting whose text did not change, and no card field holds it; URL is the
+# index key already. The other header lines (title, location, salary) are facts
+# a worker quotes, so a change in one of them is a reason to read again. The
+# header carries no fetch date, rank, pre_score, or source: the rank is only in
+# the file NAME, which is why the hash is of the content and never the path.
+HASH_SKIP = {"URL", "POSTED"}
 
 # Loose on purpose: this only decides whether a near_window role gets READ.
 # Step 2b's hard filter still makes the real location call from the JD body.
@@ -105,11 +146,126 @@ def candidates(hits):
     return out
 
 
-def main():
+def norm_url(u):
+    return (u or "").strip().rstrip("/").lower()
+
+
+def max_age_days(url):
+    """How long a worker's read of this URL stands. Stable for a URL, spread across URLs."""
+    spread = int(hashlib.sha256(norm_url(url).encode("utf-8")).hexdigest(), 16) % (REUSE_JITTER_DAYS + 1)
+    return REUSE_MAX_AGE_DAYS + spread
+
+
+def parse_day(s):
+    try:
+        return date.fromisoformat(s) if isinstance(s, str) and DAY_DIR.fullmatch(s) else None
+    except ValueError:
+        return None
+
+
+def text_hash(path):
+    """Hash of a cached JD as a worker reads it, or None if it cannot be read.
+
+    Covers the body and every header line a card draws on; leaves out HASH_SKIP
+    and collapses whitespace, so a re-stamped or re-wrapped posting still
+    matches. A file with no header (not written by this script) hashes whole.
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+    except (OSError, ValueError):
+        return None
+    head, sep, body = text.partition("\n" + RULE + "\n")
+    if sep:
+        kept = [ln for ln in head.splitlines()
+                if ln.split(":", 1)[0].strip() not in HASH_SKIP]
+        text = "\n".join(kept) + "\n" + body
+    return hashlib.sha256(" ".join(text.split()).encode("utf-8")).hexdigest()
+
+
+def reuse_index(cache_root, today, lookback=REUSE_LOOKBACK_DAYS):
+    """{normalized url: (text hash, card, day a worker read it)} from earlier runs.
+
+    Walks the main-run dirs dated within `lookback` days before `today`, oldest
+    first, so the newest card for a URL wins. The read day is the dir's date
+    for a card a worker wrote there and `reused_from` for one this script
+    copied in. Never raises: anything unreadable or misshapen is skipped.
+    """
+    index = {}
+    run_day = parse_day(today)
+    try:
+        names = sorted(os.listdir(cache_root))
+    except OSError:
+        return index
+    for name in names:
+        day = parse_day(name)
+        if not run_day or not day or not 0 < (run_day - day).days <= lookback:
+            continue
+        d = os.path.join(cache_root, name)
+        for p in sorted(glob.glob(os.path.join(d, "cards_batch_*.json"))):
+            try:
+                with open(p, encoding="utf-8") as f:
+                    cards = json.load(f)
+            except (OSError, ValueError):
+                continue
+            for card in cards if isinstance(cards, list) else []:
+                if not isinstance(card, dict) or not isinstance(card.get("file"), str):
+                    continue
+                url = norm_url(card.get("url") if isinstance(card.get("url"), str) else "")
+                # A bad reused_from drops the card rather than falling back to
+                # the dir's date, which would restart the clock.
+                read_day = parse_day(card["reused_from"]) if "reused_from" in card else day
+                # The txt is looked up beside the card, by name: the card's own
+                # path is whatever the worker copied and may be from elsewhere.
+                h = text_hash(os.path.join(d, os.path.basename(card["file"])))
+                if url and read_day and h:
+                    index[url] = (h, card, read_day)
+    return index
+
+
+def carded_today(cache):
+    """Normalized URLs a WORKER carded in this run date's dir (the reused file excluded)."""
+    urls = set()
+    for p in glob.glob(os.path.join(cache, "cards_batch_*.json")):
+        if os.path.basename(p) == REUSED_CARDS:
+            continue
+        try:
+            with open(p, encoding="utf-8") as f:
+                cards = json.load(f)
+        except (OSError, ValueError):
+            continue
+        for card in cards if isinstance(cards, list) else []:
+            if isinstance(card, dict) and isinstance(card.get("url"), str):
+                urls.add(norm_url(card["url"]))
+    return urls
+
+
+def reuse_card(index, url, path, today):
+    """A copy of the earlier card for this JD, pointed at today's txt, or None."""
+    hit = index.get(norm_url(url))
+    run_day = parse_day(today)
+    if not hit or not run_day:
+        return None
+    h, card, read_day = hit
+    if card.get("read_ok") is not True:
+        return None
+    if not 0 < (run_day - read_day).days <= max_age_days(url):
+        return None
+    if h != text_hash(path):
+        return None
+    out = dict(card)
+    out["file"] = path
+    out["reused_from"] = read_day.isoformat()
+    return out
+
+
+def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=date.today().isoformat())
     ap.add_argument("--batch-size", type=int, default=8)
-    args = ap.parse_args()
+    ap.add_argument("--no-reuse", action="store_true",
+                    help="send every JD to a worker, even one with a reusable earlier card")
+    args = ap.parse_args(argv)
 
     hits_path = os.path.join(JOBS, f"ats_hits_{args.date}.json")
     try:
@@ -156,7 +312,7 @@ def main():
             f.write(f"LISTING LOCATION: {c['listing_location']}\n")
             f.write(f"POSTED  : {rec.get('posted')}\n")
             f.write(f"SALARY  : {rec.get('salary')}\n")
-            f.write("-" * 70 + "\n")
+            f.write(RULE + "\n")
             f.write(body[:MAX_BODY])
             if len(body) > MAX_BODY:
                 f.write(f"\n[truncated at {MAX_BODY} of {len(body)} chars]\n")
@@ -171,11 +327,45 @@ def main():
         done = list(pool.map(work, enumerate(cands, 1)))
 
     readable = [c for c in done if c["status"] in ("ok", "thin")]
+
+    # Card reuse: see the module docstring. Whatever goes wrong in here, the
+    # answer is to read everything, which is what the run did before.
+    reused, reuse_note = [], ""
+    if not args.no_reuse:
+        try:
+            index = reuse_index(os.path.join(JOBS, "jd_cache"), args.date)
+            fresh = carded_today(cache)
+            for c in readable:
+                if norm_url(c["url"]) in fresh:
+                    # A worker already read this posting on THIS date (a second run the
+                    # same day, typically after --no-reuse). Its card is newer than
+                    # anything the index holds, so the JD goes back to a worker rather
+                    # than having an older read copied over it.
+                    continue
+                card = reuse_card(index, c["url"], c["file"], args.date)
+                if card:
+                    reused.append((c, card))
+        except Exception as exc:                      # noqa: BLE001
+            reused, reuse_note = [], f"{type(exc).__name__}: {exc}"
+    # Written on every run, empty included. A second run on the same date
+    # (--no-reuse after a normal one, say) must not leave the first run's
+    # copies behind: the table reads this file after the workers' files, so a
+    # stale copy would override a fresh card for the same JD.
+    try:
+        with open(os.path.join(cache, REUSED_CARDS), "w", encoding="utf-8") as f:
+            json.dump([card for _, card in reused], f, indent=1)
+            f.write("\n")
+    except (OSError, TypeError, ValueError) as exc:
+        reused, reuse_note = [], f"{type(exc).__name__}: {exc}"
+    for c, card in reused:
+        c["reused_from"] = card["reused_from"]
+    to_read = [c for c in readable if "reused_from" not in c]
+
     # Highest pre_score first, so batch 1 holds the likeliest picks and a run
     # that has to fall back to reading inline still reads the right ones first.
-    readable.sort(key=lambda c: -(c.get("pre_score") or 0))
-    batches = [readable[i:i + args.batch_size]
-               for i in range(0, len(readable), args.batch_size)]
+    to_read.sort(key=lambda c: -(c.get("pre_score") or 0))
+    batches = [to_read[i:i + args.batch_size]
+               for i in range(0, len(to_read), args.batch_size)]
     for n, b in enumerate(batches, 1):
         for c in b:
             c["batch"] = n
@@ -192,6 +382,8 @@ def main():
             "errors": sum(1 for c in done if c["status"] == "error"),
             "skipped_known": sum(1 for c in done if c["status"].startswith("skipped")),
             "batches": len(batches),
+            "reused": len(reused),
+            "to_read": len(to_read),
         },
         "batches": [[c["file"] for c in b] for b in batches],
         "entries": done,
@@ -200,6 +392,16 @@ def main():
     # batches[N-1]; on the 2026-09-24 trial one of ten read the wrong index, so
     # a batch was screened twice and another never. A named file cannot be
     # miscounted.
+    # An earlier run on this date may have written more batch files than this one
+    # will (with reuse, a second run usually has fewer). jd_screen_table.py globs
+    # them to decide what to RE-DISPATCH, so leftovers would send workers after
+    # batches that no longer exist. Only this script's own batch files are removed;
+    # the workers' cards_batch_*.json are never touched.
+    for old in glob.glob(os.path.join(cache, "batch_[0-9]*.json")):
+        try:
+            os.remove(old)
+        except OSError:
+            pass
     for n, b in enumerate(batches, 1):
         with open(os.path.join(cache, f"batch_{n:02d}.json"), "w", encoding="utf-8") as f:
             json.dump([c["file"] for c in b], f, indent=1)
@@ -214,8 +416,11 @@ def main():
           f"({k['by_source']['matched']} matched, {k['by_source']['ai_wildcard']} ai_wildcard, "
           f"{k['by_source']['near_window']} near_window); fetched {k['fetched']}, "
           f"thin {k['thin']}, errors {k['errors']}, already-known {k['skipped_known']}; "
-          f"{k['batches']} batches")
+          f"{k['batches']} batches; reused {k['reused']}, to read {k['to_read']}"
+          + (" (--no-reuse)" if args.no_reuse else ""))
     print(f"manifest: {mpath}")
+    if reuse_note:
+        print(f"  REUSE OFF  every JD goes to a worker -- {reuse_note[:200]}")
     for c in done:
         if c["status"] == "error":
             print(f"  ERROR  {c['company']}: {c['title']} ({c['ats']}) -- {c['error'][:120]}")

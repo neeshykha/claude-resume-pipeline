@@ -719,3 +719,50 @@ date that can't be read never blocks an enrollment. And the check runs at enroll
 board that freezes or empties after it's enrolled is still found only by `--prune` or a sweep.
 The 2026-10-10 sweep found three that way (PlayOn, Iterable, and UpGuard), each having left an
 empty board behind.
+
+## D34. The dashboard takes marks
+
+_Added 2026-10-12._
+
+On 2026-09-19 the dashboard was built read-only on purpose, and write-back from the page was
+turned down: a second source of truth beside `outcomes.csv` was the thing this repo kept
+getting burned by. That reasoning was right about the risk and wrong about the cost.
+
+Three weeks later Aneesh said the pipeline felt like it gave him a small portion and that the
+loop of email, applying, and tracking on the Shelf was finicky, and asked for it to be looked at
+whole. Measured on 2026-10-12:
+
+- The apply queue held 98 rows. Nothing but the 45-day retirement ever removed one, because
+  there was no way to say "I'm passing on this."
+- By week surfaced, the share of packages sent had gone from about half through mid-September
+  to 15% for the week of 2026-10-05 (4 of 26), while output held at 21 to 27 packages a week.
+- `his_verdict`, added 2026-09-30 as the only place the pipeline hears his judgment of a pick,
+  was blank on 197 of 230 post-epoch rows. Setting it took a terminal command.
+- The page's own tick storage held one tick, made the day after the page was built.
+- `tailored/apply_now/` held 139 PDFs against a design target near 30. The rotation matched a
+  PDF to its row only when the row's notes named that exact file, so older packages and every
+  `_ATS` variant were never matched and never left.
+- In his own run sessions on 2026-10-02 he had written "I have to get better about using the
+  dashboard. That seems like the easier pathway versus these emails," and asked "can i add
+  notes in the dashboard html or should i do here."
+
+So the page now takes Sent, Skip, and Later on every queue row. What the 2026-09-19 decision
+was protecting is kept: the marks are an inbox in the Shelf's storage, drained once a run by
+`shelf_inbox.py` through `mark_applied.py` and `mark_verdict.py`, and the generator still
+writes nothing but the page. There is no second record to drift.
+
+Two things about the drain are deliberate. It writes the verdict before it promotes the row,
+because the verdict carries the note that a send is on his word alone; a run that dies between
+the two leaves a state the next drain finishes, where the other order would lose the note. And
+a Skip never changes the stage: the row stays `surfaced` until it retires, and every reader of
+the queue (the page, the folder rotation, the run's "still unsent" lines) checks the verdict
+instead. A new stage value would have meant a schema migration for a distinction one column
+already holds.
+
+Not taken: replying to the digest in free text (nothing to click, and text to parse); a
+published page with its own database (works from the phone, but moves the queue off this
+machine and puts a connector in an unattended run's path).
+
+The same change cut the digest to the picks, alerts, and what each letter promises, and moved
+the rest to the page through `brief_[date].json`. The 2026-10-09 digest had carried about 80
+role lines to deliver 5 picks.

@@ -3,6 +3,7 @@
 
 Usage:
     .venv/bin/python pipeline/mark_verdict.py "<company>" <verdict> [--title "<fragment>"] [--note "<text>"]
+    .venv/bin/python pipeline/mark_verdict.py "<company>" <verdict> --url "<posting url>"
     .venv/bin/python pipeline/mark_verdict.py --todo      # rows since VERDICT_SINCE with no verdict yet
 
 Verdicts (repair_outcomes.HIS_VERDICTS):
@@ -22,6 +23,13 @@ Matching follows mark_outcome.py: company is matched case-insensitively; when
 more than one row matches, --title (substring) must narrow it to exactly one, or
 nothing is written and the candidates are printed. It never guesses. The file is
 copied to outcomes.csv.bak before every write.
+
+--url (added 2026-10-12) matches the row by its posting URL instead, normalized
+the way mark_applied.py does it (trailing slash and case stripped). A URL names
+one requisition, so company and --title are not consulted; the company argument
+is still required and is only echoed. shelf_inbox.py uses this form, because a
+mark made on the Shelf dashboard carries the row's URL. Two rows sharing a URL
+still write nothing.
 """
 import argparse
 import csv
@@ -49,9 +57,16 @@ def load(path):
     return header, raw[1:]
 
 
-def find(header, rows, company, title):
+def norm_url(u):
+    return (u or "").strip().rstrip("/").lower()
+
+
+def find(header, rows, company, title, url=""):
     ci = {n: header.index(n) for n in ("company", "title")}
     wf = [r for r in rows if len(r) == len(header)]
+    if url:
+        ui = header.index("url")
+        return [r for r in wf if norm_url(r[ui]) == norm_url(url)]
     m = [r for r in wf if r[ci["company"]].strip().lower() == company.strip().lower()]
     if not m:
         m = [r for r in wf if company.strip().lower() in r[ci["company"]].lower()]
@@ -76,6 +91,7 @@ def main(argv=None, path=OUTCOMES):
     ap.add_argument("company", nargs="?")
     ap.add_argument("verdict", nargs="?")
     ap.add_argument("--title", default="")
+    ap.add_argument("--url", default="")
     ap.add_argument("--note", default="")
     ap.add_argument("--todo", action="store_true")
     a = ap.parse_args(argv)
@@ -89,13 +105,13 @@ def main(argv=None, path=OUTCOMES):
     if a.verdict not in HIS_VERDICTS or not a.verdict:
         ap.error(f"verdict must be one of: {', '.join(v for v in HIS_VERDICTS if v)}")
 
-    matches = find(header, rows, a.company, a.title)
+    matches = find(header, rows, a.company, a.title, a.url)
     ci = {n: header.index(n) for n in ("company", "title", "stage", "notes", "his_verdict")}
     if len(matches) != 1:
         print(f"{len(matches)} rows match; nothing written.", file=sys.stderr)
         for r in matches:
             print(f"  {r[ci['company']]}: {r[ci['title']]} [{r[ci['stage']]}]", file=sys.stderr)
-        if matches:
+        if matches and not a.url:
             print("Narrow it with --title \"<fragment>\".", file=sys.stderr)
         return 1
 

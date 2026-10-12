@@ -318,3 +318,55 @@ its own "as of" stamp. The generator can compute `has_prep` and `has_postmortem`
   uses `notes` only as a tiebreak when one company has several PDFs. 70 of 86 queue rows resolve to
   one resume; 13 say "N PDFs match this company" (several roles there and the row's notes name no
   file) and 3 match nothing. Those say so on the page rather than guessing.
+
+## 2026-10-12: marks inbox, the last run on top, and the digest's long tail
+
+His go-ahead, after a review of the whole handoff. What it found, in numbers from that day: the
+apply queue held 98 rows because nothing but the 45-day retirement ever removed one; the weekly
+send rate had gone from about half to 15%; `his_verdict` was blank on 197 of 230 post-epoch rows;
+the page's tick storage held one tick, from the day after it was built; and the digest ran about
+80 role lines to deliver 5 picks. On 2026-10-02 he had asked whether he could add notes on the
+dashboard itself.
+
+**What changed.**
+- Every queue row carries Sent, Skip (not a fit, no time, materials, other), and Later. One click
+  each, with undo until the next run.
+- "New from the last run" sits above the queue: that run's picks, each with the run's read on
+  it, what its cover letter promises, phrasing to confirm, and the tailoring diff behind a
+  disclosure.
+- "More from the last run" holds what the digest used to carry after the picks, collapsed.
+- A package with a paste sheet (`field_sheet.py`) shows its form fields with click-to-copy
+  values. Sections that sheet marks personal are never embedded.
+- The `_ATS` PDF is recognized as a variant of its package and gets its own chip. A row whose
+  notes name its PDFs is matched by that filename before the company-slug guess.
+
+**This revisits decision "no write-back from the page" (2026-09-19), and keeps what it was
+protecting.** The objection was a second source of truth beside `outcomes.csv`. There still
+isn't one. The page's marks are an inbox in the Shelf's storage (`jobdash.inbox.v1`);
+`pipeline/shelf_inbox.py` drains it at the start of the next run (Step 0 item 4b) through
+`mark_applied.py` and `mark_verdict.py`, the scripts that already own those columns. The
+generator still writes nothing but the page and still imports nothing from the writers. A
+recorded row leaves the queue on the next build, and the page drops a mark once its row is gone
+and the page is newer than the mark.
+
+Considered and not taken: replying to the digest with "sent 1, 3; skip 2" (no new UI, but free
+text to parse and nothing to click); a published Claude page with its own database (works from
+the phone, but moves the queue onto claude.ai and puts a connector in the path of an unattended
+run); leaving the page read-only and pointing him at `mark_verdict.py`, which had been there
+since 2026-09-30 and was used once.
+
+**Contracts to keep in step.**
+- The storage key and the mark shape `{a, r, e, d, ts, u, c, t}` are shared by the page script
+  and `shelf_inbox.py`. `test_mark_key_and_inbox_contract_with_shelf_inbox` pins the key and the
+  skip reasons.
+- `norm_url` is the same three-line function in `build_dashboard.py`, `shelf_inbox.py`,
+  `mark_verdict.py`, and `mark_applied.py`. A mark is stored under it and matched by it.
+- A row with a skip verdict stays `stage=surfaced` and is hidden here, evicted by
+  `rotate_apply_folder.py`, and never listed as unsent by the run.
+- `brief_[date].json` is model output. `read_brief()` type-checks and caps every field and
+  falls back to the previous day's brief rather than blanking the page.
+
+**Known limits.** Marks made on the phone stay on the phone: the iOS app is read-only and never
+writes back. A Sent mark is his word; the row's notes say so until a confirmation email agrees.
+Undo works until the next run has recorded the mark; after that a wrong mark is fixed with
+`mark_outcome.py` or by hand, the same as any other tracker mistake.

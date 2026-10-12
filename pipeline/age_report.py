@@ -118,7 +118,11 @@ def main():
         except ValueError:
             return 0.0
 
-    hi = sorted((x for x in stale if score(x[1]) >= 100),
+    # A row he marked skip (his_verdict skip_*) still retires on schedule below, but it is
+    # not unsent work to call out: he decided. Older trackers without the column show all.
+    vi = header.index("his_verdict") if "his_verdict" in header else None
+    hi = sorted((x for x in stale if score(x[1]) >= 100
+                 and not (vi is not None and x[1][vi].strip().lower().startswith("skip_"))),
                 key=lambda x: -score(x[1]))
     if hi:
         print(f"\nscore >=100 and older than {threshold}d "

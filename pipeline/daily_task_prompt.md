@@ -82,6 +82,37 @@ brief digest saying so rather than guessing an address.
    Precedence: the style guide (item 3) + CLAUDE.md voice rules govern FORM; the career
    narrative governs SUBSTANCE; `master_resume.md` remains the only source of factual
    claims. Step 4 says how to apply it per document.
+4b. **Record the marks he made on the Shelf dashboard (added 2026-10-12, Aneesh's go-ahead).**
+   Run, before the folder rotation below so a role he marked leaves `apply_now/` this morning:
+   ```bash
+   .venv/bin/python pipeline/shelf_inbox.py --apply
+   ```
+   Every row in the dashboard's apply queue carries Sent, Skip (not a fit, no time, materials,
+   other), and Later buttons. His clicks wait in the Shelf's storage for that page, and this
+   command applies them through the scripts that own those columns: Sent promotes the row with
+   `mark_applied.py` and sets `his_verdict` to `sent_as_is` or `sent_edited`; Skip sets
+   `his_verdict` to `skip_*` and leaves the stage alone; Later is the page's own snooze and
+   writes nothing. `outcomes.csv` stays the only record. One command, nothing chained. It always
+   exits 0 and prints one `shelf_inbox:` line: copy that line into `run_[date].json →
+   pipeline_notes`.
+   - **A row he marked Skip is finished.** It keeps `stage=surfaced` until `age_report.py`
+     retires it, but never list it as unsent, "also live", or "not confirmed sent" anywhere,
+     and never re-pitch it. The dashboard and `rotate_apply_folder.py` already drop it.
+   - **A Sent mark is his word, not a confirmation.** The row's notes say `marked sent on the
+     Shelf [date], no confirmation email yet`. When the confirmation arrives, Step 0.5's
+     `mark_applied.py` finds that URL on a row already past `surfaced` and prints it under
+     `ALREADY RECORDED`; that is the expected path, not a conflict. It stops there on purpose:
+     it never goes on to match the company name, which is how a confirmation for one role
+     could promote a different open role at the same company. So **always put the posting
+     URL in the confirmations file when the email has one**; the URL is what makes this safe.
+   - If the line says `FAILED`, or reports marks as `not matched`, `stale`, or `PROBLEMS`,
+     put one line in the digest's alerts naming the roles, and move on. Do not debug it inside
+     the run and do not hand-edit `outcomes.csv` to finish the job; his marks stay on the page
+     and tomorrow's run tries again. `nothing to record` is the normal quiet answer and is
+     not digest content.
+   - Never write to anything under the Shelf's own folder. The page forgets a mark by itself
+     once its row has left the queue.
+
 5. **Rotate the apply-now folder (added 2026-08-28, Aneesh's request).** Run:
    ```bash
    .venv/bin/python pipeline/rotate_apply_folder.py --apply
@@ -194,6 +225,12 @@ Deleting the subject filters would silently drop that class of confirmation.
    **skips and reports (never guesses) any company name that matches more than one surfaced
    row** — read its stdout output and resolve ambiguous ones by hand only if the email body
    gives enough detail to disambiguate confidently; otherwise leave them surfaced.
+   Since 2026-10-12 a URL that belongs to a row already past `surfaced` ends the search for
+   that confirmation: `ALREADY RECORDED` when the row is in a sent stage (the usual case for
+   a role he marked Sent on the dashboard first), and `URL MATCHES A ROW THAT IS NOT SURFACED
+   AND NOT SENT` when it is expired or blank. The second one is a real application to a row
+   the tracker had retired: say so in the digest's alerts and leave the row for him, rather
+   than promoting anything by hand.
 5. **Record any real OUTCOMES the same pass (added 2026-07-28).** Confirmation forwarding
    catches rejections, interview invitations, and "role filled" notices as well as receipts.
    Those are the only outcome signal this system ever gets: do not let them pass as
@@ -1320,7 +1357,22 @@ score; the rubric at 2b/2c stays yours.
    first), and `manifest.json`. Skips URLs already `applied`/`rejected`/`closed` in
    `outcomes.csv`. Copy its first line into `run_[date].json → jd_screen.prefetch`.
 
-2. **Dispatch one worker per batch, ALL IN ONE MESSAGE** so they run concurrently: the Agent
+   **Prefetch reuses earlier cards (added 2026-10-12).** Measured over 2026-09-27 to 10-09:
+   about 90 JDs a run went to workers and only about 16 were new that day; the rest were the
+   same postings, re-read to produce the same card. Now a JD whose URL and text match a card a
+   worker wrote in the last two to three weeks gets that card copied into
+   `cards_batch_cached.json` (`reused_from` = the day a worker read it) and stays out of the
+   batch files. The table in item 3 reads it like any other card.
+   - The first line now ends `; reused N, to read M`. **Dispatch one worker per batch counted
+     on that line, never per `batch_NN.json` file in the folder** (a second run on the same
+     date can leave an earlier run's batch files behind).
+   - Zero batches means every JD was reused: dispatch nobody and go straight to the table.
+   - A reused card is as good as the brief it was read under. On the first run after
+     `jd_screen_worker.md` or the card fields change, run `jd_prefetch.py --no-reuse` instead.
+   - If the output prints `REUSE OFF`, reuse failed and every JD is in a batch, exactly as
+     before this change. Carry on; note it in housekeeping.
+
+2. **Dispatch one worker per batch to read, ALL IN ONE MESSAGE** so they run concurrently: the Agent
    tool, `subagent_type: "general-purpose"`, `model: "sonnet"`, and exactly this prompt with
    NN and the date filled in (absolute paths):
 
@@ -1364,8 +1416,9 @@ score those, note `jd_screen.fallback: true` with the reason, and continue. That
 pre-2026-09-24 behaviour with the fetches already done, so a failed fan-out can cost coverage
 but never the run.
 
-Record in `run_[date].json → jd_screen`: `prefetch` line, `workers_dispatched`,
-`redispatched`, `cards`, `pass`, `check`, `fail`, `missing`, `fallback`.
+Record in `run_[date].json → jd_screen`: `prefetch` line, `reused`, `to_read`,
+`workers_dispatched` (0 on a day everything was reused), `redispatched`, `cards`, `pass`,
+`check`, `fail`, `missing`, `fallback`.
 
 ### 2b. Hard filters
 
@@ -2114,6 +2167,28 @@ The split: **you choose the angle and the files, the writer writes every word,
    Workday, Paylocity, Taleo, and iCIMS roles, run it once more for those stems with
    `--ats` added.
 
+   **Then write the paste sheet for each of those same stems (added 2026-10-12, Aneesh's
+   go-ahead).** One stem per command, nothing chained:
+
+   ```bash
+   .venv/bin/python pipeline/field_sheet.py Aneesh_Khan_[Company]_[Role]
+   ```
+
+   Those four systems make him retype his whole work history after the upload, and he sends
+   packages on them far less often than the rest (Workday: 4 of 32 by 2026-10-12, against
+   about 42% on Greenhouse and Ashby). The script reads the package's `_data.json` and
+   `pipeline/application_profile.json` and writes `tailored/[stem]_fields.md` and
+   `_fields.json`: every field the form asks for, in the form's order, as text to paste. No
+   model writes it and it costs no tokens. The dashboard (Step 6.6) shows the work-history,
+   education, and skills fields on that role's row with a copy button each; the contact block
+   stays out of the page. It always exits 0 and prints one `field_sheet:` line. A `FAILED`
+   line goes in housekeeping and never holds a package back. **Never fill in a field it left
+   for him:** a month it couldn't find stays `MM`, and screening and self-identification
+   questions are his alone (the assisted-apply skill's boundaries). Run it again if a
+   writer changes that package's resume JSON afterward, so the pasted descriptions match the
+   PDF he uploads. In the digest's file manifest, name the sheet beside that package's PDFs
+   with its `need you` count; never paste a sheet's contents into the email or the brief.
+
    - `[FAIL ]` is a gate: resume over two pages (a hard limit, Aneesh's call 2026-10-09),
      letter over one, more than two em-dashes, the voice gate, a letter whose two files
      disagree, a full-tier package with no letter, a schema error, a missing phrases file
@@ -2418,16 +2493,88 @@ extra call and gives a recoverable artifact if the send fails partway.
 **Do not spend budget auto-attaching the PDFs** (Aneesh's call, 2026-08-28). It works, but he
 applies through each ATS's upload dialog, which reads from the `tailored/` folder directly, so an
 email attachment is a detour rather than a shortcut. It also costs roughly 4k tokens per two PDFs
-in base64, all of which has to pass through the run's context. The digest's "attach the PDFs
-listed at the bottom" line stays as a manifest of what to upload from disk.
+in base64, all of which has to pass through the run's context. The digest still ends with a
+manifest of what to upload from `tailored/apply_now/`.
 
 General rule this run established, worth carrying to any other routine: **an autonomous run will
 not send, post, or delete unless its instructions say so explicitly.** That default is right. It
 just has to be a stated decision rather than a claim about what the tools can do, or nobody
 re-examines it.
 
+### 5a. The digest is short, and the rest goes to the dashboard (added 2026-10-12, Aneesh's go-ahead)
+
+Until 2026-10-12 the digest carried everything: the 2026-10-09 one ran about 80 role lines
+and a full run audit to deliver 5 picks, with a second LinkedIn email behind it. He reads the
+picks, applies to a couple, and tracks on the Shelf, and on 2026-10-02 he said the dashboard
+"seems like the easier pathway versus these emails." So the email now carries only what needs
+him, and everything else from the run goes to the Shelf dashboard through one file.
+
+**Write `pipeline/jobs/brief_[date].json` with the Write tool BEFORE composing the email.**
+`build_dashboard.py` (Step 6.6) reads it and draws the picks' detail at the top of the page and
+the rest collapsed underneath. Shape:
+
+```json
+{"note": "today in one or two sentences",
+ "alerts": ["anything that needs him: a failed package, SHORTFALL, a problem line from shelf_inbox.py"],
+ "picks": [{"url": "the row's url, exactly as written to track_[date].json",
+            "read": "the read on this pick: why it's here and what to weigh",
+            "commitment": "what its cover letter promises, or \"\" when it promises nothing",
+            "check": ["a resume or letter phrasing he should confirm"],
+            "changes": ["one tailoring-diff line", "another"]}],
+ "sections": [{"title": "Near-misses", "note": "optional one-line count or caveat",
+               "lines": [{"text": "one line as it used to appear in the digest",
+                          "url": "https://...", "label": "link"}]}]}
+```
+
+- `picks[].url` is how the page joins a pick to its queue row, so it must equal the tracking
+  row's URL. A pick with no matching row is silently not shown.
+- A `lines` entry may be a plain string when it has no link. Every line that names a role still
+  carries that role's link: the rule further down ("EVERY table that names a role carries its
+  apply link") now applies to brief lines too.
+- Plain text only. No HTML and no markdown; the page escapes everything.
+- **What moves, with its rules unchanged.** Every bullet below from "Per-job tailoring diff"
+  through "Full breakdown: what was checked" still says what to produce and when to omit it.
+  Only the destination changed: the tailoring diff goes to that pick's `changes`, the reads go
+  to `read`, and each of the others becomes one `sections` entry titled the way its bullet
+  names it, in the order the bullets appear, with housekeeping and the full breakdown last.
+  The one exception is "Cleared, not tailored": `screened_[date].json` (Step 6) already feeds
+  the page, so don't repeat it in the brief.
+- **The same goes for every other step.** Where another step in this file says a line or a
+  section "goes in the digest" (Step 1d-3's "LinkedIn roles followed up", a stretch-lane or
+  industrial-lane line, a housekeeping note), it goes in the brief as a section or a
+  housekeeping line. Three kinds of line still go in the EMAIL as alerts, because they need
+  him: an outcome (a rejection, an interview, a closure), anything that failed or was skipped
+  in a way that changes what he received today (a failed package, SHORTFALL, a fallback that
+  ran, a dirty working tree, a `shelf_inbox:` problem), and anything a step says is his call.
+  Put those in the brief's `alerts` as well so the page shows them.
+- The file is gitignored with the rest of `pipeline/jobs/`. Never write it anywhere tracked.
+- If the brief can't be written, send the digest in its old long form for that run and say so
+  in its first line. A short email with nothing behind it is worse than a long one.
+
+**The email then contains, in this order, and nothing else:**
+1. The top note.
+2. Alerts and outcomes: the same lines as the brief's `alerts`, plus any rejection, interview,
+   or closure from Step 0.5.
+3. The picks table, under every rule below (columns, an apply link on every row, the IC note,
+   provenance tags, plain `<th>`).
+4. "Confirm before sending": per pick, the commitment its letter makes and any phrasing to
+   check. This stays in the email on purpose, since it's the one thing he must read before a
+   package goes out.
+5. One closing paragraph that says what is waiting on the Shelf, with counts, for example:
+   "On the Shelf dashboard: the read on each pick and what changed in each resume, 9 cleared
+   but not tailored, 15 LinkedIn roles followed up, 10 near-misses, 30 below the cutoff, and
+   the full run breakdown. Mark each pick Sent or Skip there and tomorrow's run records it."
+6. The file manifest for `tailored/apply_now/`.
+
+One digest email a run: nothing that used to follow the picks gets an email of its own. (The
+weekly channel report at Step 6.5 is a separate email and still is.)
+
+### 5b. Email mechanics
+
 - Subject: `Daily Job Matches — [date] ([N] jobs)`
-- Top note: "Open this draft, attach the PDFs listed at the bottom, and send."
+- Top note: one or two sentences on the day, the same text as the brief's `note`. (Until
+  2026-10-12 this line read "Open this draft, attach the PDFs listed at the bottom, and
+  send," a leftover from when the digest was a draft. Don't bring it back.)
 - **Pass RAW HTML to `htmlBody`, never HTML-escaped entities.** Write `<p>`, not `&lt;p&gt;`.
   Escaping the markup makes Gmail render every tag as literal visible text and the digest
   arrives as an unreadable wall of angle brackets (happened 2026-07-27). If a draft has
@@ -2696,7 +2843,11 @@ Runs here, before Step 6.5, so tracking is final and a failure in the weekly rol
 it. Run `.venv/bin/python pipeline/build_dashboard.py`. One command, no arguments, nothing
 chained. It is read-only against the tracking files and always exits 0. It overwrites
 `~/Downloads/job_dashboard.html` (HTML Shelf tracks that file and refreshes its page in place)
-and keeps a dated copy in `pipeline/jobs/`. Copy its single output line into the run summary. If
+and keeps a dated copy in `pipeline/jobs/`. Since 2026-10-12 it also reads today's
+`brief_[date].json` (Step 5a) and any `tailored/[stem]_fields.json` paste sheets, so run it
+after both exist; a missing or malformed one is skipped, not an error. The page it writes is
+where he marks a role Sent or Skip, and Step 0 item 4b reads those marks on the next run; this
+command itself still writes nothing but the page. Copy its single output line into the run summary. If
 that line starts with `dashboard: FAILED`, note it in SESSION_STATE and continue; do not retry,
 do not debug it inside the run, and do not mention it in the digest. Never hand-edit the HTML,
 and never write a replacement dashboard inline. Spec: `pipeline/DASHBOARD_SPEC.md`.
@@ -3014,6 +3165,9 @@ file already holds.**
 
    ## Where today's evidence is
    - The run in prose: the first entry of `pipeline/SESSION_STATE.md` (Read with limit 40).
+   - What the digest used to carry (the read on each pick, tailoring diffs, the FYI lists,
+     housekeeping, the full breakdown): `pipeline/jobs/brief_[date].json`. The dashboard
+     shows the same file.
    - Stats, near-misses, run notes: `pipeline/jobs/run_[date].json`.
    - Each pick's score breakdown: `pipeline/jobs/track_[date].json`.
    - Every JD read today: `pipeline/jobs/jd_cache/[date]/`. One role's card:
@@ -3048,7 +3202,7 @@ file already holds.**
    > This session is at [N]K tokens. A reply here after an hour re-reads all of it before it answers; a new session starts near 100K.
 
    Fill in [N] from this session's size. Keep the rest of the final message as it is, and
-   keep it short: he reads the digest for detail.
+   keep it short: he reads the digest for the picks and the dashboard for the detail.
 
 3. **If he replies in this session anyway, answer.** The whole context was re-read the
    moment his message arrived, so refusing saves nothing. Answer, add what you did under

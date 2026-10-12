@@ -252,15 +252,16 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | File | Written by | Never do |
 |---|---|---|
 | `seen_jobs.json`, `seen_urls.json`, new `outcomes.csv` rows | `update_tracking.py` | hand-edit |
-| `outcomes.csv` stage → applied | `mark_applied.py` (from Gmail confirmations) | hand-edit the stage column |
+| `outcomes.csv` stage → applied | `mark_applied.py` (from Gmail confirmations, or a Sent mark on the dashboard by way of `shelf_inbox.py`) | hand-edit the stage column |
 | `outcomes.csv` outcome (rejected/interview/offer) | `mark_outcome.py` | infer an outcome from silence |
 | `outcomes.csv` schema migrations | `repair_outcomes.py` | hand-fix drifted rows |
 
 **`outcomes.csv` canonical schema (17 columns as of 2026-09-30, when `his_verdict` landed):**
 `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage,ic_scope,his_verdict`
 
-**`his_verdict`** is Aneesh's own call on a tailored role, set only by him through
-`pipeline/mark_verdict.py` (`--todo` lists rows still missing one). Vocabulary:
+**`his_verdict`** is Aneesh's own call on a tailored role, set only by him: through
+`pipeline/mark_verdict.py` (`--todo` lists rows still missing one), or by a Sent or Skip click
+on the dashboard, which `pipeline/shelf_inbox.py` carries to that same script. Vocabulary:
 `sent_as_is`, `sent_edited`, `skip_fit`, `skip_materials`, `skip_time`, `skip_other`.
 Empty means not recorded; never fill it in for him and never infer it from `stage`.
 
@@ -743,10 +744,21 @@ that file (its Track Source File feature) and refreshes the page in place under 
 "I checked this site" ticks survive each rebuild. Spec and the decisions behind it:
 `pipeline/DASHBOARD_SPEC.md`.
 
-- **Read-only, and it stays that way.** It never imports or calls `mark_applied.py`,
-  `mark_outcome.py`, `update_tracking.py`, or `repair_outcomes.py`. The ticks live in the Shelf
-  and the pipeline never reads them. No write-back from the page: a second source of truth next
-  to `outcomes.csv` is the thing this repo keeps getting burned by.
+- **The generator is read-only, and it stays that way.** It never imports or calls
+  `mark_applied.py`, `mark_outcome.py`, `update_tracking.py`, or `repair_outcomes.py`, and the
+  manual-check ticks live in the Shelf, where the pipeline never reads them.
+- **The page takes marks, and `outcomes.csv` is still the only record (2026-10-12).** Each
+  queue row has Sent, Skip, and Later. The clicks wait in the Shelf's storage for that page, and
+  `pipeline/shelf_inbox.py` records them at `daily_task_prompt.md` Step 0 item 4b through
+  `mark_applied.py` and `mark_verdict.py`. A Sent mark is his word, and the row's notes say so
+  until a confirmation email agrees. A row with a `skip_*` verdict stays `stage=surfaced` but
+  is finished: the page hides it, `rotate_apply_folder.py` evicts its PDFs, and nothing lists
+  it as unsent. Never write to the Shelf's own files.
+  [D34](DECISIONS.md#d34-the-dashboard-takes-marks)
+- **The digest is short and the page carries the rest (2026-10-12).** The run writes
+  `pipeline/jobs/brief_[date].json` at Step 5a. The page shows the last run's picks on top
+  (the read on each, what its letter promises, the tailoring diff) and the FYI lists and run
+  audit collapsed. The email keeps the picks table, alerts, and "confirm before sending."
 - It always exits 0 and prints one line; `dashboard: FAILED ...` means yesterday's page is still
   up, and the page shows its own stale strip when a weekday run should have replaced it.
 - The script is committed to a public repo: no company names or sample rows in it or its tests
@@ -784,7 +796,11 @@ Spec: `daily_task_prompt.md` Step 2-JD and Step 6.7.
   rate, so `harvest_ats.py` probes it with only the first 4 slug spellings
   (`WORKABLE_MAX_VARIANTS`), and Step 6.7 re-probes the 10 oldest `throttled` rejections late
   in the run via `throttle_recheck_pick.py`. Dry run: 10 of 10 resolved, 0 throttled.
-- Cost: ~150K Sonnet tokens per worker, ~10 workers a run.
+- Cost: ~150K Sonnet tokens per worker. Since 2026-10-12 `jd_prefetch.py` reuses a card when
+  the same URL comes back with the same text and a worker read it in the last two to three
+  weeks (`cards_batch_cached.json`, `reused_from`), so a normal run dispatches two or three
+  workers, not ten to twelve. Nothing is stored between runs; the earlier cache dirs are the
+  state. Run it with `--no-reuse` once after `jd_screen_worker.md` or the card fields change.
 - It works inside scheduled sessions (first scheduled run 2026-09-28, no fallback needed). If
   the Agent tool is ever unavailable, the documented fallback reads the cached JDs for the top
   8 inline.
@@ -840,6 +856,14 @@ holds a home address and exact employment months, same reasoning as `local_confi
 Anything reading `NEEDS_ANEESH` has never been supplied; the skill collects those once,
 writes them back, and never asks again. This exists because `master_resume.md` carries a
 month only for iApartments while every Workday form demands month and year.
+
+**The paste sheet is written by a script now (2026-10-12).** `pipeline/field_sheet.py <stem>`
+builds `tailored/[stem]_fields.md` and `_fields.json` from the package's `_data.json` and
+`application_profile.json`, with no model in the loop, and the daily run calls it for every
+Workday, Paylocity, Taleo, or iCIMS package (`daily_task_prompt.md` Step 4-W item 5). The
+dashboard shows the non-personal fields on that role's row with a copy button each. It holds
+the skill's boundaries by construction: a month comes from the profile or stays `MM`, and
+screening and self-identification questions are listed and left empty.
 
 Known constraint: the Chrome extension runs in its own isolated tab group and cannot
 drive a tab Aneesh already has open, so he signs in on Claude's tab. The no-browser

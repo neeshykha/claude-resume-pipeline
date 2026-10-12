@@ -20,7 +20,10 @@ Two triggers, in this order:
 
 1. STATE. The role's `outcomes.csv` row has left `surfaced` (applied, rejected,
    closed, expired). Step 0.5 already derives this from Gmail confirmations, so
-   this is the real "he is done with it" signal rather than a guess.
+   this is the real "he is done with it" signal rather than a guess. A row he
+   marked skip (`his_verdict` starting `skip_`, added 2026-10-12) counts the same
+   way: he has said he is done with it, so its PDFs leave and it earns no
+   digest line.
 
 2. AGE. The role was tailored more than APPLY_WINDOW_DAYS ago and is still
    sitting at `surfaced`.
@@ -77,8 +80,13 @@ def resume_basename(pdf_name):
     basename finds nothing. Strip the suffix and match the resume instead.
     """
     stem = pdf_name[:-4] if pdf_name.lower().endswith(".pdf") else pdf_name
-    if stem.endswith("_cover"):
-        stem = stem[: -len("_cover")]
+    # The parser-friendly `_ATS` variant is the same package too. Until 2026-10-12
+    # it was matched by its own name, which no row records, so every ATS variant
+    # sat in the folder unmatched and was never evicted.
+    for suffix in ("_cover", "_ATS"):
+        if stem.endswith(suffix):
+            stem = stem[: -len(suffix)]
+            break
     return stem + ".pdf"
 
 
@@ -105,6 +113,10 @@ def decide(row, pdf_path, today):
     stage = (row.get("stage") or "").strip().lower()
     if stage and stage != "surfaced":
         return True, f"stage={stage}"
+
+    verdict = (row.get("his_verdict") or "").strip().lower()
+    if verdict.startswith("skip_"):
+        return True, f"his_verdict={verdict}"
 
     surfaced = parse_date(row.get("surfaced_date")) or parse_date(row.get("applied_date"))
     if surfaced is None:
