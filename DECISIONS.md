@@ -669,3 +669,53 @@ Workday, and most other adapters never reach it, and on Lever it sees the openin
 The JD screen's `crypto` flag is the check that covers every shortlisted role. A drop still left
 no trace that day. Since 2026-10-11 each one is written to the poller's output and the lane
 poll's file under `industry_excluded`, with the word that caused it; the digest is unchanged.
+
+## D33. Frozen boards passed for live ones
+
+_Added 2026-10-11._
+
+The harvester's enrollment test was "the board answers and has fit-titles on it," and a board
+keeps answering after its company has moved to another ATS. On 2026-09-29 it enrolled Aircall on
+`lever/aircall` with 77 postings and 4 fit-titles. The newest posting was from 2026-07-10, 81 days
+earlier: Aircall had moved to Greenhouse and left the Lever board up. Four days before that it
+enrolled Progressive Insurance on a SmartRecruiters sandbox whose newest posting was from 2022
+(one of its postings is titled "Maria Test Job"). The poller never gets an error from a board like that, so
+both sat on the watchlist until a sweep on 2026-10-10 polled all 630 boards and compared each
+one's newest posting date.
+
+Measured on that sweep's table before the cutoff was chosen. 569 boards gave a newest posting
+date, 39 gave none (Rippling 23, JazzHR 6, Pinpoint 4, iCIMS 3, and one each on Gem,
+SuccessFactors, and Workday), 10 were empty, and 12 errored. 23 of the 569 had no posting newer
+than 45 days, and 3 of those had moved or died: the two above, and a board with a single 2021
+posting whose company had moved to an ATS the poller has no adapter for. The other 20 were the
+company's real board, posting slowly. Other cutoffs flag 28 boards at 30 days, 17 at 60, 13 at
+75, and 12 at 90, with the same three in each.
+
+The rule only runs at enrollment, so the closer read is what a board looked like on the day it
+went in. Of the 275 auto-enrolled boards with dates, 5 had a newest surviving posting more than
+45 days older than their enrollment date: the two above, and three real boards at 883, 110, and
+51 days. At 60 days it's 4, and at 90 Aircall gets through. Read those as "about," since the
+table can't see a posting that has closed since, or what a board that has posted since looked
+like that day. One of the three is a company with a role that was applied to the day after the
+board went in, which is what a false flag costs: a real board held back until someone looks.
+
+The fix. `probe()` returns a `Postings` list carrying the newest posting date from the response
+it already read, on Greenhouse, Ashby, Lever, Workable, and SmartRecruiters; Comeet and Workday
+pass theirs in `meta`. Dates come from `poll_ats.extract_posted_date`, so the harvester and the
+poller read the same fields, and no probe costs an extra request. `main()` won't enroll a board
+whose newest posting is more than `FROZEN_BOARD_DAYS` old (45: the sweep's number, and just past
+the poller's 40-day posting cut, so a board over the line has nothing the poller would shortlist
+that day). It writes a rejection with `frozen_board: true`, `manual_review: true`, and
+`unpollable: false`: the board was found, and the next step is one look at the company's careers
+page, not a search for a board. `--skip-freshness` is the hand override for a company whose
+careers page still links the slow board. `--names` isn't one, because the run's own rechecks
+use it. Cases live in `test_harvest_freshness.py`.
+
+Left alone on purpose. Boards with no dates enroll as before, and iCIMS counts as one of them:
+only one of the four iCIMS boards in the sweep showed a date. Workday's list says "30+ days" for
+anything older, so a first page of nothing else costs up to three detail reads, and an
+unresolved one counts as unknown. Comeet has only `time_updated`, which any edit refreshes. A
+date that can't be read never blocks an enrollment. And the check runs at enrollment only: a
+board that freezes or empties after it's enrolled is still found only by `--prune` or a sweep.
+The 2026-10-10 sweep found three that way (PlayOn, Iterable, and UpGuard), each having left an
+empty board behind.

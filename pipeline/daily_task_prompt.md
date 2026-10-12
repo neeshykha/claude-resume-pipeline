@@ -710,6 +710,17 @@ For each entry processed:
    both the Manual channel and the weekly punch list. The same fix also stops a no-fit answer on
    a REDUCED name form ("bark" from "Bark Technologies") from ending the slug walk, which is
    what kept the resolver from ever reaching `bark-technologies-inc`.
+
+   **A frozen board gets a line too (added 2026-10-11).** `harvest_ats.py` writes a
+   `frozen_board: true` reject, printed as `[FZ]`, when a board answers with fit-titles on it
+   but its newest posting is more than 45 days old: what a board looks like after its company
+   moves to another ATS and leaves the old one up. These carry `manual_review: true` and
+   `unpollable: false`, so they never reach the weekly punch list and this section is the
+   only place they surface. Give each one line in the same "Manual channel" section: the
+   company, the board, its newest posting date (`newest_posting`), and the role
+   `manual_review_why` names if it names one. Then set `manual_review_surfaced: true`. Don't
+   enroll the board and don't pass `--skip-freshness`: that flag is his, for after he has
+   looked at the careers page. Story in `DECISIONS.md` D33.
 2. Verify the board is live (direct API check; `verify_workday.py` for Workday) with
    US-reachable fit-space roles. Europe/APAC-only → reject.
    **Workday-specific fallback (added 2026-07-14):** if `verify_workday.py`'s

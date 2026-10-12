@@ -51,6 +51,7 @@ import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
+from datetime import date
 from urllib.parse import urlsplit
 
 import requests
@@ -107,6 +108,36 @@ PER_COMPANY_BUDGET = 60.0
 # other seven ATSes still walk every variant. A truncated probe that answers
 # beats a full one that is refused.
 WORKABLE_MAX_VARIANTS = 4
+
+# A BOARD WHOSE NEWEST POSTING IS OLDER THAN THIS IS NOT AUTO-ENROLLED (added
+# 2026-10-11). A company that moves to another ATS often leaves the old board
+# answering, postings and all, and "verified live" used to mean only that the
+# board answered with fit-titles on it. lever/aircall was enrolled 2026-09-29
+# on 77 postings and 4 fit-titles when its newest posting was 81 days old (the
+# company had moved to Greenhouse), and four days earlier a SmartRecruiters
+# sandbox whose newest posting was from 2022 went in the same way. The poller
+# never gets an error from a board like that, so nothing downstream notices.
+#
+# 45 days is the cutoff the 2026-10-10 frozen-board sweep used, and it sits
+# just past poll_ats.MAX_POSTING_AGE_DAYS (40): a board over this line has no
+# posting the poller would shortlist today, so holding it back costs no role
+# now. Measured on that sweep's 569 dated boards, 23 had no posting newer than
+# 45 days and only 3 of those had moved or died; the other 20 were small
+# companies posting slowly. That is why the outcome is a manual look and never
+# a silent drop (see the frozen-board writer in main()), and why
+# --skip-freshness exists.
+#
+# ATSes whose list response carries no posting date cannot be judged, and
+# their enrollment behaviour is UNCHANGED: Pinpoint, Rippling, JazzHR, and Gem
+# (poll_ats.extract_posted_date answers None for all four), SuccessFactors
+# (never auto-enrolled by name anyway), and iCIMS, where the date is a
+# tenant-configured field only some boards show. Their probes leave
+# Postings.newest at None, and None is never read as frozen.
+FROZEN_BOARD_DAYS = 45
+
+# How many "Posted 30+ Days Ago" postings _workday_newest resolves through the
+# Workday detail endpoint when a board's first page shows nothing fresher.
+WORKDAY_FLOOR_LOOKUPS = 3
 
 
 class Budget:
@@ -802,12 +833,121 @@ def _rippling_board_api(slug, budget=None):
 NO_DOTTED_SLUG_ATSES = frozenset(("jazzhr", "pinpoint", "smartrecruiters", "icims"))
 
 
+class Postings(list):
+    """probe()'s [(title, location)] list, plus the board's newest posting date.
+
+    `newest` is a date, or None when the ATS shows no posting dates (see
+    FROZEN_BOARD_DAYS). It rides on the list so that every existing caller
+    still reads a plain list, and so the date comes out of the same response
+    the fit-titles did instead of costing a second request: Workable's
+    allowance has none to spare.
+    """
+
+    def __init__(self, jobs=(), newest=None):
+        super().__init__(jobs)
+        self.newest = newest
+
+
+def _newest_posted(rows, ats):
+    """Newest posting date among an ATS's raw postings, or None if none has one.
+
+    Read through poll_ats.extract_posted_date, so a board is dated here by the
+    same fields the poller will date its postings by once it is enrolled.
+
+    A posting whose date field will not parse is skipped, whatever it raises.
+    The poller only ever dates postings that passed its title gate; this reads
+    every posting on every board a name variant reaches, and a probe that
+    raises aborts the whole run (see probe_cheap). A date is not worth that.
+    """
+    import poll_ats as _P
+    dates = []
+    for j in rows:
+        try:
+            d = _P.extract_posted_date(j, ats)
+        except Exception:
+            continue
+        if d:
+            dates.append(d)
+    return max(dates) if dates else None
+
+
+def _workday_newest(postings, board_url, budget=None):
+    """Newest posting date on a Workday board's first page, or None if unknown.
+
+    The CXS list is newest-first (checked 2026-10-10 on four boards; neighbours
+    swap by a day at most) and dates each posting with a relative string, which
+    poll_ats.extract_posted_date parses. "Posted 30+ Days Ago" is a FLOOR, and
+    30 is under FROZEN_BOARD_DAYS, so a first page of nothing but floors cannot
+    tell a 31-day-old board from a dead one. Only then are the first few
+    postings resolved through the detail endpoint, with the poller's own
+    resolver. If none resolves the answer is None, not a guess from the floor.
+
+    That resolver sends its own request with the poller's timeout, outside
+    _pace and the budget, so the budget is only consulted between lookups.
+    Like _newest_posted, nothing here may raise on an odd field: the str()
+    calls and the except are for a postedOn or externalPath that is not text.
+    """
+    import poll_ats as _P
+    dates, floored = [], []
+    for p in postings:
+        raw = str(p.get("postedOn") or "")
+        if "+" in raw:
+            floored.append(p)
+            continue
+        try:
+            d = _P.extract_posted_date({"_posted": raw}, "workday")
+        except Exception:
+            continue
+        if d:
+            dates.append(d)
+    if dates:
+        return max(dates)
+    for p in floored[:WORKDAY_FLOOR_LOOKUPS]:
+        if budget is not None and budget.expired():
+            break
+        d = _P._resolve_workday_start_date(board_url + str(p.get("externalPath") or ""))
+        if d:
+            dates.append(d)
+    return max(dates) if dates else None
+
+
+def board_age_days(res, today=None):
+    """Days since the newest posting on the board assess() resolved, or None.
+
+    None means the board cannot be judged: its ATS shows no posting dates, or
+    the dates it shows could not be read. Callers must treat that as unknown,
+    never as frozen, the same rule extract_posted_date sets for a single
+    posting.
+    """
+    newest = res.get("newest_posting")
+    if newest is None:
+        return None
+    return ((today or date.today()) - newest).days
+
+
+def _freshness_note(res, skipped=False):
+    """Enrollment-reason clause recording what the frozen-board check saw."""
+    age = board_age_days(res)
+    if age is None:
+        return "; no posting dates read, so the frozen-board check did not run"
+    note = f", newest posting {res['newest_posting'].isoformat()}"
+    if skipped and age > FROZEN_BOARD_DAYS:
+        note += (f", {age} days old and past the {FROZEN_BOARD_DAYS}-day "
+                 f"frozen-board cutoff: enrolled by hand with --skip-freshness")
+    return note
+
+
 def probe(ats: str, slug: str, budget=None):
     """[(title, location)] if the board resolves, None if not, THROTTLED if unknown.
 
     THROTTLED means the ATS rate-limited the request (after _send's one retry),
     so nothing is known about this (ats, slug). It must never be read as None:
     see the THROTTLED block above.
+
+    The list is a Postings on the five ATSes that date their postings
+    (Greenhouse, Ashby, Lever, Workable, SmartRecruiters), which is where
+    assess() reads the board's newest posting date from. The other branches
+    return a plain list on purpose: see FROZEN_BOARD_DAYS.
     """
     if "." in slug and ats in NO_DOTTED_SLUG_ATSES:
         return None
@@ -817,8 +957,11 @@ def probe(ats: str, slug: str, budget=None):
             return THROTTLED
         if not r:
             return None
-        return [(j.get("title", ""), (j.get("location") or {}).get("name", ""))
-                for j in r.json().get("jobs", [])]
+        rows = r.json().get("jobs", [])
+        return Postings(
+            [(j.get("title", ""), (j.get("location") or {}).get("name", ""))
+             for j in rows],
+            _newest_posted(rows, ats))
     if ats == "ashby":
         # The country stamp mirrors parse_location's ashby branch in poll_ats.py.
         # workplaceType is deliberately NOT mirrored here: it only ever ADDS
@@ -829,8 +972,9 @@ def probe(ats: str, slug: str, budget=None):
             return THROTTLED
         if not r:
             return None
-        out = []
-        for j in r.json().get("jobs", []):
+        rows = r.json().get("jobs", [])
+        out = Postings(newest=_newest_posted(rows, ats))
+        for j in rows:
             addr = ((j.get("address") or {}).get("postalAddress") or {})
             out.append((j.get("title", ""),
                         countries.stamp(j.get("location", ""),
@@ -842,10 +986,13 @@ def probe(ats: str, slug: str, budget=None):
             return THROTTLED
         if not r:
             return None
-        return [(j.get("text", ""),
-                 countries.stamp((j.get("categories") or {}).get("location", ""),
-                                 j.get("country")))
-                for j in r.json()]
+        rows = r.json()
+        return Postings(
+            [(j.get("text", ""),
+              countries.stamp((j.get("categories") or {}).get("location", ""),
+                              j.get("country")))
+             for j in rows],
+            _newest_posted(rows, ats))
     if ats == "workable":
         # Location comes from the poller's own parser (fixed 2026-09-17). This
         # branch used to read `location or city`, which is empty for a fully
@@ -864,8 +1011,9 @@ def probe(ats: str, slug: str, budget=None):
             return THROTTLED
         if not r:
             return None
-        out = []
-        for j in r.json().get("jobs", []):
+        rows = r.json().get("jobs", [])
+        out = Postings(newest=_newest_posted(rows, ats))
+        for j in rows:
             loc = _P.parse_location(j, "workable")
             out.append((j.get("title", ""), "" if loc == "Unknown" else loc))
         return out
@@ -1094,7 +1242,7 @@ def probe(ats: str, slug: str, budget=None):
                 break
         if not postings:
             return None
-        out = []
+        out = Postings(newest=_newest_posted(postings, ats))
         for j in postings:
             # Same location assembly as poll_ats.py's smartrecruiters branch in
             # extract_location, so a board scores here the way it will score once
@@ -1274,10 +1422,12 @@ def probe_workday(slug: str, budget=None):
                 continue
             if not isinstance(d.get("total"), int) or d["total"] <= 0:
                 continue
-            jobs = [(p.get("title", ""), p.get("locationsText", ""))
-                    for p in d.get("jobPostings", [])]
+            postings = d.get("jobPostings", [])
+            jobs = [(p.get("title", ""), p.get("locationsText", "")) for p in postings]
             return jobs, {"wd_host": fqdn, "wd_tenant": slug, "wd_site": site,
-                          "total": d["total"]}
+                          "total": d["total"],
+                          "newest_posting": _workday_newest(
+                              postings, f"https://{fqdn}/wday/cxs/{slug}/{site}", budget)}
     return (THROTTLED, None) if throttled else (None, None)
 
 
@@ -1617,8 +1767,15 @@ def probe_comeet(name: str, budget=None):
                              countries.stamp(label, loc.get("country"))))
             if not jobs:
                 continue
+            # time_updated, not a publication date: Comeet shows nothing closer
+            # (see extract_posted_date). An edit to an old req makes the board
+            # look fresher than it is, so the frozen-board check can miss a
+            # Comeet board but cannot refuse one a posting date would have passed.
             return jobs, {"comeet_uid": uid, "comeet_token": token,
-                          "comeet_careers_url": r.url or url, "total": len(jobs)}
+                          "comeet_careers_url": r.url or url, "total": len(jobs),
+                          "newest_posting": _newest_posted(
+                              [p for p in positions if not p.get("is_internal")],
+                              "comeet")}
     return (THROTTLED, None) if throttled else (None, None)
 
 
@@ -2048,7 +2205,8 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
                 continue
             res = {"ats": ats, "slug": slug, "total": len(jobs),
                    "strong": _score_board(jobs, matcher, hard_excluded),
-                   "titles": [t for t, _ in jobs]}
+                   "titles": [t for t, _ in jobs],
+                   "newest_posting": getattr(jobs, "newest", None)}
             if res["strong"]:
                 if nofit_hit is not None:
                     res["passed_over"] = f"{nofit_hit['ats']}/{nofit_hit['slug']}"
@@ -2092,7 +2250,8 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
             if ("comeet", slug) not in known_pairs:
                 res = {"ats": "comeet", "slug": slug, "total": meta["total"],
                        "strong": _score_board(jobs, matcher, hard_excluded),
-                       "titles": [t for t, _ in jobs]}
+                       "titles": [t for t, _ in jobs],
+                       "newest_posting": meta.get("newest_posting")}
                 res.update({k: meta[k] for k in
                             ("comeet_uid", "comeet_token", "comeet_careers_url")})
                 return res
@@ -2146,7 +2305,8 @@ def assess(name, matcher, hard_excluded, known_pairs, skip_workday=False,
             continue
         res = {"ats": "workday", "slug": slug, "total": meta["total"],
                "strong": _score_board(jobs, matcher, hard_excluded),
-               "titles": [t for t, _ in jobs]}
+               "titles": [t for t, _ in jobs],
+               "newest_posting": meta.get("newest_posting")}
         res.update({k: meta[k] for k in ("wd_host", "wd_tenant", "wd_site")})
         return res
 
@@ -2201,6 +2361,11 @@ def main():
                          "scraped comeet_uid/comeet_token). Unlike every other probe "
                          "here this one fetches company marketing pages, so it is the "
                          "one to drop when a run must stay light.")
+    ap.add_argument("--skip-freshness", action="store_true",
+                    help=f"Enroll a board even when its newest posting is more than "
+                         f"{FROZEN_BOARD_DAYS} days old. For hand use with --names, "
+                         f"after the company's own careers page has been checked and "
+                         f"still links that board. Never pass it in a scheduled run.")
     ap.add_argument("--budget-seconds", type=float, default=PER_COMPANY_BUDGET,
                     help=f"Wall-clock cap per company across all probes "
                          f"(default {PER_COMPANY_BUDGET:g}s). 0 disables the cap and "
@@ -2365,6 +2530,11 @@ def main():
             r["recheck_if_resurfaced"] = False
             r["unpollable"] = False
             r["superseded_by_enrollment"] = today
+            # A frozen-board record asks for one look at the careers page, and
+            # an enrollment is that question answered. Close it, or the record
+            # goes on counting as an unsurfaced manual review (2026-10-11).
+            if r.get("frozen_board"):
+                r["manual_review_surfaced"] = True
             touched += 1
         if touched:
             print(f"       neutralized {touched} earlier rejection(s) for {name}",
@@ -2450,7 +2620,7 @@ def main():
 
     enrollable, no_board, no_fit, empty_board, skipped = [], [], [], [], []
     timed_out, aggregator_blocked, collision = [], [], []
-    throttled_unresolved = []
+    throttled_unresolved, frozen = [], []
     run_started = time.monotonic()
     total_targets = len(targets)
     for idx, name in enumerate(targets, 1):
@@ -2511,6 +2681,19 @@ def main():
             print(f"  [..] {name:24s} {took} {res['ats']}/{res['slug']:20s} "
                   f"{res['total']:>4} jobs, 0 US fit-titles", flush=True)
             continue
+        # Frozen-board check (added 2026-10-11; see FROZEN_BOARD_DAYS). Runs only
+        # on a board that would otherwise be enrolled, and under --names too:
+        # --names is also how Step 6.7 re-probes, so it is not a human's say-so.
+        # An age of None (no dates on this ATS) passes, as before.
+        age = board_age_days(res)
+        if age is not None and age > FROZEN_BOARD_DAYS and not args.skip_freshness:
+            frozen.append((name, res))
+            print(f"  [FZ] {name:24s} {took} {res['ats']}/{res['slug']:20s} "
+                  f"{res['total']:>4} jobs, {len(res['strong'])} fit-titles, but the "
+                  f"newest posting is {res['newest_posting'].isoformat()} ({age} days "
+                  f"old): board looks FROZEN, not enrolled, routed to the Manual "
+                  f"channel", flush=True)
+            continue
         enrollable.append((name, res))
         print(f"  [OK] {name:24s} {took} {res['ats']}/{res['slug']:20s} "
               f"{res['total']:>4} jobs, {len(res['strong'])} fit-titles "
@@ -2529,7 +2712,7 @@ def main():
     print(f"\nenrollable={len(enrollable)} no_fit={len(no_fit)} "
           f"empty_board={len(empty_board)} no_board={len(no_board)} "
           f"timed_out={len(timed_out)} throttled={len(throttled_unresolved)} "
-          f"collision={len(collision)} "
+          f"collision={len(collision)} frozen={len(frozen)} "
           f"already_known_skipped={len(skipped)} "
           f"aggregator_blocked={len(aggregator_blocked)} "
           f"[{time.monotonic() - run_started:.0f}s total]", flush=True)
@@ -2542,6 +2725,11 @@ def main():
     if collision:
         print("PROBABLE NAME COLLISIONS (routed to the Manual channel): "
               + ", ".join(f"{n} -> {r['ats']}/{r['slug']}" for n, r, _ in collision), flush=True)
+    if frozen:
+        print("FROZEN BOARDS (not enrolled, routed to the Manual channel): "
+              + ", ".join(f"{n} -> {r['ats']}/{r['slug']} newest "
+                          f"{r['newest_posting'].isoformat()}" for n, r in frozen),
+              flush=True)
     if aggregator_blocked:
         print("AGGREGATORS BLOCKED (never probed, never enrollable): "
               + ", ".join(f"{n} ~ {a}" for n, a in aggregator_blocked), flush=True)
@@ -2617,7 +2805,8 @@ def main():
             # carrying the handicap.
             "needs_vertical_classification": True,
             "reason": (f"Auto-enrolled by the ATS harvest layer. Board verified live "
-                       f"({res['total']} jobs) with {len(res['strong'])} fit-titles at "
+                       f"({res['total']} jobs{_freshness_note(res, args.skip_freshness)}) "
+                       f"with {len(res['strong'])} fit-titles at "
                        f"harvest time ({tier_breakdown(res['strong'])}), e.g. "
                        f"{res['strong'][0][0][:60]!r} [{res['strong'][0][1][:40]}]. "
                        f"Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, "
@@ -2692,6 +2881,66 @@ def main():
                 entry[field] = pending_entry[field]
         entry.setdefault("card_title", card_title)
         reject(entry, name)
+    # FROZEN BOARDS (added 2026-10-11; see FROZEN_BOARD_DAYS). The board answered
+    # and carries fit-titles, so this is neither a no-board finding nor a fit
+    # verdict, and unpollable stays FALSE: that flag claims no board was ever
+    # found, puts the company on the weekly punch list, and stops it being
+    # re-checked. What the record needs is one human look at the company's own
+    # careers page, which is what the Manual channel is for, so manual_review is
+    # forced on the way the collision writer forces it. ats/slug stay on the
+    # record, as on an empty-board one: the board is known. recheck_if_resurfaced
+    # is true because a slow poster that resurfaces on a new posting will pass
+    # this check on its own.
+    for name, res in frozen:
+        pending_entry = pending_by_name.get(name.lower(), {})
+        board = f"{res['ats']}/{res['slug']}"
+        newest = res["newest_posting"].isoformat()
+        card_why = pending_entry.get("manual_review_why")
+        entry = {"name": name, "ats": res["ats"], "slug": res["slug"],
+                 "rejected_date": today,
+                 "reason": (f"BOARD LOOKS FROZEN, not enrolled. {board} answers with "
+                            f"{res['total']} jobs and {len(res['strong'])} fit-titles "
+                            f"({tier_breakdown(res['strong'])}), but its newest posting "
+                            f"is dated {newest}, {board_age_days(res)} days before this "
+                            f"run (the cutoff is {FROZEN_BOARD_DAYS}). That is what a "
+                            f"board looks like after the company moves its jobs to "
+                            f"another ATS and leaves the old one answering, and the "
+                            f"poller would never get an error from it. It is also what "
+                            f"a small company that rarely posts looks like. This is NOT "
+                            f"a no-board finding and NOT a fit verdict: open the "
+                            f"company's own careers page. If it links a different board, "
+                            f"enroll that one. If it still links {board}, enroll it with "
+                            f"--names \"{name}\" --skip-freshness --apply."
+                            + _throttle_clause(res)),
+                 "frozen_board": True,
+                 "newest_posting": newest,
+                 "recheck_if_resurfaced": True,
+                 "unpollable": False,
+                 "manual_review": True,
+                 "manual_review_why": (
+                     (f"{card_why} -- " if card_why else "")
+                     + f"board {board} answers but looks frozen (newest posting "
+                       f"{newest}); check the company's careers page for the live one"),
+                 # Same reasoning as the empty-board writer below: the live
+                 # board may be behind a probe that was refused, and an earlier
+                 # ATS answering on the recheck is what gets the walk past the
+                 # frozen one. Step 6.7 only re-probes records flagged throttled.
+                 **({"throttled": True,
+                     "throttled_probes": [f"{a}/{s}" for a, s in res["throttled_probes"]]}
+                    if res.get("throttled_probes") else {})}
+        for field in ("card_title", "card_job_id", "card_url"):
+            if field in pending_entry:
+                entry[field] = pending_entry[field]
+        # with_provenance folds manual_review_surfaced forward from whatever
+        # record it supersedes. That is right when the older record is this same
+        # frozen-board finding and wrong otherwise: a company surfaced once as
+        # rate-limited or no-board has not had its frozen board shown to anyone.
+        already_shown = any(r.get("frozen_board") and r.get("manual_review_surfaced")
+                            for r in q.get("rejected", [])
+                            if str(r.get("name", "")).lower() == name.lower())
+        reject(entry, name)
+        if not already_shown:
+            entry.pop("manual_review_surfaced", None)
     for name, res in empty_board:
         # NOT unpollable: the board was found. A manual site: search cannot help
         # here, so this must never reach the weekly unpollable punch list.
@@ -2823,6 +3072,7 @@ def main():
                | {n.lower() for n, _ in empty_board} | {n.lower() for n, _ in no_board}
                | {n.lower() for n, _ in timed_out}
                | {n.lower() for n, _ in throttled_unresolved}
+               | {n.lower() for n, _ in frozen}
                | {n.lower() for n, _, _ in collision})
     q["pending"] = [e for e in q.get("pending", [])
                     if str(e.get("name", "")).lower() not in handled]
@@ -2842,7 +3092,7 @@ def main():
         for name, why in contradictions:
             print(f"  {name:24s} {why}", flush=True)
     print(f"\nenrolled {len(enrollable)}, "
-          f"rejected {len(no_fit) + len(empty_board) + len(no_board) + len(collision)}"
+          f"rejected {len(no_fit) + len(empty_board) + len(no_board) + len(collision) + len(frozen)}"
           f"{f' (-{len(contradictions)} suppressed)' if contradictions else ''}, "
           f"unresolved-on-timeout {len(timed_out)}, "
           f"unresolved-on-rate-limit {len(throttled_unresolved)}; "

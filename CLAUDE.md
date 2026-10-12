@@ -678,6 +678,13 @@ the incident that set it.
 
   `validate_config.py` warns on both duplicate shapes; that's the guard for the other writers
   and for hand edits. [D21](DECISIONS.md#d21-duplicate-enrollment-records)
+- **A board whose newest posting is more than 45 days old is not auto-enrolled**
+  (`FROZEN_BOARD_DAYS`). `harvest_ats.py` writes a `frozen_board` rejection with
+  `manual_review: true` and `unpollable: false`, because the board was found and the next step
+  is a look at the company's careers page. `--skip-freshness` is the hand override; `--names`
+  alone isn't one. Pinpoint, Rippling, JazzHR, Gem, iCIMS, and SuccessFactors boards show no
+  usable posting date and enroll as before. Cases live in `test_harvest_freshness.py`.
+  [D33](DECISIONS.md#d33-frozen-boards-passed-for-live-ones)
 - **`poll_ats.py` location matching is boundary-based.** `_boundary_pattern()` matches each list
   at non-alphanumeric boundaries using lookarounds rather than `\b`, so a period counts as a
   separator on both sides. `LOCATION_LOOKALIKES` blanks out "New Mexico" before the exclusion
