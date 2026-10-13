@@ -30,7 +30,8 @@ What each is for:
 
 The project's CLAUDE.md is already in your context. Its "Default Behavior" Steps 0 to 8 are
 your rules: JD analysis, the top-15 exact phrases, the ATS rules, the first-bullet rule, the
-cover-letter voice rules, honesty moments, the ramp-commitment rule, the Python scope rule.
+cover-letter voice rules, the six warmth rules, honesty moments, the ramp-commitment rule, the
+Python scope rule.
 Step 9 (email) and everything about tracking belong to the orchestrator. If CLAUDE.md is not
 in your context, read it before you draft.
 
@@ -50,7 +51,7 @@ prompt. Never touch any other file there.
 | `<stem>_phrases.json` | A JSON list: the JD's top 15 exact phrases (all of them when the JD has fewer). |
 | `<stem>_data.json` | The resume. Keys: `summary` (string), `core_competencies` (optional string, pipe-separated), `experience` (list of `title`, `company`, `bullets`), `projects` (optional list of strings), `education` (`degree`, `school`), `skills` (list of strings). Any other key is a hard error. Match the calibration file's markup: `<b>` for bold, `&amp;` for an ampersand, nothing else. |
 | `<stem>_cover_data.json` | Full tier. Keys: `date` (like the calibration letter's), `recipient` (`Hiring Team<br/>Company`), `paragraphs` (list of strings, plain text). |
-| `<stem>_cover.md` | Full tier. The date, a blank line, the recipient lines, a blank line, the same paragraphs separated by blank lines, then his name. Word for word the same prose as the JSON: the PDF renders from the JSON and the voice gate reads the `.md`. |
+| `<stem>_cover.md` | Full tier. The date, a blank line, the recipient lines, a blank line, the same paragraphs separated by blank lines, then `Best,` and his name on the two lines after it. Word for word the same prose as the JSON: the PDF renders from the JSON and the voice gate reads the `.md`. |
 
 Light tier is a summary rewrite and a skills reorder only: no bullet reorder, no letter, and
 only the first two files.
@@ -82,7 +83,9 @@ trim, and on 2026-10-09 every first draft ran long.
   as you write it (the P0 and P1 patterns, his voice profile) so the clear problems never
   reach the file. That is the detect pass, and you report on it. The protected moves stay:
   the opener, the honesty moment, a single-sentence pivot, his transitional qualifiers, and
-  a sports or nature analogy.
+  a sports or nature analogy. So do the warmth rules' sentences: the one that says which job
+  and why, one bridge a paragraph, and the inviting last line. A detect pass that strips
+  those hands back the cold letter the rules exist to stop.
 
 Two drafting messages, not one and not four. On the light tier, message 2 is both files plus
 the fit check.

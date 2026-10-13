@@ -2206,7 +2206,10 @@ The split: **you choose the angle and the files, the writer writes every word,
 
 6. **Read the run's letters side by side, once.** They are about 400 words each. The
    per-letter gates cannot see two letters built on the same story or the same construction,
-   and you are the only one who sees all of them. **Then run the Step 4.5 item 2 detect
+   and you are the only one who sees all of them. No gate reads tone either, so read each
+   one as the hiring manager: it says which job he wants and why, it doesn't grade the
+   reader, and it ends inviting (CLAUDE.md Step 8, the warmth rules). Bridges and closing
+   lines count as constructions here. **Then run the Step 4.5 item 2 detect
    pass on each letter**, so that everything a writer has to hear arrives in one message.
 
 7. **Anything that changes wording goes back to its writer.** Use SendMessage to the same

@@ -799,6 +799,43 @@ has a phone-shaped string outside the 555-01xx example block, or an address at a
 mailbox provider, and it reads no real value to do that. It skips `.json` on purpose: the
 candidate queue carries scraped posting text and would trip it.
 
+## D36. The letters went brutalist
+
+_Added 2026-10-12._
+
+An application form made Aneesh paste a letter's text, so he read one closely for the first
+time in a while. His words: "a little disjointed and, honestly, kind of harshly written," and
+later that he wanted them "not brutalist." It wasn't one bad letter. Five October letters read
+side by side had the same build: a cold open on a story and a number, two more paragraphs that
+each started over with no bridge, a gap paragraph that told the reader what their own bar was,
+and a close that asked a pointed question and ended on a maxim. None said which job it was or
+that he wanted it.
+
+What was measured that day. About 2 of 42 October `_cover.md` files carried a sign-off, against
+about 75 of 84 in September (by file date); the PDF renderer adds `Best,` on its own, so only
+the paste copy lost it. Four of five closes used one construction, "X reads differently
+depending on the answer." All 33 sends with a recorded `his_verdict` were `sent_as_is`, so the
+drift had gone out unread. Two September letters still had bridges and read warmer; they also
+broke the relevance-label ban.
+
+The cause is the shape of the rule set. Step 8 had grown as a list of things to take out: no
+company opener, no enthusiasm words, no relevance labels, no thanks-and-welcome close, a
+specific question to end on, the gap named with a dated promise. Each came from a real miss.
+Nothing asked for warmth back, and the gates count contractions, em-dashes, and sentence
+rhythm, none of which can see tone. The writers on a fixed brief since 2026-10-09 follow the
+bans more faithfully than the earlier ones did, which is what made it plain.
+
+The fix is six additions, written as requirements: say which job and why, one bridge a
+paragraph, don't grade the reader, no hard-guy hook, end inviting, and sign off in the `.md`.
+One unsent letter was redone under them the same day; it kept its opener, its gaps, and its
+promise, came out at 371 words from 398, and passed the fit check. He read it and said yes
+before the rules changed.
+
+Open. No mechanical check reads tone; the orchestrator's side-by-side read (Step 4-W item 6)
+is the only place it's looked at. Bridges and closing lines are the next things likely to
+converge, the way the ramp line did in D5 and D28. Unsent October letters written before this
+date still have the old build.
+
 Left alone on purpose. The name, city, and LinkedIn URL stay in the renderer. A worktree or a
 fresh clone has no profile and can't render until it's given one, the same as every other
 gitignored input.

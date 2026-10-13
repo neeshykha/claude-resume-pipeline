@@ -180,6 +180,36 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 
 **Close — be specific.** "I'd welcome the chance to discuss how my experience translates. Thank you for your consideration." adds nothing. The close must include at least one sentence specific to this role or company — a real question, an observation about the team structure, a practical note. Keep it short.
 
+**Warmth: the letter has to sound like he wants the job (added 2026-10-12).** Aneesh read a
+sent letter closely and called it "a little disjointed and, honestly, kind of harshly
+written"; he wants them "not brutalist." Nearly every rule in this section takes something
+out. These six put something back, and they're requirements, not permissions.
+[D36](DECISIONS.md#d36-the-letters-went-brutalist)
+
+- **Say which job and why, early.** One plain sentence in the first or second paragraph names
+  the role and gives a true reason he wants it at this company. The opener still starts with
+  him, so this is never the first sentence. Take the reason from the career narrative's
+  target-role criteria or his own words in the voice profile: no "excited," and no invented
+  history with the product.
+- **One bridge per paragraph.** A short connective that carries the reader in from the last
+  paragraph or ties a story to the job, in his transitional-qualifier register. A bridge moves
+  the reader along; it doesn't grade the relevance, so the banned labels ("maps directly to")
+  stay banned.
+- **Don't grade the reader.** Never tell them what their bar is, what their posting really
+  means, or what test he'd hold their team to. Say what he read in the posting and what he'd
+  bring.
+- **No hard-guy hook.** An opener or a punch line can't make him sound cold toward the people
+  in the story. Use fewer numbers, each inside a sentence a person would say; a paragraph that
+  reads as resume bullets joined by commas gets cut to its best one or two.
+- **End inviting.** The close may ask one real question, then ends on a short line that
+  invites a reply. Don't follow the question with a maxim: "X reads (runs, looks) differently
+  depending on the answer" closed four of five letters in one week and is retired.
+- **Sign off.** `Best,` on its own line above his name in the `.md`, which is the copy he
+  pastes into forms. The PDF renderer already adds it.
+
+Bridges and closing lines converge the way openers and ramp sentences did. Before saving,
+read both in the last five letters in `tailored/` and don't reuse their wording.
+
 **Honesty moments — keep them, but verify the gap is still real.** When there's a genuine technical gap, acknowledge it directly and without apology. This is a distinctive voice feature that makes letters feel real, and suppressing it costs more than it saves. What it is not is a license to keep repeating a concession after it stops being true. Before conceding any technical gap, read `portfolio_projects.md`, not just `master_resume.md` — the public repos are where a lot of his evidence lives and none of them appear in the master resume.
 
 **Python is no longer one of these.** Don't concede it. `skill-regression-harness` and `deflection-audit` are unit-tested Python tools, and `sf-caseops-mcp` is a working MCP server running daily against a live Salesforce org. Their current sizes and test counts live in `portfolio_projects.md` and each repo's README; quote numbers from there, never from this file. [D4](DECISIONS.md#d4-python-stopped-being-a-conceded-gap)
@@ -206,7 +236,7 @@ The move is: gap, dated commitment, re-read the requirement, aim at what it actu
 
 **Opener anti-template log:** `tailored/_cover_openers.md` holds one line per letter (`- [date] [Company]: "first sentence"`). Before writing a new letter, read it — the new opener must not reuse the structure of the last 5 logged openers. After saving the letter, append its first sentence to the log. This catches template convergence that the per-letter self-check misses.
 
-**Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific. (3) Check the opener log for structural repetition.
+**Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific. (3) Check the opener log for structural repetition. (4) Read it as the hiring manager: does it say which job he wants and why, and does it sound like someone you'd want to talk to? If it reads cold, it isn't done.
 
 **Mechanical voice gate:** the Step 5 command runs it and prints the result on its `voice`
 line. For a letter outside a package check, run
