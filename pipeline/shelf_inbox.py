@@ -40,6 +40,10 @@ RULES
   already recorded, so re-running, or a failed run retrying tomorrow, is safe.
 - A Skip mark on a row that has since been applied or closed is stale and is
   ignored: the tracker's stage is evidence, the mark is an opinion from earlier.
+- A Sent or Skip mark dated before its row's surfaced_date is stale too (added
+  2026-10-13). A click cannot come before the package it is about, except on a
+  row update_tracking.py reopened for a new package: marks are stored under the
+  posting URL, so one made on the old package would land on the new one.
 - A Sent mark is HIS WORD, not a confirmation. The row's notes say so, so anything
   reasoning about confirmed sends can tell the two apart. When the confirmation
   email arrives later, Step 0.5 finds the row already applied and moves on.
@@ -141,7 +145,7 @@ def read_rows():
     with open(OUTCOMES, newline="", encoding="utf-8") as f:
         raw = list(csv.reader(f))
     header = raw[0]
-    need = ("company", "title", "url", "stage", "his_verdict")
+    need = ("company", "title", "url", "stage", "his_verdict", "surfaced_date")
     missing = [n for n in need if n not in header]
     if missing:
         raise ValueError(f"outcomes.csv is missing columns {missing}; run repair_outcomes.py --apply")
@@ -190,7 +194,12 @@ def _plan_one(out, key, m, by_url, today):
         return
     row = rows[0]
     label = f"{row['company']}: {row['title']}"
-    when = parse_date(m.get("d")) or today
+    marked, surfaced = parse_date(m.get("d")), parse_date(row["surfaced_date"])
+    if marked and surfaced and marked < surfaced:
+        out["stale"].append(f"{label} (marked {action} {marked.isoformat()}, before this row's "
+                            f"package was surfaced {surfaced.isoformat()})")
+        return
+    when = marked or today
     if when > today:
         when = today  # a clock set wrong on the page must not date a send in the future
     if action == "sent":

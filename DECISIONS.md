@@ -920,3 +920,49 @@ will repeat across letters unless he supplies more. Those three have no line in
 the side-by-side read is still the only check. One named gap is a narrowing of his own
 2026-08-20 rule and has been tried on two letters, so watch whether an unnamed gap costs him
 in a screen.
+
+## D39. A re-tailored posting had no row
+
+_Added 2026-10-13._
+
+On 2026-10-13 Aneesh asked for a fresh package on a posting first tailored in July. The package
+was written and gated, and then nothing could record it. `update_tracking.py` skipped it twice
+over: its dedup key was already in `seen_jobs.json`, and its URL already had a row, `expired`
+since the 45-day retirement. With no row there was no queue entry on the dashboard and no Sent
+button, and a confirmation email would have landed in `mark_applied.py`'s "not surfaced and not
+sent" pile. Flipping the old row back by hand was off the table, and it wouldn't have held
+anyway: `surfaced_date` would still say July, so the next `age_report.py --apply` would have
+retired it again.
+
+It wasn't the first time, only the first time anyone saw it. Replaying all 139 track files that
+day showed the same silent skip had dropped four packages since 2026-08-14 whose posting
+already had a retired row at the same URL, plus three postings tailored as a new requisition
+under a dedup key the tracker had seen. The Step 4-pre guard (2026-09-01) ended the same-URL
+kind for the daily run, which is why it took an interactive ask to surface.
+
+Two designs were weighed.
+
+- **A second row for the same URL.** It keeps the old row untouched and counts both packages.
+  It lost because `mark_verdict.py --url`, `shelf_inbox.py`, and `mark_outcome.py` each write
+  nothing when two rows share a URL, `mark_applied.py` classifies a repeat confirmation by
+  whichever row comes first, and `pipeline_quality.py` would count one posting twice. Five
+  scripts would have had to learn which row is the live one, in the code where a wrong-row
+  promotion has already happened once.
+- **Reopen the row in place.** Taken. The URL stays on one row, so those scripts work
+  unchanged. The cost is that the row's history moves: the earlier package's date, score, and
+  verdict leave the tracker for `jobs/reopened_rows.jsonl` and a one-line stamp in the notes,
+  and `pipeline_quality.py` prints how many rows that is.
+
+Most of the design is what a reopen refuses. A row that shows any sign of a send is the record
+of that application. For post-epoch rows that includes an `applied_date` that moved off its
+`surfaced_date` and a `seen_jobs.json` entry flipped to applied, because a `closed` row promoted
+before it closed carries nothing else. A `closed` row needs `"never_sent": true`, which is his
+word. A row still `surfaced` is refused because dashboard marks are stored under the URL and
+the page hides a marked row, so a Skip made on the old package would land on the new one; an
+open package gets adjusted under its own stem instead. For the same reason `shelf_inbox.py` now
+treats a mark dated before its row's `surfaced_date` as stale. Two Fable review passes found
+the same-day-send hole and a crash on null notes, and moved the stale-mark guard from a known
+edge to a fix.
+
+Not done: the earlier lost packages were not backfilled. Each is a row that's missing or that
+describes an older package, and reconstructing them is his call.

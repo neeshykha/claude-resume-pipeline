@@ -36,6 +36,8 @@ EPOCH = "2026-07-28"
 SENT_STAGES = {"applied", "assessment", "interview", "onsite", "offer", "rejected", "closed"}
 ADVANCED = {"assessment", "interview", "onsite", "offer"}
 PAY_RE = re.compile(r"\$(\d{2,3})(?:,\d{3}|K)\s*[-–]\s*\$?(\d{2,3})(?:,\d{3}|K)", re.I)
+# The stamp update_tracking.py writes when a retailor reopens a row. Keep the two in sync.
+REOPENED_RE = re.compile(r"\breopened \d{4}-\d{2}-\d{2}: this row was ")
 
 
 def stretch(r):
@@ -84,6 +86,12 @@ def report(rows):
     open_ = [r for r in rows if r["stage"].strip() == "surfaced"]
     expired = [r for r in rows if r["stage"].strip() == "expired"]
     out(f"Tailored: {len(rows)} | sent: {pct(len(sent), len(rows))} | still open: {len(open_)} | expired unsent: {len(expired)}")
+    # A reopened row is one posting counted once, under its newest package. The package
+    # it replaced went unsent and has left these counts, so say how many did.
+    reopened = sum(1 for r in rows if REOPENED_RE.search(r.get("notes") or ""))
+    if reopened:
+        out(f"  {reopened} of these rows {'was' if reopened == 1 else 'were'} reopened for a new package; "
+            f"the unsent package each replaced is not counted (jobs/reopened_rows.jsonl)")
 
     out(f"\n1-2. His verdicts (the judgment signal; rows surfaced {VERDICT_SINCE} onward)")
     asked = [r for r in rows if (r.get("surfaced_date") or "") >= VERDICT_SINCE]

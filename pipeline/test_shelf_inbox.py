@@ -6,6 +6,7 @@ companies; nothing here reads the real tracker or the real Shelf.
 """
 import contextlib
 import csv
+import datetime
 import io
 import json
 import os
@@ -293,6 +294,23 @@ def tracker_by_title():
         return {r["title"]: r for r in csv.DictReader(f)}
 
 
+def test_a_mark_older_than_its_rows_package_is_stale_not_applied():
+    # update_tracking.py's retailor reopens a retired row for a new package and restarts
+    # its surfaced_date. A click made on the old package is still stored under the URL.
+    a, b, c = "https://example.com/a", "https://example.com/b", "https://example.com/c"
+    d, inbox = fixture([row(company="A", url=a, surfaced_date=TODAY, applied_date=TODAY),
+                        row(company="B", url=b, surfaced_date=TODAY, applied_date=TODAY),
+                        row(company="C", url=c, surfaced_date=TODAY, applied_date=TODAY)],
+                       {a: mark("skip", a, r="fit"), b: mark("sent", b), c: mark("sent", c, d=TODAY)})
+    before = {k: (v["stage"], v["his_verdict"], v["notes"]) for k, v in tracker().items()}
+    rc, out = run(inbox, "--apply")
+    t = tracker()
+    assert (t["A"]["stage"], t["A"]["his_verdict"], t["A"]["notes"]) == before["A"], out
+    assert (t["B"]["stage"], t["B"]["his_verdict"], t["B"]["notes"]) == before["B"], out
+    assert (t["C"]["stage"], t["C"]["his_verdict"]) == ("applied", "sent_as_is"), "a same-day mark still lands"
+    assert "2 stale" in out and "before this row's package was surfaced 2026-10-12" in out, out
+
+
 def test_one_malformed_mark_does_not_block_the_rest():
     good = "https://example.com/good"
     d, inbox = fixture([row(company="Good", url=good)],
@@ -327,6 +345,10 @@ def test_the_days_first_backup_survives_a_second_drain():
     d, inbox = fixture([row(company="A", url=a), row(company="B", url=b)], {a: mark("skip", a, r="fit")})
     original = open(si.OUTCOMES, "rb").read()
     run(inbox, "--apply")
+    # The drain asks whether the backup was written "today", and today here is TODAY,
+    # not the wall clock: date the file to match, or this passes on one day a year.
+    noon = datetime.datetime.fromisoformat(TODAY + "T12:00:00").timestamp()
+    os.utime(BACKUP(), (noon, noon))
     with open(inbox, "w", encoding="utf-8") as f:
         json.dump({si.INBOX_KEY: json.dumps({a: mark("skip", a, r="fit"), b: mark("sent", b)})}, f)
     run(inbox, "--apply")

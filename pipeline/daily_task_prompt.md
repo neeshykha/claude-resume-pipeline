@@ -2787,6 +2787,13 @@ weekly channel report at Step 6.5 is a separate email and still is.)
    by hand and never update it on an existing row. **Never hand-edit `seen_jobs.json`** —
    hand edits corrupted it on 2026-06-30. NOTE: `pipeline/jobs/outcomes.csv` is a stale
    orphan — never write to it.
+
+   **If it prints `NO ROW WRITTEN` (added 2026-10-13),** a job in the track file got no row
+   because the tracker already knew its dedup key or its URL, and the package it describes is
+   untracked: no queue row on the dashboard and no Sent button. Put one line in the digest's
+   alerts naming the role and the reason the script gave. Do not set `"retailor"` in an
+   unattended run. That key is for a package Aneesh asked for, and CLAUDE.md's tracking
+   section says how one is recorded.
 3. **Aging check (added 2026-08-01, report-only):**
    ```bash
    .venv/bin/python pipeline/age_report.py

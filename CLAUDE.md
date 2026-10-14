@@ -314,6 +314,7 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | File | Written by | Never do |
 |---|---|---|
 | `seen_jobs.json`, `seen_urls.json`, new `outcomes.csv` rows | `update_tracking.py` | hand-edit |
+| `outcomes.csv` row reopened for a new package (`expired` → `surfaced`) | `update_tracking.py`, when the track-file job carries `"retailor"` | revive a row by editing its stage or `surfaced_date` |
 | `outcomes.csv` stage → applied | `mark_applied.py` (from Gmail confirmations, or a Sent mark on the dashboard by way of `shelf_inbox.py`) | hand-edit the stage column |
 | `outcomes.csv` outcome (rejected/interview/offer) | `mark_outcome.py` | infer an outcome from silence |
 | `outcomes.csv` schema migrations | `repair_outcomes.py` | hand-fix drifted rows |
@@ -339,9 +340,9 @@ records an interview, assessment, or offer. [D7](DECISIONS.md#d7-furthest_stage-
 
 Columns 11–13 [D8](DECISIONS.md#d8-conversion-audit-columns):
 
-- **`surfaced_date`** — when the pipeline first surfaced the role, written once by
-  `update_tracking.py` and never updated. `age_report.py` reads this column. Rows the backfill
-  couldn't recover stay blank rather than guessed.
+- **`surfaced_date`** — when the package on the row was surfaced. `update_tracking.py` writes
+  it once, and only a reopen (below) ever restarts it. `age_report.py` reads this column. Rows
+  the backfill couldn't recover stay blank rather than guessed.
 - **`unmet_hard_reqs`** — count of JD hard requirements that cannot be honestly claimed. This is
   the intended replacement for `jd_coverage_pct` as a readiness signal. Populate it at Step 6
   from the genuine gaps already identified during tailoring.
@@ -368,6 +369,17 @@ labelling that inference as a guess.
 
 **Stage vocabulary:** `surfaced` (tailored, not confirmed sent), `applied`, `rejected`, `closed`,
 `expired` (retired by `age_report.py` after 45 days with no confirmation), `tailored` (legacy).
+
+**A new package for a posting whose row has retired (2026-10-13).** `update_tracking.py` gives
+no row to a job whose dedup key or URL it already knows, and prints each one under `NO ROW
+WRITTEN`. When the job is a package Aneesh asked for on a posting whose row is `expired`, put
+`"retailor": "[new stem]"` on the track-file job. The script reopens that row in place (stage
+`surfaced`, today's `surfaced_date`, the new package's notes, `his_verdict` emptied) and keeps
+the row as it stood in `jobs/reopened_rows.jsonl`. One row per URL is the point: every script
+that takes a confirmation or a dashboard mark finds the row by its URL. It refuses a row that
+shows any sign of a send and a row that is still `surfaced`, and it reopens a `closed` row only
+with `"never_sent": true`, which is his word and never a guess. Never revive a row by editing
+its stage or date. [D39](DECISIONS.md#d39-a-re-tailored-posting-had-no-row)
 
 **2026-07-28 is the outcome-data epoch. Do not audit, reconcile, or reason about `applied` rows
 that predate it.** The Gmail `+jobs` forwarding filter (Step 0.5) went live 2026-07-28; before
