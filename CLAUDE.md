@@ -215,6 +215,27 @@ closing question's shape and the Maven sentence. Before saving, read all four in
 letters in `tailored/` and don't reuse their wording or their build.
 [D37](DECISIONS.md#d37-the-one-line-pivot-and-two-new-repeats)
 
+**People first: one story, and a person is at its center (added 2026-10-13).** The warmth
+rules made the letters polite to the reader and left the stories about audits and numbers.
+Aneesh read them as "fairly staccato" and said "it wasn't an empathetic writing style." Shown
+a rhythm-only rewrite and a letter rebuilt around a person, he picked the person.
+[D38](DECISIONS.md#d38-letters-with-no-people-in-them)
+
+- **One story, about someone he helped.** A customer, a site team, a hire, an agent: one line
+  that shows he saw them, then what he did. Take it from the career narrative's "Human
+  moments" or from a person already in `master_resume.md`. Never invent a person, a feeling,
+  a quote, or a detail, and never claim a feeling with an adjective. If no person story fits
+  the role, write the letter the earlier way and say so in the Step 7 summary or the digest.
+- **Why he does this work, in his words, when it fits.** At most one sentence, from the same
+  "Human moments" block, and never in the wording any of the last five letters used.
+- **One named gap.** The largest for the role, with its ramp commitment. The others stay in
+  the resume and the interview. This narrows the 2026-08-20 rule below, which still governs
+  how that one gap is written.
+- **Three numbers at most**, each inside a sentence a person would say.
+- **A story where only he could help gets its turn.** For a role that manages people or
+  process, follow it with what he built so the help doesn't depend on him, from facts in
+  `master_resume.md`.
+
 **Honesty moments — keep them, but verify the gap is still real.** When there's a genuine technical gap, acknowledge it directly and without apology. This is a distinctive voice feature that makes letters feel real, and suppressing it costs more than it saves. What it is not is a license to keep repeating a concession after it stops being true. Before conceding any technical gap, read `portfolio_projects.md`, not just `master_resume.md` — the public repos are where a lot of his evidence lives and none of them appear in the master resume.
 
 **Python is no longer one of these.** Don't concede it. `skill-regression-harness` and `deflection-audit` are unit-tested Python tools, and `sf-caseops-mcp` is a working MCP server running daily against a live Salesforce org. Their current sizes and test counts live in `portfolio_projects.md` and each repo's README; quote numbers from there, never from this file. [D4](DECISIONS.md#d4-python-stopped-being-a-conceded-gap)
@@ -241,7 +262,7 @@ The move is: gap, dated commitment, re-read the requirement, aim at what it actu
 
 **Opener anti-template log:** `tailored/_cover_openers.md` holds one line per letter (`- [date] [Company]: "first sentence"`). Before writing a new letter, read it — the new opener must not reuse the structure of the last 5 logged openers. After saving the letter, append its first sentence to the log. This catches template convergence that the per-letter self-check misses.
 
-**Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific. (3) Check the opener log for structural repetition. (4) Read it as the hiring manager: does it say which job he wants and why, and does it sound like someone you'd want to talk to? If it reads cold, it isn't done.
+**Final self-check before saving:** (1) Read the first sentence — could it have been written by any LLM for any applicant at this company? If yes, rewrite it. (2) Read the close — is it interchangeable with every other letter? If yes, replace with something specific. (3) Check the opener log for structural repetition. (4) Read it as the hiring manager: does it say which job he wants and why, and does it sound like someone you'd want to talk to? If it reads cold, it isn't done. (5) Find the person: is someone besides him in the story, shown through what he did and not through an adjective?
 
 **Mechanical voice gate:** the Step 5 command runs it and prints the result on its `voice`
 line. For a letter outside a package check, run

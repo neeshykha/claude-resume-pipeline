@@ -16,7 +16,9 @@ message. If you opened this file alone, read the rest of that list now, in one m
 What each is for:
 
 - `user_writing_style.md`: voice. It governs form.
-- `career-narrative/SKILL.md`: positioning, frameworks, stories. It governs substance.
+- `career-narrative/SKILL.md`: positioning, frameworks, stories. It governs substance. Its
+  "Human moments" block is the one exception to the next line: those stories are his own
+  words, and a letter may use them exactly as recorded. A resume may not.
 - `master_resume.md`: the ONLY source of factual claims. Never invent experience, numbers,
   tools, or certifications.
 - `portfolio_projects.md`: when and how a public repo may be cited. It is also where to
@@ -70,6 +72,9 @@ trim, and on 2026-10-09 every first draft ran long.
 - **Letter: one page, hard, and 330 to 370 words of body in four or five paragraphs.** His
   letters have a median of about 350. One page holds far more than that, so the page is not
   the constraint; a reader's attention is.
+- **Letter content: one story with a person at its center, one named gap, three numbers at
+  most** (CLAUDE.md Step 8, "People first"). Your prompt names the story and the gap. Add
+  nothing to a person's story: no name, feeling, quote, or detail the sources don't hold.
 - **Em-dashes: two per document at most**, and prefer none. Colons and semicolons do that
   work in his voice.
 - **Contractions by default** in the letter. The voice gate fails a letter with more
@@ -85,8 +90,8 @@ trim, and on 2026-10-09 every first draft ran long.
   the opener, the honesty moment, his transitional qualifiers, and a sports or nature
   analogy. A one-line paragraph is not protected: in a letter, a short sentence standing
   alone reads cold to him, so a turn goes inside a paragraph, behind a bridge. The warmth
-  rules' sentences stay protected too: the one that says which job and why, one bridge a
-  paragraph, and the inviting last line. A detect pass that strips
+  rules' sentences stay protected too: the one that says which job and why, the line that
+  shows the person in the story, one bridge a paragraph, and the inviting last line. A detect pass that strips
   those hands back the cold letter the rules exist to stop.
 
 Two drafting messages, not one and not four. On the light tier, message 2 is both files plus
@@ -178,7 +183,7 @@ tracking row from them and cannot ask you a follow-up cheaply.
 6. Vendor tool the JD names, or none. Manages a team, or IC.
 7. The letter's first sentence, verbatim.
 8. Every commitment the letter makes on his behalf, verbatim.
-9. Framework and story used.
+9. Framework and story used, and who the person at its center is (or "no person story fit").
 10. Four to six bullets on what changed in the resume against the master: summary angle,
     first bullet, reorders and drops, skills order, projects.
 11. avoid-ai-writing: what you flagged in your own letter and what you changed, or "clean".

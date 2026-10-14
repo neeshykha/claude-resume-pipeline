@@ -876,3 +876,47 @@ works remote sat in three of the five closes and isn't covered by any rule. That
 described his use of the company's product in a way that sat badly beside an earlier letter
 sent to the same company; the run had flagged the sentence for him to confirm, which is what
 caught it, but nothing checks a new letter's claims against a sibling's promises.
+
+## D38. Letters with no people in them
+
+_Added 2026-10-13._
+
+The same evening as D37, Aneesh said more about the letters in general: "fairly staccato,"
+and "it wasn't an empathetic writing style." His point was that someone applying into support
+organizations has to sound like he has a soul. He asked for pushback, and got it: the
+complaint was right and the cause wasn't rhythm.
+
+What the letters had instead of people. Read as a set, they were about audits, systems, and
+numbers, and humans appeared as things he had measured. No customer appeared as a person with
+a problem, and nothing said why he has stayed in support for a decade. D36's six rules add
+warmth toward the reader; none of them puts a person in the story.
+
+Why the writers couldn't fix it. They may only use facts from `master_resume.md` and the
+career narrative's story bank. Counted that evening, the two files held no use of "felt,"
+"frustrated," "worried," or "care about," and nothing in first person about why he does the
+work. The two stories with a person at the center were written as audit findings. Telling a
+writer to be more empathetic would have produced adjectives, which the voice rules ban for
+good reason.
+
+The test. One unsent letter was rewritten two ways by separate writers: one changed only how
+the sentences ran, the other was rebuilt around a person, with one gap, three numbers, and a
+bracketed placeholder wherever the sources had no human detail. The rhythm-only version came
+out longer and denser and no warmer. He picked the other. Its two placeholders asked for a
+customer he remembered and a reason he had stayed; he dictated both, plus a third story, and
+they went into the story bank as "Human moments," marked as his words with no line in the
+master resume. A light-tier package was then given a letter built that way, which passed the
+fit check with no new dated promise in it.
+
+The fix, on his yes. Step 8 gains "People first": one story with a person at its center, his
+reason for the work in his own words when it fits, one named gap where every gap used to be
+named, three numbers at most, and a turn to what he built whenever the story is one where
+only he could help. The orchestrator picks the person at Step 4-W item 2 and no two letters
+in a run lead with the same one. Nothing about a person is ever invented; when no story fits,
+the letter is written the earlier way and the digest says so.
+
+Open. The bank holds three human moments, and a run can write five letters, so the stories
+will repeat across letters unless he supplies more. Those three have no line in
+`master_resume.md`, so resumes can't use them yet. No gate can tell a person from a number;
+the side-by-side read is still the only check. One named gap is a narrowing of his own
+2026-08-20 rule and has been tried on two letters, so watch whether an unnamed gap costs him
+in a screen.

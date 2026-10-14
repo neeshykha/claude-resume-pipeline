@@ -2095,7 +2095,13 @@ The split: **you choose the angle and the files, the writer writes every word,
 2. **Decide the angle for each job before dispatching**, from the Step 0 reads and the JD
    card: the one framework, the lead story, and which projects are worth the space. **Give
    every writer in the run a different lead story.** The writers cannot see each other, and
-   on 2026-10-09 two of them opened on the same story in nearly the same sentence. Also pick
+   on 2026-10-09 two of them opened on the same story in nearly the same sentence. **For a
+   full-tier job the lead story has a person at its center** (CLAUDE.md Step 8, "People
+   first", added 2026-10-13): pick it from the career narrative's "Human moments" or from a
+   person already in the master resume, name that person in the writer's prompt, and choose
+   the one gap the letter will carry. No two letters in a run lead with the same person. If
+   no person story fits a role, tell that writer to use the earlier build and say so in the
+   digest; never let a writer fill the hole with an invented one. Also pick
    ONE calibration package per job: the most recent package for the nearest title family
    that Aneesh sent or that is still in `tailored/apply_now/`. It shows shape and length; it
    is not a source of sentences. Pick it from this, once per run, never from a listing of
@@ -2134,8 +2140,8 @@ The split: **you choose the angle and the files, the writer writes every word,
    > Package stem: Aneesh_Khan_[Company]_[Role]. Tier: [full | light]. ATS variant: [yes | no].
    > Role: [company], "[title]", [location], [pay], posted [date], [apply URL]. [Manages a team | IC].
    > Sibling package, already sent, never edit: [stem, with one line on what must differ].
-   > Known gaps, already judged from the JD: [each gap, with the JD's own wording]. Hard-requirement cap trigger: [verbatim | none].
-   > Angle: framework [n]; lead story [name]. Other writers today are leading with [stories]; do not lead with those. Projects worth considering: [names].
+   > Known gaps, already judged from the JD: [each gap, with the JD's own wording]. The letter names one: [the largest]. Hard-requirement cap trigger: [verbatim | none].
+   > Angle: framework [n]; lead story [name, and the person at its center | none fits, use the earlier build]. Other writers today are leading with [stories]; do not lead with those. Projects worth considering: [names].
    > Recent openers, do not reuse the structure of the last five: [the eight lines from the opener log].
 
    The file list is in the prompt, not only in the brief, so the writer can read everything
@@ -2207,8 +2213,9 @@ The split: **you choose the angle and the files, the writer writes every word,
 6. **Read the run's letters side by side, once.** They are about 400 words each. The
    per-letter gates cannot see two letters built on the same story or the same construction,
    and you are the only one who sees all of them. No gate reads tone either, so read each
-   one as the hiring manager: it says which job he wants and why, it doesn't grade the
-   reader, and it ends inviting (CLAUDE.md Step 8, the warmth rules). Bridges and closing
+   one as the hiring manager: it says which job he wants and why, there is a person in its
+   story besides him, it doesn't grade the reader, and it ends inviting (CLAUDE.md Step 8,
+   the warmth rules and "People first"). Bridges and closing
    lines count as constructions here, and so do the closing question's shape and the Maven
    sentence: writers dispatched together can't see each other, so the same three-part Maven
    sentence in two of the run's letters is yours to catch. A paragraph that is one short
