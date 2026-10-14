@@ -839,3 +839,40 @@ date still have the old build.
 Left alone on purpose. The name, city, and LinkedIn URL stay in the renderer. A worktree or a
 fresh clone has no profile and can't render until it's given one, the same as every other
 gitignored input.
+
+## D37. The one-line pivot and two new repeats
+
+_Added 2026-10-13._
+
+The first run under D36's six rules wrote three letters, and Aneesh asked that evening how
+they read. The rules had fixed what they named: all three said which job and why by the
+second paragraph, signed off, and ended on a line asking for a reply, and none graded the
+reader. One still read cold. It had a four-word sentence standing alone as its own paragraph,
+two maxims in the body, and a last line phrased as an order.
+
+The cause of the first was in the briefs, not the writer. `tailor_worker.md` and Step 4.5 of
+the daily prompt both listed "a single-sentence pivot" among the protected moves, so the
+writer kept exactly the thing he had called brutalist the day before. The style guide gives
+that move to analytical and longform writing; in a 350-word letter it lands as a terse
+fragment.
+
+What was measured that day, reading the last five letters side by side. Three of five closes
+asked who owns or carries something, two of them in nearly the same sentence. All three of
+the run's letters carried the Maven sentence in one three-part build (the evaluation
+checklist, sole integration partner for two months, the deflection figure), and two used the
+same phrase for having sat on the buying side. "Having said that" appeared once in five, so
+the bridges had not converged yet.
+
+The fix, on his yes to both changes. The single-sentence pivot came off both protected
+lists, and Step 8 now says no paragraph is one short sentence standing alone. The last-five
+check covers the closing question's shape and the Maven sentence as well as bridges and
+closing lines. The orchestrator's side-by-side read (Step 4-W item 6) names both too, because
+writers dispatched in one run can't see each other and the last-five check can't catch a
+repeat written the same morning. The cold letter was redone that evening by a fresh writer
+from a description of the problems and passed the fit check; it hadn't been sent.
+
+Open. No gate reads tone, same as D36. The line saying where he lives and that he already
+works remote sat in three of the five closes and isn't covered by any rule. That letter also
+described his use of the company's product in a way that sat badly beside an earlier letter
+sent to the same company; the run had flagged the sentence for him to confirm, which is what
+caught it, but nothing checks a new letter's claims against a sibling's promises.

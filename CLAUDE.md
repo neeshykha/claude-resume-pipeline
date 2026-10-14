@@ -200,15 +200,20 @@ out. These six put something back, and they're requirements, not permissions.
   bring.
 - **No hard-guy hook.** An opener or a punch line can't make him sound cold toward the people
   in the story. Use fewer numbers, each inside a sentence a person would say; a paragraph that
-  reads as resume bullets joined by commas gets cut to its best one or two.
+  reads as resume bullets joined by commas gets cut to its best one or two. No paragraph is
+  a single short sentence standing alone: the one-line pivot is a longform move, and in a
+  letter it's the terse fragment he reads as brutalist.
+  [D37](DECISIONS.md#d37-the-one-line-pivot-and-two-new-repeats)
 - **End inviting.** The close may ask one real question, then ends on a short line that
   invites a reply. Don't follow the question with a maxim: "X reads (runs, looks) differently
   depending on the answer" closed four of five letters in one week and is retired.
 - **Sign off.** `Best,` on its own line above his name in the `.md`, which is the copy he
   pastes into forms. The PDF renderer already adds it.
 
-Bridges and closing lines converge the way openers and ramp sentences did. Before saving,
-read both in the last five letters in `tailored/` and don't reuse their wording.
+Bridges and closing lines converge the way openers and ramp sentences did, and so do the
+closing question's shape and the Maven sentence. Before saving, read all four in the last five
+letters in `tailored/` and don't reuse their wording or their build.
+[D37](DECISIONS.md#d37-the-one-line-pivot-and-two-new-repeats)
 
 **Honesty moments — keep them, but verify the gap is still real.** When there's a genuine technical gap, acknowledge it directly and without apology. This is a distinctive voice feature that makes letters feel real, and suppressing it costs more than it saves. What it is not is a license to keep repeating a concession after it stops being true. Before conceding any technical gap, read `portfolio_projects.md`, not just `master_resume.md` — the public repos are where a lot of his evidence lives and none of them appear in the master resume.
 

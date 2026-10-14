@@ -38,8 +38,8 @@ in your context, read it before you draft.
 Do not list `tailored/`. Do not open a package your prompt did not name. Do not read the
 source of any script; what you need to know about them is on this page. The calibration
 package shows shape and length. It is not a source of sentences, and neither are the five
-letters: you read those so your opener, your lead story, and your ramp sentence differ from
-theirs in structure.
+letters: you read those so your opener, your lead story, your ramp sentence, your closing
+question, and your Maven sentence differ from theirs in structure.
 
 ## What you write
 
@@ -82,9 +82,11 @@ trim, and on 2026-10-09 every first draft ran long.
   this one message and in that order. Hold the letter against the avoid-ai-writing catalog
   as you write it (the P0 and P1 patterns, his voice profile) so the clear problems never
   reach the file. That is the detect pass, and you report on it. The protected moves stay:
-  the opener, the honesty moment, a single-sentence pivot, his transitional qualifiers, and
-  a sports or nature analogy. So do the warmth rules' sentences: the one that says which job
-  and why, one bridge a paragraph, and the inviting last line. A detect pass that strips
+  the opener, the honesty moment, his transitional qualifiers, and a sports or nature
+  analogy. A one-line paragraph is not protected: in a letter, a short sentence standing
+  alone reads cold to him, so a turn goes inside a paragraph, behind a bridge. The warmth
+  rules' sentences stay protected too: the one that says which job and why, one bridge a
+  paragraph, and the inviting last line. A detect pass that strips
   those hands back the cold letter the rules exist to stop.
 
 Two drafting messages, not one and not four. On the light tier, message 2 is both files plus

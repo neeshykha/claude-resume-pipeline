@@ -2209,7 +2209,11 @@ The split: **you choose the angle and the files, the writer writes every word,
    and you are the only one who sees all of them. No gate reads tone either, so read each
    one as the hiring manager: it says which job he wants and why, it doesn't grade the
    reader, and it ends inviting (CLAUDE.md Step 8, the warmth rules). Bridges and closing
-   lines count as constructions here. **Then run the Step 4.5 item 2 detect
+   lines count as constructions here, and so do the closing question's shape and the Maven
+   sentence: writers dispatched together can't see each other, so the same three-part Maven
+   sentence in two of the run's letters is yours to catch. A paragraph that is one short
+   sentence standing alone goes back too
+   ([D37](../DECISIONS.md#d37-the-one-line-pivot-and-two-new-repeats)). **Then run the Step 4.5 item 2 detect
    pass on each letter**, so that everything a writer has to hear arrives in one message.
 
 7. **Anything that changes wording goes back to its writer.** Use SendMessage to the same
@@ -2439,8 +2443,10 @@ the output is a lesson for the next letter, not an edit.
 
 **Protected — never "fix" these**, they are the voice and the skill's own profile carves them
 out: the opening line (the anti-template log in Step 4 item 5 governs it, not this step), the
-honesty moment naming a real gap, the single-sentence pivot, transitional qualifiers ("having
-said that", "given that"), and sports or nature analogies.
+honesty moment naming a real gap, transitional qualifiers ("having said that", "given that"),
+and sports or nature analogies. The single-sentence pivot came off this list on 2026-10-13: in
+a letter, a one-line paragraph is a finding to send back, not a move to protect
+([D37](../DECISIONS.md#d37-the-one-line-pivot-and-two-new-repeats)).
 
 **Targeted edits only, never a wholesale rewrite.** These letters are built from the CLAUDE.md
 voice rules plus the career-narrative skill; a full rewrite would sand off the deliberate
