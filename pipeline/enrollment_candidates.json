@@ -4260,6 +4260,24 @@
       "via": "harvest_ats.py",
       "source": "LinkedIn alert",
       "first_seen": "2026-10-13"
+    },
+    {
+      "name": "Payoneer",
+      "ats": "greenhouse",
+      "slug": "payoneer",
+      "enrolled_date": "2026-10-14",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Imprint",
+      "ats": "ashby",
+      "slug": "imprint",
+      "enrolled_date": "2026-10-14",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
     }
   ],
   "rejected": [
@@ -20489,6 +20507,366 @@
       ],
       "source": "BuiltIn directory",
       "first_seen": "2026-10-13"
+    },
+    {
+      "name": "MyFitnessPal",
+      "ats": "greenhouse",
+      "slug": "myfitnesspal",
+      "rejected_date": "2026-10-14",
+      "reason": "Board resolves and is live (9 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Medical Informatics Engineering",
+      "ats": "greenhouse",
+      "slug": "medicalinformaticsengineering",
+      "rejected_date": "2026-10-14",
+      "reason": "Board resolves and is live (8 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "SWTCH Energy",
+      "ats": "workable",
+      "slug": "swtch-energy",
+      "rejected_date": "2026-10-14",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "WebSearch dork",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Western Union",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "PROBABLE NAME COLLISION. A name variant resolved to greenhouse/westernunion (1 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'Sr Manager, Technology' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "collision_board": "greenhouse/westernunion",
+      "collision_suspected": true,
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Sr Manager, Technology -- LinkedIn card role; board resolved to a different company",
+      "card_title": "Sr Manager, Technology",
+      "card_job_id": "4478703286",
+      "card_url": "https://www.linkedin.com/jobs/view/4478703286/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Charles Schwab",
+      "ats": "workable",
+      "slug": "charles-schwab",
+      "rejected_date": "2026-10-14",
+      "reason": "Board RESOLVED at workable/charles-schwab but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/charles-schwab.) 1 probe(s) were rate-limited (HTTP 429) and never answered (workable x1), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/charlesschwabhq"
+      ],
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Bank of America",
+      "ats": "workable",
+      "slug": "bank-of-america",
+      "rejected_date": "2026-10-14",
+      "reason": "Board RESOLVED at workable/bank-of-america but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/bank-of-america.) 1 probe(s) were rate-limited (HTTP 429) and never answered (workable x1), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/bankofamericahq"
+      ],
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "USI Insurance Services",
+      "ats": "workable",
+      "slug": "usi-insurance-services",
+      "rejected_date": "2026-10-14",
+      "reason": "Board RESOLVED at workable/usi-insurance-services but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/usi-insurance-services.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Kennesaw State University",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 4 probe(s) were refused with HTTP 429 even after one retry (workable x4), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Kennesaw State University\"), NOT a manual search. Throttled: workable/kennesawstateuniversity, workable/kennesaw-state-university, workable/kennesawstateuniversityio, workable/kennesawstateuniversityhq.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/kennesawstateuniversity",
+        "workable/kennesaw-state-university",
+        "workable/kennesawstateuniversityio",
+        "workable/kennesawstateuniversityhq"
+      ],
+      "card_title": "ISS Operations Manager",
+      "card_job_id": "4441066256",
+      "card_url": "https://www.linkedin.com/jobs/view/4441066256/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "U.S. Soccer Foundation",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workable x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"U.S. Soccer Foundation\"), NOT a manual search. Throttled: workable/u.s.soccerfoundation, workable/ussoccerfoundationio.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/u.s.soccerfoundation",
+        "workable/ussoccerfoundationio"
+      ],
+      "card_title": "Senior Manager, Salesforce & Technology",
+      "card_job_id": "4478331805",
+      "card_url": "https://www.linkedin.com/jobs/view/4478331805/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Cintoo",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workable x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Cintoo\"), NOT a manual search. Throttled: workable/cintooio, workable/cintoohq.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/cintooio",
+        "workable/cintoohq"
+      ],
+      "card_title": "Customer Success Manager - Energy",
+      "card_job_id": "4475647987",
+      "card_url": "https://www.linkedin.com/jobs/view/4475647987/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Partners In Health",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 3 probe(s) were refused with HTTP 429 even after one retry (workable x3), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Partners In Health\"), NOT a manual search. Throttled: workable/partners-in-health, workable/partnersinhealthio, workable/partnersinhealthhq.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/partners-in-health",
+        "workable/partnersinhealthio",
+        "workable/partnersinhealthhq"
+      ],
+      "card_title": "Lead, CRM Administration and Ecosystem",
+      "card_job_id": "4476819220",
+      "card_url": "https://www.linkedin.com/jobs/view/4476819220/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "FlowGen Labs",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 1 probe(s) were refused with HTTP 429 even after one retry (workable x1), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"FlowGen Labs\"), NOT a manual search. Throttled: workable/flowgen.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/flowgen"
+      ],
+      "card_title": "AI Strategist",
+      "card_job_id": "4478302593",
+      "card_url": "https://www.linkedin.com/jobs/view/4478302593/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Janus Henderson Investors",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 1 probe(s) were refused with HTTP 429 even after one retry (workable x1), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Janus Henderson Investors\"), NOT a manual search. Throttled: workable/janushendersoninvestorshq.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/janushendersoninvestorshq"
+      ],
+      "card_title": "AI Enablement Partner",
+      "card_job_id": "4458407609",
+      "card_url": "https://www.linkedin.com/jobs/view/4458407609/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "RockED",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 3 probe(s) were refused with HTTP 429 even after one retry (workable x3), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"RockED\"), NOT a manual search. Throttled: workable/rockedio, workable/rockedhq, workable/rockedinc.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/rockedio",
+        "workable/rockedhq",
+        "workable/rockedinc"
+      ],
+      "card_title": "Performance Manager",
+      "card_job_id": "4478537469",
+      "card_url": "https://www.linkedin.com/jobs/view/4478537469/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Cloudera Government Solutions",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workable x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Cloudera Government Solutions\"), NOT a manual search. Throttled: workable/cloudera-government-solutions, workable/clouderagovernmentsolutionsio.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/cloudera-government-solutions",
+        "workable/clouderagovernmentsolutionsio"
+      ],
+      "card_title": "Manager, Applied AI Strategy and Operations",
+      "card_job_id": "4477262669",
+      "card_url": "https://www.linkedin.com/jobs/view/4477262669/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Brasfield & Gorrie, LLC",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 3 probe(s) were refused with HTTP 429 even after one retry (workable x3), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Brasfield & Gorrie, LLC\"), NOT a manual search. Throttled: workable/brasfield-gorrie-llc, workable/brasfieldgorrie, workable/brasfieldgorriellcio.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/brasfield-gorrie-llc",
+        "workable/brasfieldgorrie",
+        "workable/brasfieldgorriellcio"
+      ],
+      "card_title": "Commissioning Manager",
+      "card_job_id": "4330402945",
+      "card_url": "https://www.linkedin.com/jobs/view/4330402945/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Renaissance Philanthropy",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 1 probe(s) were refused with HTTP 429 even after one retry (workable x1), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Renaissance Philanthropy\"), NOT a manual search. Throttled: workable/renaissancephilanthropyio.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/renaissancephilanthropyio"
+      ],
+      "source": "80K Hours Algolia API",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Abode Communities",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 3 probe(s) were refused with HTTP 429 even after one retry (workable x3), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Abode Communities\"), NOT a manual search. Throttled: workable/abode-communities, workable/abodecommunitiesio, workable/abodecommunitieshq.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/abode-communities",
+        "workable/abodecommunitiesio",
+        "workable/abodecommunitieshq"
+      ],
+      "source": "BuiltIn directory",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "The SSI Group, Inc.",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 1 probe(s) were refused with HTTP 429 even after one retry (workable x1), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"The SSI Group, Inc.\"), NOT a manual search. Throttled: workable/thessigroupinc..",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/thessigroupinc."
+      ],
+      "source": "BuiltIn directory",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Derapi",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workable x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Derapi\"), NOT a manual search. Throttled: workable/derapihq, workable/derapiinc.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/derapihq",
+        "workable/derapiinc"
+      ],
+      "source": "WebSearch dork",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "EVPassport",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 3 probe(s) were refused with HTTP 429 even after one retry (workable x3), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"EVPassport\"), NOT a manual search. Throttled: workable/evpassportio, workable/evpassporthq, workable/evpassportinc.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/evpassportio",
+        "workable/evpassporthq",
+        "workable/evpassportinc"
+      ],
+      "source": "WebSearch dork",
+      "first_seen": "2026-10-14"
+    },
+    {
+      "name": "Imprivata",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-10-14",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workable x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Imprivata\"), NOT a manual search. Throttled: workable/imprivataio, workable/imprivatahq.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/imprivataio",
+        "workable/imprivatahq"
+      ],
+      "source": "WebSearch dork",
+      "first_seen": "2026-10-14"
     }
   ]
 }
