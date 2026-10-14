@@ -821,6 +821,12 @@ that file (its Track Source File feature) and refreshes the page in place under 
   `pipeline/jobs/brief_[date].json` at Step 5a. The page shows the last run's picks on top
   (the read on each, what its letter promises, the tailoring diff) and the FYI lists and run
   audit collapsed. The email keeps the picks table, alerts, and "confirm before sending."
+- **A cleared row he has passed on stays hidden (2026-10-13).** `build_dashboard.py` drops any
+  URL listed in `pipeline/jobs/screened_dismissed.json` (gitignored) from "Cleared, not
+  tailored". The daily run re-lists a cleared role every day it reads the JD again, so
+  taking a row out of one day's `screened_[date].json` never held. To dismiss one, add
+  `{"url": "..."}` to that file's `dismissed` list; to bring one back, delete its entry. The
+  run still writes `screened_[date].json` as before, and the page has no button for this yet.
 - It always exits 0 and prints one line; `dashboard: FAILED ...` means yesterday's page is still
   up, and the page shows its own stale strip when a weekday run should have replaced it.
 - The script is committed to a public repo: no company names or sample rows in it or its tests

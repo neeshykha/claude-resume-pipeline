@@ -77,6 +77,26 @@ def test_screened_window_dedupe_and_known_urls():
     assert data["counts"]["screened_days"] == 2
 
 
+def test_screened_dismissed_urls_stay_hidden_and_junk_hides_nothing():
+    fixture([])
+    roles = [{"company": "Acme", "title": "Ops Lead", "url": "https://example.com/a", "score": 91},
+             {"company": "Bolt", "title": "Support Mgr", "url": "https://example.com/b", "score": 80},
+             {"company": "Cove", "title": "TAM", "url": "https://example.com/c", "score": 79}]
+    screened_file("2026-09-19", roles)
+    screened_file("2026-09-18", roles)                     # re-listed on a second day
+    path = os.path.join(bd.JOBS_DIR, bd.SCREENED_DISMISSED)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"dismissed": [{"url": "https://example.com/a ", "company": "Acme"},
+                                 "https://example.com/c", {"company": "no url"}, 7]}, f)
+    data = build()
+    assert [s["url"] for s in data["screened"]] == ["https://example.com/b"], data["screened"]
+    assert data["counts"]["screened_days"] == 2
+    for junk in ("not json", '["https://example.com/b"]', '{"dismissed": "https://example.com/b"}'):
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(junk)
+        assert len(build()["screened"]) == 3, junk
+
+
 def test_screened_absent_is_distinguishable_from_empty():
     fixture([])
     assert build()["counts"]["screened_days"] == 0

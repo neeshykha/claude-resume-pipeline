@@ -316,6 +316,30 @@ def read_backlog_counts():
 
 
 SCREENED_DAYS = 7
+SCREENED_DISMISSED = "screened_dismissed.json"
+
+
+def read_dismissed():
+    """URLs he has passed on from the "Cleared, not tailored" list (added 2026-10-13).
+
+    Source: jobs/screened_dismissed.json, `{"dismissed": [{"url": ...}, ...]}`, written
+    by hand or by a session at his ask; a bare URL string works as an entry too, and
+    any other field (company, title, date) is for whoever reads the file later. The
+    daily run re-lists a cleared role every day it reads the JD again, so taking a row
+    out of one day's screened file never held. A missing or malformed file hides
+    nothing.
+    """
+    try:
+        with open(os.path.join(JOBS_DIR, SCREENED_DISMISSED), encoding="utf-8") as f:
+            entries = json.load(f).get("dismissed") or []
+    except Exception:
+        return set()
+    urls = set()
+    for e in entries if isinstance(entries, list) else []:
+        url = e.get("url") if isinstance(e, dict) else e
+        if isinstance(url, str) and url.strip():
+            urls.add(url.strip())
+    return urls
 
 
 def read_screened(today):
@@ -325,7 +349,8 @@ def read_screened(today):
     the Step 2-JD fan-out. Only the last SCREENED_DAYS of files are read; newest
     file wins per URL, and `first` keeps the earliest date it was cleared. A URL
     already in outcomes.csv at any stage is dropped: it was tailored, sent, or
-    closed, and the queue or quiet list owns it now. Read-only like the rest.
+    closed, and the queue or quiet list owns it now. A URL he dismissed is dropped
+    the same way (see read_dismissed). Read-only like the rest.
     Returns (rows, days_with_a_file) so the page can tell "nothing cleared"
     from "the step never ran".
     """
@@ -335,6 +360,7 @@ def read_screened(today):
             known = {(r.get("url") or "").strip() for r in csv.DictReader(f)}
     except Exception:
         pass
+    known |= read_dismissed()
     by_url, days = {}, 0
     for n in range(SCREENED_DAYS):
         d = date.fromordinal(today.toordinal() - n)
