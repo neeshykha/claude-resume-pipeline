@@ -1622,6 +1622,17 @@ come from `_scoring_config`:
 letter) · below that, skip. If fewer than 3 clear the light threshold, send what you
 have — never pad. The cap is on tailoring, not on surfacing: see the next paragraph.
 
+**Fit first, reach fills (Aneesh's call, 2026-10-15).** Fill the five slots in two passes.
+First, every cleared role with 0 or 1 unmet hard requirements and no hard-requirement cap,
+highest score first. Then, only if slots remain, the reach roles (cap fired, or 2+ unmet),
+highest score first. A reach role that loses its slot this way goes on "Cleared, not
+tailored" with its gap, exactly like any other. Count unmet hard requirements the way Step 6
+defines them: only what the JD states as required. A "preferred", "a plus", "nice to have",
+or "or the ability to quickly get there" item is not unmet, and neither is location, which
+the location gate already handles. Why: by 2026-10-15 all 4 post-epoch advances had 0 or 1
+unmet, against none in about 30 reach sends, while October's tailoring had moved to 61%
+reach. [D40](../DECISIONS.md#d40-reach-roles-stopped-taking-the-first-slots)
+
 **Cleared, not tailored (added 2026-09-25).** Every Step 2-JD role that you scored at or
 above `light_tailoring_threshold` but did not tailor (it ranked below the 5, or lost a
 same-company tiebreak) goes on the digest's "Cleared, not tailored" list with its score, one
@@ -2757,7 +2768,10 @@ weekly channel report at Step 6.5 is a separate email and still is.)
    - `unmet_hard_reqs`: integer count of the JD's HARD requirements that cannot be
      honestly claimed from `master_resume.md`. Count the same gaps you disclose in the
      cover letter and report at Step 4. Nice-to-haves don't count; only requirements a
-     screener would treat as disqualifying. `0` is a legitimate value, empty is not.
+     screener would treat as disqualifying. Preferred and "a plus" items, items the JD
+     softens itself ("or the ability to quickly get there"), and location are not unmet;
+     the Step 2c pick order reads this number, so an inflated count costs a role its slot.
+     `0` is a legitimate value, empty is not.
    - `ic_scope` (added 2026-09-07, a real column as of the same day): `ic` or `manages`,
      from the Step 3 JD read. Empty means **not recorded** and is the correct value only for
      the 266 rows that predate the column — do not backfill it by assumption, because "nobody

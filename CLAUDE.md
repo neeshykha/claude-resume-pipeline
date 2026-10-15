@@ -428,6 +428,9 @@ Plus a monthly trend of what gets tailored (median score, pay midpoint, reach sh
 high" is checked as a behavior. Every rate is post-epoch and prints its n; samples are small,
 so don't act on a single month.
 
+- **Fit first, reach fills (2026-10-15).** The daily run fills its five tailoring slots with
+  0-1 unmet roles first and reach roles only after; unmet counts stated requirements only.
+  Spec: `daily_task_prompt.md` Step 2c. [D40](DECISIONS.md#d40-reach-roles-stopped-taking-the-first-slots)
 - **Do not cut the tailoring cap to raise the send rate.** He wants everything over the
   threshold available; a low send rate is a signal to read through `his_verdict`, not a
   volume problem to solve by producing less.

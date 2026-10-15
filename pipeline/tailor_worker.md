@@ -178,7 +178,10 @@ tracking row from them and cannot ask you a follow-up cheaply.
 1. Files written.
 2. The last `RESULT` line from `fit_check.py`, and how many fit checks you ran.
 3. Coverage N/M and each missing phrase, marked genuine gap or not.
-4. Unmet hard requirements: the count, and one line each.
+4. Unmet hard requirements: the count, and one line each. Count only what the JD states as
+   required. An item the JD marks preferred, a plus, or nice to have, or one it softens
+   itself ("or the ability to quickly get there"), is not unmet: list it separately as a
+   soft gap. Location is never an unmet requirement.
 5. Hard-requirement cap trigger: the requirement verbatim, or `none`.
 6. Vendor tool the JD names, or none. Manages a team, or IC.
 7. The letter's first sentence, verbatim.

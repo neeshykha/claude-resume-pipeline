@@ -966,3 +966,30 @@ edge to a fix.
 
 Not done: the earlier lost packages were not backfilled. Each is a row that's missing or that
 describes an older package, and reconstructing them is his call.
+
+## D40. Reach roles stopped taking the first slots
+
+_Added 2026-10-15._
+
+The 2026-10-15 weekly report showed fit roles advancing 4 of 63 and reach roles 0 of 36, while
+October's tailoring had moved to 61% reach (37% in August and September). Two read-only checks
+followed, at his ask.
+
+- **Send speed was ruled out.** 93 of 102 post-epoch sends went out within two days of
+  tailoring, and all four advances were in that group. The 18-day median age on surfaced rows
+  comes from packages that never get sent, not from slow sends.
+- **The reach label was somewhat inflated, and the signal survived it.** Of the 36 reach sends,
+  11 had the cap fire and 25 were reach only on a count of 2+ unmet. Several of those counted
+  items the JD marked preferred, softened itself ("or the ability to quickly get there"), or
+  that were location. Recounted, roughly 30 reach sends, still none advanced. All four advances
+  had 0 or 1 unmet.
+
+Four options were put to him: fit first with reach filling leftover slots, only tighten the
+count, keep aiming high, or cap reach at 2 of 5. He picked fit first. The five slots now fill
+from 0-1 unmet roles by score, then reach roles if slots remain, and both the writer brief and
+Step 6 count only stated requirements as unmet. Reach roles still surface on "Cleared, not
+tailored", so nothing is hidden; this changes which ones get a package by default. The
+tailoring cap itself is unchanged, per "Measuring pipeline quality" in CLAUDE.md.
+
+The samples are small. Re-read `pipeline_quality.py` once another ~40 fit sends have verdicts:
+if fit roles still advance at around 6%, the bottleneck is somewhere other than the pick.
