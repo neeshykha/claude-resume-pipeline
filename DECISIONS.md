@@ -993,3 +993,12 @@ tailoring cap itself is unchanged, per "Measuring pipeline quality" in CLAUDE.md
 
 The samples are small. Re-read `pipeline_quality.py` once another ~40 fit sends have verdicts:
 if fit roles still advance at around 6%, the bottleneck is somewhere other than the pick.
+
+**Safety slot, added the same day.** He called the search a moonshot he's comfortable with,
+and wanted likely-yes roles mixed in for interview practice. Three options: start a reserved
+slot now, decide at the four-week review, or only list likely-yes roles without tailoring.
+He picked starting now, so the review has four weeks of data. The slot sits outside the five,
+at light tier, takes one role a run with a title he has held and 0 unmet requirements, and
+has no score floor, because the rubric's company bonuses are exactly what keeps those roles
+under the threshold. Rows carry `lane:safety` in `notes`. The 2026-11-12 follow-up was
+widened from a check of this rule to a full reassessment comparing fit, reach, and safety.

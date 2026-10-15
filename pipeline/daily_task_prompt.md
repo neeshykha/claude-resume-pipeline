@@ -1633,6 +1633,29 @@ the location gate already handles. Why: by 2026-10-15 all 4 post-epoch advances 
 unmet, against none in about 30 reach sends, while October's tailoring had moved to 61%
 reach. [D40](../DECISIONS.md#d40-reach-roles-stopped-taking-the-first-slots)
 
+**Safety slot: one likely-yes role per run, outside the five (Aneesh's call, 2026-10-15).**
+The rubric pays for AI, tooling, startup size, and pay, so a plain support-operations
+manager role at an ordinary mid-size company rarely clears the light threshold, and that is
+the role most likely to call him back. He wants some of those for interview practice. Each
+run, tailor at most ONE such role at light tier (resume only, `:light`), chosen for odds of
+an interview rather than score. It must:
+- come from the Step 2-JD PASS or CHECK rows (or a Step 1d-3 LinkedIn row with its source
+  posting found), so the JD was read;
+- carry a title he has held or one a step from it: support operations, technical support,
+  customer support, or support engineering manager, and the tier1 titles generally. Not
+  director-and-above, and not below his level (specialist, associate, agent, analyst rungs);
+- have 0 unmet hard requirements and no hard-requirement cap, counted per Step 6;
+- pass location, and clear the salary floor that applies to it (Step 2b, IC rule included);
+- not be narrow platform administration (the altitude rule) or a company he has passed on.
+
+No score floor: the score is recorded honestly even when it sits under the light threshold.
+If a role already took one of the five, it is not also the safety pick. Pick the closest
+title match, then 0 unmet, then score. When nothing qualifies, skip the slot and say so in
+housekeeping. The row goes through Step 4 like any pick (already-applied guard, writer at
+`Tier: light`, fit check, tracking) with `lane:safety` in its `notes`, which is how the
+2026-11-12 review finds them. In the digest it is its own picks-table row marked "safety".
+Record `run_[date].json → safety_slot: {candidates, picked, why, skipped_reason}`.
+
 **Cleared, not tailored (added 2026-09-25).** Every Step 2-JD role that you scored at or
 above `light_tailoring_threshold` but did not tailor (it ranked below the 5, or lost a
 same-company tiebreak) goes on the digest's "Cleared, not tailored" list with its score, one
