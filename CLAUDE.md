@@ -318,6 +318,7 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | `outcomes.csv` stage → applied | `mark_applied.py` (from Gmail confirmations, or a Sent mark on the dashboard by way of `shelf_inbox.py`) | hand-edit the stage column |
 | `outcomes.csv` outcome (rejected/interview/offer) | `mark_outcome.py` | infer an outcome from silence |
 | `outcomes.csv` schema migrations | `repair_outcomes.py` | hand-fix drifted rows |
+| `jobs/lead_marks.json` (his Tailor it / Pass on the weekly leads) | `lead_marks.py`, by way of `shelf_inbox.py`; `linkedin_followup.py --requested` stamps each read | hand-edit, or record an answer he didn't click |
 
 **`outcomes.csv` canonical schema (17 columns as of 2026-09-30, when `his_verdict` landed):**
 `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage,ic_scope,his_verdict`
@@ -440,7 +441,9 @@ so don't act on a single month.
 - **Judge a pipeline change by the thing it fixed**, not by outcome metrics. A plumbing fix
   (LinkedIn body counts, a poller crash) won't move interview rate, and expecting it to makes
   good fixes look useless.
-- The weekly channel report (Step 6.5) carries this report's output so it's seen weekly.
+- The weekly leads page (Step 6.5) carries this report's output in its Channel health panel,
+  so it's seen weekly. Question 4 counts his Tailor it and Pass answers on the weekly leads; a
+  Tailor it on a "never picked" role is a direct sign the scoring passed over one he wanted.
 
 Title matching is config-driven: `poll_ats.py` builds its matcher at runtime from `watchlist_companies.json → _title_scoring_tiers` + `_poller_config` (stemmed-token matching, so word-form and word-order variants match automatically). To teach the poller a new title, edit the JSON; `poll_ats.py` carries no title lists, endpoints, or scoring numbers of its own. Any `_title_scoring_tiers` key starting with `tier` (except the specially-handled `tier2b_ai_wildcard`) loads automatically as a tier. After ANY hand edit to `watchlist_companies.json` or `enrollment_candidates.json`, run `.venv/bin/python pipeline/validate_config.py` (syntax + schema check). The daily run also runs it at Step 1-pre, and `poll_ats.py` refuses to poll against a malformed watchlist. [D13](DECISIONS.md#d13-config-driven-title-matching)
 
@@ -845,6 +848,14 @@ that file (its Track Source File feature) and refreshes the page in place under 
   taking a row out of one day's `screened_[date].json` never held. To dismiss one, add
   `{"url": "..."}` to that file's `dismissed` list; to bring one back, delete its entry. The
   run still writes `screened_[date].json` as before, and the page has no button for this yet.
+- **The weekly report is a section of the page, not an email (2026-10-15).** Thursdays,
+  `weekly_channel_report.py --page --apply` writes `pipeline/jobs/weekly_leads_[date].json`
+  and the page shows it as "This week's leads": every strong LinkedIn role the run didn't turn
+  into a package, each with Tailor it and Pass, and the channel numbers collapsed. Clicks wait
+  under `jobdash.leads.v1`; `shelf_inbox.py` records them through `lead_marks.py`. A Tailor it
+  is read at `daily_task_prompt.md` Step 1d-4 and tailored in Step 2c's requested slot: up to
+  three a run, outside the five, light tier at least, `lane:requested` in `notes`.
+  [D41](DECISIONS.md#d41-the-weekly-report-became-a-page)
 - It always exits 0 and prints one line; `dashboard: FAILED ...` means yesterday's page is still
   up, and the page shows its own stale strip when a weekday run should have replaced it.
 - The script is committed to a public repo: no company names or sample rows in it or its tests

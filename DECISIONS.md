@@ -1002,3 +1002,50 @@ at light tier, takes one role a run with a title he has held and 0 unmet require
 has no score floor, because the rubric's company bonuses are exactly what keeps those roles
 under the threshold. Rows carry `lane:safety` in `notes`. The 2026-11-12 follow-up was
 widened from a check of this rule to a full reassessment comparing fit, reach, and safety.
+
+## D41. The weekly report became a page
+
+_Added 2026-10-15._
+
+The Weekly Channel Report had gone out every Thursday since 2026-08-10 as its own email: channel
+counters, enrollment attribution, the LinkedIn funnel, the pipeline-quality report, and three
+lists of roles. The 2026-10-15 issue was about 11 KB. Aneesh: "Weekly channel report should
+probably be an HTML to handle as well. It's just so much junk." "As well" meant the way the
+daily digest's long tail moved to the dashboard on 2026-10-12 (D34).
+
+The only parts he acts on are the three lists: strong LinkedIn roles at companies the poller
+can't read (44 that week), roles at watched companies that never got picked (10), and the
+no-board companies where a good role turned up (20). Every one of those is a LinkedIn role with
+a job id, including the no-board companies, whose queue entries keep the card that queued them.
+So each could take a button.
+
+He picked three things, each the option put first:
+- **A section on the dashboard**, not a page of its own: "This week's leads", with the counters
+  collapsed into a "Channel health" panel and anything off flagged above the list.
+- **Tailor it / Pass on every lead.** Tailor it queues a package for the next weekday run, which
+  reads the posting through LinkedIn's guest endpoint; Pass takes it off. The other options
+  were page-only ticks (nothing flows back) and a want-it signal that never tailors.
+- **No email.** Run failures still reach him through the daily digest.
+
+How it holds together: `weekly_channel_report.py --page --apply` writes
+`jobs/weekly_leads_<date>.json` and marks the unpollable batch only after the file is written.
+The page keeps his clicks under `jobdash.leads.v1`, a second inbox beside D34's, and
+`shelf_inbox.py` hands them to `lead_marks.py`, which owns `jobs/lead_marks.json`. Step 1d-4
+reads up to three requests a run, oldest click first, and Step 2c tailors them outside the
+five and the safety slot at the tier their score earns, light at least, tagged
+`lane:requested`. A request that turns out closed or fails a hard filter isn't tailored, and the
+digest says so. The first page was rebuilt from that morning's data with `--resurface`, since
+the morning's run had already marked its batch.
+
+Choices made without asking him, any of which is a one-line change: three requests a run (each
+one is a Fable writer); light as the floor; Step 6.5 moved ahead of the dashboard build so the
+page shows the leads the same morning; a week's leads stay up until the next week's file, or 13
+days; a click no run has recorded is let go after 21 days; a request whose read times out or
+hits a server error waits for up to three tries.
+
+A Fable review the same day found nothing that could corrupt a tracking file, and five gaps,
+all fixed before the first run: the page dropped an unrecorded click when Thursday's file
+replaced the list (it now drops a mark only once its id is in `lead_marks.json`); a network
+blip used up a request; a no-board company with no LinkedIn id vanished without a word (now a
+flag); a dead flag; and a retried run would have consumed the next week's batch (`--apply` now
+refuses when today's page already exists).

@@ -61,6 +61,14 @@ RULES
 The Shelf has to be this machine's: the iPhone app is read-only and a mark made
 there never reaches this file.
 
+THE WEEKLY LEADS (added 2026-10-15, D41)
+The same page carries the weekly report's leads, each with Tailor it and Pass, kept
+under a second key, `jobdash.leads.v1`, keyed by LinkedIn job id. Those aren't
+outcomes.csv rows, so they never go near mark_applied.py or mark_verdict.py:
+drain_leads() hands them to lead_marks.py, which records them in jobs/lead_marks.json.
+It runs first, reports as one `leads:` clause on the same line, and a failure there
+never stops the queue marks.
+
 This file is committed to a public repo. No company names, no sample rows.
 """
 import contextlib
@@ -80,6 +88,7 @@ JOBS_DIR = os.path.join(SCRIPT_DIR, "jobs")
 SHELF_DIR = os.path.expanduser("~/Library/Application Support/HTMLShelf")
 PAGE_FILE = "job_dashboard.html"   # the page's originalName in the Shelf library
 INBOX_KEY = "jobdash.inbox.v1"     # must match build_dashboard.py's page script
+LEADS_KEY = "jobdash.leads.v1"     # the weekly leads' Tailor it / Pass; same page, same rule
 BACKUP_SUFFIX = ".bak-shelf-inbox"   # + "-mon" .. "-sun"; pipeline/*.bak* is gitignored
 
 SKIP_VERDICTS = {"fit": "skip_fit", "time": "skip_time",
@@ -120,7 +129,7 @@ def find_storage_file():
     return os.path.join(SHELF_DIR, "Data", f"{hits[0].get('id')}.json"), ""
 
 
-def load_marks(inbox_path=None):
+def load_marks(inbox_path=None, key=INBOX_KEY):
     """{row key: mark dict}. The Shelf stores each localStorage value as a string."""
     if inbox_path is None:
         inbox_path, why = find_storage_file()
@@ -131,14 +140,39 @@ def load_marks(inbox_path=None):
             store = json.load(f)
     except FileNotFoundError:
         return {}, "the page has no stored data yet"
-    raw = store.get(INBOX_KEY) if isinstance(store, dict) else None
+    raw = store.get(key) if isinstance(store, dict) else None
     if isinstance(raw, str):
         raw = json.loads(raw or "{}")
     if raw is None:
         return {}, "no marks on the page"
     if not isinstance(raw, dict):
-        raise ValueError(f"{INBOX_KEY} is not an object")
+        raise ValueError(f"{key} is not an object")
     return {k: v for k, v in raw.items() if isinstance(v, dict)}, ""
+
+
+def drain_leads(inbox_path, today, apply):
+    """Record the weekly leads' Tailor it / Pass marks (added 2026-10-15, D41).
+
+    Returns one clause for the `shelf_inbox:` line, or "" when there were none. Never
+    raises: a failure here is reported and must not stop the apply-queue marks.
+    lead_marks.py owns jobs/lead_marks.json; this only hands it the page's marks.
+    """
+    try:
+        marks, _ = load_marks(inbox_path, LEADS_KEY)
+        if not marks:
+            return ""
+        import lead_marks
+        p, n_tailor, n_pass = lead_marks.record(marks, today, apply=apply)
+        for item in p["bad"]:
+            print(f"  lead not recorded: {item}")
+        extra = (f", {len(p['already'])} already recorded" if p["already"] else "") + (
+            f", {len(p['bad'])} not recorded" if p["bad"] else "")
+        if not p["new"]:
+            return f"leads: nothing new{extra}"
+        return (f"leads: {'recorded' if apply else 'would record'} {n_tailor} to tailor, "
+                f"{n_pass} passed{extra}")
+    except Exception as e:  # noqa: BLE001
+        return f"leads: FAILED {type(e).__name__}: {e}"
 
 
 def read_rows():
@@ -320,10 +354,13 @@ def main(argv=None):
         if today is None:
             raise ValueError("--today needs YYYY-MM-DD")
         inbox = argv[argv.index("--inbox") + 1] if "--inbox" in argv else None
+        lead_note = drain_leads(inbox, today, "--apply" in argv)
+        sfx = f"; {lead_note}" if lead_note else ""
+        lead_failed = lead_note.startswith("leads: FAILED")
         marks, why = load_marks(inbox)
         if not marks:
-            print(f"shelf_inbox: nothing to record ({why or 'no marks on the page'})")
-            return 0
+            print(f"shelf_inbox: nothing to record ({why or 'no marks on the page'}){sfx}")
+            return 1 if (strict and lead_failed) else 0
         p = plan(marks, read_rows(), today)
         n_sent, n_verdict = len(p["promote"]), len(p["verdict"])
         skips = sum(1 for v in p["verdict"] if v["verdict"].startswith("skip_"))
@@ -334,15 +371,15 @@ def main(argv=None):
                 print(f"  {name}: {item}")
         if "--apply" not in argv:
             print(f"shelf_inbox: would record {n_sent} sent, {skips} skipped, "
-                  f"{n_verdict - skips} sent verdicts; {tail} (report only; --apply records them)")
+                  f"{n_verdict - skips} sent verdicts; {tail}{sfx} (report only; --apply records them)")
             for c in p["promote"]:
                 print(f"  sent: {c['label']} ({c['applied_date']})")
             for v in p["verdict"]:
                 print(f"  {v['verdict']}: {v['label']}")
-            return 0
+            return 1 if (strict and lead_failed) else 0
         if not (n_sent or n_verdict):
-            print(f"shelf_inbox: nothing new to record; {tail}")
-            return 0
+            print(f"shelf_inbox: nothing new to record; {tail}{sfx}")
+            return 1 if (strict and lead_failed) else 0
         promoted, written, problems = apply_plan(p, today)
         log = os.path.join(JOBS_DIR, f"shelf_inbox_{today.isoformat()}.json")
         with open(log, "w", encoding="utf-8") as f:
@@ -351,8 +388,8 @@ def main(argv=None):
         for item in problems:
             print(f"  problem: {item}")
         print(f"shelf_inbox: recorded {promoted} sent, {written} verdicts ({skips} skips); {tail}"
-              + (f"; {len(problems)} PROBLEMS, see above" if problems else ""))
-        return 1 if (strict and problems) else 0
+              + (f"; {len(problems)} PROBLEMS, see above" if problems else "") + sfx)
+        return 1 if (strict and (problems or lead_failed)) else 0
     except Exception as e:  # noqa: BLE001 - an inbox failure must never fail the run
         print(f"shelf_inbox: FAILED {type(e).__name__}: {e}")
         return 1 if strict else 0

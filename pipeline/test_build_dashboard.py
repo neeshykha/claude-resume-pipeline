@@ -314,6 +314,69 @@ def test_hostile_notes_produce_valid_embedded_json():
     assert json.loads(blob)["queue"][0]["company"].startswith("Evil </script>")
 
 
+def leads_file(day, payload):
+    with open(os.path.join(bd.JOBS_DIR, f"weekly_leads_{day}.json"), "w", encoding="utf-8") as f:
+        json.dump(payload, f)
+
+
+def lead_row(jid, lst="unreachable", **kw):
+    x = {"id": jid, "list": lst, "company": "Brevik", "title": "Head of Support",
+         "url": f"https://www.linkedin.com/jobs/view/{jid}/", "tier": "tier1", "loc": "atlanta",
+         "seen": 2, "first": "2026-09-15", "note": "no board"}
+    x.update(kw)
+    return x
+
+
+def test_weekly_leads_window_answered_and_junk():
+    fixture([row(company="A", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/a")])
+    assert build()["leads"] is None
+    leads_file("2026-09-05", {"leads": [lead_row("4000001")]})
+    assert build()["leads"] is None, "older than LEADS_DAYS is not this week's report"
+    leads_file("2026-09-17", {
+        "window": {"start": "2026-09-11", "end": "2026-09-17"},
+        "flags": ["Remotive was degraded", 7],
+        "health": [{"title": "Channels", "lines": ["one", 2]}, {"lines": ["no title"]},
+                   {"title": "Pipeline quality", "lines": ["a  b"], "pre": True}],
+        "leads": [lead_row("4000001"), lead_row("4000002", lst="never_picked"), lead_row("4000003", lst="no_board"),
+                  lead_row("4000001"),                       # duplicate id
+                  lead_row("abc"), lead_row("4000004", lst="elsewhere"), "junk",
+                  lead_row("4000005", seen=10 ** 6, title="<b>x</b>")]})
+    with open(os.path.join(bd.JOBS_DIR, "lead_marks.json"), "w", encoding="utf-8") as f:
+        json.dump({"leads": {"4000002": {"action": "pass"},
+                             "9000000": {"action": "tailor"}}}, f)  # waiting, from another week
+    L = build()["leads"]
+    assert [x["id"] for x in L["rows"]] == ["4000001", "4000003", "4000005"], L["rows"]
+    assert L["handled"] == 1 and L["waiting"] == 1, L
+    assert L["start"] == "2026-09-11" and L["flags"] == ["Remotive was degraded"]
+    assert [h["title"] for h in L["health"]] == ["Channels", "Pipeline quality"] and L["health"][1]["pre"]
+    assert L["health"][0]["lines"] == ["one"]
+    assert L["rows"][2]["seen"] == 1, "an absurd count is reset, not trusted"
+    with open(os.path.join(bd.JOBS_DIR, "lead_marks.json"), "w", encoding="utf-8") as f:
+        f.write("{broken")
+    assert len(build()["leads"]["rows"]) == 4, "a malformed lead_marks.json hides nothing"
+    html = bd.render(build())
+    assert "<b>x</b>" not in html, "embedded data is escaped for the script block"
+
+
+def test_leads_key_contract_with_shelf_inbox_and_lead_marks():
+    import lead_marks
+    import shelf_inbox
+    fixture([row(company="A", stage="surfaced", surfaced_date="2026-09-18")])
+    leads_file("2026-09-18", {"leads": [lead_row("4000001")]})
+    html = bd.render(build())
+    assert "LKEY='%s'" % shelf_inbox.LEADS_KEY in html, "page and shelf_inbox.py must share the leads key"
+    assert "l:x.list,tier:x.tier,loc:x.loc" in html and "c:x.company,t:x.title" in html, \
+        "lead_marks.record reads c, t, u, l, tier, loc"
+    assert set(bd.LEAD_LISTS) == set(lead_marks.LISTS)
+    assert bd.LEAD_ID_RE.pattern == lead_marks.JOB_ID_RE.pattern
+    assert 'data-lact="tailor"' in html and 'data-lact="pass"' in html and 'data-lact="undo"' in html
+    with open(os.path.join(bd.JOBS_DIR, "lead_marks.json"), "w", encoding="utf-8") as f:
+        json.dump({"leads": {"4000009": {"action": "pass"}}}, f)
+    data = build()
+    assert data["lead_answered"] == ["4000009"], "the page prunes a lead mark only once a run recorded it"
+    assert "done[k]||n==null||n>D.lead_mark_days" in bd.render(data)
+
+
 def test_page_script_parses_as_javascript():
     # The other tests never execute the page. On 2026-10-12 a one-character slip in the
     # embedded script left every list blank and all of them still passed.

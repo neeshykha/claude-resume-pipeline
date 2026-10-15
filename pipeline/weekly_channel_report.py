@@ -75,24 +75,38 @@ company-level and drains a standing backlog, this one is role-level and windowed
 A company can honestly appear in both.
 
 Usage:
-    .venv/bin/python pipeline/weekly_channel_report.py           # preview only
-    .venv/bin/python pipeline/weekly_channel_report.py --apply   # preview + mark
-                                                                  # the printed
-                                                                  # unpollable batch
-                                                                  # weekly_report_surfaced
-                                                                  # so it doesn't repeat
+    .venv/bin/python pipeline/weekly_channel_report.py                  # preview only
+    .venv/bin/python pipeline/weekly_channel_report.py --page --apply   # what the daily run does
+    .venv/bin/python pipeline/weekly_channel_report.py --page --resurface 2026-10-15
+                                    # rebuild a week's page; marks nothing
 
-Prints the report to stdout. The channel-stats half never touches state. The
-unpollable-companies half only writes to enrollment_candidates.json when --apply
-is passed -- the calling routine (daily_task_prompt.md) runs it plain first to
-build the draft, then re-runs with --apply once the draft is actually created, so
-a preview that never gets sent doesn't silently consume the batch. The "is a
-report due this run" gate (via pipeline/jobs/weekly_channel_report_state.json)
-and Gmail draft creation stay owned by the calling routine either way.
+THE REPORT IS A PAGE NOW, NOT AN EMAIL (2026-10-15, D41). Aneesh called the email
+"so much junk": eleven kilobytes of channel counters wrapped around the three lists
+he acts on. `--page` writes everything to pipeline/jobs/weekly_leads_<date>.json,
+and build_dashboard.py shows it on the Shelf as "This week's leads": one row per
+role, unreachable first, each with Tailor it and Pass, and the channel numbers
+folded into a collapsed "Channel health" panel with anything off flagged above it.
+His clicks reach jobs/lead_marks.json through shelf_inbox.py, and a Tailor it is
+read and tailored by the next weekday run (daily_task_prompt.md Step 1d-4).
+
+Every lead is a LinkedIn role with a job id, including the unpollable companies:
+each of those carries the card that queued it (`card_job_id`, `card_url`). A role
+in two lists is shown once, in the first. A role whose company and title are
+already in outcomes.csv is left off; one at a company that has some other package
+says so on its row.
+
+Prints the text report to stdout either way, for the run's log. The channel-stats
+half never touches state. The unpollable-companies half writes to
+enrollment_candidates.json only with --apply, and with --page only after the page
+file is written, so a page that failed to write never consumes the batch. The
+"is a report due this run" gate (pipeline/jobs/weekly_channel_report_state.json)
+stays with the calling routine.
 """
 import argparse
 import glob
 import json
+import os
+import sys
 from datetime import datetime, timedelta
 
 UNPOLLABLE_WEEKLY_CAP = 20
@@ -184,6 +198,29 @@ CARD_BUCKETS = (
     ("blind_spot", "Named blind-spot employer, structurally unpollable"),
 )
 UNREACHABLE_BUCKETS = ("unpollable", "blind_spot")
+
+# --- The page (added 2026-10-15, D41) ----------------------------------------
+PAGE_PATH = "pipeline/jobs/weekly_leads_{date}.json"
+# Lists in the order the page shows them. A role in two lists appears once, in the first.
+LEAD_LISTS = ("unreachable", "never_picked", "no_board")
+TIER_RANK = {"tier1": 0, "tier2": 1, "tier2c": 2, "tier2d": 3}
+LOC_RANK = {"atlanta": 0, "atlanta-hybrid": 1, "remote": 2, "us-national": 3}
+LOC_LABELS = {"atlanta": "Atlanta", "atlanta-hybrid": "Atlanta hybrid", "remote": "Remote",
+              "us-national": "US"}
+# The daily run is `0 3 * * 1-5`; a weekday in the window with no channel_stats is a
+# missed or cut-off run worth a flag. Today is never counted: Step 6.5 runs before
+# today's run file is written.
+RUN_WEEKDAYS = {0, 1, 2, 3, 4}
+# CARD_BUCKETS labels are written for the text report's shouting style; these are the page's.
+PAGE_BUCKET_LABELS = {
+    "tailored": "Became a tailored application",
+    "company_worked": "Another role at that company was tailored",
+    "pollable_not_picked": "At a watched company, never scored in",
+    "queued": "Company queued, not watched yet when the alert came",
+    "unknown": "Company new or unclassified",
+    "unpollable": "Company has no ATS board",
+    "blind_spot": "Blind-spot employer with its own careers site",
+}
 
 
 def load_window(days=7):
@@ -409,7 +446,7 @@ def print_attribution_section(channels, unattributed, legacy, total_enrolled,
         print("    queued. Worth a look only if this grows.")
 
 
-def load_unpollable_batch(cap=UNPOLLABLE_WEEKLY_CAP):
+def load_unpollable_batch(cap=UNPOLLABLE_WEEKLY_CAP, resurface=None):
     """Return (batch, remaining_after_batch, total_unsurfaced) of rejected
     entries tagged unpollable=true, NOT yet surfaced, AND carrying confirmed
     role signal. Oldest rejected_date first.
@@ -443,6 +480,14 @@ def load_unpollable_batch(cap=UNPOLLABLE_WEEKLY_CAP):
             q = json.load(f)
     except FileNotFoundError:
         return [], 0, 0
+
+    if resurface:
+        # Rebuilding a page that already went out: the batch is whatever that day's
+        # --apply marked, in the same order. Nothing new is consumed.
+        batch = [r for r in q.get("rejected", [])
+                 if r.get("weekly_report_surfaced_date") == resurface]
+        batch.sort(key=lambda r: r.get("rejected_date") or "")
+        return batch, 0, len(batch)
 
     unsurfaced = [
         r for r in q.get("rejected", [])
@@ -654,6 +699,18 @@ def load_tailored_index(path="pipeline/outcomes.csv"):
     return index
 
 
+def strong_buckets(cards, tailored_index):
+    """(strong cards, {bucket: [cards]}). Strong = a scoring tier AND Atlanta or remote-US."""
+    strong = [c for c in cards
+              if c.get("title_tier") in STRONG_CARD_TIERS
+              and (c.get("location_points") or 0) > 0
+              and not c.get("hard_excluded")]
+    buckets = {}
+    for card in strong:
+        buckets.setdefault(classify_card(card, tailored_index), []).append(card)
+    return strong, buckets
+
+
 def print_linkedin_cards_section(cards, raw_total, files, cutoff, today):
     print()
     print("=== LinkedIn alerts: what was in them and where it went ===")
@@ -662,11 +719,7 @@ def print_linkedin_cards_section(cards, raw_total, files, cutoff, today):
         print("or it ran before harvest_linkedin.py started writing card files (2026-09-02).")
         return
 
-    tailored_index = load_tailored_index()
-    strong = [c for c in cards
-              if c.get("title_tier") in STRONG_CARD_TIERS
-              and (c.get("location_points") or 0) > 0
-              and not c.get("hard_excluded")]
+    strong, buckets = strong_buckets(cards, load_tailored_index())
 
     print(f"{raw_total} cards across {files} day(s), {len(cards)} unique roles after deduping")
     print(f"by LinkedIn job id. LinkedIn re-sends the same role across days and saved searches,")
@@ -678,10 +731,6 @@ def print_linkedin_cards_section(cards, raw_total, files, cutoff, today):
     if not strong:
         print("\nNo strong roles in the window. Nothing to validate.")
         return
-
-    buckets = {}
-    for card in strong:
-        buckets.setdefault(classify_card(card, tailored_index), []).append(card)
 
     print()
     print("Where the strong ones went:")
@@ -736,12 +785,259 @@ def print_linkedin_cards_section(cards, raw_total, files, cutoff, today):
         print("two and the poller watches it from then on, but that specific requisition may be gone.")
 
 
+def channel_numbers(rows):
+    """The channel_stats counters summed over the window, one dict for the text and the page."""
+    # Matched exact-lowercase "degraded" until 2026-09-10, but the runs write prose
+    # ("DEGRADED (self-reported; queue untouched)"), so a permanently degraded feeder
+    # reported as healthy on 0 of N days. Match by case-insensitive prefix instead.
+    remotive_degraded_days = sum(
+        1 for _, cs in rows
+        if str(cs.get("feeders", {}).get("poll_remotive_status") or "").strip().lower().startswith("degraded")
+    )
+    return {
+        "days": len(rows),
+        "ats": {"polled": sum_field(rows, "ats_poll", "companies_polled"),
+                "scanned": sum_field(rows, "ats_poll", "jobs_scanned"),
+                "matched": sum_field(rows, "ats_poll", "title_matched"),
+                "shortlisted": sum_field(rows, "ats_poll", "shortlisted")},
+        "websearch": {"sources": sum_field(rows, "websearch", "sources_run"),
+                      "new": sum_field(rows, "websearch", "new_companies_found"),
+                      "enrolled_same_run": sum_field(rows, "websearch", "enrolled")},
+        "linkedin": {"threads": sum_field(rows, "linkedin_harvest", "threads_found"),
+                     "companies": sum_field(rows, "linkedin_harvest", "companies_extracted"),
+                     "enrolled_same_run": sum_field(rows, "linkedin_harvest", "enrolled"),
+                     "blind_spot_hits": sum_field(rows, "linkedin_harvest", "blind_spot_real_hits")},
+        # poll_builtin landed 2026-09-03; runs before then carry no such key and sum to 0,
+        # which reads the same as "ran and found nothing". Check the run dates before
+        # concluding this feeder is dead.
+        "feeders": {"remotive_degraded_days": remotive_degraded_days,
+                    "remotive_leads": sum_field(rows, "feeders", "poll_remotive_leads"),
+                    "80k_leads": sum_field(rows, "feeders", "poll_80k_leads"),
+                    "hn_leads": sum_field(rows, "feeders", "harvest_hn_hiring_leads"),
+                    "builtin_leads": sum_field(rows, "feeders", "poll_builtin_leads"),
+                    "builtin_ambiguous": sum_field(rows, "feeders", "poll_builtin_ambiguous")},
+        "tailored": sum_field(rows, "_tailored_count"),
+    }
+
+
+def print_channel_numbers(n):
+    print()
+    print(f"ATS poll (execution layer, runs every day):")
+    print(f"  companies polled (latest-day snapshot varies; summed across {n['days']} days): {n['ats']['polled']}")
+    print(f"  jobs scanned: {n['ats']['scanned']}  |  title matches: {n['ats']['matched']}  |  "
+          f"shortlisted: {n['ats']['shortlisted']}")
+    print()
+    print(f"WebSearch discovery ({n['websearch']['sources']} source-runs across {n['days']} days):")
+    print(f"  new companies found: {n['websearch']['new']}  |  enrolled ON THE SAME RUN: "
+          f"{n['websearch']['enrolled_same_run']}")
+    print(f"  (same-run enrollment is near-impossible by design — see Enrollment attribution below)")
+    print()
+    print(f"LinkedIn harvest ({n['linkedin']['threads']} threads, {n['linkedin']['companies']} companies extracted):")
+    print(f"  enrolled ON THE SAME RUN: {n['linkedin']['enrolled_same_run']}  |  blind-spot real hits "
+          f"(unpollable but real): {n['linkedin']['blind_spot_hits']}")
+    print(f"  (volume only -- see 'LinkedIn alerts: what was in them and where it went' below")
+    print(f"   for the per-role disposition, which is the part that says whether this works)")
+    print()
+    f = n["feeders"]
+    print(f"Discovery feeders:")
+    print(f"  poll_remotive: DEGRADED on {f['remotive_degraded_days']} of {n['days']} tracked days, "
+          f"0 leads possible while degraded")
+    print(f"  poll_80k leads: {f['80k_leads']}  |  harvest_hn_hiring leads: {f['hn_leads']}")
+    print(f"  poll_builtin leads: {f['builtin_leads']}"
+          f"  |  ambiguous (truncated breakdown, not queued): {f['builtin_ambiguous']}")
+    print()
+    print(f"Tailored applications this window: {n['tailored']}")
+    print(f"  (all tailoring executes off the ATS-poll shortlist by design -- discovery channels")
+    print(f"   feed the watchlist that ATS-poll scans, they don't produce same-day applications directly)")
+
+
+# --- The page ----------------------------------------------------------------
+
+def _lead_from_card(card, lst, note):
+    jid = str(card.get("job_id") or "").strip()
+    return {"id": jid, "list": lst,
+            "company": (card.get("company") or "?").strip(),
+            "title": (card.get("title") or "?").strip(),
+            "url": card.get("url") or (f"https://www.linkedin.com/jobs/view/{jid}/" if jid else ""),
+            "tier": card.get("title_tier") or "",
+            "loc": card.get("location_verdict") or "",
+            "seen": card.get("seen_times") or 1,
+            "first": card.get("alert_date") or "",
+            "note": note}
+
+
+def _lead_from_unpollable(entry, tailored_index, card_index):
+    """A no-board company's row, from the LinkedIn card that queued it. None if already tailored.
+
+    An entry with no card id still comes back, with an empty id, so build_leads counts it
+    and the page flags it: --apply marks it surfaced either way, and it would otherwise
+    leave the list without ever being shown.
+    """
+    jid = str(entry.get("card_job_id") or "").strip()
+    card = (card_index.get(jid) if jid else None) or {}
+    title = (entry.get("card_title") or "").strip()
+    if not title:
+        title = (entry.get("manual_review_why") or "").split(" -- ")[0].strip() or "?"
+    disposition = classify_card({"company": entry.get("name"), "title": title}, tailored_index)
+    if disposition == "tailored":
+        return None
+    board = entry.get("collision_board")
+    note = (f"its name matched another company's board ({board}); the real one is unfound"
+            if board else "no ATS board found")
+    if disposition == "company_worked":
+        note += "; you have a package at this company already"
+    return {"id": jid, "list": "no_board", "company": (entry.get("name") or "?").strip(),
+            "title": title, "url": entry.get("card_url") or f"https://www.linkedin.com/jobs/view/{jid}/",
+            # The queue entry keeps no tier or location; the card does, when it's in the window.
+            "tier": card.get("title_tier") or "", "loc": card.get("location_verdict") or "",
+            "seen": card.get("seen_times") or 1,
+            "first": entry.get("first_seen") or entry.get("rejected_date") or "", "note": note}
+
+
+def _lead_order(lead):
+    return (TIER_RANK.get(lead["tier"], 9), LOC_RANK.get(lead["loc"], 9), lead["company"].lower(),
+            lead["title"].lower())
+
+
+def build_leads(buckets, batch, tailored_index, cards=()):
+    """One list, unreachable first, deduped by job id. Returns (leads, dropped_without_id)."""
+    card_index = {str(c.get("job_id")): c for c in cards if c.get("job_id")}
+    lists = {k: [] for k in LEAD_LISTS}
+    for key in UNREACHABLE_BUCKETS:
+        note = ("named blind-spot employer: a careers site the poller can't read"
+                if key == "blind_spot" else "the company has no ATS board the poller can read")
+        lists["unreachable"] += [_lead_from_card(c, "unreachable", note) for c in buckets.get(key, [])]
+    lists["never_picked"] = [_lead_from_card(c, "never_picked",
+                                             "the poller reads this board; the role lost on score or rank")
+                             for c in buckets.get("pollable_not_picked", [])]
+    lists["no_board"] = [x for x in (_lead_from_unpollable(e, tailored_index, card_index) for e in batch)
+                         if x]
+    seen, out, dropped = set(), [], 0
+    for key in LEAD_LISTS:
+        for lead in sorted(lists[key], key=_lead_order) if key != "no_board" else lists[key]:
+            if not lead["id"]:
+                dropped += 1
+                continue
+            if lead["id"] in seen:
+                continue
+            seen.add(lead["id"])
+            out.append(lead)
+    return out, dropped
+
+
+def _weekday_gaps(rows, missing, cutoff, today):
+    have = {d for d, _ in rows}
+    gaps = []
+    d = cutoff
+    while d < today:
+        if d.weekday() in RUN_WEEKDAYS and d not in have:
+            gaps.append(d)
+        d += timedelta(days=1)
+    return gaps
+
+
+def page_flags(n, attribution, gaps, no_id=0):
+    """Things that look broken, in plain words. Empty is the normal week."""
+    channels, _, _, _ = attribution
+    flags = []
+    if no_id:
+        flags.append(f"{no_id} no-board compan{'y has' if no_id == 1 else 'ies have'} no LinkedIn role on "
+                     f"record, so {'it' if no_id == 1 else 'they'} can't be shown here; the names are in "
+                     f"this run's log.")
+    if gaps:
+        names = ", ".join(d.strftime("%a %b %-d") for d in gaps)
+        flags.append(f"No channel data for {names}: that weekday run was missed or cut off "
+                     f"before it wrote its numbers, so every count here runs low.")
+    if n and n["days"]:
+        f = n["feeders"]
+        if f["remotive_degraded_days"] == n["days"]:
+            flags.append(f"Remotive was degraded on all {n['days']} tracked days, so it found nothing.")
+        if not f["builtin_leads"] and n["days"] >= 3:
+            flags.append(f"BuiltIn found 0 leads across {n['days']} days.")
+        if not n["tailored"]:
+            flags.append("No applications were tailored this window.")
+        if n["websearch"]["sources"] and not channels.get("websearch", {}).get("enrolled"):
+            flags.append(f"WebSearch ran {n['websearch']['sources']} source-runs and no enrollment "
+                         f"this window traces back to it.")
+        if n["linkedin"]["threads"] and not channels.get("linkedin_harvest", {}).get("enrolled"):
+            flags.append(f"LinkedIn alerts ({n['linkedin']['threads']} threads) produced no enrollment "
+                         f"this window.")
+    return flags
+
+
+def _fmt(x):
+    return f"{x:,}" if isinstance(x, int) else str(x)
+
+
+def health_sections(n, attribution, card_stats, quality):
+    """The collapsed panel: a few titled blocks of plain lines."""
+    out = []
+    channels, unattributed, legacy, total_enrolled = attribution
+    if n and n["days"]:
+        f = n["feeders"]
+        def enr(key):
+            data = channels.get(key) or {"enrolled": [], "rejected": []}
+            e, r = len(data["enrolled"]), len(data["rejected"])
+            return f"{e} enrollment{'' if e == 1 else 's'} traced to it" + (
+                f" ({round(100 * e / (e + r))}% of {e + r} resolved)" if e + r else "")
+        out.append({"title": "Channels", "lines": [
+            f"ATS poll: {_fmt(n['ats']['scanned'])} jobs scanned across {n['days']} days, "
+            f"{_fmt(n['ats']['matched'])} title matches, {_fmt(n['ats']['shortlisted'])} shortlisted, "
+            f"{_fmt(n['tailored'])} tailored. Every package starts here.",
+            f"WebSearch: {n['websearch']['sources']} source-runs, {n['websearch']['new']} new companies, "
+            + enr("websearch") + ".",
+            f"LinkedIn alerts: {n['linkedin']['threads']} threads, {_fmt(n['linkedin']['companies'])} "
+            f"companies extracted, " + enr("linkedin_harvest") + ".",
+            f"Feeders: Remotive degraded {f['remotive_degraded_days']} of {n['days']} days, 80K Hours "
+            f"{f['80k_leads']} leads, BuiltIn {f['builtin_leads']} leads ({f['builtin_ambiguous']} "
+            f"ambiguous, not queued), HN {f['hn_leads']}; " + enr("feeders") + ".",
+            f"Enrollments this window: {total_enrolled}"
+            + (f", {unattributed} with no source on record" if unattributed else "")
+            + (f", {legacy} from before sources were kept" if legacy else "") + ".",
+        ]})
+    if card_stats:
+        b = card_stats["buckets"]
+        strong = card_stats["strong"] or 1
+        parts = [f"{PAGE_BUCKET_LABELS[key]}: {len(b[key])} ({round(100 * len(b[key]) / strong)}%)"
+                 for key, _ in CARD_BUCKETS if b.get(key)]
+        out.append({"title": "LinkedIn alerts: where the strong roles went", "lines": [
+            f"{_fmt(card_stats['raw'])} cards across {card_stats['files']} days, {card_stats['unique']} "
+            f"unique roles, {card_stats['strong']} strong (tier 1, 2, 2c, or 2d in Atlanta or remote US).",
+        ] + parts})
+    if quality:
+        out.append({"title": "Pipeline quality", "lines": quality.splitlines(), "pre": True})
+    return out
+
+
+def quality_text():
+    """pipeline_quality.py's report, or "" if it can't run. Read-only either way."""
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import pipeline_quality as pq
+        return pq.report(pq.load(pq.OUTCOMES, pq.EPOCH), pq.load_leads())
+    except Exception as e:  # noqa: BLE001 - the page is still worth writing without it
+        return f"(pipeline_quality.py failed: {type(e).__name__}: {e})"
+
+
+def write_page(doc, path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(doc, f, indent=1, ensure_ascii=False)
+        f.write("\n")
+    os.replace(tmp, path)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true",
-                         help="Mark the printed unpollable batch as weekly_report_surfaced "
-                              "so it doesn't repeat next week. Only run this after the "
-                              "digest draft has actually been created.")
+                        help="Mark the unpollable batch as weekly_report_surfaced so it doesn't "
+                             "repeat next week. With --page, only after the page file is written.")
+    parser.add_argument("--page", action="store_true",
+                        help="Write pipeline/jobs/weekly_leads_<today>.json for the dashboard.")
+    parser.add_argument("--page-out", help="Write the page file here instead (tests).")
+    parser.add_argument("--resurface", metavar="YYYY-MM-DD",
+                        help="Rebuild the unpollable batch that day's --apply marked. Marks nothing.")
     parser.add_argument("--all-unpollable", action="store_true",
                         help="Restore the pre-2026-08-31 behaviour and list EVERY unsurfaced "
                              "unpollable entry, not just those with confirmed role signal. "
@@ -749,6 +1045,8 @@ def main():
                              "population yielded zero enrollable companies, so it is not the "
                              "weekly default.")
     args = parser.parse_args()
+    if args.resurface and args.apply:
+        parser.error("--resurface rebuilds a batch that was already marked; drop --apply")
     global INCLUDE_ALL_UNPOLLABLE
     INCLUDE_ALL_UNPOLLABLE = args.all_unpollable
 
@@ -759,84 +1057,66 @@ def main():
     print(f"Days with channel_stats data: {len(rows)} of 7")
     if missing:
         print(f"Days in window without data: {', '.join(str(d) for d in missing)}")
-    if not rows:
+
+    numbers = channel_numbers(rows) if rows else None
+    attribution = load_attribution(cutoff, today)
+    card_stats = None
+    buckets, cards = {}, []
+    if rows:
+        print_channel_numbers(numbers)
+    else:
         print("No channel_stats data in the trailing window. Nothing to report yet.")
-        # Attribution reads the enrollment queue, not the run files, so it still
-        # has something to say on a week where every run file is missing its
-        # channel_stats block.
-        print_attribution_section(*load_attribution(cutoff, today), cutoff, today)
-        batch, remaining, total_unsurfaced = load_unpollable_batch()
-        print_unpollable_section(batch, remaining, total_unsurfaced)
-        if args.apply:
-            mark_surfaced(batch)
-        return
+    # Attribution reads the enrollment queue, not the run files, so it still has
+    # something to say on a week where every run file is missing its channel_stats.
+    print_attribution_section(*attribution, cutoff, today)
+    tailored_index = load_tailored_index()
+    if rows:
+        cards, raw_total, files = load_linkedin_cards(cutoff, today)
+        print_linkedin_cards_section(cards, raw_total, files, cutoff, today)
+        strong, buckets = strong_buckets(cards, tailored_index)
+        card_stats = {"raw": raw_total, "files": files, "unique": len(cards),
+                      "strong": len(strong), "buckets": buckets} if files else None
 
-    ats_polled = sum_field(rows, "ats_poll", "companies_polled")
-    ats_scanned = sum_field(rows, "ats_poll", "jobs_scanned")
-    ats_matched = sum_field(rows, "ats_poll", "title_matched")
-    ats_shortlisted = sum_field(rows, "ats_poll", "shortlisted")
-
-    ws_sources = sum_field(rows, "websearch", "sources_run")
-    ws_new = sum_field(rows, "websearch", "new_companies_found")
-    ws_enrolled = sum_field(rows, "websearch", "enrolled")
-
-    li_threads = sum_field(rows, "linkedin_harvest", "threads_found")
-    li_companies = sum_field(rows, "linkedin_harvest", "companies_extracted")
-    li_enrolled = sum_field(rows, "linkedin_harvest", "enrolled")
-    li_blind_spot = sum_field(rows, "linkedin_harvest", "blind_spot_real_hits")
-
-    feeder_remotive_leads = sum_field(rows, "feeders", "poll_remotive_leads")
-    feeder_80k_leads = sum_field(rows, "feeders", "poll_80k_leads")
-    feeder_hn_leads = sum_field(rows, "feeders", "harvest_hn_hiring_leads")
-    feeder_builtin_leads = sum_field(rows, "feeders", "poll_builtin_leads")
-    feeder_builtin_ambiguous = sum_field(rows, "feeders", "poll_builtin_ambiguous")
-    # Matched exact-lowercase "degraded" until 2026-09-10, but the runs write prose
-    # ("DEGRADED (self-reported; queue untouched)"), so a permanently degraded feeder
-    # reported as healthy on 0 of N days. Match by case-insensitive prefix instead.
-    remotive_degraded_days = sum(
-        1 for _, cs in rows
-        if str(cs.get("feeders", {}).get("poll_remotive_status") or "").strip().lower().startswith("degraded")
-    )
-
-    tailored_total = sum_field(rows, "_tailored_count")
-
-    print()
-    print(f"ATS poll (execution layer, runs every day):")
-    print(f"  companies polled (latest-day snapshot varies; summed across {len(rows)} days): {ats_polled}")
-    print(f"  jobs scanned: {ats_scanned}  |  title matches: {ats_matched}  |  shortlisted: {ats_shortlisted}")
-    print()
-    print(f"WebSearch discovery ({ws_sources} source-runs across {len(rows)} days):")
-    print(f"  new companies found: {ws_new}  |  enrolled ON THE SAME RUN: {ws_enrolled}")
-    print(f"  (same-run enrollment is near-impossible by design — see Enrollment attribution below)")
-    print()
-    print(f"LinkedIn harvest ({li_threads} threads, {li_companies} companies extracted):")
-    print(f"  enrolled ON THE SAME RUN: {li_enrolled}  |  blind-spot real hits "
-          f"(unpollable but real): {li_blind_spot}")
-    print(f"  (volume only -- see 'LinkedIn alerts: what was in them and where it went' below")
-    print(f"   for the per-role disposition, which is the part that says whether this works)")
-    print()
-    print(f"Discovery feeders:")
-    print(f"  poll_remotive: DEGRADED on {remotive_degraded_days} of {len(rows)} tracked days, 0 leads possible while degraded")
-    print(f"  poll_80k leads: {feeder_80k_leads}  |  harvest_hn_hiring leads: {feeder_hn_leads}")
-    # poll_builtin landed 2026-09-03; runs before then carry no such key and sum to 0,
-    # which reads the same as "ran and found nothing". Check the run dates before
-    # concluding this feeder is dead.
-    print(f"  poll_builtin leads: {feeder_builtin_leads}"
-          f"  |  ambiguous (truncated breakdown, not queued): {feeder_builtin_ambiguous}")
-    print()
-    print(f"Tailored applications this window: {tailored_total}")
-    print(f"  (all tailoring executes off the ATS-poll shortlist by design -- discovery channels")
-    print(f"   feed the watchlist that ATS-poll scans, they don't produce same-day applications directly)")
-
-    print_attribution_section(*load_attribution(cutoff, today), cutoff, today)
-
-    print_linkedin_cards_section(*load_linkedin_cards(cutoff, today), cutoff, today)
-
-    batch, remaining, total_unsurfaced = load_unpollable_batch()
+    batch, remaining, total_unsurfaced = load_unpollable_batch(resurface=args.resurface)
     print_unpollable_section(batch, remaining, total_unsurfaced)
+
+    if args.page or args.page_out:
+        leads, no_id = build_leads(buckets, batch, tailored_index, cards)
+        doc = {
+            "generated": datetime.now().strftime("%Y-%m-%dT%H:%M"),
+            "window": {"start": cutoff.isoformat(), "end": today.isoformat(),
+                       "days_with_data": len(rows), "missing": [str(d) for d in missing]},
+            "flags": page_flags(numbers, attribution, _weekday_gaps(rows, missing, cutoff, today), no_id),
+            "health": health_sections(numbers, attribution, card_stats, quality_text()),
+            "channels": numbers,
+            "counts": {"leads": len(leads), "dropped_no_job_id": no_id,
+                       "unreachable_total": sum(len(buckets.get(k, [])) for k in UNREACHABLE_BUCKETS),
+                       "unpollable_waiting": remaining},
+            "leads": leads,
+        }
+        path = args.page_out or PAGE_PATH.format(date=today.isoformat())
+        if args.apply and os.path.exists(path):
+            # A retried run. The first one wrote this page and marked its batch; doing it
+            # again would consume the next 20 and overwrite what he may be answering.
+            print(f"\nweekly_channel_report: {path} was already written today; "
+                  f"nothing rewritten, nothing marked.")
+            return 0
+        try:
+            write_page(doc, path)
+        except OSError as e:
+            print(f"\nweekly_channel_report: FAILED writing {path}: {e}. Nothing was marked.")
+            return 1
+        by = {k: sum(1 for x in leads if x["list"] == k) for k in LEAD_LISTS}
+        print(f"\nweekly_channel_report: page written to {path}: {len(leads)} leads "
+              f"({by['unreachable']} unreachable, {by['never_picked']} never picked, "
+              f"{by['no_board']} no board), {len(doc['flags'])} flag(s)")
+        for flag in doc["flags"]:
+            print(f"  flag: {flag}")
+
     if args.apply:
         mark_surfaced(batch)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

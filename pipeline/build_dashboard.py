@@ -13,8 +13,11 @@ READ-ONLY against every tracking file. It shows state and never sets it: marking
 a role applied stays with mark_applied.py, outcomes with mark_outcome.py. It
 imports nothing from the writers and must stay that way.
 
-The page keeps two kinds of state, both in the Shelf's per-page storage:
+The page keeps three kinds of state, all in the Shelf's per-page storage:
   ticks  "I checked this site" on the manual list. The pipeline never reads them.
+  leads  Tailor it / Pass on a weekly lead (added 2026-10-15, D41), keyed by LinkedIn job
+         id under `jobdash.leads.v1`. Also an inbox: shelf_inbox.py records them in
+         jobs/lead_marks.json through lead_marks.py, and a recorded lead leaves the page.
   marks  Sent / Skip / Later on a queue row, plus a one-click "skip everything older
          than the Fresh window" in the All view (added 2026-10-12, his go-ahead). These
          are an INBOX, not a record: shelf_inbox.py reads them at the start of the
@@ -42,6 +45,10 @@ email, read from jobs/brief_<date>.json (written at daily_task_prompt.md Step 5)
   today   the last run's picks on top, each with the run's read on it, what its
           cover letter promises, and what changed in the resume.
   run     the FYI lists and the run audit, collapsed.
+And since 2026-10-15 what used to be the weekly channel report email, read from
+jobs/weekly_leads_<date>.json (weekly_channel_report.py --page, Thursdays):
+  leads   strong LinkedIn roles that never became a package, one row each with Tailor it
+          and Pass, flags for anything that looks broken, and the channel numbers collapsed.
 and, for a package that has one, the paste sheet field_sheet.py wrote
 (tailored/<stem>_fields.json), with a click-to-copy value per form field. Sections
 that file marks `personal` (address, phone) are never embedded in the page.
@@ -432,6 +439,76 @@ def read_brief(today):
     return None
 
 
+# A week's leads stay up until the next week's file replaces them, with a few days' slack
+# for a missed Thursday. Older than this and the section says there's no current report.
+LEADS_DAYS = 13
+LEAD_LISTS = ("unreachable", "never_picked", "no_board")
+LEAD_ID_RE = re.compile(r"^\d{6,12}$")
+LEAD_MARKS = "lead_marks.json"
+LEAD_MARK_DAYS = 21   # backstop: a mark no run has recorded in three weeks is let go
+
+
+def read_lead_marks():
+    """{job id: entry} from jobs/lead_marks.json. Read here, never written: lead_marks.py
+    owns the file and shelf_inbox.py fills it. A missing or malformed file hides nothing."""
+    try:
+        with open(os.path.join(JOBS_DIR, LEAD_MARKS), encoding="utf-8") as f:
+            leads = json.load(f).get("leads")
+    except Exception:
+        return {}
+    return {k: v for k, v in leads.items() if isinstance(v, dict)} if isinstance(leads, dict) else {}
+
+
+def read_leads(today):
+    """The newest jobs/weekly_leads_<date>.json from the last LEADS_DAYS days, or None.
+
+    Written by weekly_channel_report.py --page (daily_task_prompt.md Step 6.5, Thursdays).
+    A lead he has already answered (any entry in lead_marks.json) is left off, which is how
+    a recorded Tailor it or Pass leaves the page. Everything is type-checked and capped,
+    same as the brief.
+    """
+    for n in range(LEADS_DAYS + 1):
+        d = date.fromordinal(today.toordinal() - n)
+        try:
+            with open(os.path.join(JOBS_DIR, f"weekly_leads_{d.isoformat()}.json"), encoding="utf-8") as f:
+                raw = json.load(f)
+        except Exception:
+            continue
+        if not isinstance(raw, dict):
+            continue
+        answered = read_lead_marks()
+        rows, seen, handled = [], set(), 0
+        for x in raw.get("leads") or []:
+            if not isinstance(x, dict):
+                continue
+            jid = clip(str(x.get("id") or ""), 20)
+            lst = x.get("list") if x.get("list") in LEAD_LISTS else ""
+            if not LEAD_ID_RE.match(jid) or not lst or jid in seen:
+                continue
+            seen.add(jid)
+            if jid in answered:
+                handled += 1
+                continue
+            seen_n = x.get("seen")
+            rows.append({"id": jid, "list": lst, "company": clip(x.get("company"), 120) or "?",
+                         "title": clip(x.get("title"), 200) or "?", "url": clip(x.get("url"), 600),
+                         "tier": clip(x.get("tier"), 12), "loc": clip(x.get("loc"), 20),
+                         "seen": seen_n if isinstance(seen_n, int) and 0 < seen_n < 1000 else 1,
+                         "first": clip(x.get("first"), 10), "note": clip(x.get("note"), 300)})
+        health = []
+        for s in raw.get("health") or []:
+            if isinstance(s, dict) and clip(s.get("title"), 80):
+                lines = [ln[:400] for ln in (s.get("lines") or []) if isinstance(ln, str)][:80]
+                health.append({"title": clip(s.get("title"), 80), "lines": lines, "pre": bool(s.get("pre"))})
+        window = raw.get("window") if isinstance(raw.get("window"), dict) else {}
+        waiting = sum(1 for v in answered.values() if v.get("action") == "tailor" and not v.get("fetched"))
+        return {"date": d.isoformat(), "start": clip(window.get("start"), 10),
+                "end": clip(window.get("end"), 10) or d.isoformat(),
+                "flags": [clip(x, 400) for x in (raw.get("flags") or []) if clip(x, 400)][:8],
+                "health": health[:6], "rows": rows, "handled": handled, "waiting": waiting}
+    return None
+
+
 def read_fields(pdf_rel):
     """Non-personal sections of the package's paste sheet (field_sheet.py), or None."""
     if not pdf_rel:
@@ -472,7 +549,9 @@ def build_data(today, now):
             "run_weekdays": [1, 2, 3, 4, 5], "run_ready_hour": 8,
             "queue": queue, "quiet": quiet, "manual": read_manual(watch), "counts": counts,
             "screened": screened, "screened_window": SCREENED_DAYS,
-            "brief": read_brief(today), "later_days": 3}
+            "brief": read_brief(today), "later_days": 3, "leads": read_leads(today),
+            # Every job id a run has recorded. The page drops a lead mark once it's in here.
+            "lead_answered": sorted(read_lead_marks()), "lead_mark_days": LEAD_MARK_DAYS}
 
 
 def render(data):
@@ -493,8 +572,10 @@ def summary(data, today):
         d = parse_date(i["surfaced"])
         return None if not d else data["expiry_days"] - (today - d).days
     expiring = sum(1 for i in data["queue"] if left(i) is not None and left(i) <= data["expiring_days"])
+    leads = data.get("leads") or {}
     return (f"{len(data['queue'])} queue ({expiring} expiring), "
             f"{len(data.get('screened', []))} cleared, "
+            f"{len(leads.get('rows') or [])} weekly leads, "
             f"{len(data['manual'])} manual, {len(data['quiet'])} quiet")
 
 
@@ -595,6 +676,10 @@ details ul{margin:6px 0 2px;padding-left:18px;color:var(--mute)}
 .fs{margin:8px 0}.fst{font-weight:600;margin-bottom:3px;color:var(--ink)}
 .fl{display:flex;gap:10px;padding:2px 0}.fk{flex:0 0 150px;color:var(--mute)}
 .fv{white-space:pre-wrap;word-break:break-word;color:var(--ink)}.fv.need{color:var(--warn)}
+.gdesc{font-size:12.5px;color:var(--mute);padding:0 12px 8px;background:var(--bg)}
+.hs{padding:4px 12px 10px;font-size:13px}.hs b{display:block;margin:6px 0 2px}
+.hs ul{margin:0;padding-left:18px;color:var(--ink)}
+.hs pre{margin:0;white-space:pre-wrap;font-size:12px;color:var(--ink);overflow-x:auto}
 footer{margin-top:34px;font-size:13px;color:var(--mute)}
 footer li{margin:3px 0}
 </style>
@@ -621,6 +706,13 @@ footer li{margin:3px 0}
 <div class="sub">The daily run read these job descriptions in full and they cleared location, pay, and the scoring bar, but there wasn't a tailored resume for them that day. Last <span id="swin"></span> days; a role leaves once it's tailored or applied.</div>
 <div class="list" id="screened"></div>
 
+<h2 id="h-leads">This week's leads</h2>
+<div class="sub" id="leads-sub"></div>
+<div id="leads-flags"></div>
+<div class="sub" id="leads-note"></div>
+<div class="list" id="leads"></div>
+<div id="leads-health"></div>
+
 <div id="run-wrap">
 <h2 id="h-run">More from the last run</h2>
 <div class="sub">What used to fill the rest of the digest email. Nothing in here is waiting on you.</div>
@@ -642,7 +734,7 @@ footer li{margin:3px 0}
 <script>
 (function(){
 var D=JSON.parse(document.getElementById('data').textContent);
-var DAY=86400000, KEY='jobdash.ticks.v1', IKEY='jobdash.inbox.v1';
+var DAY=86400000, KEY='jobdash.ticks.v1', IKEY='jobdash.inbox.v1', LKEY='jobdash.leads.v1';
 var SKIP={fit:'not a fit',time:'no time',materials:'materials',other:'other'};
 function el(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -655,11 +747,15 @@ function nice(s){var d=day(s);return d?d.toLocaleDateString(undefined,{month:'sh
 function safeUrl(u){return /^https?:\/\//i.test(u||'')?u:''}
 
 // Ticks and marks. Storage can throw (private window, blocked site data); the page still works without it.
-var ticks={}, marks={}, storageOK=true;
-try{ticks=JSON.parse(localStorage.getItem(KEY)||'{}')||{};marks=JSON.parse(localStorage.getItem(IKEY)||'{}')||{}}catch(e){storageOK=false}
+var ticks={}, marks={}, lmarks={}, storageOK=true;
+try{ticks=JSON.parse(localStorage.getItem(KEY)||'{}')||{};marks=JSON.parse(localStorage.getItem(IKEY)||'{}')||{};
+  lmarks=JSON.parse(localStorage.getItem(LKEY)||'{}')||{}}catch(e){storageOK=false}
 function saveTicks(){try{localStorage.setItem(KEY,JSON.stringify(ticks))}catch(e){storageOK=false;strips()}}
 // IKEY and the mark shape {a,r,e,d,ts,u,c,t} are read by pipeline/shelf_inbox.py. Change both together.
 function saveMarks(){try{localStorage.setItem(IKEY,JSON.stringify(marks))}catch(e){storageOK=false;strips()}}
+// LKEY and the lead mark shape {a,d,ts,u,c,t,l,tier,loc}, keyed by LinkedIn job id, are read by
+// pipeline/shelf_inbox.py and recorded by pipeline/lead_marks.py. Change all three together.
+function saveLeadMarks(){try{localStorage.setItem(LKEY,JSON.stringify(lmarks))}catch(e){storageOK=false;strips()}}
 (function prune(){var live={},changed=false;D.manual.forEach(function(m){live[m.key]=1});
   Object.keys(ticks).forEach(function(k){if(!live[k]){delete ticks[k];changed=true}});if(changed)saveTicks()})();
 
@@ -672,6 +768,16 @@ function saveMarks(){try{localStorage.setItem(IKEY,JSON.stringify(marks))}catch(
     if(m.a==='later'){var n=since(m.d);if(n==null||n>=D.later_days||!live[k]){delete marks[k];changed=true}}
     else if(!live[k]&&(m.ts||0)<gen){delete marks[k];changed=true}});
   if(changed)saveMarks()})();
+
+// A lead mark is dropped only once a run has recorded it (its id is in lead_marks.json), or
+// after LEAD_MARK_DAYS as a backstop. Not on the lead leaving the data: Thursday's file
+// replaces the whole list, and a click made after that morning's drain must survive it.
+var L=D.leads||null, LROWS=(L&&L.rows)||[];
+(function pruneLeadMarks(){var done={},changed=false;
+  (D.lead_answered||[]).forEach(function(k){done[k]=1});
+  Object.keys(lmarks).forEach(function(k){var m=lmarks[k]||{},n=since(m.d);
+    if(done[k]||n==null||n>D.lead_mark_days){delete lmarks[k];changed=true}});
+  if(changed)saveLeadMarks()})();
 
 D.queue.forEach(function(q){q.age=since(q.surfaced);q.left=q.age==null?null:D.expiry_days-q.age});
 // shelf_inbox.py matches a mark to its row by posting URL. A row with no link, or two rows
@@ -715,6 +821,7 @@ function tiles(){
     ['good',fresh,'ready to apply, '+D.fresh_days+' days or newer','queue','fresh'],
     [exp?'warn':'',exp,'expiring within '+D.expiring_days+' days','queue','expiring'],
     [(D.screened||[]).length?'good':'',(D.screened||[]).length,'cleared, not tailored','screened',null],
+    [leadsOpen()?'warn':'',leadsOpen(),'weekly leads to answer','leads',null],
     [due?'bad':'good',due,'manual checks due','manual',null],
     ['',old,'applied and quiet '+D.quiet_days+'+ days'+(D.counts.in_process?' ('+D.counts.in_process+' in process)':''),'quiet','old']];
   el('tiles').innerHTML=t.map(function(x,i){return '<button class="tile '+x[0]+'" data-i="'+i+'"><b class="mono">'+x[1]+'</b><span>'+esc(x[2])+'</span></button>'}).join('');
@@ -791,6 +898,8 @@ function copy(s){if(s.getAttribute('data-busy'))return;var p=s.getAttribute('dat
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(p).then(done,fallback);else fallback()}
 // One listener for every copy target and every mark button, wherever the row is drawn.
 document.addEventListener('click',function(ev){var t=ev.target;if(!t||!t.getAttribute)return;
+  var la=t.getAttribute('data-lact');
+  if(la){leadClick(t,la);return}
   var a=t.getAttribute('data-act');
   if(!a){var c=t.closest?t.closest('[data-copy]'):null;if(c)copy(c);return}
   if(a==='bulk'){oldRows().forEach(function(o){marks[o.key]={a:'skip',r:'other',bulk:true,d:iso(today),ts:Date.now(),u:o.url,c:o.company,t:o.title}});
@@ -837,6 +946,57 @@ function screened(){
     return '<div class="row"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(s.score==null?'':Math.round(s.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(s.company)+'</span><span>'+titleLink(s)+'</span></div>'+(s.why?'<div class="why">'+esc(s.why)+(s.gap?' · gap: '+esc(s.gap):'')+'</div>':'')+'<div class="meta">'+m.join('')+'</div></div><div class="right"><small>cleared '+esc(ago(n))+'<br>'+esc(nice(s.first))+'</small></div></div>'
   }).join(''):'<div class="empty">'+(D.counts.screened_days?'Nothing cleared beyond what was tailored.':'No JD screen results yet. The daily run writes them from its next run on.')+'</div>'}
 
+// The weekly leads (2026-10-15, D41). Two answers a row: Tailor it queues a package for the
+// next weekday run, Pass takes it off. Both wait in LKEY until shelf_inbox.py records them.
+var LEADG={unreachable:["Strong roles the poller can't reach","Tier 1 or 2 in Atlanta or remote US, at companies with no board the daily run can read. These never competed for a package."],
+  never_picked:['Watched companies, never picked','The poller reads these boards and the role still lost on score or rank. Tailor it here says the scoring missed one.'],
+  no_board:['Companies with no board yet','A good role turned up at each, and the board its name resolved to looks like some other company.']};
+var LOCL={atlanta:'Atlanta','atlanta-hybrid':'Atlanta hybrid',remote:'Remote','us-national':'US'};
+var LEAD_SHOW=20, leadsAll=false;
+function leadsOpen(){return LROWS.filter(function(x){return !lmarks[x.id]}).length}
+function leadsPending(){var live={},n=0;LROWS.forEach(function(x){live[x.id]=1});
+  Object.keys(lmarks).forEach(function(k){if(!live[k])n++});return n}
+function leadActs(x){var m=lmarks[x.id],k=esc(x.id),undo='<button class="lnk" data-lact="undo" data-k="'+k+'">undo</button>';
+  if(m&&m.a==='tailor')return '<div class="acts"><span class="tag good">asked to tailor '+esc(nice(m.d))+'</span>'+undo+'</div>';
+  if(m&&m.a==='pass')return '<div class="acts"><span class="tag warn">passed '+esc(nice(m.d))+'</span>'+undo+'</div>';
+  return '<div class="acts"><button class="act go" data-lact="tailor" data-k="'+k+'">Tailor it</button><button class="act" data-lact="pass" data-k="'+k+'">Pass</button></div>'}
+function leadRow(x){var t=[];
+  if(x.tier&&x.tier!=='none')t.push('<span class="tag">'+esc(x.tier)+'</span>');
+  if(LOCL[x.loc])t.push('<span class="tag'+(x.loc==='atlanta'?' good':'')+'">'+esc(LOCL[x.loc])+'</span>');
+  if(x.seen>1)t.push('<span class="tag">in '+x.seen+' alerts</span>');
+  if(x.note)t.push('<span>'+esc(x.note)+'</span>');
+  return '<div class="row'+(lmarks[x.id]?' dim':'')+'"><div class="body"><div class="top"><span class="co">'+esc(x.company)+'</span><span>'+titleLink(x)+'</span></div><div class="meta">'+t.join('')+'</div>'+leadActs(x)+'</div><div class="right"><small>'+(x.first?'first seen<br>'+esc(nice(x.first)):'')+'</small></div></div>'}
+function leadClick(t,a){if(a==='more'){leadsAll=true;leads();return}
+  var k=t.getAttribute('data-k'),x=null;
+  for(var i=0;i<LROWS.length;i++)if(LROWS[i].id===k){x=LROWS[i];break}
+  if(!x)return;
+  if(a==='undo')delete lmarks[k];
+  else if(a==='tailor'||a==='pass')lmarks[k]={a:a,d:iso(today),ts:Date.now(),u:x.url,c:x.company,t:x.title,l:x.list,tier:x.tier,loc:x.loc};
+  saveLeadMarks();leads();tiles()}
+function leads(){
+  var empty=function(s){el('leads-sub').textContent=s;['leads','leads-flags','leads-health'].forEach(function(i){el(i).innerHTML=''});el('leads-note').textContent=''};
+  if(!L)return empty('No weekly report in the last two weeks. The daily run writes one on Thursdays.');
+  el('leads-sub').textContent='From the weekly report, '+nice(L.start)+' to '+nice(L.end)+": LinkedIn roles the daily run didn't turn into a package. Tailor it queues a package for the next weekday run, three a run, oldest click first. Pass takes it off the list.";
+  el('leads-flags').innerHTML=(L.flags||[]).map(function(f){return '<div class="strip warn">'+esc(f)+'</div>'}).join('');
+  var marked=LROWS.filter(function(x){return lmarks[x.id]}).length, note=[];
+  if(marked)note.push(marked+' marked. The next weekday run records them, and they leave this list.');
+  var older=leadsPending();
+  if(older)note.push(older+' marked on an earlier week, recorded on the next weekday run.');
+  if(L.waiting)note.push(L.waiting+' asked for earlier, waiting for a run to read the posting.');
+  if(L.handled)note.push(L.handled+' from this week already answered.');
+  el('leads-note').textContent=note.join(' ');
+  var h='';
+  ['unreachable','never_picked','no_board'].forEach(function(g){
+    var rows=LROWS.filter(function(x){return x.list===g});if(!rows.length)return;
+    var cut=g==='unreachable'&&!leadsAll&&rows.length>LEAD_SHOW;
+    h+='<div class="group">'+esc(LEADG[g][0])+' · '+rows.length+'</div><div class="gdesc">'+esc(LEADG[g][1])+'</div>';
+    h+=(cut?rows.slice(0,LEAD_SHOW):rows).map(leadRow).join('');
+    if(cut)h+='<div class="row"><button class="lnk" data-lact="more">Show '+(rows.length-LEAD_SHOW)+' more</button></div>'});
+  el('leads').innerHTML=h||'<div class="empty">Every lead from this week has an answer.</div>';
+  var hs=L.health||[];
+  el('leads-health').innerHTML=hs.length?'<details class="sec" data-d="leads|health"'+(openD['leads|health']?' open':'')+'><summary>Channel health <span class="sub">the numbers behind the report</span></summary><div class="hs">'+hs.map(function(s){
+    return '<b>'+esc(s.title)+'</b>'+(s.pre?'<pre class="mono">'+esc(s.lines.join('\n'))+'</pre>':'<ul>'+s.lines.map(function(l){return '<li>'+esc(l)+'</li>'}).join('')+'</ul>')}).join('')+'</div></details>':''}
+
 function manual(){
   var groups={},order=[];
   D.manual.forEach(function(m){if(!groups[m.group]){groups[m.group]=[];order.push(m.group)}groups[m.group].push(m)});
@@ -874,7 +1034,7 @@ function foot(){var c=D.counts,f=[];
 el('stamp').textContent='Generated '+new Date(D.generated).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
 el('exp').textContent=D.expiry_days;
 el('swin').textContent=D.screened_window||7;
-strips();tiles();todayList();queue();screened();runNotes();manual();quiet();foot();
+strips();tiles();todayList();queue();screened();leads();runNotes();manual();quiet();foot();
 })();
 </script>
 </body>

@@ -11,6 +11,7 @@ mean bad picks or ambitious ones. So this splits the question in three:
   1. Are the picks the ones he'd choose?    send rate + his_verdict skip reasons
   2. Are the materials good enough to send?  sent_as_is vs sent_edited
   3. Is aiming high getting traction?        advance rate split by stretch level
+  4. What he wanted from the weekly leads     Tailor it vs Pass, by list (added 2026-10-15)
 
 plus a monthly trend of what gets tailored (score, pay, reach share), so "aim
 high" can be checked as a behavior rather than taken as a label.
@@ -79,7 +80,28 @@ def load(path, since):
         return [r for r in csv.DictReader(f) if (r.get("surfaced_date") or "") >= since]
 
 
-def report(rows):
+def lead_lines(leads):
+    """His answers on the weekly leads (lead_marks.json), by list. Added 2026-10-15, D41."""
+    out = ["\n4. The weekly leads he answered on the dashboard (since 2026-10-15)"]
+    if not leads:
+        out.append("  none answered yet")
+        return out
+    by = Counter((v.get("list") or "?", v.get("action")) for v in leads.values())
+    for lst, why in (("never_picked", "a tailor here means the scoring passed over a role he wanted"),
+                     ("unreachable", "no board the poller can read"),
+                     ("no_board", "board unfound or a name collision")):
+        t, p = by.get((lst, "tailor"), 0), by.get((lst, "pass"), 0)
+        if t or p:
+            out.append(f"  {lst:<13} tailor {t:>3} | pass {p:>3}   ({why})")
+    asked = [v for v in leads.values() if v.get("action") == "tailor"]
+    if asked:
+        read = Counter(v.get("fetch_status", "").split(":")[0] for v in asked if v.get("fetched"))
+        out.append(f"  tailor requests read: {sum(read.values())} of {len(asked)}"
+                   + (f" ({', '.join(f'{k} {n}' for k, n in sorted(read.items()))})" if read else ""))
+    return out
+
+
+def report(rows, leads=None):
     lines = []
     out = lines.append
     sent = [r for r in rows if is_sent(r)]
@@ -134,7 +156,18 @@ def report(rows):
             f"{('$%.0fK' % statistics.median(pays)) if pays else '   n/a':>11}  "
             f"{(pct(sum(stretch(r) == 'reach' for r in known), len(known)) if known else 'n/a'):>11}")
     out("  pay is parsed from notes where a range was recorded; months with few rows are noise.")
+    if leads is not None:
+        lines.extend(lead_lines(leads))
     return "\n".join(lines)
+
+
+def load_leads():
+    """lead_marks.json's entries, {} if there are none, None if the file can't be read."""
+    try:
+        import lead_marks
+        return lead_marks.load()
+    except Exception:  # noqa: BLE001 - this report is read-only and must still print
+        return None
 
 
 def main():
@@ -143,7 +176,7 @@ def main():
     a = ap.parse_args()
     if a.since < EPOCH:
         print(f"note: rows before {EPOCH} are self-reported; including them anyway because --since asked\n")
-    print(report(load(OUTCOMES, a.since)))
+    print(report(load(OUTCOMES, a.since), load_leads()))
 
 
 if __name__ == "__main__":

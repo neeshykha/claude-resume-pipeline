@@ -110,6 +110,11 @@ brief digest saying so rather than guessing an address.
      the run and do not hand-edit `outcomes.csv` to finish the job; his marks stay on the page
      and tomorrow's run tries again. `nothing to record` is the normal quiet answer and is
      not digest content.
+   - **The same line ends with a `leads:` clause when he answered any weekly leads (added
+     2026-10-15, D41).** The page's "This week's leads" section has Tailor it and Pass on each
+     row; this command records them in `pipeline/jobs/lead_marks.json` through
+     `lead_marks.py`. A Pass is finished. A Tailor it waits there for Step 1d-4. A
+     `leads: FAILED` or `not recorded` clause gets one alert line, same as above.
    - Never write to anything under the Shelf's own folder. The page forgets a mark by itself
      once its row has left the queue.
 
@@ -1238,6 +1243,40 @@ Until that exists the search returns zero every run, which costs one cheap call 
 an error. A `JobLeads` label on the receiving side is optional convenience for Aneesh's own
 browsing; this step keys off sender, not label, so it does not depend on one.
 
+### 1d-4. Roles he asked for on the dashboard (added 2026-10-15, D41)
+
+The weekly leads on the dashboard are LinkedIn roles the run never turned into a package:
+strong roles at companies with no readable board, roles at watched companies that lost on
+score, and roles at companies whose board is unfound. When he clicks **Tailor it** on one,
+Step 0 item 4b records it, and this step reads it. Run:
+
+```bash
+.venv/bin/python pipeline/linkedin_followup.py --requested
+```
+
+It takes up to 3 waiting requests, oldest click first, fetches each posting from LinkedIn's
+guest endpoint into `pipeline/jobs/jd_cache/<date>_requested/` in the Step 2-JD shape, and
+stamps each read on its request (ok, thin, closed, on-site elsewhere, or the error). A 429
+stamps nothing further, so those roll to tomorrow, and a timeout or server error leaves its
+request waiting until its third try. `0 selected of 0 waiting` is the normal quiet answer:
+record it and move on.
+
+When it fetched any, dispatch **one Sonnet worker with the exact Step 2-JD worker prompt**
+(paths under `<date>_requested/`) alongside the Step 1d-3 workers, and read the result with:
+
+```bash
+.venv/bin/python pipeline/jd_screen_table.py --date <date>_requested
+```
+
+Then for each row: find the source posting the way Step 1d-3 does (the company's own board;
+it shares 1d-3's budget of 6 WebSearches) and use it as the apply link whenever it's found.
+Score it with the normal rubric and send it to Step 2c's **requested slot**. A request whose
+posting was closed or couldn't be read (an error stamp, or `gave up after 3 tries`), or whose
+JD fails a Step 2b hard filter (location, salary floor, clearance), is not tailored; give it
+one line in the digest's alerts saying which role and why, since he asked for it by name.
+
+Record `run_[date].json → requested: {waiting_before, read, tailored, not_tailored: [why]}`.
+
 ### 1e. Housekeeping: headcount_band backfill (max 3/run)
 
 Most watchlist companies are missing `headcount_band`, which makes the small-company bonus
@@ -1655,6 +1694,16 @@ housekeeping. The row goes through Step 4 like any pick (already-applied guard, 
 `Tier: light`, fit check, tracking) with `lane:safety` in its `notes`, which is how the
 2026-11-12 review finds them. In the digest it is its own picks-table row marked "safety".
 Record `run_[date].json → safety_slot: {candidates, picked, why, skipped_reason}`.
+
+**Requested slot: the roles he asked for, outside the five (Aneesh's call, 2026-10-15).**
+Every Step 1d-4 role that cleared its hard filters gets a package this run, at most three, and
+none of them takes one of the five or the safety slot. Its tier comes from its score
+(priority, full, or light) with **light as the floor**: he asked for it, so a score under the
+light threshold is recorded honestly and the role still gets a resume. Fit first and the
+same-company cap don't apply to it, though the already-applied guard in Step 4-pre does. The
+row goes through Step 4 like any pick with `lane:requested` in its `notes` and `linkedin` as
+its `source_channel`. In the digest it is its own picks-table row marked "asked".
+[D41](../DECISIONS.md#d41-the-weekly-report-became-a-page)
 
 **Cleared, not tailored (added 2026-09-25).** Every Step 2-JD role that you scored at or
 above `light_tailoring_threshold` but did not tailor (it ranked below the 5, or lost a
@@ -2618,7 +2667,8 @@ the rest collapsed underneath. Shape:
 6. The file manifest for `tailored/apply_now/`.
 
 One digest email a run: nothing that used to follow the picks gets an email of its own. (The
-weekly channel report at Step 6.5 is a separate email and still is.)
+weekly channel report at Step 6.5 was a second email until 2026-10-15; it's a section of the
+dashboard now and sends nothing.)
 
 ### 5b. Email mechanics
 
@@ -2898,10 +2948,59 @@ weekly channel report at Step 6.5 is a separate email and still is.)
    consistently structured that far back (checked 2026-08-10: zero of ~45 prior run files
    had usable per-channel data in a common shape).
 
+## Step 6.5: Weekly leads page (gated; replaced the weekly email 2026-10-15)
+
+**Runs before Step 6.6, so the dashboard build right after it picks the new file up.**
+Until 2026-10-15 this step sent a "Weekly Channel Report" email: about eleven kilobytes of
+channel counters wrapped around three lists of roles. Aneesh called it "so much junk" and
+asked for it on the dashboard, where he can answer each role.
+[D41](../DECISIONS.md#d41-the-weekly-report-became-a-page)
+
+1. Use the **Read tool** on `pipeline/jobs/weekly_channel_report_state.json`. If it doesn't
+   exist, the page is due. If it returns `{"last_sent": "YYYY-MM-DD"}`, it's due only when that
+   date is 7 or more days before today. Otherwise skip this step silently.
+2. If due, run one command:
+   ```bash
+   .venv/bin/python pipeline/weekly_channel_report.py --page --apply
+   ```
+   It writes `pipeline/jobs/weekly_leads_[date].json` and, only after that file is written,
+   marks the week's unpollable batch as surfaced so it doesn't repeat. On a retried run where
+   today's file already exists it rewrites and marks nothing, and says so; go on to item 3. It also prints the old
+   text report for this run's log; nothing needs to be copied anywhere. If it prints
+   `weekly_channel_report: FAILED`, nothing was marked: note it in SESSION_STATE, skip items
+   3 and 4, and next run tries again.
+3. Write today's date to `pipeline/jobs/weekly_channel_report_state.json` as
+   `{"last_sent": "YYYY-MM-DD"}` (Write tool, overwrite whatever was there).
+4. Record `run_[date].json → weekly_leads: {file, leads, flags}` from its last lines, and one
+   line in SESSION_STATE. **No email, and no digest section.** The page shows the leads, the
+   flags, and a tile with the count. Go on to Step 6.6 whatever this step printed.
+
+**What the page shows** (the reasoning behind each list lives in `weekly_channel_report.py`):
+- **Strong roles the poller can't reach.** LinkedIn alert roles graded tier 1, 2, 2c, or 2d
+  in Atlanta or remote US, at companies with no ATS board the poller reads or a blind-spot
+  employer. On 2026-09-10 the first count put 47% of strong roles here: the loss is
+  reachability, not grading. **Do not "fix" it by loosening the grading.**
+- **Watched companies, never picked.** The board was scanned and the role still lost on score
+  or rank. A Tailor it here is a scoring signal, and `pipeline_quality.py` counts them.
+- **Companies with no board yet.** The unpollable punch list, still gated on confirmed role
+  signal (`manual_review_why`, 2026-08-31: the ungated list yielded zero enrollable companies
+  in a 30-company dry run), 20 a week, oldest first. Each row is the LinkedIn role that
+  queued the company.
+- **Flags** for anything that looks broken (a feeder degraded every day, a weekday run with no
+  channel data, a channel nothing traced back to), then the channel numbers, enrollment
+  attribution, the LinkedIn funnel, and `pipeline_quality.py`'s report, collapsed. The
+  enrollment-attribution caveat still holds: this week's enrollments were mostly found last
+  week, so never divide one by the other.
+
+Every lead is a LinkedIn job id, deduped across the three lists, and a role already in
+`outcomes.csv` is left off. His Tailor it and Pass clicks are recorded at Step 0 item 4b, and a
+Tailor it is read and tailored at Step 1d-4.
+
 ## Step 6.6: Rebuild the job dashboard (added 2026-09-19)
 
-Runs here, before Step 6.5, so tracking is final and a failure in the weekly rollup cannot skip
-it. Run `.venv/bin/python pipeline/build_dashboard.py`. One command, no arguments, nothing
+Runs here, after tracking is final and after Step 6.5, whose weekly leads file it reads (until
+2026-10-15 it ran before that step, which was then a long email). A failure in Step 6.5 never
+skips this one. Run `.venv/bin/python pipeline/build_dashboard.py`. One command, no arguments, nothing
 chained. It is read-only against the tracking files and always exits 0. It overwrites
 `~/Downloads/job_dashboard.html` (HTML Shelf tracks that file and refreshes its page in place)
 and keeps a dated copy in `pipeline/jobs/`. Since 2026-10-12 it also reads today's
@@ -2948,175 +3047,6 @@ throttled keeps its place in the backlog. Record
 still throttled. Enrollments made here are polled from tomorrow's run; nothing is perishable,
 because these steps find companies, not reqs. If the backlog is 0, skip the harvest command
 and record that.
-
-## Step 6.5: Weekly channel-effectiveness rollup (gated, separate Gmail draft)
-
-**Added 2026-08-10, from Aneesh asking for a rundown of which discovery channel (ATS poll,
-LinkedIn forwards, WebSearch, discovery feeders) actually produces value.** A per-day answer
-is noisy — one day's "4/4 tailored picks came from the ATS poll" doesn't mean LinkedIn/WebSearch
-failed, it means ATS-poll is the execution layer that benefits from everything those channels
-enrolled over the preceding weeks. This is a weekly-cadence report, sent as its own Gmail draft,
-not folded into the daily digest.
-
-1. Use the **Read tool** on `pipeline/jobs/weekly_channel_report_state.json` (gitignored, lives
-   in `pipeline/jobs/` alongside the other run-state files). If it errors because the file
-   doesn't exist, the report is due. If it returns `{"last_sent": "YYYY-MM-DD"}`, the report is
-   due only if that date is 7 or more days before today. Otherwise skip this step entirely —
-   do not mention it in the digest, this is silent housekeeping like the monthly-source gating.
-2. If due, run:
-   ```bash
-   .venv/bin/python pipeline/weekly_channel_report.py
-   ```
-   It aggregates the trailing 7 days of `channel_stats` blocks and prints a per-channel
-   breakdown (ATS poll, WebSearch, LinkedIn harvest, feeders) plus how many days in the window
-   actually had data. Early on, most of the window will be missing (schema only exists from
-   2026-08-10 forward) — the report says so explicitly; don't treat that as an error.
-
-   It then prints an **"Enrollment attribution"** section (added 2026-09-07). The `enrolled`
-   counters inside `channel_stats` are same-run counts and they undercount, but NOT because
-   same-run enrollment is impossible — Step 1d appends to `pending` and `harvest_ats.py`
-   drains it in the same pass, and 28% of enrollments do resolve that day (measured 09-07
-   over the 39 backfilled entries carrying both dates; the other 72% lag by a median of 1
-   day, max 11). The zero came from ATTRIBUTION, not timing: until 2026-09-07 nothing
-   recorded which channel fed an enrollment, so LinkedIn could self-report at Step 1d-2
-   while WebSearch, whose dorks feed the same undifferentiated queue, could not. That is why
-   the report spent weeks saying **"0 enrollments off 19 WebSearch source-runs"** about a
-   channel that was in fact converting. The new
-   section counts `enrollment_candidates.json → enrolled` entries whose `enrolled_date` falls
-   in the window, grouped by the `source` carried over from `pending`, and reports the
-   discovery-to-enrollment lag alongside. **Do not divide one by the other** — the companies
-   enrolled this week were mostly found last week, so the window's discovery counts are not
-   that population's denominator. Entries filed before 2026-09-07 carry no `source` and are
-   reported as unattributed rather than guessed at; that backlog drains on its own.
-
-   It then prints **"LinkedIn alerts: what was in them and where it went"** (added
-   2026-09-10, from Aneesh: *"I'm seeing a lot of cool stuff that isn't seeming to make the
-   cut. That job leads pull, I kind of want that validated."*). **The `linkedin_harvest`
-   counters in `channel_stats` are volume, not validation** — threads seen, companies
-   extracted, same-run enrollments — and none of them can say whether a good role reached
-   him. This section reads the daily `pipeline/jobs/linkedin_cards_<date>.json` files,
-   dedupes by LinkedIn job id (the same role recurs across days and saved searches, roughly
-   doubling the raw count), isolates the STRONG roles — tier1/tier2/tier2c/tier2d **and** a
-   qualifying Atlanta or remote-US location — and gives each one a disposition by joining
-   against `outcomes.csv` and the card's own `company_status`.
-
-   tier3 is excluded from "strong" on purpose: it is a stretch title that only earns
-   tailoring above 88, so a tier3 card going nowhere is the rubric working, not a leak.
-
-   **The first run answered the question, and the answer is uncomfortable.** Window
-   2026-09-04..09-10: 568 cards, 304 unique roles, 60 strong. Of those 60, **47% were at
-   companies the poller structurally cannot reach** (no ATS board, or a named blind-spot
-   employer), 20% were at companies not yet enrolled when the alert landed, 13% were at
-   pollable companies and still never scored in, and 20% converted (12% this exact role
-   tailored, 8% a sibling role at the same company). So the harvester is grading correctly
-   and the loss is almost entirely reachability. Do not "fix" this by loosening the grading.
-
-   Two lists are printed, and they mean different things:
-   - **Unreachable strong roles**, with LinkedIn links, capped at
-     `LINKEDIN_PUNCHLIST_CAP` (20) oldest-first. Each needs a hand decision: chase the
-     company's own careers page, or let it drop. Expect overlap with the unpollable punch
-     list below; that one is company-level and drains a standing backlog, this one is
-     role-level and windowed, so a company can honestly appear in both.
-   - **Pollable but never picked.** Smaller and more diagnostic: the board WAS scanned and
-     the role still lost, usually on location scoring or the shortlist rank cutoff. If
-     Aneesh consistently likes these better than what did surface, that is a scoring
-     signal, not a discovery one.
-
-   No state is written and nothing needs a surfaced-flag: the window advances on its own,
-   so a role cannot repeat across reports the way an unpollable company can.
-
-   **A bug this section exposed, fixed 2026-09-10:** `tailored_count` is a TOP-LEVEL key of
-   `run_*.json`, not part of `channel_stats` (Step 6 item 7 says so), but `sum_field` only
-   walks inside `channel_stats`. The report had printed `Tailored applications this window:
-   0` every week since the schema landed. It now reads the right key; the 09-04..09-10
-   window shows 10.
-
-   It also prints an **"Unpollable companies with a role worth chasing"** section (added
-   2026-08-14, from Aneesh asking for a weekly punch list of companies the automated layer
-   structurally can't reach): a capped batch (`UNPOLLABLE_WEEKLY_CAP` = 20, oldest
-   `rejected_date` first) of `enrollment_candidates.json → rejected` entries tagged
-   `unpollable: true` — meaning no ATS board was ever found for them, as opposed to a board
-   being found and the company rejected for fit/geo/category reasons — that haven't been
-   surfaced in a prior weekly report yet. This runs regardless of whether the channel-stats
-   window has data, so it fires even on an early week.
-
-   **GATED ON CONFIRMED ROLE SIGNAL as of 2026-08-31 (Aneesh's call), and the gate is the
-   point.** Only entries carrying `manual_review_why` are surfaced: companies where Step 1d-2
-   saw an actual tier1/tier2/tier2c title in Atlanta or remote-US. Ungated, this section handed
-   him 20 companies a week sorted by nothing but rejection date, and a 30-company dry run of
-   that exact population returned **zero enrollable companies** — 23 had no board at all, 3 had
-   boards with no fit-titles, and the batch was dominated by AI-policy nonprofits (GovAI, Pax
-   Sapiens, CivAI) and mega-enterprises (Microsoft, Wabtec, Epiroc) that will never run a
-   supported ATS. It was a standing weekly chore with a measured yield of nothing.
-
-   The premise had also expired. The punch list existed because `harvest_ats.py` could not
-   resolve non-obvious slugs, so a human searching by hand genuinely beat the machine. The three
-   gaps behind that (TLD stripping, legal-form suffixes, dotted slugs) were fixed 2026-08-31 and
-   verified on 18/20 known cases. What still justifies human attention is a company where a REAL
-   MATCHING ROLE was seen and the poller structurally cannot reach it — which is exactly what
-   `manual_review_why` records, and the same principle behind `_unpollable_backlog_companies`.
-
-   The gate cut the list from 189 to **21**, and every survivor names its role (Engagifii's
-   Atlanta Director of Product Support at $93.5–115K, Barracuda's Manager Technical Support in
-   Alpharetta, GitHub's Senior Product Operations Manager at $124–329K remote). Include the full
-   batch in the report; this is the part Aneesh acts on, so don't compress it away.
-
-   Ungated entries are **not deleted**, only unsurfaced: `--all-unpollable` restores the old
-   behaviour for a deliberate one-off sweep. Two known rough edges, both minor and left alone on
-   purpose rather than fixed with brittle text matching: an entry whose `manual_review_why`
-   records that the role was checked and CLEARED still appears (LP Building Solutions, a Nashville
-   hybrid req that fails the location gate), and a company already surfaced once in a daily
-   digest's "Manual channel" section can appear again here, since the two use separate
-   surfaced-flags. Reading the entry explains both.
-3. Create a **separate** Gmail draft (`create_draft`, not `update_draft` on the daily digest),
-   **then SEND it with `send_message` passing that `draftId`** — same as Step 5:
-   - To: `{{DIGEST_RECIPIENT}}`
-   - Subject: `Weekly Channel Report — [window start] to [window end]`
-   - Body: the script's output, lightly formatted as HTML (same raw-HTML rule as Step 5 —
-     never HTML-escape the markup). Add one interpretive line per channel using the actual
-     numbers, not template filler — e.g. if `poll_remotive` was degraded every tracked day,
-     say that plainly; if a channel enrolled zero companies for two straight weeks, say that
-     too. The point of this report is catching a channel that's quietly gone dead (this is
-     exactly how `poll_remotive`'s degradation was first noticed) or over-invested (14
-     WebSearch calls a day for a handful of already-known companies). Include the full
-     unpollable-companies batch as its own section, one line per company (name, rejected date,
-     reason) — this is the part Aneesh actually acts on, don't compress it away.
-   - **Include a "Pipeline quality" section (added 2026-09-30).** Run
-     `.venv/bin/python pipeline/pipeline_quality.py` (read-only) and include its output, with
-     one interpretive line per numbered question using the actual numbers. Say plainly when
-     `his_verdict` is still mostly unrecorded, because questions 1 and 2 can't be answered
-     without it; don't guess verdicts from `stage`. The framing (aim high, interview rate is not
-     the measure, don't cut the tailoring cap) is in CLAUDE.md "Measuring pipeline quality".
-   - **Include the LinkedIn disposition section in full, links and all.** It is the answer to
-     a question he asked directly, and the unreachable list is the actionable half. Keep the
-     LinkedIn job links live in the HTML; a punch list he cannot click is a punch list he
-     will not work.
-4. **Only after the draft is confirmed created**, re-run with `--apply` to mark the printed
-   unpollable batch as surfaced so it doesn't repeat next week:
-   ```bash
-   .venv/bin/python pipeline/weekly_channel_report.py --apply
-   ```
-   Do this as a genuinely separate second call, not folded into step 2 — running `--apply`
-   before the draft exists would consume the batch on a preview that never got sent. If step 3
-   fails (draft creation errors out), skip this step entirely so the same batch is retried next
-   run rather than silently lost.
-5. Write today's date to `pipeline/jobs/weekly_channel_report_state.json` as
-   `{"last_sent": "YYYY-MM-DD"}` (Write tool, overwrite whatever was there).
-6. Note the draft ID in `run_[date].json → weekly_channel_report_draft_id`, the sent message id
-   in `weekly_channel_report_sent_message_id`, and one line in `SESSION_STATE.md`. Do not mention
-   this step in the main digest email at all — it is its own email.
-
-**Send this report; do not leave it as a draft. Aneesh's explicit call, 2026-08-31.** This step
-said only "create a draft" and called it "its own send decision" for three weeks, which is why the
-2026-08-31 run drafted it and stopped: Step 5 carried an explicit send instruction and this one did
-not, so the autonomous run correctly declined to infer one. The reasoning that settled Step 5 on
-2026-08-28 applies here unchanged and always did — a draft he has to open and send is just a manual
-step, and he does not mind a follow-up email if a report needs correcting after it goes out. The
-only reason the two steps disagreed was that nobody carried the decision across.
-
-The general rule this illustrates is worth keeping: **an autonomous run will not send unless its
-instructions say so explicitly, and "its own send decision" is not an instruction.** If a future
-step should send, write "send it" in that step. Do not rely on a neighbouring step's precedent.
 
 ## Step 7: Sync the public repo
 

@@ -370,3 +370,22 @@ since 2026-09-30 and was used once.
 writes back. A Sent mark is his word; the row's notes say so until a confirmation email agrees.
 Undo works until the next run has recorded the mark; after that a wrong mark is fixed with
 `mark_outcome.py` or by hand, the same as any other tracker mistake.
+
+## 2026-10-15: the weekly report moved onto the page
+
+The Thursday "Weekly Channel Report" email is gone; its content is the "This week's leads"
+section, between "Cleared, not tailored" and "More from the last run". Story and choices:
+[D41](../DECISIONS.md#d41-the-weekly-report-became-a-page).
+
+- **Source:** the newest `jobs/weekly_leads_<date>.json` from the last 13 days, written by
+  `weekly_channel_report.py --page` at Step 6.5 (now ahead of the 6.6 build). Leads with any
+  entry in `jobs/lead_marks.json` are left off; the generator reads that file and never writes it.
+- **Rows:** three groups (unreachable, never picked, no board), one row per LinkedIn job id,
+  the first 20 unreachable shown with a "Show N more". Each row: company, title linked to the
+  posting, tier, location, how many alerts it was in, why it's there, first seen.
+- **Marks:** Tailor it / Pass, with undo, under `jobdash.leads.v1` as
+  `{a, d, ts, u, c, t, l, tier, loc}` keyed by job id. Pruned the same way as queue marks: once
+  the lead is gone from the data and the page is newer than the mark.
+- **Above and below the list:** a warn strip per flag; a collapsed "Channel health" panel with
+  the channel lines, the LinkedIn funnel, and `pipeline_quality.py`'s report as preformatted text.
+- **Tile:** "weekly leads to answer", the unmarked count, links to the section.

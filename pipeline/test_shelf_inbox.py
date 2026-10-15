@@ -394,6 +394,74 @@ def test_failure_exits_zero_and_strict_exits_one():
     assert rc == 0 and "FAILED" in out
 
 
+# --- The weekly leads (D41, 2026-10-15) ---------------------------------------------------
+
+def lead_fixture(lead_marks_on_page, queue_marks=None):
+    """Same temp layout, plus a leads inbox and a lead_marks.json path inside the temp dir."""
+    import lead_marks
+    d, inbox = fixture([row(company="A", url="https://example.com/a")], queue_marks or {})
+    with open(inbox, encoding="utf-8") as f:
+        store = json.load(f)
+    store[si.LEADS_KEY] = json.dumps(lead_marks_on_page)
+    with open(inbox, "w", encoding="utf-8") as f:
+        json.dump(store, f)
+    lead_marks.PATH = os.path.join(si.JOBS_DIR, "lead_marks.json")
+    return inbox, lead_marks
+
+
+def lead(action, **kw):
+    m = {"a": action, "d": "2026-10-11", "ts": 1, "u": "https://www.linkedin.com/jobs/view/3000001/",
+         "c": "Brevik", "t": "Head of Support", "l": "unreachable", "tier": "tier1", "loc": "atlanta"}
+    m.update(kw)
+    return m
+
+
+def test_leads_are_recorded_beside_queue_marks():
+    url = "https://example.com/a"
+    inbox, lm = lead_fixture({"3000001": lead("tailor"), "3000002": lead("pass", l="never_picked"),
+                              "not-an-id": lead("tailor"), "3000003": lead("maybe")},
+                             {url: mark("skip", url, r="fit")})
+    rc, out = run(inbox, "--apply")
+    assert rc == 0, out
+    assert "recorded 0 sent, 1 verdicts (1 skips)" in out, out
+    assert "leads: recorded 1 to tailor, 1 passed, 2 not recorded" in out, out
+    assert "not a LinkedIn job id" in out and "unknown action" in out, out
+    got = lm.load()
+    assert set(got) == {"3000001", "3000002"}, got
+    assert got["3000001"]["action"] == "tailor" and got["3000001"]["marked"] == "2026-10-11"
+    assert got["3000001"]["recorded"] == TODAY and got["3000001"]["list"] == "unreachable"
+    assert got["3000002"]["list"] == "never_picked"
+
+
+def test_leads_report_only_without_apply_and_first_answer_wins():
+    inbox, lm = lead_fixture({"3000001": lead("tailor")})
+    rc, out = run(inbox)
+    assert "leads: would record 1 to tailor, 0 passed" in out, out
+    assert not os.path.exists(lm.PATH), "a report-only run writes nothing"
+    run(inbox, "--apply")
+    # A stale mark from before the drain says something else. The recorded answer stands.
+    inbox2, _ = lead_fixture({"3000001": lead("pass")})
+    lm.PATH = os.path.join(os.path.dirname(lm.PATH), "lead_marks.json")
+    lm.save({"3000001": {"action": "tailor", "recorded": "2026-10-12"}})
+    rc, out = run(inbox2, "--apply")
+    assert "leads: nothing new, 1 already recorded" in out, out
+    assert lm.load()["3000001"]["action"] == "tailor"
+
+
+def test_a_lead_failure_never_stops_queue_marks():
+    url = "https://example.com/a"
+    inbox, lm = lead_fixture({"3000001": lead("tailor")}, {url: mark("skip", url, r="time")})
+    with open(lm.PATH, "w", encoding="utf-8") as f:
+        f.write("{broken")
+    rc, out = run(inbox, "--apply")
+    assert rc == 0 and "recorded 0 sent, 1 verdicts" in out and "leads: FAILED" in out, out
+    assert tracker()["A"]["his_verdict"] == "skip_time"
+    rc, out = run(inbox, "--apply", "--strict")
+    assert rc == 1, "strict mode surfaces the lead failure"
+    with open(lm.PATH, encoding="utf-8") as f:
+        assert f.read() == "{broken", "a malformed record is never overwritten"
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:

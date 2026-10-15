@@ -4,6 +4,8 @@
     .venv/bin/python pipeline/linkedin_followup.py            # today's cards
     .venv/bin/python pipeline/linkedin_followup.py --dry-run  # select and print, fetch nothing
     .venv/bin/python pipeline/linkedin_followup.py --ids 4474329851 4473170805
+    .venv/bin/python pipeline/linkedin_followup.py --requested   # Step 1d-4: the roles he
+                                    # asked for with Tailor it on the dashboard (D41)
 
 Why this exists (2026-10-05). Step 1d-2 harvests COMPANIES from the alert emails
 and deliberately never follows a role. That design holds for a company the poller
@@ -44,7 +46,8 @@ body itself says on-site or hybrid without also saying remote. That is the Echo
 case: the body is silent, the app says Remote, and only a read settles it.
 
 Read-only against every tracking file. Writes the cache directory and the seen
-file, nothing else. Standard library plus requests.
+file, and with --requested stamps each read onto its request in jobs/lead_marks.json
+through lead_marks.py. Nothing else. Standard library plus requests.
 """
 import argparse
 import csv
@@ -72,6 +75,8 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 DELAY = 1.5
+DEFAULT_MAX = 24       # three worker batches
+REQUESTED_MAX = 3      # roles he asked for, read and tailored per run (D41)
 TIMEOUT = (5, 20)
 MAX_BODY = 20000
 BATCH_SIZE = 8
@@ -224,13 +229,168 @@ def elsewhere(card, body):
     return bool(ELSEWHERE_RE.search(body)) and not REMOTE_RE.search(body)
 
 
+def transient(error):
+    """A fetch error that may pass: a request exception or a 5xx. A 4xx or a page with no
+    description block is the posting itself, and retrying won't change it."""
+    if error.startswith("HTTP "):
+        return error.startswith("HTTP 5")
+    return not error.startswith("no description")
+
+
+def write_jd(cache, c, rec, url, note=None):
+    """One JD file in the Step 2-JD shape. Returns its path."""
+    body = rec["body"]
+    name = f"li_{c['job_id']}_{slugify(c['company'], 20)}_{slugify(c['title'], 40)}.txt"
+    path = os.path.join(cache, name)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(f"COMPANY : {rec.get('company') or c['company']}\n")
+        f.write(f"TITLE   : {rec.get('title') or c['title']}\n")
+        f.write(f"URL     : {url}\n")
+        f.write("ATS     : linkedin-guest (public LinkedIn posting, not the source ATS)\n")
+        f.write(f"LOCATION: {rec.get('location') or c.get('location')}   remote=None\n")
+        f.write(f"LISTING LOCATION: {c.get('location')}  [LinkedIn's alert email and public page "
+                f"omit the Remote/Hybrid tag: workplace is UNKNOWN unless the body states it]\n")
+        f.write(f"POSTED  : {rec.get('posted')}\n")
+        f.write("SALARY  : None\n")
+        if c.get("aggregator"):
+            f.write("NOTE    : posted by a job-board aggregator; the real employer is named or "
+                    "described in the body, if at all\n")
+        if note:
+            f.write(f"NOTE    : {note}\n")
+        f.write("-" * 70 + "\n")
+        f.write(body[:MAX_BODY])
+        if len(body) > MAX_BODY:
+            f.write(f"\n[truncated at {MAX_BODY} of {len(body)} chars]\n")
+    return path
+
+
+def run_requested(args):
+    """Read the postings he asked for with Tailor it on the dashboard (Step 1d-4, D41).
+
+    The requests are in jobs/lead_marks.json, recorded there by shelf_inbox.py at Step 0
+    item 4b. Oldest click first, REQUESTED_MAX a run, into jobs/jd_cache/<date>_requested/
+    in the same shape as the normal follow-through, so the Step 2-JD worker and
+    jd_screen_table.py read them unchanged. Each read is stamped back on its request
+    (ok, thin, closed, on-site elsewhere, or the error), which is what takes it out of the
+    waiting list. A 429 stops the walk and stamps nothing further: those roll to the next
+    run. Unlike the normal walk there is no tier or company filter; he already chose.
+    """
+    import lead_marks
+    limit = REQUESTED_MAX if args.max is None else args.max
+    try:
+        chosen, waiting = lead_marks.pending_requests(limit)
+    except Exception as exc:  # noqa: BLE001
+        print(f"linkedin_followup: FAILED, cannot read {lead_marks.PATH}: {type(exc).__name__}: {exc}")
+        return 1
+    print(f"linkedin_followup --requested: {len(chosen)} selected of {waiting} waiting")
+    if args.dry_run or not chosen:
+        for c in chosen:
+            print(f"  {c.get('company', '?')}: {c.get('title', '?')} | {c['job_id']} (asked {c.get('marked', '?')})")
+        return 0
+
+    try:
+        with open(SEEN, encoding="utf-8") as f:
+            seen = json.load(f)
+    except (OSError, ValueError):
+        seen = {}
+    cache = os.path.join(JOBS, "jd_cache", f"{args.date}_requested")
+    os.makedirs(cache, exist_ok=True)
+    session = requests.Session()
+    entries, stamps, retry, dropped = [], {}, {}, []
+    today = dt.date.fromisoformat(args.date)
+    for i, req in enumerate(chosen, 1):
+        jid = req["job_id"]
+        c = {"job_id": jid, "company": req.get("company") or "?", "title": req.get("title") or "?",
+             "location": req.get("loc") or "", "location_verdict": req.get("loc") or "unknown"}
+        url = f"https://www.linkedin.com/jobs/view/{jid}/"
+        e = {"idx": i, "company": c["company"], "title": c["title"], "url": url, "ats": "linkedin-guest",
+             "source": "dashboard_request", "job_id": jid, "listing_location": c["location"],
+             "card_tier": req.get("tier"), "card_location_verdict": req.get("loc"),
+             "company_class": f"asked for on the dashboard ({req.get('list') or 'weekly lead'})",
+             "asked": req.get("marked"), "jd_verification_required": True}
+        rec = fetch(session, jid)
+        if rec.get("throttled"):
+            print(f"  [RL] LinkedIn returned 429 at {c['company']}; stopping. "
+                  f"{len(chosen) - i + 1} request(s) stay waiting for the next run.")
+            break
+        if rec.get("error") and transient(rec["error"]):
+            # A timeout or a server error may pass by tomorrow. Count the try, keep the
+            # request waiting, and don't mark the id seen.
+            e.update(status="error", error=rec["error"])
+            retry[jid] = rec["error"]
+            entries.append(e)
+            time.sleep(DELAY)
+            continue
+        if rec.get("error"):
+            e.update(status="error", error=rec["error"])
+            stamps[jid] = f"error: {rec['error']}"
+        elif rec.get("closed"):
+            e.update(status="skipped: posting closed")
+            stamps[jid] = "closed"
+            dropped.append(f"{c['company']}: {c['title']} (no longer accepting applications)")
+        elif elsewhere(c, rec["body"]):
+            e.update(status="skipped: on-site or hybrid outside Atlanta per the JD body")
+            stamps[jid] = "on-site elsewhere"
+            dropped.append(f"{c['company']}: {c['title']} (JD body says on-site or hybrid)")
+        else:
+            path = write_jd(cache, c, rec, url, note="Aneesh asked for this one with Tailor it on the dashboard")
+            status = "ok" if len(rec["body"]) >= 400 else "thin"
+            e.update(status=status, file=path, chars=len(rec["body"]))
+            stamps[jid] = status
+        entries.append(e)
+        seen[jid] = args.date
+        time.sleep(DELAY)
+
+    readable = [e for e in entries if e.get("file")]
+    batches = [readable[i:i + BATCH_SIZE] for i in range(0, len(readable), BATCH_SIZE)]
+    for n, b in enumerate(batches, 1):
+        for e in b:
+            e["batch"] = n
+        with open(os.path.join(cache, f"batch_{n:02d}.json"), "w", encoding="utf-8") as f:
+            json.dump([e["file"] for e in b], f, indent=1)
+            f.write("\n")
+    manifest = {"date": args.date, "source": lead_marks.PATH,
+                "counts": {"selected": len(chosen), "waiting_before": waiting, "fetched": len(readable),
+                           "errors": sum(1 for e in entries if e["status"] == "error"),
+                           "dropped": len(dropped), "batches": len(batches)},
+                "batches": [[e["file"] for e in b] for b in batches], "entries": entries}
+    with open(os.path.join(cache, "manifest.json"), "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=1)
+        f.write("\n")
+    with open(SEEN, "w", encoding="utf-8") as f:
+        json.dump(seen, f, indent=1, sort_keys=True)
+        f.write("\n")
+    stamped = lead_marks.stamp(stamps, today)
+    gave_up = lead_marks.note_retry(retry, today)
+    k = manifest["counts"]
+    print(f"fetched {k['fetched']}, errors {k['errors']}, dropped {k['dropped']}; "
+          f"{k['batches']} batch file(s) in {cache}; {stamped} request(s) stamped as read")
+    if retry:
+        print(f"  {len(retry) - len(gave_up)} request(s) hit a timeout or server error and stay waiting"
+              + (f"; {len(gave_up)} gave up after {lead_marks.RETRY_LIMIT} tries" if gave_up else ""))
+    for d in dropped:
+        print(f"  dropped  {d}")
+    for e in entries:
+        if e["status"] == "error":
+            print(f"  ERROR    {e['company']}: {e['title']} -- {e['error'][:100]}")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--date", default=dt.date.today().isoformat())
-    ap.add_argument("--max", type=int, default=24, help="JDs to fetch this run (default 24)")
+    ap.add_argument("--max", type=int, default=None,
+                    help=f"JDs to fetch this run (default {DEFAULT_MAX}; {REQUESTED_MAX} with --requested)")
     ap.add_argument("--ids", nargs="*", help="fetch exactly these job ids, ignoring selection and the seen file")
+    ap.add_argument("--requested", action="store_true",
+                    help="read the roles he asked for on the dashboard (jobs/lead_marks.json), oldest first")
     ap.add_argument("--dry-run", action="store_true", help="print the selection, fetch nothing")
     args = ap.parse_args()
+    if args.requested:
+        if args.ids:
+            ap.error("--requested picks its own ids; drop --ids")
+        return run_requested(args)
+    args.max = DEFAULT_MAX if args.max is None else args.max
 
     cards_path = os.path.join(JOBS, f"linkedin_cards_{args.date}.json")
     try:
@@ -296,25 +456,7 @@ def main():
             e.update(status="skipped: on-site or hybrid outside Atlanta per the JD body")
             dropped.append(f"{c['company']}: {c['title']} [{c.get('location')}] (JD body says on-site or hybrid)")
         else:
-            name = f"li_{jid}_{slugify(c['company'], 20)}_{slugify(c['title'], 40)}.txt"
-            path = os.path.join(cache, name)
-            with open(path, "w", encoding="utf-8") as f:
-                f.write(f"COMPANY : {rec.get('company') or c['company']}\n")
-                f.write(f"TITLE   : {rec.get('title') or c['title']}\n")
-                f.write(f"URL     : {url}\n")
-                f.write("ATS     : linkedin-guest (public LinkedIn posting, not the source ATS)\n")
-                f.write(f"LOCATION: {rec.get('location') or c.get('location')}   remote=None\n")
-                f.write(f"LISTING LOCATION: {c.get('location')}  [LinkedIn's alert email and public page "
-                        f"omit the Remote/Hybrid tag: workplace is UNKNOWN unless the body states it]\n")
-                f.write(f"POSTED  : {rec.get('posted')}\n")
-                f.write("SALARY  : None\n")
-                if c.get("aggregator"):
-                    f.write("NOTE    : posted by a job-board aggregator; the real employer is named or "
-                            "described in the body, if at all\n")
-                f.write("-" * 70 + "\n")
-                f.write(body[:MAX_BODY])
-                if len(body) > MAX_BODY:
-                    f.write(f"\n[truncated at {MAX_BODY} of {len(body)} chars]\n")
+            path = write_jd(cache, c, rec, url)
             e.update(status="ok" if len(body) >= 400 else "thin", file=path, chars=len(body))
         entries.append(e)
         seen[jid] = args.date
