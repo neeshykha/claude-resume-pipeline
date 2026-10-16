@@ -279,6 +279,8 @@ uses Update from Source by hand for a few days.
 
 ## Phase two (interviews), unchanged from the handoff with one note
 
+Built 2026-10-15 in a different shape; see the last section of this file.
+
 `interview-scan` only runs Monday and Thursday and writes nothing structured today. The plan
 stands: have `interview-loop`'s scan write `pipeline/interviews.json` as a cache (company, role,
 round, datetime, has_prep, has_postmortem), gitignored, and the generator reads it if present. The
@@ -395,3 +397,34 @@ section, between "Cleared, not tailored" and "More from the last run". Story and
 - **Above and below the list:** a warn strip per flag; a collapsed "Channel health" panel with
   the channel lines, the LinkedIn funnel, and `pipeline_quality.py`'s report as preformatted text.
 - **Tile:** "weekly leads to answer", the unmarked count, links to the section.
+
+## 2026-10-15: Progress, the phase two section ([D42](../DECISIONS.md#d42-the-dashboard-got-a-progress-section))
+
+He expects to ramp to 6-7 applications a day and asked to see it, then interviews and the funnel
+after them. The section sits at the top of the page, under the tiles.
+
+- **Data:** `read_progress()` in the generator, embedded as `progress`. A send is a row in one of
+  `SENT_STAGES` (the stages `mark_applied.py` and `shelf_inbox.py` treat as sent), dated by
+  `applied_date`; a `closed` row counts only with a sent verdict or a confirmation file in
+  `jobs/` that names it. Sends count from the epoch. A row with no `applied_date` falls back to
+  `surfaced_date` and the page says how many did. A failure here sets `progress.error` and the
+  rest of the page still builds.
+- **Rounds:** `jobs/interviews.json` (gitignored), written only by `log_interview.py`, which the
+  interview-loop skill runs at its Step 5 when a round has happened. Kinds: screen, interview,
+  onsite, assessment. Each round attaches to its send by posting URL, else to the company's
+  latest send on or before the round. The old plan above (a twice-weekly cache with prep and
+  post-mortem flags) was dropped: the log records what happened, and nothing needs an "as of".
+- **Tiles:** sent today against the target, the last 7 days with a per-day average, and rounds
+  in the last 30 days with the latest one named.
+- **Applications sent per day:** columns since the epoch, the last 30 or 90 days. Today's Sent
+  clicks that no run has recorded yet are counted from the page's own marks and drawn as a
+  lighter segment, so the number is live. A 7-day trailing average line and a shaded 6-7 target
+  band share the one axis.
+- **Interview rounds per week:** stacked columns, first conversation and later rounds, over the
+  same range. Assessments are left off the columns and named in the tooltip.
+- **What came of each send:** sent, reached a screen, reached a later round, offer, as bars with
+  counts and shares; a line saying where every send stands (waiting, no reply after 30 days,
+  rejected without an interview, closed, at an assessment, interviewed); a table by send week.
+- **Charts:** inline SVG, no library. Hover or arrow keys move a tooltip; every chart has a table
+  underneath with the same numbers. Colors are the dataviz reference blue and orange, checked
+  with its validator against the card color in both modes.

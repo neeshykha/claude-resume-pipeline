@@ -569,13 +569,173 @@ def read_fields(pdf_rel):
     return out or None
 
 
+# The Progress section, dashboard phase two (added 2026-10-15, D42): sends a day, interview
+# rounds, and what came of each send. Sends count from the epoch only; rounds are dated by
+# when they happened, which was never in doubt, so the log keeps the earlier ones too.
+SENT_STAGES = ("applied", "rejected", "interview", "assessment", "onsite", "offer")
+FURTHEST_RANK = {"applied": 0, "assessment": 1, "interview": 2, "onsite": 3, "offer": 4}
+TARGET_PER_DAY = (6, 7)  # his ramp target, set 2026-10-15
+GHOST_DAYS = 30          # 24 of the first 27 post-epoch rejections arrived inside 30 days
+INTERVIEWS = "interviews.json"  # written by log_interview.py, from interview-loop's Step 5
+ROUND_KINDS = ("screen", "interview", "onsite", "assessment")
+
+
+def read_confirmations():
+    """What the Step 0.5 confirmation files name: posting URLs, and (company, title) pairs
+    for the receipts that gave no URL. Only consulted for `closed` rows, below."""
+    urls, named = set(), []
+    try:
+        names = [n for n in os.listdir(JOBS_DIR) if n.startswith("confirmations_") and n.endswith(".json")]
+    except OSError:
+        return urls, named
+    for n in names:
+        try:
+            with open(os.path.join(JOBS_DIR, n), encoding="utf-8") as f:
+                items = json.load(f).get("confirmations") or []
+        except Exception:
+            continue
+        for c in items if isinstance(items, list) else []:
+            if not isinstance(c, dict):
+                continue
+            if clip(c.get("url"), 600):
+                urls.add(norm_url(c["url"]))
+            elif clip(c.get("company"), 120):
+                named.append((slug(c["company"]), clip(c.get("title"), 200).lower()))
+    return urls, named
+
+
+def read_rounds():
+    """Interview rounds from jobs/interviews.json, oldest first, plus a note when the log is
+    missing or partly unreadable. A round with no number is numbered by its company's order."""
+    path = os.path.join(JOBS_DIR, INTERVIEWS)
+    if not os.path.exists(path):
+        return [], "No interview log yet (pipeline/jobs/interviews.json)."
+    try:
+        with open(path, encoding="utf-8") as f:
+            raw = json.load(f).get("rounds")
+    except Exception as e:
+        return [], f"The interview log could not be read ({type(e).__name__}), so no rounds are shown."
+    out, bad = [], 0
+    for r in raw if isinstance(raw, list) else []:
+        d = parse_date(r.get("date")) if isinstance(r, dict) else None
+        if not d or r.get("kind") not in ROUND_KINDS or not clip(r.get("company"), 120):
+            bad += 1
+            continue
+        n = r.get("round")
+        out.append({"date": d.isoformat(), "company": clip(r["company"], 120), "kind": r["kind"],
+                    "round": n if isinstance(n, int) and not isinstance(n, bool) and 0 < n < 50 else None,
+                    "label": clip(r.get("label"), 120), "url": clip(r.get("url"), 600)})
+    out.sort(key=lambda x: x["date"])
+    seen = {}
+    for x in out:
+        if x["kind"] != "assessment":
+            seen[slug(x["company"])] = seen.get(slug(x["company"]), 0) + 1
+            if x["round"] is None:
+                x["round"] = seen[slug(x["company"])]
+    note = f"{bad} unreadable entr{'y' if bad == 1 else 'ies'} in the interview log were skipped." if bad else ""
+    return out, note
+
+
+def read_progress(today):
+    """Sends a day since the epoch, interview rounds, and the funnel by send week.
+
+    A send is a row past `surfaced` (the same stages mark_applied.py and shelf_inbox.py
+    treat as sent), dated by applied_date, which a confirmation or a Sent mark sets. A
+    `closed` row counts only with evidence it went out: a sent verdict, or a confirmation
+    file that names it. Today's Sent clicks not yet recorded are added on the page itself.
+    """
+    with open(OUTCOMES, newline="", encoding="utf-8") as f:
+        raw = list(csv.reader(f))
+    header, body = raw[0], raw[1:]
+    ci = {n: i for i, n in enumerate(header)}
+
+    def col(r, name):
+        return r[ci[name]].strip() if name in ci else ""
+
+    conf_urls, conf_named = read_confirmations()
+    sends, undated = [], 0
+    for r in body:
+        if len(r) != len(header):
+            continue
+        stage, url, co = col(r, "stage"), norm_url(col(r, "url")), col(r, "company")
+        if stage == "closed":
+            title = col(r, "title").lower()
+            if not (col(r, "his_verdict").startswith("sent") or (url and url in conf_urls)
+                    or any(c == slug(co) and (not t or t in title) for c, t in conf_named)):
+                continue
+        elif stage not in SENT_STAGES:
+            continue
+        sent = parse_date(col(r, "applied_date"))
+        exact = sent is not None
+        sent = sent or parse_date(col(r, "surfaced_date"))
+        rank = max(FURTHEST_RANK.get(col(r, k).lower(), 0) for k in ("furthest_stage", "stage", "outcome"))
+        sends.append({"date": sent, "exact": exact, "company": clip(co, 120), "url": url,
+                      "stage": stage, "rank": rank, "rounds": []})
+        undated += sent is None
+
+    # Each round attaches to the send it belongs to: by posting URL, else the company's latest
+    # send on or before the round. Pre-epoch sends are candidates too, so an old process's
+    # round never lands on a newer application to the same company.
+    rounds, note = read_rounds()
+    by_url = {s["url"]: s for s in sends if s["url"]}
+    for x in rounds:
+        s = by_url.get(norm_url(x["url"])) if x["url"] else None
+        if s is None:
+            d = parse_date(x["date"])
+            same = [s for s in sends if slug(s["company"]) == slug(x["company"]) and (s["date"] is None or s["date"] <= d)]
+            s = max(same, key=lambda s: s["date"] or date.min) if same else None
+        if s is not None:
+            s["rounds"].append(x)
+
+    days, weeks, inexact, pre_epoch = {}, {}, 0, 0
+    funnel = dict.fromkeys(("sent", "screen", "later", "offer", "interviewed", "assessment",
+                            "rejected", "closed", "ghosted", "waiting"), 0)
+    for s in sends:
+        if s["date"] is None:
+            continue
+        if s["date"] < EPOCH:
+            pre_epoch += 1
+            continue
+        inexact += not s["exact"]
+        days.setdefault(s["date"].isoformat(), []).append(s["company"] or "?")
+        talks = [x for x in s["rounds"] if x["kind"] != "assessment"]
+        f = {"sent": 1, "screen": int(bool(talks) or s["rank"] >= 2),
+             "later": int(len(talks) >= 2 or s["rank"] >= 3), "offer": int(s["rank"] >= 4)}
+        if f["screen"]:
+            bucket = "interviewed"
+        elif s["stage"] in ("rejected", "closed"):
+            bucket = s["stage"]
+        elif s["rank"] == 1 or s["rounds"]:
+            bucket = "assessment"
+        elif (today - s["date"]).days >= GHOST_DAYS:
+            bucket = "ghosted"
+        else:
+            bucket = "waiting"
+        f[bucket] = 1
+        wk = date.fromordinal(s["date"].toordinal() - s["date"].weekday()).isoformat()
+        w = weeks.setdefault(wk, dict.fromkeys(funnel, 0))
+        for k, v in f.items():
+            w[k] += v
+            funnel[k] += v
+    return {"epoch": EPOCH.isoformat(), "target": list(TARGET_PER_DAY), "ghost_days": GHOST_DAYS,
+            "days": {k: sorted(v, key=str.lower) for k, v in sorted(days.items())},
+            "inexact": inexact, "pre_epoch": pre_epoch, "undated": undated,
+            "rounds": [{k: x[k] for k in ("date", "company", "kind", "round", "label")} for x in rounds],
+            "rounds_note": note, "funnel": funnel,
+            "weeks": [dict(v, week=k) for k, v in sorted(weeks.items())]}
+
+
 def build_data(today, now):
     with open(WATCHLIST, encoding="utf-8") as f:
         watch = json.load(f)
     queue, quiet, counts = read_outcomes(today, watch.get("_scoring_config", {}))
     counts.update(read_backlog_counts())
     screened, counts["screened_days"] = read_screened(today)
-    return {"generated": now.strftime("%Y-%m-%dT%H:%M"), "expiry_days": EXPIRY_DAYS,
+    try:
+        progress = read_progress(today)
+    except Exception as e:  # noqa: BLE001 - a bad chart input must not take the queue down with it
+        progress = {"error": f"{type(e).__name__}: {e}"[:200]}
+    return {"generated": now.strftime("%Y-%m-%dT%H:%M"), "expiry_days": EXPIRY_DAYS, "progress": progress,
             "fresh_days": 14, "expiring_days": 7, "quiet_days": 10,
             # The task runs `0 3 * * 1-5`; by 8 AM a weekday's page should exist. JS weekday numbers.
             "run_weekdays": [1, 2, 3, 4, 5], "run_ready_hour": 8,
@@ -646,6 +806,9 @@ PAGE = r"""<!DOCTYPE html>
 --good:#1f7a4d;--warn:#b26a00;--bad:#b3261e;--goodbg:#e6f3ec;--warnbg:#fbf0dc;--badbg:#fae6e4;--chip:#eeece6}
 @media (prefers-color-scheme:dark){:root{--bg:#15171b;--card:#1e2126;--ink:#e8e6e1;--mute:#9a9ea6;--line:#2e3239;
 --accent:#8f9cf5;--good:#6fcf9b;--warn:#e7b25c;--bad:#f08b83;--goodbg:#1b3328;--warnbg:#3a2e17;--badbg:#3d2220;--chip:#2a2e35}}
+/* Progress charts (D42): the dataviz reference blue and orange, each step validated against --card in its mode. */
+:root{--s1:#2a78d6;--s1p:#86b6ef;--s2:#eb6834;--ink2:#52514e;--axis:#c3c2b7;--band:rgba(11,11,11,.06)}
+@media (prefers-color-scheme:dark){:root{--s1:#3987e5;--s1p:#1c5cab;--s2:#d95926;--ink2:#c3c2b7;--axis:#41464f;--band:rgba(255,255,255,.07)}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 main{max-width:1080px;margin:0 auto;padding:20px 16px 60px}
@@ -712,6 +875,37 @@ details ul{margin:6px 0 2px;padding-left:18px;color:var(--mute)}
 .hs{padding:4px 12px 10px;font-size:13px}.hs b{display:block;margin:6px 0 2px}
 .hs ul{margin:0;padding-left:18px;color:var(--ink)}
 .hs pre{margin:0;white-space:pre-wrap;font-size:12px;color:var(--ink);overflow-x:auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0 4px}
+.kpi{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--mute);border-radius:10px;padding:12px}
+.kpi.good{border-left-color:var(--good)}
+.kpi b{display:block;font-size:26px;line-height:1.1;font-weight:600}
+.kpi span{font-size:13px;color:var(--mute)}
+.viz{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 12px 6px;margin:10px 0}
+.viz h3{font-size:14px;margin:0}
+.vsub{font-size:12.5px;color:var(--mute);margin:2px 0 4px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--mute);margin:4px 0 8px}
+.legend i{display:inline-block;vertical-align:middle;margin-right:6px}
+.legend i.sw{width:10px;height:10px;border-radius:2px}
+.legend i.ln{width:14px;height:2px;border-radius:1px}
+.legend i.bd{width:14px;height:10px;background:var(--band);border:1px solid var(--line)}
+.viz svg{display:block;max-width:100%;touch-action:pan-y}
+.viz svg:focus{outline:none}.viz svg:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.vtip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;
+padding:8px 10px;font-size:12.5px;box-shadow:0 4px 16px rgba(0,0,0,.14);width:max-content;max-width:260px;z-index:5}
+.vtip .tt{color:var(--mute);margin-bottom:4px}
+.vtip .tr{display:flex;align-items:center;gap:6px;margin:2px 0}.vtip .tr b{font-weight:600}
+.vtip .tr i{display:inline-block;width:12px;height:2px;border-radius:1px;flex:none}
+.vtip .tn{color:var(--mute);margin-top:5px;line-height:1.35}
+.fun{display:grid;grid-template-columns:minmax(110px,max-content) 1fr minmax(64px,max-content);gap:8px 10px;align-items:center;font-size:13px;margin:8px 0 6px}
+.fun .trk{height:14px}.fun .bar{height:14px;background:var(--s1);border-radius:0 4px 4px 0}
+.fun .fv2{text-align:right;white-space:nowrap}
+.stand{font-size:13px;color:var(--mute);margin:4px 0 2px}
+.viz details{margin:6px 0 4px}
+.tw{overflow-x:auto}
+.vt{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+.vt th{color:var(--mute);font-weight:600}
+.vt th,.vt td{text-align:left;padding:4px 8px;border-top:1px solid var(--line);vertical-align:top}
+.vt .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.vt td:first-child{white-space:nowrap}
 footer{margin-top:34px;font-size:13px;color:var(--mute)}
 footer li{margin:3px 0}
 </style>
@@ -722,6 +916,14 @@ footer li{margin:3px 0}
 <div class="sub" id="stamp"></div>
 <div id="strips"></div>
 <div class="tiles" id="tiles"></div>
+
+<h2 id="h-progress">Progress</h2>
+<div class="sub" id="prog-sub"></div>
+<div class="kpis" id="prog-kpis"></div>
+<div class="chips" id="prog-range" aria-label="Range for the two charts"></div>
+<div class="viz" id="viz-sent"></div>
+<div class="viz" id="viz-rounds"></div>
+<div class="viz" id="viz-funnel"></div>
 
 <h2 id="h-today">New from the last run</h2>
 <div class="sub" id="today-sub"></div>
@@ -944,7 +1146,7 @@ document.addEventListener('click',function(ev){var t=ev.target;if(!t||!t.getAttr
   if(a==='undo')delete marks[k];
   else if(a==='edited'){if(marks[k])marks[k].e=!!t.checked}
   else{marks[k]={a:a,d:iso(today),ts:Date.now(),u:q.url,c:q.company,t:q.title};if(a==='skip')marks[k].r=t.getAttribute('data-r')||'other'}
-  saveMarks();todayList();queue();tiles()});
+  saveMarks();todayList();queue();tiles();progress()});
 
 // The one-click clear (his pick, 2026-10-12). Rows past the Fresh window that carry no mark
 // yet. Recorded as skip (other) with `bulk` set, so shelf_inbox.py notes "cleared in bulk"
@@ -1057,18 +1259,182 @@ function quiet(){
     return '<div class="row"><div class="body"><div class="top"><span class="co">'+esc(z.company)+'</span><span>'+titleLink(z)+'</span></div><div class="meta">'+m.join('')+'</div></div><div class="right"><b class="mono">'+z.days+'d</b><small>applied '+esc(nice(z.applied))+'</small></div></div>'
   }).join(''):'<div class="empty">Nothing in this view.</div>'}
 
+// Progress (dashboard phase two, D42). P is read_progress() in this file. A Sent click the next
+// run hasn't recorded yet is counted from the page's own marks, so today's number isn't a day
+// behind; once the run records it the row leaves the queue and the tracker's count takes over.
+var P=D.progress||{}, pDays=30, PRANGE={30:['Last 30 days'],90:['Last 90 days']}, NS='http://www.w3.org/2000/svg';
+function sv(tag,a,parent){var e=document.createElementNS(NS,tag);for(var k in a)e.setAttribute(k,a[k]);if(parent)parent.appendChild(e);return e}
+function mkEl(tag,cls,text,parent){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e}
+function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n)}
+function monday(d){return addDays(d,-((d.getDay()+6)%7))}
+function pct(a,b){if(!b)return '';var p=100*a/b;return (p<10?p.toFixed(1):Math.round(p))+'%'}
+function plural(n,one,many){return n+' '+(n===1?one:(many||one+'s'))}
+function pendingSends(){var live={},by={};D.queue.forEach(function(q){live[q.key]=1});
+  Object.keys(marks).forEach(function(k){var m=marks[k];
+    if(m&&m.a==='sent'&&live[k]&&day(m.d))(by[m.d]=by[m.d]||[]).push(m.c||'?')});
+  return by}
+// Every day from the epoch through today. The 7-day average needs a full week behind it.
+function sendSeries(){var ep=day(P.epoch),pend=pendingSends(),out=[];if(!ep)return out;
+  for(var d=ep;d<=today;d=addDays(d,1)){var k=iso(d),r=(P.days&&P.days[k])||[],p=pend[k]||[];
+    out.push({d:d,k:k,rec:r,pend:p,n:r.length+p.length})}
+  out.forEach(function(x,i){if(i<6){x.avg=null;return}var s=0;for(var j=i-6;j<=i;j++)s+=out[j].n;x.avg=s/7});
+  return out}
+function talks(){return (P.rounds||[]).filter(function(r){return r.kind!=='assessment'})}
+
+// A chart card: title, subtitle, legend, the plot, one tooltip, and a table twin underneath.
+function card(id,title,sub,legend){var h=el(id);h.textContent='';
+  mkEl('h3',null,title,h);if(sub)mkEl('div','vsub',sub,h);
+  if(legend&&legend.length){var lg=mkEl('div','legend',null,h);legend.forEach(function(l){
+    var s=mkEl('span',null,null,lg),i=mkEl('i',l[0],null,s);if(l[1])i.style.background=l[1];s.appendChild(document.createTextNode(l[2]))})}
+  var plot=mkEl('div',null,null,h),tip=mkEl('div','vtip',null,h);tip.hidden=true;
+  return {host:h,plot:plot,tip:tip}}
+function tableTwin(host,id,label,head,rows){
+  var d=document.createElement('details');d.setAttribute('data-d',id);if(openD[id])d.open=true;host.appendChild(d);
+  mkEl('summary',null,label,d);var w=mkEl('div','tw',null,d),t=mkEl('table','vt',null,w),tr=mkEl('tr',null,null,mkEl('thead',null,null,t));
+  head.forEach(function(c){mkEl('th',c[1]?'n':null,c[0],tr)});var tb=mkEl('tbody',null,null,t);
+  rows.forEach(function(r){var x=mkEl('tr',null,null,tb);r.forEach(function(v,i){mkEl('td',head[i][1]?'n':null,v,x)})});
+  if(!rows.length){var e=mkEl('tr',null,null,tb),c=mkEl('td',null,'Nothing in this range.',e);c.colSpan=head.length}}
+function barPath(x,y0,w,h,r){r=Math.min(r,w/2,h);
+  return 'M'+x+','+(y0+h)+'V'+(y0+r)+'Q'+x+','+y0+' '+(x+r)+','+y0+'H'+(x+w-r)+'Q'+(x+w)+','+y0+' '+(x+w)+','+(y0+r)+'V'+(y0+h)+'Z'}
+function niceTicks(max){var st=max<=5?1:max<=10?2:max<=25?5:10,top=Math.max(st,Math.ceil(max/st)*st),t=[];
+  for(var v=0;v<=top;v+=st)t.push(v);return t}
+// Stacked columns on one baseline, an optional 2px line and a shaded band on the same axis.
+// Hover or arrow keys pick the nearest column; the tooltip and the table carry the values.
+function columns(cv,c){
+  var W=Math.max(280,cv.plot.clientWidth||0),H=c.h||210,m={l:28,r:6,t:8,b:22},pw=W-m.l-m.r,ph=H-m.t-m.b,n=c.n,top,i;
+  var max=c.minMax||1;
+  for(i=0;i<n;i++){var s=0;c.stacks.forEach(function(st){s+=st.vals[i]});max=Math.max(max,s);
+    if(c.line&&c.line.vals[i]!=null)max=Math.max(max,c.line.vals[i])}
+  if(c.band)max=Math.max(max,c.band[1]+1);
+  var ticks=niceTicks(max);top=ticks[ticks.length-1];
+  function y(v){return m.t+ph-v/top*ph}
+  var slot=pw/n,bw=slot>6?Math.min(24,slot*0.64):Math.max(1,slot-1);
+  function cx(k){return m.l+slot*k+slot/2}
+  var svg=sv('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H,role:'img',tabindex:'0','aria-label':c.aria},cv.plot);
+  if(c.band)sv('rect',{x:m.l,y:y(c.band[1]),width:pw,height:y(c.band[0])-y(c.band[1]),fill:'var(--band)'},svg);
+  var hl=sv('rect',{x:0,y:m.t,width:slot,height:ph,fill:'var(--band)',visibility:'hidden'},svg);
+  ticks.forEach(function(v){sv('line',{x1:m.l,x2:W-m.r,y1:y(v),y2:y(v),stroke:v?'var(--line)':'var(--axis)','stroke-width':1,'shape-rendering':'crispEdges'},svg);
+    var t=sv('text',{x:m.l-6,y:y(v)+3.5,'text-anchor':'end','font-size':11,fill:'var(--mute)','font-variant-numeric':'tabular-nums'},svg);t.textContent=v});
+  for(i=0;i<n;i++){var base=0,segs=[];c.stacks.forEach(function(st){if(st.vals[i]>0)segs.push([st.color,st.vals[i]])});
+    segs.forEach(function(sg,j){var y1=y(base+sg[1]),y0=y(base)-(j?2:0),h=y0-y1;base+=sg[1];if(h<=0)return;
+      var x=cx(i)-bw/2;
+      if(j===segs.length-1)sv('path',{d:barPath(x,y1,bw,h,4),fill:sg[0]},svg);
+      else sv('rect',{x:x,y:y1,width:bw,height:h,fill:sg[0]},svg)})}
+  if(c.line){var d='',pen=false,last=-1;for(i=0;i<n;i++){var v=c.line.vals[i];
+      if(v==null){pen=false;continue}d+=(pen?'L':'M')+cx(i).toFixed(1)+','+y(v).toFixed(1);pen=true;last=i}
+    if(d)sv('path',{d:d,fill:'none',stroke:c.line.color,'stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'},svg);
+    if(last>=0)sv('circle',{cx:cx(last),cy:y(c.line.vals[last]),r:4,fill:c.line.color,stroke:'var(--card)','stroke-width':2},svg)}
+  var every=Math.max(1,Math.ceil(n/Math.max(1,Math.floor(pw/54))));
+  for(i=n-1;i>=0;i-=every){var x=cx(i),t=sv('text',{x:x,y:H-6,'font-size':11,fill:'var(--mute)',
+      'text-anchor':x>W-m.r-24?'end':x<m.l+24?'start':'middle'},svg);t.textContent=c.xLabel(i)}
+  var sel=-1;
+  function show(k){if(k<0||k>=n){hide();return}sel=k;hl.setAttribute('x',m.l+slot*k);hl.setAttribute('visibility','visible');
+    var tp=c.tip(k),tip=cv.tip;tip.textContent='';mkEl('div','tt',tp.title,tip);
+    tp.rows.forEach(function(r){var row=mkEl('div','tr',null,tip),key=mkEl('i',null,null,row);key.style.background=r[0];
+      mkEl('b',null,r[1],row);row.appendChild(document.createTextNode(' '+r[2]))});
+    if(tp.note)mkEl('div','tn',tp.note,tip);
+    tip.hidden=false;var sc=svg.getBoundingClientRect().width/W||1,px=cv.plot.offsetLeft+cx(k)*sc,tw=tip.offsetWidth,hw=cv.host.clientWidth;
+    // The plot div, not the svg: SVG elements have no offsetLeft.
+    var left=px+14+tw>hw-4?px-14-tw:px+14;tip.style.left=Math.max(4,left)+'px';tip.style.top=(cv.plot.offsetTop+6)+'px'}
+  function hide(){sel=-1;hl.setAttribute('visibility','hidden');cv.tip.hidden=true}
+  function at(ev){var r=svg.getBoundingClientRect(),x=(ev.clientX-r.left)*W/r.width;return Math.floor((x-m.l)/slot)}
+  svg.addEventListener('pointermove',function(ev){var k=at(ev);if(k!==sel)show(k)});
+  svg.addEventListener('pointerdown',function(ev){show(at(ev))});
+  svg.addEventListener('pointerleave',hide);
+  svg.addEventListener('focus',function(){show(sel<0?n-1:sel)});svg.addEventListener('blur',hide);
+  svg.addEventListener('keydown',function(ev){if(ev.key==='ArrowLeft'||ev.key==='ArrowRight'){ev.preventDefault();
+      show(Math.min(n-1,Math.max(0,(sel<0?n-1:sel)+(ev.key==='ArrowLeft'?-1:1))))}else if(ev.key==='Escape')hide()})}
+
+function names(list,max){var u={};list.forEach(function(x){u[x]=(u[x]||0)+1});
+  var k=Object.keys(u).map(function(x){return u[x]>1?x+' ×'+u[x]:x});
+  return k.length>max?k.slice(0,max).join(', ')+', and '+(k.length-max)+' more':k.join(', ')}
+
+function progress(){
+  if(P.error){el('prog-sub').textContent='';el('prog-kpis').textContent='';el('prog-range').textContent='';
+    ['viz-sent','viz-rounds','viz-funnel'].forEach(function(x){el(x).style.display='none'});
+    el('prog-sub').innerHTML='<div class="strip bad">The progress charts could not be built this run: '+esc(P.error)+'</div>';return}
+  var all=sendSeries(),T=P.target||[6,7],R=talks();if(!all.length)return;
+  var sub='A send is an application the tracker has recorded, from a confirmation email or your Sent click, counted from '+nice(P.epoch)+' on. Sent clicks show up here the moment you make them.';
+  if(P.inexact)sub+=' '+plural(P.inexact,'send has','sends have')+' no send date and '+(P.inexact===1?'is':'are')+' counted on the day it was tailored.';
+  if(P.rounds_note)sub+=' '+P.rounds_note;
+  el('prog-sub').textContent=sub;
+
+  // Headline numbers.
+  var t=all[all.length-1],wk=all.slice(-7),wn=0;wk.forEach(function(x){wn+=x.n});
+  var since30=iso(addDays(today,-29)),r30=R.filter(function(r){return r.date>=since30}),lastR=R[R.length-1];
+  var k=[[t.n>=T[0]?'good':'',t.n,'sent today, against a target of '+T[0]+'-'+T[1]+(t.pend.length?' ('+t.pend.length+' not recorded yet)':'')],
+    [wn/7>=T[0]?'good':'',wn,'sent in the last 7 days, '+(wn/7).toFixed(1)+' a day'],
+    [r30.length?'good':'',r30.length,'interview '+(r30.length===1?'round':'rounds')+' in the last 30 days'+(lastR?'; the last was '+lastR.company+', '+nice(lastR.date):'')]];
+  var kh=el('prog-kpis');kh.textContent='';
+  k.forEach(function(x){var d=mkEl('div','kpi'+(x[0]?' '+x[0]:''),null,kh);mkEl('b',null,String(x[1]),d);mkEl('span',null,x[2],d)});
+
+  chips('prog-range',PRANGE,String(pDays),function(v){pDays=+v;progress()});
+
+  // Sends a day.
+  var s=all.slice(-pDays),hasPend=s.some(function(x){return x.pend.length});
+  var cv=card('viz-sent','Applications sent per day','Each column is one day. The line is the trailing 7-day average.',
+    [['sw','var(--s1)','Sent, recorded']].concat(hasPend?[['sw','var(--s1p)','Marked Sent, not recorded yet']]:[]).concat([['ln','var(--ink2)','7-day average'],['bd','','Target, '+T[0]+'-'+T[1]+' a day']]));
+  columns(cv,{n:s.length,band:T,minMax:T[1]+1,
+    stacks:[{color:'var(--s1)',vals:s.map(function(x){return x.rec.length})},{color:'var(--s1p)',vals:s.map(function(x){return x.pend.length})}],
+    line:{color:'var(--ink2)',vals:s.map(function(x){return x.avg})},
+    xLabel:function(i){return nice(s[i].k)},
+    aria:'Applications sent per day, last '+s.length+' days. '+wn+' in the last 7 days. The table below the chart has every value.',
+    tip:function(i){var x=s[i],rows=[['var(--s1)',x.rec.length,'sent'+(x.pend.length?', recorded':'')]];
+      if(x.pend.length)rows.push(['var(--s1p)',x.pend.length,'marked Sent, not recorded yet']);
+      if(x.avg!=null)rows.push(['var(--ink2)',x.avg.toFixed(1),'a day, 7-day average']);
+      return {title:x.d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}),rows:rows,note:names(x.rec.concat(x.pend),8)}}});
+  tableTwin(cv.host,'prog|sent','Show the numbers',[['Day'],['Sent',1],['Not recorded yet',1],['7-day avg',1],['Companies']],
+    s.slice().reverse().filter(function(x){return x.n||x.avg}).map(function(x){
+      return [nice(x.k),String(x.rec.length),x.pend.length?String(x.pend.length):'',x.avg==null?'':x.avg.toFixed(1),names(x.rec.concat(x.pend),40)]}));
+
+  // Interview rounds a week, over the same range.
+  var w0=monday(addDays(today,-(pDays-1))),weeks=[];
+  for(var d=w0;d<=today;d=addDays(d,7))weeks.push({d:d,k:iso(d),end:iso(addDays(d,6)),first:[],later:[],tests:[]});
+  (P.rounds||[]).forEach(function(r){weeks.forEach(function(w){if(r.date>=w.k&&r.date<=w.end)
+    (r.kind==='assessment'?w.tests:(r.round||1)>1?w.later:w.first).push(r)})});
+  var rn=0;weeks.forEach(function(w){rn+=w.first.length+w.later.length});
+  var cr=card('viz-rounds','Interview rounds per week',rn?'Each column is a week, Monday to Sunday. '+plural(rn,'round')+' in this range.':
+      'No rounds logged in this range'+(lastR?'. The last one was '+lastR.company+' on '+nice(lastR.date)+'.':'.'),
+    [['sw','var(--s1)','First conversation'],['sw','var(--s2)','Later rounds']]);
+  columns(cr,{n:weeks.length,minMax:2,h:150,
+    stacks:[{color:'var(--s1)',vals:weeks.map(function(w){return w.first.length})},{color:'var(--s2)',vals:weeks.map(function(w){return w.later.length})}],
+    xLabel:function(i){return nice(weeks[i].k)},
+    aria:'Interview rounds per week, '+weeks.length+' weeks. '+rn+' rounds in this range. The table below the chart lists every round.',
+    tip:function(i){var w=weeks[i],rows=[['var(--s1)',w.first.length,'first '+(w.first.length===1?'conversation':'conversations')],['var(--s2)',w.later.length,'later '+(w.later.length===1?'round':'rounds')]];
+      var list=w.first.concat(w.later,w.tests).map(function(r){return r.company+(r.kind==='assessment'?' (assessment)':' R'+(r.round||1))+', '+nice(r.date)});
+      return {title:'Week of '+nice(w.k),rows:rows,note:list.join('; ')}}});
+  tableTwin(cr.host,'prog|rounds','Every logged round',[['Date'],['Company'],['Round'],['What it was']],
+    (P.rounds||[]).slice().reverse().map(function(r){return [nice(r.date),r.company,r.kind==='assessment'?'assessment':'R'+(r.round||1)+' '+r.kind,r.label||'']}));
+
+  // What came of each send, since the epoch.
+  var f=P.funnel||{},fh=el('viz-funnel');fh.textContent='';
+  mkEl('h3',null,'What came of each send',fh);
+  mkEl('div','vsub','All '+f.sent+' sends since '+nice(P.epoch)+'. A send reaches a stage once a round is logged for it or the tracker records the stage.',fh);
+  var g=mkEl('div','fun',null,fh);
+  [['Sent',f.sent],['Reached a screen',f.screen],['Reached a later round',f.later],['Offer',f.offer]].forEach(function(r,i){
+    mkEl('div',null,r[0],g);var b=mkEl('div','bar',null,mkEl('div','trk',null,g));
+    b.style.width=(f.sent&&r[1]?Math.max(0.8,100*r[1]/f.sent):0)+'%';
+    mkEl('div','fv2',r[1]+(i&&r[1]&&f.sent?' · '+pct(r[1],f.sent):''),g)});
+  var st=[[f.waiting,'still inside '+P.ghost_days+' days'],[f.ghosted,'no reply after '+P.ghost_days+' days'],[f.rejected,'rejected without an interview'],
+    [f.closed,'closed'],[f.assessment,'at an assessment'],[f.interviewed,'interviewed']].filter(function(x){return x[0]});
+  mkEl('div','stand','Where they stand: '+st.map(function(x){return x[0]+' '+x[1]}).join(' · ')+'.',fh);
+  tableTwin(fh,'prog|weeks','By the week they were sent',[['Week of'],['Sent',1],['Screen',1],['Later round',1],['Offer',1],['Rejected',1],['Closed',1],['No reply '+P.ghost_days+'d+',1],['Waiting',1]],
+    (P.weeks||[]).slice().reverse().map(function(w){return [nice(w.week)].concat(['sent','screen','later','offer','rejected','closed','ghosted','waiting'].map(function(x){return String(w[x]||0)}))}))}
+var pW=0,pT=null;
+window.addEventListener('resize',function(){clearTimeout(pT);pT=setTimeout(function(){var w=el('viz-sent').clientWidth;if(w!==pW){pW=w;progress()}},150)});
+
 function foot(){var c=D.counts,f=[];
   if(c.pre_epoch_quiet)f.push(c.pre_epoch_quiet+' applied rows from before Jul 28, where a send was never confirmable.');
   if(c.manual_review_unsurfaced)f.push(c.manual_review_unsurfaced+' discovery-queue companies flagged for manual review. They arrive through the digest a few at a time.');
   if(c.unpollable_unreported)f.push(c.unpollable_unreported+' unpollable companies waiting their turn in the weekly report.');
-  if(c.in_process)f.push(c.in_process+' rows with an in-process stage ('+esc((c.unknown_stages||[]).join(', '))+'). Interviews get their own section in phase two.');
+  if(c.in_process)f.push(c.in_process+' rows with an in-process stage ('+esc((c.unknown_stages||[]).join(', '))+'). Their interview rounds are charted under Progress.');
   if(c.skipped)f.push(c.skipped+' roles you marked skip. They stay in the tracker until they retire.');
   el('foot').innerHTML=f.map(function(x){return '<li>'+x+'</li>'}).join('')}
 
 el('stamp').textContent='Generated '+new Date(D.generated).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
 el('exp').textContent=D.expiry_days;
 el('swin').textContent=D.screened_window||7;
-strips();tiles();todayList();queue();screened();leads();runNotes();manual();quiet();foot();
+strips();tiles();progress();todayList();queue();screened();leads();runNotes();manual();quiet();foot();
 })();
 </script>
 </body>

@@ -319,6 +319,7 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | `outcomes.csv` outcome (rejected/interview/offer) | `mark_outcome.py` | infer an outcome from silence |
 | `outcomes.csv` schema migrations | `repair_outcomes.py` | hand-fix drifted rows |
 | `jobs/lead_marks.json` (his Tailor it / Pass on the weekly leads) | `lead_marks.py`, by way of `shelf_inbox.py`; `linkedin_followup.py --requested` stamps each read | hand-edit, or record an answer he didn't click |
+| `jobs/interviews.json` (one entry per interview round, dated; the dashboard's Progress charts read it) | `log_interview.py`, run by the interview-loop skill at its Step 5 | hand-edit, or log a round that hasn't happened yet [D42](DECISIONS.md#d42-the-dashboard-got-a-progress-section) |
 
 **`outcomes.csv` canonical schema (17 columns as of 2026-09-30, when `his_verdict` landed):**
 `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage,ic_scope,his_verdict`
@@ -870,10 +871,13 @@ that file (its Track Source File feature) and refreshes the page in place under 
   to a search link built from `query`.
 - An off-schedule rebuild is the same one command. It redraws from the tracker only; it does not
   read Gmail, so new confirmations still wait for Step 0.5.
-- **Open:** Phase two is an Interviews section fed by a small
-  `pipeline/interviews.json` cache written by the interview scan; not started. Deferred on
-  purpose: adapters for the Jobvite and Gem boards a few manual-check companies use, and the
-  queue rows that report "N PDFs match" instead of one resume path.
+- **Progress (phase two, 2026-10-15).** The top of the page charts sends a day against his 6-7
+  target (Sent clicks count live, before a run records them), interview rounds a week, and what
+  came of each send. Rounds come from `pipeline/jobs/interviews.json` (gitignored), written only
+  by `log_interview.py` from the interview-loop skill's Step 5.
+  [D42](DECISIONS.md#d42-the-dashboard-got-a-progress-section)
+- **Open:** deferred on purpose: adapters for the Jobvite and Gem boards a few manual-check
+  companies use, and the queue rows that report "N PDFs match" instead of one resume path.
 
 **Queue-vs-Gmail checks.** Aneesh applies only through the `+jobs` alias, so **no change to
 Step 0.5 is wanted** for mail that reached his other address. Before calling a queued role

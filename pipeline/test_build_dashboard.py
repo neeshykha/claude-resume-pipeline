@@ -377,6 +377,82 @@ def test_leads_key_contract_with_shelf_inbox_and_lead_marks():
     assert "done[k]||n==null||n>D.lead_mark_days" in bd.render(data)
 
 
+def interviews_file(rounds):
+    with open(os.path.join(bd.JOBS_DIR, bd.INTERVIEWS), "w", encoding="utf-8") as f:
+        json.dump({"rounds": rounds}, f)
+
+
+def test_progress_counts_sends_from_the_epoch_and_closed_rows_only_with_evidence():
+    fixture([row(company="A", stage="applied", applied_date="2026-09-01", surfaced_date="2026-08-30"),
+             row(company="B", stage="rejected", applied_date="2026-09-01", surfaced_date="2026-09-01"),
+             row(company="C", stage="surfaced", applied_date="2026-09-02", surfaced_date="2026-09-02"),
+             row(company="D", stage="applied", applied_date="", surfaced_date="2026-09-03"),
+             row(company="Old", stage="applied", applied_date="2026-07-01", surfaced_date="2026-07-01"),
+             row(company="Kept", stage="closed", applied_date="2026-09-04", surfaced_date="2026-09-04", his_verdict="sent_as_is"),
+             row(company="Never", stage="closed", applied_date="2026-09-04", surfaced_date="2026-09-04"),
+             row(company="ByUrl", stage="closed", applied_date="2026-09-05", surfaced_date="2026-09-05",
+                 url="https://example.com/byurl"),
+             row(company="ByName", stage="closed", applied_date="2026-09-05", surfaced_date="2026-09-05", title="Ops Lead"),
+             row(company="WrongTitle", stage="closed", applied_date="2026-09-05", surfaced_date="2026-09-05", title="Ops Lead")])
+    with open(os.path.join(bd.JOBS_DIR, "confirmations_2026-09-06.json"), "w", encoding="utf-8") as f:
+        json.dump({"confirmations": [{"url": "https://example.com/byurl/", "company": "ByUrl"},
+                                     {"company": "ByName"}, {"company": "WrongTitle", "title": "Engineer"}]}, f)
+    with open(os.path.join(bd.JOBS_DIR, "confirmations_junk.json"), "w", encoding="utf-8") as f:
+        f.write("{not json")
+    p = build()["progress"]
+    assert "error" not in p, p
+    sent = sorted(c for v in p["days"].values() for c in v)
+    assert sent == ["A", "B", "ByName", "ByUrl", "D", "Kept"], sent
+    assert p["days"]["2026-09-03"] == ["D"] and p["inexact"] == 1  # dated by surfacing, and says so
+    assert p["pre_epoch"] == 1 and p["funnel"]["sent"] == 6
+
+
+def test_progress_rounds_attach_to_the_right_send_and_fill_the_funnel():
+    fixture([row(company="Acme", stage="rejected", applied_date="2026-08-01", surfaced_date="2026-08-01",
+                 url="https://example.com/acme-old"),
+             row(company="Acme", stage="applied", applied_date="2026-09-10", surfaced_date="2026-09-10",
+                 url="https://example.com/acme-new"),
+             row(company="Bolt", stage="applied", applied_date="2026-08-02", surfaced_date="2026-08-02"),
+             row(company="Cove", stage="applied", applied_date="2026-09-15", surfaced_date="2026-09-15"),
+             row(company="Dune", stage="interview", applied_date="2026-08-20", surfaced_date="2026-08-20"),
+             row(company="Echo", stage="applied", applied_date="2026-08-21", surfaced_date="2026-08-21")])
+    interviews_file([
+        # No URL: the company's latest send on or before the round, so the OLD Acme posting.
+        {"company": "acme", "date": "2026-08-15", "kind": "screen"},
+        {"company": "Acme", "date": "2026-08-25", "kind": "interview"},
+        {"company": "Echo", "date": "2026-08-30", "kind": "assessment"},
+        {"company": "Elsewhere", "date": "2026-09-01", "kind": "screen", "round": 1},
+        {"company": "Bad", "date": "someday", "kind": "screen"},
+        {"company": "Bad", "date": "2026-09-01", "kind": "coffee"}])
+    p = build()["progress"]
+    assert [(r["company"], r["round"]) for r in p["rounds"]] == [
+        ("acme", 1), ("Acme", 2), ("Echo", None), ("Elsewhere", 1)], p["rounds"]
+    assert "2 unreadable entries" in p["rounds_note"]
+    f = p["funnel"]
+    # Acme-old: two rounds, then rejected, so it counts as interviewed and reached a later round.
+    # Dune: the tracker says interview with no logged round. Bolt: quiet 48 days. Cove: 4 days.
+    assert (f["sent"], f["screen"], f["later"], f["interviewed"]) == (6, 2, 1, 2), f
+    assert (f["ghosted"], f["waiting"], f["assessment"], f["rejected"]) == (1, 2, 1, 0), f
+    wk = {w["week"]: w for w in p["weeks"]}
+    assert wk["2026-07-27"]["screen"] == 1 and wk["2026-09-07"]["waiting"] == 1
+
+
+def test_progress_without_a_log_and_a_failure_that_spares_the_page():
+    fixture([row(company="A", stage="applied", applied_date="2026-09-01", surfaced_date="2026-09-01")])
+    p = build()["progress"]
+    assert p["rounds"] == [] and "No interview log" in p["rounds_note"]
+    with open(os.path.join(bd.JOBS_DIR, bd.INTERVIEWS), "w", encoding="utf-8") as f:
+        f.write("[1, 2")
+    assert "could not be read" in build()["progress"]["rounds_note"]
+    real = bd.read_progress
+    bd.read_progress = lambda today: 1 / 0
+    try:
+        d = build()
+    finally:
+        bd.read_progress = real
+    assert d["progress"]["error"].startswith("ZeroDivisionError") and d["quiet"], "the rest of the page still builds"
+
+
 def test_page_script_parses_as_javascript():
     # The other tests never execute the page. On 2026-10-12 a one-character slip in the
     # embedded script left every list blank and all of them still passed.

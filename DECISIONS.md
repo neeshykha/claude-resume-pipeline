@@ -1060,3 +1060,32 @@ what keeps a short or common name off the wrong company. Ruled out: Indeed's com
 The posting endpoint refuses after about six requests in half a minute and clears within three
 minutes, so the script backs off and the run (Step 6.5 item 5, every weekday) finishes what one
 pass leaves.
+
+## D42. The dashboard got a Progress section
+
+2026-10-15. He expects to ramp to six or seven applications a day and asked for a graph of
+applications sent per day, then the same tracking for interviews and the funnel after them.
+
+What was true before building: `outcomes.csv` is the record of sends. Checked against the
+Step 0.5 confirmation files, every confirmation since the epoch maps to a tracker row, so Gmail
+adds nothing the tracker lacks. Interview rounds had no dated, per-round record anywhere:
+`state.json` in the interview-loop skill keeps only each company's latest round,
+`furthest_stage` carries no date, and post-mortems exist only for rounds he debriefed. The
+rounds were rebuilt by hand from all three.
+
+His card answers: the charts go at the top of the dashboard; an application is a tracker send
+plus any Sent click the next run hasn't recorded yet, counted on the page the moment he makes
+it; every live round counts as an interview, with assessments kept apart; and rounds go in a
+log the interview-loop skill writes (`jobs/interviews.json` through `log_interview.py`, at its
+Step 5), backfilled once. Nothing new runs on its own; the skill gained one write.
+
+Choices made without asking him, each a one-line change: a 6-7 target band; 30 days with no
+reply counts as no reply, set from the rejection lag (24 of the first 27 post-epoch rejections
+arrived inside 30 days); a `closed` row counts as a send only with a sent verdict or a
+confirmation that names it; 30- and 90-day views; a round with no posting URL attaches to the
+company's latest send on or before it.
+
+Two blind spots remain. LinkedIn Easy Apply never reaches the tracker, because Step 0.5 skips
+linkedin.com mail, so those applications aren't on the chart. And a round reaches the log only
+through interview-loop (the Monday and Thursday scan, or when he runs it), which inherits that
+skill's own blind spots: the second mailbox, InMail, and phone calls.
