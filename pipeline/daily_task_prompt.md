@@ -2958,7 +2958,7 @@ asked for it on the dashboard, where he can answer each role.
 
 1. Use the **Read tool** on `pipeline/jobs/weekly_channel_report_state.json`. If it doesn't
    exist, the page is due. If it returns `{"last_sent": "YYYY-MM-DD"}`, it's due only when that
-   date is 7 or more days before today. Otherwise skip this step silently.
+   date is 7 or more days before today. Otherwise skip to item 5.
 2. If due, run one command:
    ```bash
    .venv/bin/python pipeline/weekly_channel_report.py --page --apply
@@ -2973,7 +2973,18 @@ asked for it on the dashboard, where he can answer each role.
    `{"last_sent": "YYYY-MM-DD"}` (Write tool, overwrite whatever was there).
 4. Record `run_[date].json → weekly_leads: {file, leads, flags}` from its last lines, and one
    line in SESSION_STATE. **No email, and no digest section.** The page shows the leads, the
-   flags, and a tile with the count. Go on to Step 6.6 whatever this step printed.
+   flags, and a tile with the count.
+5. **Every run, due or not** (added 2026-10-15): look up what each lead's company does, so
+   Aneesh isn't answering Tailor it or Pass blind. Give the Bash call a 10-minute timeout:
+   ```bash
+   .venv/bin/python pipeline/company_about.py
+   ```
+   It reads the newest weekly leads file and fetches a line or two, the industry, and the
+   headcount from each company's public LinkedIn page, for companies it hasn't cached. On a
+   day with nothing new it exits at once. LinkedIn's posting endpoint throttles after a short
+   burst, so it backs off, stops after three refusals in a row, and leaves the rest for the
+   next run; that is normal, not a failure. It prints one `company_about:` line and always
+   exits 0. Record nothing. Go on to Step 6.6 whatever this step printed.
 
 **What the page shows** (the reasoning behind each list lives in `weekly_channel_report.py`):
 - **Strong roles the poller can't reach.** LinkedIn alert roles graded tier 1, 2, 2c, or 2d

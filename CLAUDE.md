@@ -856,6 +856,12 @@ that file (its Track Source File feature) and refreshes the page in place under 
   is read at `daily_task_prompt.md` Step 1d-4 and tailored in Step 2c's requested slot: up to
   three a run, outside the five, light tier at least, `lane:requested` in `notes`.
   [D41](DECISIONS.md#d41-the-weekly-report-became-a-page)
+- **Each weekly lead says what its company does (2026-10-15).** `pipeline/company_about.py`
+  runs every weekday at Step 6.5 item 5, follows each lead's LinkedIn posting to the
+  employer's public page, and caches the About line, industry, and headcount in
+  `pipeline/jobs/company_about.json` (gitignored); the dashboard joins on the company name.
+  LinkedIn throttles after a short burst, so a pass that stops partway is normal and the next
+  run finishes it. Same D41 entry.
 - It always exits 0 and prints one line; `dashboard: FAILED ...` means yesterday's page is still
   up, and the page shows its own stale strip when a weekday run should have replaced it.
 - The script is committed to a public repo: no company names or sample rows in it or its tests

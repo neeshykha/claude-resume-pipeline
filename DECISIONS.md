@@ -1049,3 +1049,14 @@ replaced the list (it now drops a mark only once its id is in `lead_marks.json`)
 blip used up a request; a no-board company with no LinkedIn id vanished without a word (now a
 flag); a dead flag; and a retried run would have consumed the next week's batch (`--apply` now
 refuses when today's page already exists).
+
+Later that day he asked for a line or two on what each company does, so he isn't answering
+blind. Most of these companies have no board and no watchlist entry, so nothing in the pipeline
+knew. `company_about.py` follows each lead's LinkedIn posting to the employer's public page and
+caches its About line, industry, and headcount in `jobs/company_about.json`; the dashboard joins
+on the company name at build time. Going through the posting rather than searching the name is
+what keeps a short or common name off the wrong company. Ruled out: Indeed's company data
+(empty for most, and it put a 200-500 person company at 2 to 10), and a model writing the lines.
+The posting endpoint refuses after about six requests in half a minute and clears within three
+minutes, so the script backs off and the run (Step 6.5 item 5, every weekday) finishes what one
+pass leaves.

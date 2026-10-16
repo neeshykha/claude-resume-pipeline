@@ -382,7 +382,13 @@ section, between "Cleared, not tailored" and "More from the last run". Story and
   entry in `jobs/lead_marks.json` are left off; the generator reads that file and never writes it.
 - **Rows:** three groups (unreachable, never picked, no board), one row per LinkedIn job id,
   the first 20 unreachable shown with a "Show N more". Each row: company, title linked to the
-  posting, tier, location, how many alerts it was in, why it's there, first seen.
+  posting, what the company does (added the same day, below), tier, location, how many alerts
+  it was in, why it's there, first seen.
+- **What the company does:** a line or two from the company's About section on LinkedIn, then
+  its industry and headcount, under the company and title. `company_about.py` (Step 6.5 item 5,
+  every run) fetches them into `jobs/company_about.json`, and the generator joins that file on
+  the normalized company name at build time, reading it and never writing it. A company it
+  hasn't reached yet shows no line; nothing else on the row changes.
 - **Marks:** Tailor it / Pass, with undo, under `jobdash.leads.v1` as
   `{a, d, ts, u, c, t, l, tier, loc}` keyed by job id. Pruned the same way as queue marks: once
   the lead is gone from the data and the page is newer than the mark.

@@ -459,6 +459,35 @@ def read_lead_marks():
     return {k: v for k, v in leads.items() if isinstance(v, dict)} if isinstance(leads, dict) else {}
 
 
+COMPANY_ABOUT = "company_about.json"
+
+
+def company_key(name):
+    # Same key as company_about.norm(), which this file can't import. Change both together.
+    return re.sub(r"[^a-z0-9]", "", (name or "").lower())
+
+
+def read_company_about():
+    """{company key: {about, industry, size}} from jobs/company_about.json (added 2026-10-15).
+
+    company_about.py fills it from each company's public LinkedIn page, so a weekly lead can
+    say what the company does. Misses are left out. A missing or malformed file hides nothing.
+    """
+    try:
+        with open(os.path.join(JOBS_DIR, COMPANY_ABOUT), encoding="utf-8") as f:
+            comps = json.load(f).get("companies")
+    except Exception:
+        return {}
+    out = {}
+    for k, v in (comps.items() if isinstance(comps, dict) else ()):
+        if isinstance(v, dict) and "miss" not in v:
+            info = {"about": clip(v.get("about"), 300), "industry": clip(v.get("industry"), 60),
+                    "size": clip(v.get("size"), 40)}
+            if info["about"] or info["industry"]:
+                out[k] = info
+    return out
+
+
 def read_leads(today):
     """The newest jobs/weekly_leads_<date>.json from the last LEADS_DAYS days, or None.
 
@@ -477,6 +506,7 @@ def read_leads(today):
         if not isinstance(raw, dict):
             continue
         answered = read_lead_marks()
+        about = read_company_about()
         rows, seen, handled = [], set(), 0
         for x in raw.get("leads") or []:
             if not isinstance(x, dict):
@@ -490,11 +520,13 @@ def read_leads(today):
                 handled += 1
                 continue
             seen_n = x.get("seen")
-            rows.append({"id": jid, "list": lst, "company": clip(x.get("company"), 120) or "?",
+            company = clip(x.get("company"), 120) or "?"
+            rows.append({"id": jid, "list": lst, "company": company,
                          "title": clip(x.get("title"), 200) or "?", "url": clip(x.get("url"), 600),
                          "tier": clip(x.get("tier"), 12), "loc": clip(x.get("loc"), 20),
                          "seen": seen_n if isinstance(seen_n, int) and 0 < seen_n < 1000 else 1,
-                         "first": clip(x.get("first"), 10), "note": clip(x.get("note"), 300)})
+                         "first": clip(x.get("first"), 10), "note": clip(x.get("note"), 300),
+                         **about.get(company_key(company), {})})
         health = []
         for s in raw.get("health") or []:
             if isinstance(s, dict) and clip(s.get("title"), 80):
@@ -965,7 +997,9 @@ function leadRow(x){var t=[];
   if(LOCL[x.loc])t.push('<span class="tag'+(x.loc==='atlanta'?' good':'')+'">'+esc(LOCL[x.loc])+'</span>');
   if(x.seen>1)t.push('<span class="tag">in '+x.seen+' alerts</span>');
   if(x.note)t.push('<span>'+esc(x.note)+'</span>');
-  return '<div class="row'+(lmarks[x.id]?' dim':'')+'"><div class="body"><div class="top"><span class="co">'+esc(x.company)+'</span><span>'+titleLink(x)+'</span></div><div class="meta">'+t.join('')+'</div>'+leadActs(x)+'</div><div class="right"><small>'+(x.first?'first seen<br>'+esc(nice(x.first)):'')+'</small></div></div>'}
+  // What the company does, from company_about.py's cache (2026-10-15). Absent until a run looks it up.
+  var about=[x.about,x.industry,x.size].filter(Boolean).map(esc).join(' · ');
+  return '<div class="row'+(lmarks[x.id]?' dim':'')+'"><div class="body"><div class="top"><span class="co">'+esc(x.company)+'</span><span>'+titleLink(x)+'</span></div>'+(about?'<div class="why">'+about+'</div>':'')+'<div class="meta">'+t.join('')+'</div>'+leadActs(x)+'</div><div class="right"><small>'+(x.first?'first seen<br>'+esc(nice(x.first)):'')+'</small></div></div>'}
 function leadClick(t,a){if(a==='more'){leadsAll=true;leads();return}
   var k=t.getAttribute('data-k'),x=null;
   for(var i=0;i<LROWS.length;i++)if(LROWS[i].id===k){x=LROWS[i];break}
