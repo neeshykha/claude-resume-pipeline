@@ -914,7 +914,7 @@ Spec: `daily_task_prompt.md` Step 2-JD and Step 6.7.
 
 ## Tailoring Writers + Fit Check (built 2026-10-09)
 
-In the daily run, a Fable writer subagent drafts each package from a fixed brief and one
+In the daily run, an Opus writer subagent drafts each package from a fixed brief and one
 script gates it. [D29](DECISIONS.md#d29-why-tailoring-got-a-fixed-brief-and-one-fit-check)
 Spec: `daily_task_prompt.md` Step 4-W, Step 4.5, and Step 8.
 

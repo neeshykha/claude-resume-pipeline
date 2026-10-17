@@ -2142,8 +2142,9 @@ Both lessons stand, and they compose:
 ### 4-W. Writers: one subagent per job, one fit check per round (added 2026-10-09)
 
 **A writer subagent drafts each package. You brief it and gate it; you never edit its
-prose.** The global model router sends writing that goes out under Aneesh's name to Fable,
-and runs had been doing that with a prompt improvised each morning. Measured on 2026-10-09:
+prose.** The global model router sends writing that goes out under Aneesh's name to Opus.
+It went to Fable until 2026-10-15, when Aneesh's blind pick in Tier C test C5 moved it, and
+runs had been sending it there with a prompt improvised each morning. Measured on 2026-10-09:
 five writers were 54% of the run's cost. Each made 46 to 101 tool calls across 14 to 28
 requests, and every request re-reads the writer's whole conversation (88K tokens before it
 has opened a file, 212K-256K by the end). The words were 2-3% of that. The rest was three
@@ -2216,7 +2217,7 @@ The split: **you choose the angle and the files, the writer writes every word,
    way, for the same reason.
 
 3. **Dispatch one writer per job, ALL IN ONE MESSAGE**: the Agent tool, `subagent_type:
-   "general-purpose"`, `model: "fable"`, and exactly this prompt with the slots filled in
+   "general-purpose"`, `model: "opus"`, and exactly this prompt with the slots filled in
    (absolute paths; drop a line whose slot is empty):
 
    > You are a tailoring writer. Your instructions are /Users/aneesh/Documents/resume_project/pipeline/tailor_worker.md; follow them exactly. In ONE first message, Read that file and all of these: /Users/aneesh/.claude/projects/-Users-aneesh/memory/user_writing_style.md, /Users/aneesh/Documents/resume_project/.claude/skills/career-narrative/SKILL.md, /Users/aneesh/Documents/resume_project/master_resume.md, /Users/aneesh/Documents/resume_project/portfolio_projects.md, the JD at [absolute path under pipeline/jobs/jd_cache/[date]/], the calibration package [tailored/[stem]_data.json and tailored/[stem]_cover.md], the sibling package [same two files, or drop this clause], the last five letters [the five paths from fit_check.py --recent 5], and /Users/aneesh/.claude/skills/avoid-ai-writing/SKILL.md, /Users/aneesh/.claude/skills/avoid-ai-writing/references/voice-profile.md, /Users/aneesh/.claude/skills/avoid-ai-writing/references/pattern-catalog.md.
@@ -2324,7 +2325,7 @@ The split: **you choose the angle and the files, the writer writes every word,
    first sentence each writer reported (Step 4-spec item 5). Writers never touch that file:
    five of them appending at once would overwrite each other.
 
-**Fallback when the Agent tool or the Fable model is unavailable, or a writer returns
+**Fallback when the Agent tool or the Opus model is unavailable, or a writer returns
 nothing:** write that package yourself from Step 4-spec, gate it with the same
 `fit_check.py` command, and say in the digest that the orchestrator wrote it rather than a
 writer. A failed dispatch can cost the voice, but never the gates and never the run.
