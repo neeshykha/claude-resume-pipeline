@@ -2648,6 +2648,14 @@ the rest collapsed underneath. Shape:
   in a way that changes what he received today (a failed package, SHORTFALL, a fallback that
   ran, a dirty working tree, a `shelf_inbox:` problem), and anything a step says is his call.
   Put those in the brief's `alerts` as well so the page shows them.
+- **Anything that needs him goes on the page, not only in this session (Aneesh, 2026-10-19).**
+  He doesn't open the scheduled run's session, so a question asked in its final message, a
+  blocked push, or a decision parked in the handoff never reaches him. Every item that waits on
+  him goes in the brief's `alerts`, worded as the ask: a decision with its options and your
+  pick, a step that failed and needs his approval (a rejected `git push` at Step 7 is the usual
+  one), and anything a step calls his call. This includes items found late in the run: add them
+  and re-run `build_dashboard.py` before the run ends. Don't write "the run will do X unless you
+  say otherwise" unless a step actually does.
 - The file is gitignored with the rest of `pipeline/jobs/`. Never write it anywhere tracked.
 - If the brief can't be written, send the digest in its old long form for that run and say so
   in its first line. A short email with nothing behind it is worse than a long one.
@@ -3105,7 +3113,9 @@ warns that no baseline was found, Step 0 item 5 was skipped — it falls back to
 `git add -A` behaviour, so say so in the digest rather than letting it pass.
 
 If push is rejected: `git pull --rebase` once, push again; still failing → note in digest
-and move on. Never force-push.
+and move on. Never force-push. A push blocked on approval (the scheduled run can't answer the
+prompt) is an alert on the dashboard: add it to the brief's `alerts` with the commit hash and
+re-run `build_dashboard.py` (Step 5a).
 
 ## Step 8: Handoff file and final message (added 2026-10-09)
 
