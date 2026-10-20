@@ -4474,6 +4474,13 @@
       "via": "harvest_ats.py",
       "source": "LinkedIn alert",
       "first_seen": "2026-10-20"
+    },
+    {
+      "name": "Global-e",
+      "ats": "comeet",
+      "slug": "global-e",
+      "enrolled_date": "2026-10-20",
+      "via": "harvest_ats.py"
     }
   ],
   "rejected": [
@@ -6631,9 +6638,10 @@
       "ats": null,
       "slug": null,
       "rejected_date": "2026-08-17",
-      "reason": "No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
-      "recheck_if_resurfaced": true,
-      "unpollable": true
+      "reason": "SUPERSEDED 2026-10-20: re-probed and ENROLLED on the watchlist (comeet/global-e, 48 jobs, 1 fit-titles). This record claimed unpollable=true; a live board falsifies that claim. Kept as the record of the original rejection, not as a live verdict. Original reason: No board resolved from deterministic name-variant slugs across Greenhouse/Ashby/Lever/Workable. May still be pollable under a non-obvious slug or on Workday: worth one manual site:myworkdayjobs.com search if the company matters.",
+      "recheck_if_resurfaced": false,
+      "unpollable": false,
+      "superseded_by_enrollment": "2026-10-20"
     },
     {
       "name": "Fortinet",

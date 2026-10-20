@@ -1630,8 +1630,13 @@ def domain_candidates(name: str):
     nospace = "".join(words)
     stripped = re.sub(r"(inc|llc|ltd|corp|co|company|labs|technologies|technology)$",
                       "", nospace)
+    # A hyphen in the name can be part of the real domain, so it goes first when
+    # there is one. Global-e's board lives at global-e.com; dropping the hyphen
+    # gave only globale.com and global.com, and the probe missed it (2026-10-20).
+    hyphenated = (re.sub(r"[^a-z0-9\-]+", "", re.sub(r"\s+", "", n)).strip("-")
+                  if "-" in n else "")
     bases, seen = [], set()
-    for b in (nospace, stripped, _first_word(n)):
+    for b in (hyphenated, nospace, stripped, _first_word(n)):
         if b and len(b) > 2 and b not in seen:
             seen.add(b)
             bases.append(b)

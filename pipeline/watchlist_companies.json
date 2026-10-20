@@ -8852,6 +8852,19 @@
       "enrolled_via": "harvest_ats.py automated slug resolution",
       "needs_vertical_classification": true,
       "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (7 jobs; no posting dates read, so the frozen-board check did not run) with 1 fit-titles at harvest time (1 tier3(location-gated)), e.g. ' Customer Success Manager ' [Remote (United States)]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty."
+    },
+    {
+      "name": "Global-e",
+      "ats": "comeet",
+      "slug": "global-e",
+      "priority": "low",
+      "enrolled_date": "2026-10-20",
+      "enrolled_via": "harvest_ats.py Comeet careers-page resolution (credentials scraped from https://www.global-e.com/careers/)",
+      "needs_vertical_classification": true,
+      "reason": "Auto-enrolled by the ATS harvest layer. Board verified live (48 jobs, newest posting 2026-10-20) with 1 fit-titles at harvest time (1 tier2), e.g. 'Technical Support Team Lead' [Atlanta, GA]. Qualifying tiers: tier1/tier2/tier2c anywhere US-reachable, plus tier3 in Atlanta or remote-US only. Enrolled at LOW priority by design: auto-enrollment should not outrank hand-vetted companies. Prune via --prune if the board goes dead or fit-space-empty.",
+      "comeet_uid": "62.002",
+      "comeet_token": "262988131015727264C41572E4C10AE10AE",
+      "comeet_careers_url": "https://www.global-e.com/careers/"
     }
   ]
 }
