@@ -75,3 +75,6 @@ Your final message is ONE line and nothing else, so the orchestrator's context s
 6. `resume_overlap.estimate_0_30` is ADVISORY: a rough read of keyword/experience overlap
    with the resume. The orchestrator re-derives the real score.
 7. `posting_closed` in red_flags only when the text says the posting is closed or filled.
+8. `vp_or_above` only when the title is Vice President (VP, SVP, EVP) or C-level (Chief ...,
+   CEO, COO, CTO, and the like). Director, Senior Director, Head of, and Principal titles
+   never get it, however senior the JD sounds.
