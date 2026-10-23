@@ -1089,3 +1089,34 @@ Two blind spots remain. LinkedIn Easy Apply never reaches the tracker, because S
 linkedin.com mail, so those applications aren't on the chart. And a round reaches the log only
 through interview-loop (the Monday and Thursday scan, or when he runs it), which inherits that
 skill's own blind spots: the second mailbox, InMail, and phone calls.
+
+## D44. The prep page never carried the focus areas
+
+2026-10-23. The Global-e hiring-manager round was debriefed from a Wispr Flow transcript
+within the hour, which made the grading exact, and the exact grading showed where the loop
+leaks. `_lessons_learned.md` opened with three focus areas and a line saying to read them
+before every interview; the HTML prep page he actually opens that morning mentioned none of
+them, and `_template_prep.md` had no place for them. The rehearsal rule (say it out loud, on
+a timer) had been missed in two consecutive rounds with written prep, because nothing asked.
+A debugging story was prepped under "have one ready" with no question beside it; the question
+came and the story stayed in the brief. And the post-mortem's calibration section, meant to be
+filled a second time when the outcome lands, had been closed in 2 of 7 files, so self-grading
+had nothing to calibrate against.
+
+He wanted the process fixed more than any one outcome. Two repairs, both
+allowed under the October fleet freeze because they change files and scripts, not anything
+that runs on its own. `pipeline/rehearsal_block.py` generates section 0 of every prep doc and
+the top of every prep page from the lessons file, with a cue-pair table and an out-loud
+checklist, and the prep workflow asks the out-loud question as a card and records the answer
+where the post-mortem can grade it. `pipeline/calibration.py` lists every post-mortem's
+prediction against its actual, suggests the actual from the ledger when the file is blank, and
+prints the tally; the postmortem skill runs it at close. Two post-mortems were backfilled the
+same day. Focus area 3 swapped from "drop versus framing" (parked at 0/3) to "answer the
+question's shape" on his call.
+
+Not done, on purpose: a transcript-triggered post-mortem (an interview-shaped Wispr meeting
+producing a draft in the company folder and one Discord line) is new plumbing and waits for
+the Oct 26 freeze decision, with this round as its proof case. The Mon/Thu interview scan the
+Sep 30 Discord sweep dropped stays dropped; the transcript trigger would fire on the artifact
+instead. How we'd know the repairs worked: focus-area hits and the rehearsal line in the next
+two post-mortems, and every calibration section filled.

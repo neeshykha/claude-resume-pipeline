@@ -697,7 +697,19 @@ When Aneesh asks to prep for a new interview round:
 
 - Create `interview_prep/[Company]/prep_round[N]_[type].md` from `_template_prep.md`
 - Pre-populate role/company/files-submitted from the tailored resume + cover letter
-- Read `_lessons_learned.md` first and surface any "Active Focus Areas" or patterns relevant to this stage/company-type before drafting prep content
+- **Section 0 is generated, never hand-copied.** Run `.venv/bin/python pipeline/rehearsal_block.py`
+  and paste its output as section 0 of the prep doc; run it with `--html` and paste that
+  fragment at the top of the HTML prep page's "Before the call" block. It carries the active
+  focus areas verbatim from `_lessons_learned.md`, the cue-pair table, and the out-loud
+  checklist. Then fill the cue pairs: every story or line prepped for the round gets the
+  question that will trigger it, written the way they'd ask it. A story with no cue is the
+  one that stays in the brief when the question comes.
+  [D44](DECISIONS.md#d44-the-prep-page-never-carried-the-focus-areas)
+- **The out-loud check is a card, not a line in the brief.** In an interactive session, before
+  the call, ask on an AskUserQuestion card whether he said the pitch, the cue pairs, the
+  gap-plus-ramp line, and the comp sentence out loud on a timer, and record the answer on
+  section 0's "Rehearsed out loud" line. The post-mortem grades that line. Same D44.
+- Read `_lessons_learned.md` for patterns relevant to this stage or company type before drafting the rest
 - For roles at AI-infra or seed-stage startups specifically: confirm the technical bar with the recruiter before deep prep (this lesson is logged from Kamiwaza R1)
 
 ### Rules (apply to both prep and post-mortem)
@@ -707,6 +719,12 @@ When Aneesh asks to prep for a new interview round:
 - Generalizable lessons (≥2 future interviews benefit) get promoted to `_lessons_learned.md`. Company-specific notes stay in that company's folder.
 - Do NOT fabricate specifics — if Aneesh hasn't told you what was asked or how it landed, leave the section as a placeholder marked with `_[Aneesh — ...]_`
 - Voice rules from this CLAUDE.md (no "genuinely," no "directly maps to," no AI tells) apply to any drafted user-facing text — thank-you emails, suggested answer phrasings, etc.
+- **The calibration loop closes by script, not by memory.** `.venv/bin/python pipeline/calibration.py`
+  lists every post-mortem's predicted and actual outcome, suggests the actual from the ledger
+  where the file is blank, and prints the tally. The postmortem skill runs it at close and
+  backfills what it flags. A late post-mortem writes `predicted: none (late)` so it counts as
+  unscorable, never as open. Silence past a promised date is named as silence and marked as an
+  inference; it never becomes an outcome in `outcomes.csv`. The script is read-only. Same D44.
 
 ## User-Surfaced Finds Protocol (LinkedIn/Indeed alerts, word of mouth)
 
