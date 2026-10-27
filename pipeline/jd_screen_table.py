@@ -19,7 +19,8 @@ the screen workers wrote, joins them on the JD file path, and prints:
 
 Gates are the mechanical half of Step 2b, applied to facts the worker QUOTED:
   location  atlanta_ok == yes, or work_mode == remote_us. Anything else = FAIL
-            unless the card says unclear (-> CHECK).
+            unless the card says unclear (-> CHECK). remote_us with atlanta_ok == no
+            (remote limited to places that leave Georgia out) is a CHECK.
   salary    midpoint >= salary_floor_usd; between near_miss floor and floor =
             FAIL(salary near-miss) so it still reaches the near-miss list;
             IC roles get the IC floor note but the orchestrator applies the
@@ -99,7 +100,12 @@ def main():
                 missing.append(e)
             continue
         fails, checks = [], []
-        if card.get("atlanta_ok") == "yes" or card.get("work_mode") == "remote_us":
+        if card.get("work_mode") == "remote_us" and card.get("atlanta_ok") == "no":
+            # Remote, but limited to places the card says leave Georgia out (2026-10-22).
+            # CHECK, not FAIL: Sonnet has also written "no" on remote roles open nationwide.
+            loc = "remote?"
+            checks.append(f"remote, not open to Atlanta? ({card.get('location_verbatim', '')[:60]})")
+        elif card.get("atlanta_ok") == "yes" or card.get("work_mode") == "remote_us":
             loc = "ATL" if card.get("atlanta_ok") == "yes" and card.get("work_mode") != "remote_us" else "remote"
         elif card.get("atlanta_ok") == "unclear" or card.get("work_mode") == "unclear":
             loc = "loc?"

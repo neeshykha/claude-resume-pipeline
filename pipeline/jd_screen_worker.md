@@ -65,8 +65,14 @@ Your final message is ONE line and nothing else, so the orchestrator's context s
 2. **Location comes from the body, not the listing.** "CO Remote" once meant Colombia. Two-
    letter codes in Workday strings are not reliably US states. When the header and body
    disagree, report the body and mention the conflict in `notes`.
-3. **"hybrid" only counts as Atlanta-hybrid if the JD names metro Atlanta** (Atlanta,
-   Alpharetta, Midtown, etc.). A hybrid role anywhere else is `atlanta_ok: "no"`.
+3. **`atlanta_ok` answers one question: could he do this job living in metro Atlanta?**
+   - `yes`: in-office or hybrid at a metro Atlanta location the JD names (Atlanta,
+     Alpharetta, Midtown, etc.); five days in the office still counts. Remote open anywhere
+     in the US, or open to Georgia or the Eastern time zone.
+   - `no`: hybrid or in-office anywhere else. Remote limited to named states, metros, a sales
+     territory, a list of office cities, or a commuting radius that leaves Georgia out. Keep
+     `work_mode: "remote_us"` for those; `atlanta_ok` carries the limit.
+   - `unclear`: the JD or header lists places without saying remote is limited to them.
 4. **manages_people:** direct reports, hiring, coaching, performance reviews → `manages`.
    "Sole point of contact", "own the account end to end", book of accounts, no reports →
    `ic`. Title words like "Manager" in "Customer Success Manager" prove nothing.

@@ -76,7 +76,7 @@ def work(day, unreadable=()):
         with open(p, encoding="utf-8") as f:
             files = json.load(f)
         cards = [{"file": x, "read_ok": url[x] not in unreadable, "url": url[x],
-                  "work_mode": "remote_us", "atlanta_ok": "no", "salary_min_usd": 120000,
+                  "work_mode": "remote_us", "atlanta_ok": "yes", "salary_min_usd": 120000,
                   "salary_max_usd": 140000, "manages_people": "manages",
                   "read_on": day}   # not a real card field: marks which read a copy carries
                  for x in files]
