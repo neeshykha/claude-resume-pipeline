@@ -55,6 +55,44 @@ def money(n):
     return f"${round(n / 1000)}K" if n else "?"
 
 
+def location_gate(card):
+    """(loc label, fail text or None, check text or None) for one card.
+
+    The one definition of a location FAIL: jd_prefetch.py imports it to decide
+    whether a card needs a confirming read before reuse.
+    """
+    if card.get("work_mode") == "remote_us" and card.get("atlanta_ok") == "no":
+        # Remote, but limited to places the card says leave Georgia out (2026-10-22).
+        # CHECK, not FAIL: Sonnet has also written "no" on remote roles open nationwide.
+        return ("remote?", None,
+                f"remote, not open to Atlanta? ({card.get('location_verbatim', '')[:60]})")
+    if card.get("atlanta_ok") == "yes" or card.get("work_mode") == "remote_us":
+        loc = "ATL" if card.get("atlanta_ok") == "yes" and card.get("work_mode") != "remote_us" else "remote"
+        return (loc, None, None)
+    if card.get("atlanta_ok") == "unclear" or card.get("work_mode") == "unclear":
+        return ("loc?", None, "location unclear")
+    return (card.get("work_mode") or "?", f"location ({card.get('location_verbatim', '')[:60]})", None)
+
+
+def fail_kinds(fails):
+    """Which gates a screen_table row's `fails` came from: a set of location, pay, flag.
+
+    Reads the prefixes main() writes below. poll_ats.py uses it to decide which
+    FAILs it can trust, including rows in tables written before this function existed.
+    """
+    kinds = set()
+    for f in fails or []:
+        if not isinstance(f, str):
+            continue
+        if f.startswith("location"):
+            kinds.add("location")
+        elif f.startswith("salary"):
+            kinds.add("pay")
+        elif f.startswith("flag:"):
+            kinds.add("flag")
+    return kinds
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=date.today().isoformat())
@@ -99,20 +137,9 @@ def main():
             if not e.get("status", "").startswith("skipped"):
                 missing.append(e)
             continue
-        fails, checks = [], []
-        if card.get("work_mode") == "remote_us" and card.get("atlanta_ok") == "no":
-            # Remote, but limited to places the card says leave Georgia out (2026-10-22).
-            # CHECK, not FAIL: Sonnet has also written "no" on remote roles open nationwide.
-            loc = "remote?"
-            checks.append(f"remote, not open to Atlanta? ({card.get('location_verbatim', '')[:60]})")
-        elif card.get("atlanta_ok") == "yes" or card.get("work_mode") == "remote_us":
-            loc = "ATL" if card.get("atlanta_ok") == "yes" and card.get("work_mode") != "remote_us" else "remote"
-        elif card.get("atlanta_ok") == "unclear" or card.get("work_mode") == "unclear":
-            loc = "loc?"
-            checks.append("location unclear")
-        else:
-            loc = card.get("work_mode") or "?"
-            fails.append(f"location ({card.get('location_verbatim', '')[:60]})")
+        loc, loc_fail, loc_check = location_gate(card)
+        fails = [loc_fail] if loc_fail else []
+        checks = [loc_check] if loc_check else []
         lo, hi = card.get("salary_min_usd"), card.get("salary_max_usd")
         mid = (lo + hi) / 2 if lo and hi else (lo or hi)
         pay = f"{money(lo)}-{money(hi)}" if lo and hi else (money(mid) if mid else "no pay")

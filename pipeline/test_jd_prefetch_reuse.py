@@ -68,17 +68,26 @@ def run(day, urls, *flags):
         return buf.getvalue().splitlines(), json.load(f)
 
 
-def work(day, unreadable=()):
-    """Stand in for the screen workers: one card per JD in each batch file."""
+ONSITE = {"work_mode": "onsite", "atlanta_ok": "no", "location_verbatim": "Austin, TX"}
+UNCLEAR = {"work_mode": "unclear", "atlanta_ok": "unclear"}
+LOW_PAY = {"salary_min_usd": 60000, "salary_max_usd": 70000}
+
+
+def work(day, unreadable=(), override=None):
+    """Stand in for the screen workers: one card per JD in each batch file.
+
+    `override` maps a url to card fields that replace the remote, well-paid defaults.
+    """
     with open(os.path.join(cache(day), "manifest.json"), encoding="utf-8") as f:
         url = {e["file"]: e["url"] for e in json.load(f)["entries"] if e.get("file")}
     for p in glob.glob(os.path.join(cache(day), "batch_*.json")):
         with open(p, encoding="utf-8") as f:
             files = json.load(f)
-        cards = [{"file": x, "read_ok": url[x] not in unreadable, "url": url[x],
-                  "work_mode": "remote_us", "atlanta_ok": "yes", "salary_min_usd": 120000,
-                  "salary_max_usd": 140000, "manages_people": "manages",
-                  "read_on": day}   # not a real card field: marks which read a copy carries
+        cards = [dict({"file": x, "read_ok": url[x] not in unreadable, "url": url[x],
+                       "work_mode": "remote_us", "atlanta_ok": "yes", "salary_min_usd": 120000,
+                       "salary_max_usd": 140000, "manages_people": "manages",
+                       "read_on": day},   # not a real card field: marks which read a copy carries
+                      **(override or {}).get(url[x], {}))
                  for x in files]
         with open(os.path.join(cache(day), "cards_" + os.path.basename(p)), "w", encoding="utf-8") as f:
             json.dump(cards, f)
@@ -372,6 +381,76 @@ def test_table_lets_a_worker_card_beat_a_reused_copy_of_the_same_jd():
     out = "\n".join(table(D2))
     assert "FAIL" in out and "PASS" not in out.split("jd_screen:")[1].split("\n")[1], \
         "the on-site card written today decides the row, not the remote copy from yesterday: " + out
+
+
+def test_one_location_fail_is_read_again():
+    fixture(A, B)
+    run(D1, [A, B])
+    work(D1, override={A: ONSITE})
+    _, m = run(D2, [A, B])
+    assert to_read(m) == [A] and set(cached(D2)) == {B}, m["counts"]
+
+
+def test_two_agreeing_location_fails_are_reused():
+    fixture(A, B)
+    run(D1, [A, B])
+    work(D1, override={A: ONSITE})
+    run(D2, [A, B])
+    work(D2, override={A: ONSITE})        # the confirming read
+    _, m = run(D3, [A, B])
+    got = cached(D3)
+    assert set(got) == {A, B} and to_read(m) == [], m["counts"]
+    assert got[A]["reused_from"] == D2 and got[A]["read_on"] == D2
+    # A copy of the confirmed read keeps standing until the read itself is too old.
+    _, m = run("2026-09-04", [A, B])
+    assert cached("2026-09-04")[A]["reused_from"] == D2
+
+
+def test_a_location_fail_after_a_check_is_read_again():
+    # The shape that made two reads necessary: one posting read FAIL, then CHECK, then FAIL.
+    fixture(A)
+    run(D1, [A])
+    work(D1, override={A: UNCLEAR})
+    run(D2, [A], "--no-reuse")
+    work(D2, override={A: ONSITE})
+    _, m = run(D3, [A])
+    assert to_read(m) == [A] and cached(D3) == {}, "the read before it said unclear, not FAIL"
+
+
+def test_location_fails_on_different_text_do_not_confirm_each_other():
+    fixture(A)
+    run(D1, [A])
+    work(D1, override={A: ONSITE})
+    PAGES[A]["body"] = body("rewritten, same city")
+    run(D2, [A])                           # text changed: read again anyway
+    work(D2, override={A: ONSITE})
+    _, m = run(D3, [A])
+    assert to_read(m) == [A] and cached(D3) == {}, "the earlier FAIL was of other text"
+
+
+def test_a_copy_is_not_a_confirming_read():
+    # Copies made before this rule existed include location FAILs that were never confirmed.
+    fixture(A)
+    _, m1 = run(D1, [A])
+    work(D1, override={A: ONSITE})
+    os.makedirs(cache(D2))
+    txt = m1["entries"][0]["file"]
+    shutil.copy(txt, cache(D2))
+    with open(os.path.join(cache(D1), "cards_batch_01.json"), encoding="utf-8") as f:
+        card = json.load(f)[0]
+    card.update(file=os.path.join(cache(D2), os.path.basename(txt)), reused_from=D1)
+    with open(os.path.join(cache(D2), jp.REUSED_CARDS), "w", encoding="utf-8") as f:
+        json.dump([card], f)
+    _, m = run(D3, [A])
+    assert to_read(m) == [A] and cached(D3) == {}, m["counts"]
+
+
+def test_other_fails_still_reuse_after_one_read():
+    fixture(A, B)
+    run(D1, [A, B])
+    work(D1, override={A: LOW_PAY, B: UNCLEAR})
+    _, m = run(D2, [A, B])
+    assert set(cached(D2)) == {A, B} and to_read(m) == [], m["counts"]
 
 
 def test_max_age_is_stable_per_url_and_spread_across_urls():

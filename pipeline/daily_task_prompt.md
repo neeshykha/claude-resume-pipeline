@@ -282,10 +282,10 @@ continue. If not:
 Then read the output. It contains: top-40 `matched` (pre-scored, deduped, diversity-capped
 at 2/company, and **balanced**: ≥10 slots each reserved for sub-500 companies and for
 larger/unknown-size companies, remainder by score), `near_window` (see below), up to 20
-`borderline` titles for semantic review, `function_mismatch` (see below), `reseen_keys`,
-`errors`, `stats`, and `capped_companies`. Entries flagged `new_req_of_applied_title: true`
-are reposts of a title Aneesh already applied to under a new requisition — treat as new but
-mention the prior application in the digest.
+`borderline` titles for semantic review, `function_mismatch` and `screen_failed` (see
+below), `reseen_keys`, `errors`, `stats`, and `capped_companies`. Entries flagged
+`new_req_of_applied_title: true` are reposts of a title Aneesh already applied to under a new
+requisition — treat as new but mention the prior application in the digest.
 
 **TIER1-COMPLETE GUARANTEE (added 2026-09-01, Aneesh's pick):** `matched` can now exceed 40.
 Every `tier1_true_match` that passes the gates surfaces regardless of rank, tagged
@@ -318,6 +318,10 @@ a scoring tier rather than tailoring from this section. As of 2026-10-10 the lis
 complete (`stats.function_mismatch` equals its length; it used to be the first 40 by
 company name) and ordered Georgia, then remote, then on-site elsewhere, newest posting
 first within each, so the top of the list is the part he could act on.
+
+**`screen_failed` section (added 2026-10-28):** roles held off the shortlist because an earlier
+JD screen failed them on pay or location. Do NOT score, screen, or tailor them. Each returns on
+its own when its card is due a fresh read.
 
 **Lane companies are not in this file (2026-10-10).** The poller skips every watchlist
 entry that carries a `lane` marker and counts them in `stats.lane_skipped`, so their roles
@@ -2671,8 +2675,9 @@ the rest collapsed underneath. Shape:
    package goes out.
 5. One closing paragraph that says what is waiting on the Shelf, with counts, for example:
    "On the Shelf dashboard: the read on each pick and what changed in each resume, 9 cleared
-   but not tailored, 15 LinkedIn roles followed up, 10 near-misses, 30 below the cutoff, and
-   the full run breakdown. Mark each pick Sent or Skip there and tomorrow's run records it."
+   but not tailored, 15 LinkedIn roles followed up, 10 near-misses, 30 below the cutoff, 21
+   held back after failing the screen, and the full run breakdown. Mark each pick Sent or Skip
+   there and tomorrow's run records it."
 6. The file manifest for `tailored/apply_now/`.
 
 One digest email a run: nothing that used to follow the picks gets an email of its own. (The
@@ -2743,6 +2748,9 @@ dashboard now and sends nothing.)
   LinkedIn alert inbox; no scoring, no tailoring diffs. If an entry was promoted to full
   scoring under the Step 1a exception, say so where it appears in the main table instead.
   Report `stats.tier1_guaranteed` alongside the other provenance counts in housekeeping.
+- **"Held back after a screen FAIL"** section (added 2026-10-28): `note` is the count split by
+  reason, and when the earliest one returns. One line per role: company, title, the reason, the
+  date it failed, and its link. Omit the section when the list is empty.
 - **"LinkedIn cards to check by hand"** section (called "LinkedIn alert cards, graded" and
   carrying every card from 2026-09-02 to 2026-10-09; cut down 2026-10-10, see Step 1d-2
   item e): the `.html` block written by `harvest_linkedin.py`, verbatim. It opens with the

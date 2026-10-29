@@ -48,6 +48,16 @@ everything to a worker; use it once after jd_screen_worker.md or the card
 schema changes, because an old card is only as good as the brief it was
 written under. Reuse can only take work away: any bad or missing old dir, card
 file, or card is skipped, and any failure in the reuse pass reads everything.
+
+A location FAIL needs a second read before it is reused (added 2026-10-28). The
+screen gave the same JD different location verdicts on different days, almost
+always a city in the header and a body that says nothing about remote, so one
+read that says FAIL isn't trusted. A card that fails on location is reused only
+when the worker read before it, of the same text, also failed on location;
+otherwise the JD goes back to a worker. "Fails on location" is
+jd_screen_table.location_gate(), so the two scripts can't disagree.
+poll_ats.py's screen-FAIL memory relies on this: two agreeing reads are what
+let it hold a role off the shortlist.
 """
 import argparse
 import csv
@@ -64,6 +74,7 @@ from datetime import date
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import fetch_jd  # noqa: E402
+from jd_screen_table import location_gate  # noqa: E402
 
 JOBS = os.path.join(HERE, "jobs")
 OUTCOMES = os.path.join(HERE, "outcomes.csv")
@@ -183,15 +194,22 @@ def text_hash(path):
     return hashlib.sha256(" ".join(text.split()).encode("utf-8")).hexdigest()
 
 
+def location_fail(card):
+    return location_gate(card)[1] is not None
+
+
 def reuse_index(cache_root, today, lookback=REUSE_LOOKBACK_DAYS):
-    """{normalized url: (text hash, card, day a worker read it)} from earlier runs.
+    """{normalized url: (text hash, card, day a worker read it, prior)} from earlier runs.
 
     Walks the main-run dirs dated within `lookback` days before `today`, oldest
     first, so the newest card for a URL wins. The read day is the dir's date
     for a card a worker wrote there and `reused_from` for one this script
-    copied in. Never raises: anything unreadable or misshapen is skipped.
+    copied in. `prior` is (text hash, card) for the last worker read before
+    that day, or None: a copy is not a read, so only cards a worker wrote count.
+    Never raises: anything unreadable or misshapen is skipped.
     """
     index = {}
+    reads = {}   # url -> {day: (hash, card)}, worker-written cards only
     run_day = parse_day(today)
     try:
         names = sorted(os.listdir(cache_root))
@@ -220,6 +238,11 @@ def reuse_index(cache_root, today, lookback=REUSE_LOOKBACK_DAYS):
                 h = text_hash(os.path.join(d, os.path.basename(card["file"])))
                 if url and read_day and h:
                     index[url] = (h, card, read_day)
+                    if "reused_from" not in card:
+                        reads.setdefault(url, {})[read_day] = (h, card)
+    for url, (h, card, read_day) in index.items():
+        earlier = [day for day in reads.get(url, {}) if day < read_day]
+        index[url] = (h, card, read_day, reads[url][max(earlier)] if earlier else None)
     return index
 
 
@@ -246,13 +269,18 @@ def reuse_card(index, url, path, today):
     run_day = parse_day(today)
     if not hit or not run_day:
         return None
-    h, card, read_day = hit
+    h, card, read_day, prior = hit
     if card.get("read_ok") is not True:
         return None
     if not 0 < (run_day - read_day).days <= max_age_days(url):
         return None
     if h != text_hash(path):
         return None
+    if location_fail(card):
+        # One location FAIL is not trusted; see the module docstring.
+        if not prior or prior[0] != h or prior[1].get("read_ok") is not True \
+                or not location_fail(prior[1]):
+            return None
     out = dict(card)
     out["file"] = path
     out["reused_from"] = read_day.isoformat()

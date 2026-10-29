@@ -64,7 +64,8 @@ Your final message is ONE line and nothing else, so the orchestrator's context s
    separate Requirements/Qualifications section, read it fully.
 2. **Location comes from the body, not the listing.** "CO Remote" once meant Colombia. Two-
    letter codes in Workday strings are not reliably US states. When the header and body
-   disagree, report the body and mention the conflict in `notes`.
+   disagree, report the body and mention the conflict in `notes`. A city in the header with a
+   body that states no work arrangement is `work_mode: "unclear"`, not `"onsite"`.
 3. **`atlanta_ok` answers one question: could he do this job living in metro Atlanta?**
    - `yes`: in-office or hybrid at a metro Atlanta location the JD names (Atlanta,
      Alpharetta, Midtown, etc.); five days in the office still counts. Remote open anywhere

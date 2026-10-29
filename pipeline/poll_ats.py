@@ -9,7 +9,7 @@ company cap and basic filters, and outputs a small JSON file that Claude
 reads instead of fetching/processing raw API data in-context.
 
 Usage:
-    python pipeline/poll_ats.py [--date 2026-05-01]
+    python pipeline/poll_ats.py [--date 2026-05-01] [--no-fail-memory]
 
 Output:
     pipeline/jobs/ats_hits_YYYY-MM-DD.json  — matched + borderline jobs
@@ -2096,7 +2096,120 @@ def fyi_sort_key(job: dict) -> tuple:
             job["company"], job["title"])
 
 
-def poll_all(run_date: date) -> dict:
+# ── Screen-FAIL memory (added 2026-10-28, Aneesh's call 2026-10-12) ──────────
+# A role the Step 2-JD screen FAILs is never marked seen, so it came back on
+# the next shortlist: replayed over the 13 screen days to 2026-10-12, about
+# 20.6 of every 58.6 shortlist rows were roles an earlier screen had failed.
+# This reads the screen_table.json files earlier runs left in
+# jobs/jd_cache/<date>/, the same dirs jd_prefetch.py reuses cards from, and
+# holds a role whose latest WORKER read failed in a way that held up on re-reads:
+#   pay       one read is enough (129 of 129 re-reads agreed)
+#   location  two worker reads in a row, of the same text (93% held; the rest
+#             moved to "unclear", which is also why jd_prefetch.py won't reuse
+#             a lone location FAIL)
+#   a flag alone never holds a role (3 of 44 went straight to PASS)
+# A row built from a reused card is a copy of an earlier read, not a second
+# one, so only rows whose card a worker wrote that day count as reads.
+# A held role leaves matched, near_window, and borderline and is listed under
+# screen_failed. The hold ends on the day jd_prefetch.py would read the card
+# again (its max_age_days), so every held role gets a fresh read every two to
+# three weeks. Nothing is written anywhere. Not to seen_jobs.json in
+# particular: company_surface_stats() counts every entry there, so a failed
+# role would drag down its company's other roles.
+JD_CACHE_DIR = os.path.join(JOBS_DIR, "jd_cache")
+
+
+def load_fail_memory(run_date: date, cache_root: str = None) -> dict:
+    """{normalized url: hold} for roles a recent JD screen failed and still holds.
+
+    Raises on a screen_table.json it can't read, so hold_screen_failed() turns
+    the memory off for the run rather than trusting a partial history. A day
+    with no table (the screen didn't finish) is skipped.
+    """
+    import jd_prefetch
+    from jd_screen_table import fail_kinds
+    root = cache_root or JD_CACHE_DIR
+    reads = {}   # url -> [(day, row, path of the JD text it was read from)], worker reads only
+    try:
+        names = sorted(os.listdir(root))
+    except FileNotFoundError:
+        return {}
+    for name in names:
+        day = jd_prefetch.parse_day(name)
+        if not day or not 0 < (run_date - day).days <= jd_prefetch.REUSE_LOOKBACK_DAYS:
+            continue
+        path = os.path.join(root, name, "screen_table.json")
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8") as f:
+            rows = json.load(f)["rows"]
+        worker = jd_prefetch.carded_today(os.path.join(root, name))
+        for row in rows:
+            if not isinstance(row, dict) or not isinstance(row.get("url"), str):
+                continue
+            url = jd_prefetch.norm_url(row["url"])
+            if url in worker:
+                # The txt is looked up beside the table, by name, as jd_prefetch does.
+                txt = os.path.join(root, name, os.path.basename(str(row.get("file") or "")))
+                reads.setdefault(url, []).append((day, row, txt))
+
+    def fails_on(row, kind):
+        return row.get("status") == "FAIL" and kind in fail_kinds(row.get("fails"))
+
+    def same_text(a, b):
+        h = jd_prefetch.text_hash(a)
+        return h is not None and h == jd_prefetch.text_hash(b)
+
+    held = {}
+    for url, rs in reads.items():
+        rs.sort(key=lambda t: t[0])
+        day, row, txt = rs[-1]
+        if fails_on(row, "pay"):
+            reason = "pay"
+        elif (fails_on(row, "location") and len(rs) > 1
+              and fails_on(rs[-2][1], "location") and same_text(rs[-2][2], txt)):
+            reason = "location"
+        else:
+            continue
+        age = jd_prefetch.max_age_days(url)
+        if (run_date - day).days > age:
+            continue
+        held[url] = {"reason": reason, "fails": row.get("fails") or [],
+                     "failed_on": day.isoformat(),
+                     "returns_on": (day + timedelta(days=age + 1)).isoformat()}
+    return held
+
+
+def hold_screen_failed(matched: list, borderline: list, run_date: date,
+                       cache_root: str = None) -> tuple:
+    """Take roles with a trusted screen FAIL out of matched and borderline.
+
+    Returns (matched, borderline, screen_failed, status). Fails open: on any
+    error both lists come back untouched and status says why.
+    """
+    try:
+        from jd_prefetch import norm_url
+        memory = load_fail_memory(run_date, cache_root)
+    except Exception as e:  # noqa: BLE001
+        return matched, borderline, [], f"off: {type(e).__name__}: {e}"[:200]
+    held = []
+
+    def keep(job, section):
+        hold = memory.get(norm_url(job.get("apply_url")))
+        if hold:
+            held.append({"company": job.get("company"), "title": job.get("title"),
+                         "location": job.get("location"), "url": job.get("apply_url"),
+                         "pre_score": job.get("pre_score"),
+                         "title_tier": job.get("title_tier"), "section": section, **hold})
+        return not hold
+
+    matched = [j for j in matched if keep(j, "matched")]
+    borderline = [j for j in borderline if keep(j, "borderline")]
+    held.sort(key=lambda h: (h["returns_on"], -(h.get("pre_score") or 0)))
+    return matched, borderline, held, "on"
+
+
+def poll_all(run_date: date, fail_memory: bool = True) -> dict:
     """
     Poll all watchlist companies, filter, dedup, and return results.
 
@@ -2675,6 +2788,17 @@ def poll_all(run_date: date) -> dict:
     ai_engineer_stretch.sort(key=lambda j: -j["pre_score"])
     stats["ai_engineer_stretch"] = len(ai_engineer_stretch)
 
+    # Screen-FAIL memory (see load_fail_memory). Applied before the shortlist
+    # is built, so a held role's slot goes to the next role down.
+    if fail_memory:
+        matched, borderline, screen_failed, stats["fail_memory"] = hold_screen_failed(
+            matched, borderline, run_date)
+    else:
+        screen_failed, stats["fail_memory"] = [], "off: --no-fail-memory"
+    stats["screen_failed"] = len(screen_failed)
+    stats["screen_failed_by_reason"] = {
+        r: sum(1 for h in screen_failed if h["reason"] == r) for r in ("pay", "location")}
+
     # Sort by pre-score, then apply a per-company DIVERSITY CAP before keeping
     # the top 25. Without this, a single company that posts many CS-adjacent
     # roles (and stacks company-level bonuses) fills the entire shortlist. We
@@ -2923,6 +3047,7 @@ def poll_all(run_date: date) -> dict:
         "near_window": near_window,
         "sibling_collapsed": sibling_collapsed,
         "borderline": borderline_capped,
+        "screen_failed": screen_failed,
         "ai_engineer_stretch": ai_engineer_stretch[:AI_ENGINEER_STRETCH_SIZE],
         "function_mismatch": function_mismatch,
         "industry_excluded": industry_excluded,
@@ -2941,6 +3066,8 @@ def main():
     parser = argparse.ArgumentParser(description="Poll ATS boards for matching jobs")
     parser.add_argument("--date", type=str, default=None,
                         help="Run date (YYYY-MM-DD). Defaults to today.")
+    parser.add_argument("--no-fail-memory", action="store_true",
+                        help="hold nothing back for an earlier screen FAIL (for a comparison run)")
     args = parser.parse_args()
 
     run_date = date.fromisoformat(args.date) if args.date else date.today()
@@ -2948,7 +3075,7 @@ def main():
     print(f"Polling ATS boards for {run_date.isoformat()}...")
     print(f"Watchlist: {WATCHLIST_PATH}")
 
-    results = poll_all(run_date)
+    results = poll_all(run_date, fail_memory=not args.no_fail_memory)
 
     # Write output
     os.makedirs(JOBS_DIR, exist_ok=True)
@@ -2971,6 +3098,14 @@ def main():
             print(f"  {k}: {v}")
     print(f"Borderline (for Claude review): {s['title_borderline']} (of which {s['title_ai_wildcard']} via AI-wildcard)")
     print(f"Dedup skipped: {s['dedup_skipped']}")
+    held = results.get("screen_failed") or []
+    if s.get("fail_memory") != "on":
+        print(f"Held back after a screen FAIL: memory {s.get('fail_memory')}")
+    else:
+        by = s.get("screen_failed_by_reason") or {}
+        print(f"Held back after a screen FAIL: {len(held)} "
+              f"({by.get('location', 0)} location, {by.get('pay', 0)} pay)"
+              + (f"; first returns {min(h['returns_on'] for h in held)}" if held else ""))
     print(f"Diversity-capped (>{MAX_PER_COMPANY_PER_RUN}/company, dropped from shortlist): {s.get('diversity_dropped', 0)}")
     print(f"Flagged jd_verification_required (risky title, read JD first): {s.get('jd_verification_flagged', 0)}")
     print(f"Function-mismatch demoted (PM/TPM/SalesEng..., digest FYI only): {s.get('function_mismatch', 0)}")

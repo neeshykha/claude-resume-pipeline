@@ -448,7 +448,7 @@ so don't act on a single month.
 
 Title matching is config-driven: `poll_ats.py` builds its matcher at runtime from `watchlist_companies.json → _title_scoring_tiers` + `_poller_config` (stemmed-token matching, so word-form and word-order variants match automatically). To teach the poller a new title, edit the JSON; `poll_ats.py` carries no title lists, endpoints, or scoring numbers of its own. Any `_title_scoring_tiers` key starting with `tier` (except the specially-handled `tier2b_ai_wildcard`) loads automatically as a tier. After ANY hand edit to `watchlist_companies.json` or `enrollment_candidates.json`, run `.venv/bin/python pipeline/validate_config.py` (syntax + schema check). The daily run also runs it at Step 1-pre, and `poll_ats.py` refuses to poll against a malformed watchlist. [D13](DECISIONS.md#d13-config-driven-title-matching)
 
-**Only `hard_exclude_title_terms` reaches a tier-1 match.** An exact tier-1 match overrides `TITLE_EXCLUDE` and is a protected tier for `function_mismatch_titles`, and since 2026-09-01 every tier-1 match that clears the gates is shortlisted whatever its rank. The matcher ignores word order, which is how "X Operations Support Manager" read as "Support Operations Manager". Cases live in `pipeline/test_title_matcher.py`. **Open:** tier 1's override of the "product manager" exclusion still lets PM roles through. [D30](DECISIONS.md#d30-three-false-title-matches)
+**Only `hard_exclude_title_terms` reaches a tier-1 match.** An exact tier-1 match overrides `TITLE_EXCLUDE` and is a protected tier for `function_mismatch_titles`, and since 2026-09-01 every tier-1 match that clears the gates is shortlisted whatever its rank. The matcher ignores word order, which is how "X Operations Support Manager" read as "Support Operations Manager". Cases live in `pipeline/test_title_matcher.py`. [D30](DECISIONS.md#d30-three-false-title-matches), [D47](DECISIONS.md#d47-the-product-manager-leak-and-two-more)
 
 **JSON escaping is per-file and load-bearing (set 2026-09-07).** `enrollment_candidates.json` is stored ESCAPED (`json.dump(..., indent=2)`, `ensure_ascii` left at its default True); `watchlist_companies.json` is stored RAW (`ensure_ascii=False`). Every writer must match its file, and each write ends with a single `f.write("\n")`. A writer on the wrong setting rewrites every non-ASCII line in a 350-430KB file, so whichever script ran last flips the escaping of the whole file and buries a two-line logical change in a ~180-line diff — in a repo that is pushed publicly. Writers of the queue: `harvest_ats.py`, `poll_builtin.py`, `harvest_linkedin.py`, `poll_remotive.py`, `poll_80k.py`, `harvest_hn_hiring.py`, `harvest_vc_portfolios.py`, `weekly_channel_report.py`. Of the watchlist: `harvest_ats.py`, `websearch_rotation.py`. `harvest_ats.py` writes both in one loop and branches on `ensure_ascii=(path == QUEUE)` — don't collapse that to one setting. Hand edits must also round-trip: a stray `,` on its own line in the watchlist (fixed 2026-09-07) was valid JSON that no writer would emit, so it reflowed on the next run.
 
@@ -926,6 +926,15 @@ Spec: `daily_task_prompt.md` Step 2-JD and Step 6.7.
   weeks (`cards_batch_cached.json`, `reused_from`), so a normal run dispatches two or three
   workers, not ten to twelve. Nothing is stored between runs; the earlier cache dirs are the
   state. Run it with `--no-reuse` once after `jd_screen_worker.md` or the card fields change.
+- **A trusted screen FAIL is remembered (built 2026-10-28).** `poll_ats.py` reads the recent
+  `screen_table.json` files and holds a failed role off the shortlist, the near-window list,
+  and the borderline list, in a `screen_failed` section the dashboard shows. Trusted means one
+  pay FAIL, or two worker reads of the same text that agree on a location FAIL. A flag alone
+  never holds a role. The hold ends when the card is due a fresh read, and nothing is written
+  to `seen_jobs.json`. [D48](DECISIONS.md#d48-a-failed-screen-came-back-every-day)
+- **A city in a posting's header with a body that states no work arrangement is `unclear`, not
+  on-site** (Aneesh, 2026-10-12). `jd_prefetch.py` won't reuse a location-FAIL card until a
+  second worker read agrees.
 - It works inside scheduled sessions (first scheduled run 2026-09-28, no fallback needed). If
   the Agent tool is ever unavailable, the documented fallback reads the cached JDs for the top
   8 inline.

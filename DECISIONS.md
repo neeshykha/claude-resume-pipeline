@@ -1120,3 +1120,86 @@ the Oct 26 freeze decision, with this round as its proof case. The Mon/Thu inter
 Sep 30 Discord sweep dropped stays dropped; the transcript trigger would fire on the artifact
 instead. How we'd know the repairs worked: focus-area hits and the rehearsal line in the next
 two post-mortems, and every calibration section filled.
+
+## D47. The product-manager leak and two more
+
+_Added 2026-10-28._
+
+D30 left one class open: tier 1's override of the "product manager" exclusion. A scan on
+2026-10-09 over the 21 hit files from 2026-09-11 found ten wrong-function titles matching tier 1
+on 111 run-days. They held 106 shortlist-days, 23% of every tier-1 shortlist-day in the window.
+Four were product-manager roles (60 run-days) riding "Product Support Manager" and "Technical
+Operations Manager". Once the JD screen started they also cost 60 JD reads, and three went past
+the read: one was light-tailored with tier 1 counted for +30, and two were scored and listed as
+cleared.
+
+The fix was three more hard-exclude terms: "product manager", "executive support", and
+"technical accounting". The last also catches titles that reached tier 2 because "accounting"
+stems to "account" and matched "Technical Account Manager". Bare "accounting" was rejected, since
+it would drop roles where the word names the customer's domain.
+
+Two other routes lost. A change in `poll_all` to keep the "product manager" exclusion alive under
+a tier-1 match fixed the poller alone, and left LinkedIn card grading and fit-title counts
+treating PM titles as tier matches. Tightening the tier-1 word window caught four of the ten,
+none of the PM titles, and demoted real support-manager roles.
+
+Left alone, one company each: "litigation support", "technical publications", and a "Systems
+Engineering - Global Support" title.
+
+## D48. A failed screen came back every day
+
+2026-10-28. A role that FAILed the Step 2-JD screen was never marked seen, so it was back on
+the next run's shortlist and got read again. A replay on 2026-10-12 over the 13 screen days to
+that date found about 20.6 of every 58.6 shortlist rows were roles an earlier screen had
+already failed. Not every FAIL held up, though. Same URL from one screen to the next, a pay
+FAIL stayed a FAIL 129 times of 129, a location FAIL 309 of 332 (the other 23 moved to
+"location unclear", never to PASS), and a flag-only FAIL 39 of 44, with three going straight
+to PASS. The location flips were nearly all one case: a city in the header and a body that
+says nothing about remote or hybrid, which the worker brief never said how to read.
+
+He approved three parts on 2026-10-12. The session that wrote them up couldn't write to the
+main checkout, so they were built on 2026-10-28:
+
+1. `jd_screen_worker.md` rule 2: a city in the header with a silent body is
+   `work_mode: "unclear"`. He picked that over `onsite`.
+2. `jd_prefetch.py` reuses a location-FAIL card only when the worker read before it, of the
+   same text, also failed on location. "Location FAIL" is `jd_screen_table.location_gate()`,
+   which both scripts call.
+3. `poll_ats.py` reads the `screen_table.json` files from the last 21 days and holds a role
+   whose latest worker read failed on pay, or whose last two worker reads of the same text
+   failed on location. A row built from a reused card is a copy, not a read. Held roles leave
+   `matched`, `near_window`, and `borderline` before the shortlist is built, so the next role
+   down takes the slot, and they're listed under `screen_failed`. The hold ends the day
+   `jd_prefetch.py` would read the card again (its `max_age_days`). Nothing is written, and
+   `seen_jobs.json` was ruled out on purpose: `company_surface_stats()` counts every entry
+   there toward a company's repetition penalty, so a failed role would drag down its
+   company's other roles. An unreadable table turns the memory off for that run, and
+   `--no-fail-memory` turns it off for a comparison run.
+
+Built numbers, from the built function replayed over the stored hit files and screen tables
+(a held role's later reads dropped, since they wouldn't have happened):
+
+- **2026-09-24 to 10-12, the sizing window:** 20.0 shortlist rows held a run (10.0 in the top
+  40, 10.0 there only through the tier-1 guarantee), 6.5 near-window lines, and 11.7 of 19.4
+  AI-wildcard rows, against the sizing's 20.6, 6.5, and 11.9. 72 roles were held while listed
+  (26 on pay, 46 on location), against 86; the gap is the hold length, 14 to 20 days here and
+  30 in the sizing. Eleven were later read CHECK, none PASS, and none was ever cleared,
+  tailored, or listed as a near-miss. The one posting that read FAIL, then CHECK (and was
+  cleared that day), then FAIL again stays visible.
+- **10-13 to 10-28:** 12.1 shortlist rows a run. Card reuse started 10-13, and a location FAIL
+  copied forward isn't a second read, so location holds mostly stopped forming. Part 2's
+  confirming read brings them back: on the 10-28 cache it would have sent 6 of the 26 reused
+  location-FAIL cards back to a worker, against the sizing's estimate of about 4.
+- **The first run, 10-29:** 52 roles held (29 location, 23 pay). Against 10-28's lists that's
+  17 of 65 shortlist rows (9 of them guarantee-only), 5 of 40 near-window lines, and 10 of 20
+  AI-wildcard rows.
+
+The run copies `screen_failed` into the day's brief as a "Held back after a screen FAIL"
+section, and the email's closing paragraph carries the count; `build_dashboard.py` didn't
+change. The list holds every held role still on its board, not only the ones that would have
+ranked in the top 80, so it can run longer than the counts above.
+
+Two known effects. The first run after this needs `jd_prefetch.py --no-reuse`, because rule 2
+changed. Location holds formed from reads under the old wording stand until they expire, up to
+20 days, and some of those would read "unclear" now. Roles screened PASS or CHECK that come
+back every day (about 19.5 rows a run on 10-12) were measured and left out.

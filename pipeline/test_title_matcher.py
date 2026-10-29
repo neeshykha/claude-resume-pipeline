@@ -1,11 +1,15 @@
-"""Unit-check three false title matches (fixed 2026-10-09) against the live config.
+"""Unit-check false title matches against the live config.
 
-  generalist         "Operations Generalist" must not match on a bare "General"
-  sales support      a sales-support title must not ride tier1 "Technical Support Manager"
-  operations support "X Operations Support Manager" is not "Support Operations Manager"
+  generalist           "Operations Generalist" must not match on a bare "General"
+  sales support        a sales-support title must not ride tier1 "Technical Support Manager"
+  operations support   "X Operations Support Manager" is not "Support Operations Manager"
+  product manager      a PM title must not ride tier1 "Product Support Manager"
+  executive support    an executive-assistant org is not "Head of Support"
+  technical accounting "accounting" stems to "account", so it rode "Technical Account Manager"
 
-The first is a tokenizer fix (_TOKEN_ALIASES keeps "generalist" whole). The other
-two are _poller_config.hard_exclude_title_terms entries, because an exact tier1
+The first three were fixed 2026-10-09, the last three 2026-10-10. The first is a
+tokenizer fix (_TOKEN_ALIASES keeps "generalist" whole). The rest are
+_poller_config.hard_exclude_title_terms entries, because an exact tier1
 match overrides TITLE_EXCLUDE and tier1 is protected from function_mismatch_titles,
 so the hard list is the only config that reaches a tier1 match. Controls matter as
 much as the targets: each fix has a real title sitting right next to it.
@@ -37,7 +41,9 @@ def gate(title, band=None):
 
 
 T1 = "tier1_true_match"
+T2 = "tier2_strong_overlap"
 T2D = "tier2d_generalist_ops"
+T3 = "tier3_reasonable_stretch"
 
 CASES = [
     # (title, expected, why)
@@ -68,6 +74,22 @@ CASES = [
     ("Customer Operations & Support Manager", T1, "control: the ampersand breaks the phrase"),
     ("Senior Field Ops Support Manager", T1, "'Ops' spelling is left alone on purpose"),
     ("Customer Operations Support Manager", "hard_excluded", "known cost: a plausible real target dies"),
+
+    ("Product Manager, Community Support", "hard_excluded", "rode Product Support Manager, one word between"),
+    ("Sr. Product Manager (Support Copilot)", "hard_excluded", "adjacent words: no window setting catches it"),
+    ("Senior Technical Product Manager, Operations and Data", "hard_excluded", "rode Technical Operations Manager"),
+    ("Head of Global Executive Support", "hard_excluded", "rode Head of Support, two words between"),
+    ("Executive Support Senior Program Manager, Tech Advisor", "hard_excluded", "rode Technical Support Manager"),
+    ("Manager, Lease Operations Technical Accounting", "hard_excluded", "lease accounting, was tier1"),
+    ("Senior Manager, Technical Accounting", "hard_excluded", "was tier2 through Technical Account Manager"),
+    ("Product Support Manager", T1, "control"),
+    ("Manager, Product Support", T1, "control, reordered"),
+    ("Product Engagement Manager, User Operations", T1, "control: 'product' and 'manager' not contiguous"),
+    ("Head of Technical Support", T1, "control"),
+    ("Customer Support Manager, Executive Escalations", T1, "control: 'executive' present, phrase absent"),
+    ("Product Operations Manager", T2, "control"),
+    ("Technical Account Manager", T2, "control: 'account', not 'accounting'"),
+    ("Partner Customer Success Manager (Accounting)", T3, "control: why the term isn't bare 'accounting'"),
 ]
 
 fails = 0
@@ -87,7 +109,8 @@ for name, spec in wl["_title_scoring_tiers"].items():
     if isinstance(spec, dict):
         configured += spec.get("titles", []) + spec.get("explicit_titles", [])
 configured += wl["_poller_config"]["supplemental_exact_titles"]["titles"]
-clash = [(term, t) for term in ("operations support", "sales support")
+clash = [(term, t) for term in ("operations support", "sales support", "product manager",
+                                 "executive support", "technical accounting")
          for t in configured if term in t.lower()]
 print("new terms hit no configured title:", "yes" if not clash else f"NO -> {clash}")
 
