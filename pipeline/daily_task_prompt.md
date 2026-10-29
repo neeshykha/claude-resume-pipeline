@@ -1660,10 +1660,17 @@ best-scoring one — additional same-company roles are "also live (FYI)" digest 
 **Pick up to 5 jobs to tailor** (was 3-4 until 2026-09-25; the Step 2-JD fan-out took JD
 reading out of this context, which is what the lower number was protecting). Tailoring tiers
 come from `_scoring_config`:
-≥`company_cap_threshold` priority/full · ≥`full_tailoring_threshold` full ·
-≥`light_tailoring_threshold` light (summary rewrite + skills reorder only, no cover
-letter) · below that, skip. If fewer than 3 clear the light threshold, send what you
-have — never pad. The cap is on tailoring, not on surfacing: see the next paragraph.
+≥`company_cap_threshold` priority/full · ≥`full_tailoring_threshold` full · below that,
+none of the five: a role at or above `light_tailoring_threshold` goes on "Cleared, not
+tailored" (below), and anything lower is skipped. **The five never take a role scoring under
+`full_tailoring_threshold` (Aneesh's call, 2026-10-28):** he sent 16 of 75 packages in that
+band and none reached an interview.
+[D50](../DECISIONS.md#d50-roles-scoring-78-87-stopped-getting-packages) Light tier itself
+(summary rewrite + skills reorder only, no cover letter) stays for a role at or above
+`full_tailoring_threshold` that the HARD-REQUIREMENT TIER CAP or the IC-comp rule drops to
+light, and for the safety, requested, and industrial-lane slots, which keep their own rules.
+If fewer than 3 clear the full threshold, send what you have — never pad. The cap is on
+tailoring, not on surfacing: see the next paragraph.
 
 **Fit first, reach fills (Aneesh's call, 2026-10-15).** Fill the five slots in two passes.
 First, every cleared role with 0 or 1 unmet hard requirements and no hard-requirement cap,
@@ -1710,8 +1717,8 @@ its `source_channel`. In the digest it is its own picks-table row marked "asked"
 [D41](../DECISIONS.md#d41-the-weekly-report-became-a-page)
 
 **Cleared, not tailored (added 2026-09-25).** Every Step 2-JD role that you scored at or
-above `light_tailoring_threshold` but did not tailor (it ranked below the 5, or lost a
-same-company tiebreak) goes on the digest's "Cleared, not tailored" list with its score, one
+above `light_tailoring_threshold` but did not tailor (it scored under
+`full_tailoring_threshold`, ranked below the 5, or lost a same-company tiebreak) goes on the digest's "Cleared, not tailored" list with its score, one
 line on why it cleared, and its apply link, and into `jobs/screened_[date].json` at Step 6
 so the Shelf dashboard shows it. These are real, JD-checked candidates: the whole point of
 reading 70+ JDs is that Aneesh sees every one that clears, not just the ones there was time

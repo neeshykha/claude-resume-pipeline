@@ -472,11 +472,14 @@ directly, always do full tailoring regardless of score.
 |-------|------|-------|
 | 110+  | Priority / Full | Full tailoring — required for company-capped roles |
 | 88–109 | Full | Summary rewrite, bullet reorder, skills reorder, cover letter |
-| 78–87 | Light | Summary rewrite + skills reorder only — no bullet reorder, no cover letter |
+| 78–87 | Cleared, not tailored | Listed with its apply link; tailored only when he asks by name |
 | <78  | Skip | Do not surface |
 
-Light tailoring is for stretch roles (Tier 3–4 title match) that meet the salary floor but
-scored lower due to title distance. Volume over perfection at that tier.
+The daily run stopped tailoring the 78–87 band on 2026-10-28: he had sent 16 of 75 of those
+packages and none reached an interview. [D50](DECISIONS.md#d50-roles-scoring-78-87-stopped-getting-packages)
+Light tailoring (summary rewrite + skills reorder only, no bullet reorder, no cover letter)
+still covers a higher-scoring role that the hard-requirement cap or the IC-comp rule drops to
+light, plus the safety, requested, and industrial-lane slots.
 
 ### Scoring Guardrails (apply when computing the full score)
 
@@ -981,8 +984,12 @@ It's aimed at the high-effort ATSes (Workday, Paylocity, Taleo, iCIMS) that make
 whole work history after an upload. [D27](DECISIONS.md#d27-why-assisted-apply-exists)
 
 Claude never creates accounts, enters passwords, clicks submit, answers EEO or
-self-identification questions, answers screening questions (work authorization, salary,
-start date, "why this company"), or invents a field value. Aneesh signs in, Claude types
+self-identification questions, answers judgment questions ("why this company", essays,
+schedule willingness), or invents a field value. Factual screening fields (work
+authorization, sponsorship, notice and start date, the salary field) are filled only from
+`screener_answers` in `application_profile.json`, each dated; a blank there stays blank on
+the form, and the report lists every screening answer typed.
+[D49](DECISIONS.md#d49-factual-screening-answers-get-filled) Aneesh signs in, Claude types
 the work history, Aneesh reviews and sends.
 
 Reusable field values live in `pipeline/application_profile.json` (**gitignored** — it

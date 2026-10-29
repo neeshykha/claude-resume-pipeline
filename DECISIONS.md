@@ -1203,3 +1203,45 @@ Two known effects. The first run after this needs `jd_prefetch.py --no-reuse`, b
 changed. Location holds formed from reads under the old wording stand until they expire, up to
 20 days, and some of those would read "unclear" now. Roles screened PASS or CHECK that come
 back every day (about 19.5 rows a run on 10-12) were measured and left out.
+
+## D49. Factual screening answers get filled
+
+2026-10-28. Assisted apply used to stop at the first screening question, so every form still
+waited on him for work authorization, sponsorship, start date, and salary. The idea came from
+a friend's job-hunt bundle, which answers those from a profile where every
+value is dated and sourced and holds anything else for the person. He picked "factual fields
+only" on a card the same day.
+
+- **What fills:** work authorization, sponsorship, notice and earliest start, and the salary
+  field by his stated rule, all from `screener_answers` in `application_profile.json`. Each
+  value carries a `confirmed` date. One reading `NEEDS_ANEESH` stays blank on the form.
+- **What stays his:** "why this company" and any essay, schedule willingness, previous
+  employment at that employer, how he heard about the role, and EEO and self-identification
+  (unchanged since D27). The `screening_questions_are_aneesh_only` list in the profile didn't
+  change, so `field_sheet.py` still leaves every screening question blank on the paste sheet.
+- **Two form rules came with it:** re-read any prefilled commitment answer before leaving the
+  page, since ATSes replay old answers; and on Ashby, attach the file only after every other
+  field is checked, because the bundle's notes say its file input can fire the submit (untested
+  here).
+- **The loss it aims at:** on 2026-10-28, 266 tailored packages had never gone out against
+  180 sent, and Workday packages had gone out 6 times in 41.
+
+## D50. Roles scoring 78-87 stopped getting packages
+
+2026-10-28. Since the two-tier split of 2026-05-02 (`pipeline/STRATEGY.md`), roles scoring
+78-87 got a light package: summary rewrite and skills reorder, no cover letter. The bet was
+volume. By 2026-10-28 he had sent 16 of 75 such packages and none reached an interview,
+against 45 of 79 sent at 110+. They took tailoring slots and fed the backlog that expires:
+266 packages had never gone out against 180 sent. He picked this on a card the same day,
+over only clearing the old queue.
+
+- **The five daily slots** now take roles at or above `full_tailoring_threshold` only. A 78-87
+  role goes on "Cleared, not tailored" with its apply link, and he asks by name for one he
+  wants. He chose that over adding Tailor it / Pass buttons to that section.
+- **Light tier stays** for a higher-scoring role that the hard-requirement cap or the IC-comp
+  rule drops to light, and for the safety, requested, and industrial-lane slots, which keep
+  their own rules.
+- **`light_tailoring_threshold` still decides what counts as cleared**, so nothing moved from
+  "Cleared, not tailored" to the near-miss list, and no code changed.
+- **The same night** `age_report.py --days 31 --apply` retired 47 packages more than a month
+  old, so the queue counts what's still live.
