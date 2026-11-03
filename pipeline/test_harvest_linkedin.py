@@ -348,6 +348,34 @@ def main() -> int:
             print(f"FAIL transcript: helper counts {res_tx['counters']['helper_messages_by_log']}")
             fails += 1
 
+        # An older session's undated listing (2026-11-02): it names "old1", which a
+        # helper's body dates before the window, and "nev1", which nothing ever fetched.
+        # old1 is skipped and handed to `stale`; nev1 stays missing, so the guard holds.
+        listing = {"threads": [{"id": "lt1", "messages": [
+            {"id": "old1", "sender": HL.JOB_SENDERS[0], "subject": "alert"},
+            {"id": "nev1", "sender": HL.JOB_SENDERS[0], "subject": "alert"}]}]}
+        rec_old = dict(rec_a, id="old1", threadId="lt1", date="2026-09-26T06:00:00Z")
+        with open(os.path.join(tdir, "sess0000.jsonl"), "w") as f:
+            f.write(tool_result_line(listing))
+        os.makedirs(os.path.join(tdir, "sess0002", "subagents"))
+        with open(os.path.join(tdir, "sess0002", "subagents", "agent-helper02.jsonl"), "w") as f:
+            f.write(tool_result_line(rec_old))
+        stale = []
+        loaded = HL.load_transcripts(tdir, dt.date(2026, 9, 28), stale)
+        ids_loaded = sorted(r["id"] for r in loaded)
+        if ids_loaded != ["nev1", "tx1", "tx2"]:
+            print(f"FAIL old listing: want nev1, tx1, tx2 loaded, got {ids_loaded}")
+            fails += 1
+        if [(r["id"], r["source"]) for r in stale] != [("old1", "transcript:sess0002/agent-helper02")]:
+            print(f"FAIL old listing: stale should hold the helper's old1 body: "
+                  f"{[(r['id'], r['source']) for r in stale]}")
+            fails += 1
+        res_old = HL.harvest(loaded, grader, dt.date(2026, 9, 29),
+                             {"query": "q", "window_used": "2d", "input_mode": "fixture"})
+        if res_old["counters"]["missing_body_message_ids"] != ["nev1"]:
+            print(f"FAIL old listing: missing ids {res_old['counters']['missing_body_message_ids']}")
+            fails += 1
+
     # The digest's check-by-hand block (2026-10-10): review-flagged cards only, minus
     # aggregator reposts, watchlist companies, and roles an earlier day listed. The
     # full graded list stays in `digest_lines`, which the tests above still read.

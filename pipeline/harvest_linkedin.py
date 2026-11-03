@@ -348,7 +348,7 @@ def _records_from_json_text(text: str, source: str) -> list[dict]:
     return out
 
 
-def load_transcripts(tdir: str, since: dt.date) -> list[dict]:
+def load_transcripts(tdir: str, since: dt.date, stale: list | None = None) -> list[dict]:
     """LinkedIn job-sender records from session transcripts modified on/after `since`.
 
     Reads the .jsonl session logs, the helper-agent logs under <session>/subagents/,
@@ -359,6 +359,9 @@ def load_transcripts(tdir: str, since: dt.date) -> list[dict]:
     The subagents glob (2026-09-28) is what lets Step 1d-2b hand the get_message calls
     to a Haiku helper: the bodies land in the helper's log instead of the main run's
     context, where each one was re-read on every later turn (42 bodies on 2026-09-28).
+
+    `stale`, when passed, collects the records of messages dated before the window
+    that an undated record inside it also named (see the window filter below).
     """
     if not os.path.isdir(tdir):
         return []
@@ -409,16 +412,29 @@ def load_transcripts(tdir: str, since: dt.date) -> list[dict]:
             text = f.read()
         if any(n in text for n in needles):
             records += _records_from_json_text(text, f"tool-result:{os.path.basename(path)}")
-    # Keep records dated inside the window; undated ones (rare) are kept.
-    kept = []
+    # Keep records dated inside the window. An undated record is kept too, unless
+    # another record dates the same message id before the window (added 2026-11-03).
+    # A search_threads listing carries no date, and an older session's listing is
+    # still read when its log was modified inside the window: on 2026-11-02 an
+    # Oct 29 session's listing named 24 alerts from Oct 27-28, they counted as seen
+    # with no body, the run fetched them twice, this filter dropped both copies as
+    # old, and the run reported a SHORTFALL for cards earlier runs had graded.
+    old: dict[str, list[dict]] = {}
+    in_window = []
     for r in records:
         d = r.get("date", "")[:10]
         try:
             if d and dt.date.fromisoformat(d) < since:
+                if r.get("id"):
+                    old.setdefault(r["id"], []).append(r)
                 continue
         except ValueError:
             pass
-        kept.append(r)
+        in_window.append(r)
+    kept = [r for r in in_window if r.get("date") or r.get("id") not in old]
+    if stale is not None:
+        named = {r["id"] for r in in_window if not r.get("date") and r.get("id") in old}
+        stale += [r for i in sorted(named) for r in old[i]]
     return kept
 
 
@@ -1065,6 +1081,7 @@ def main() -> int:
         print("WARNING: _poller_config.linkedin_aggregator_blocklist is empty; nothing "
               "will be dropped as an aggregator", file=sys.stderr)
 
+    stale: list[dict] = []
     if args.gmail:
         alias = resolve_alias()
         if not alias:
@@ -1079,7 +1096,7 @@ def main() -> int:
     elif args.from_transcripts:
         tdir = args.transcript_dir or default_transcript_dir()
         since = today - dt.timedelta(days=int(window[:-1]))
-        records = load_transcripts(tdir, since)
+        records = load_transcripts(tdir, since, stale)
         input_mode = f"transcripts:{os.path.basename(tdir)} since {since.isoformat()}"
         if not records:
             print(f"no LinkedIn job-sender records dated >= {since} found under {tdir}. "
@@ -1098,6 +1115,15 @@ def main() -> int:
                       "input_mode": input_mode},
                      load_listed_before(args.out_dir, today, grader.norm))
     c = result["counters"]
+    # Old messages an undated listing named (2026-11-03): never graded or counted as
+    # missing, but a helper that fetched one still delivered it, so the
+    # --expect-messages check below credits its log.
+    c["stale_ids_skipped"] = sorted({r["id"] for r in stale})
+    stale_by_log: dict[str, set] = {}
+    for r in stale:
+        if "/agent-" in r["source"] and r["body"].strip():
+            stale_by_log.setdefault(r["source"], set()).add(r["id"])
+    c["helper_stale_by_log"] = {k: len(v) for k, v in sorted(stale_by_log.items())}
 
     os.makedirs(args.out_dir, exist_ok=True)
     json_path = os.path.join(args.out_dir, f"linkedin_cards_{today.isoformat()}.json")
@@ -1143,6 +1169,10 @@ def main() -> int:
     src_counts = c["bodies_by_source"]
     print("bodies by source: " + (", ".join(f"{k} {v}" for k, v in src_counts.items())
                                   or "none"))
+    if c["stale_ids_skipped"]:
+        print(f"skipped as old: {len(c['stale_ids_skipped'])} message(s) an undated listing "
+              f"named are dated before the window; not graded, not missing "
+              f"(helper logs credited: {c['helper_stale_by_log'] or 'none'})")
     # The check above can only see messages the INPUT mentions. When the helper's
     # records never reach the script at all, nothing is "missing" from its point of
     # view (2026-09-29). Comparing against the helper's own count closes that.
@@ -1153,7 +1183,7 @@ def main() -> int:
         # context three runs in a row), so the expectation is the batches' total.
         # Still never summed ACROSS sessions, for the overlap reason given above.
         by_session: dict[str, int] = {}
-        for src, n in by_log.items():
+        for src, n in list(by_log.items()) + list(c["helper_stale_by_log"].items()):
             sess = src.split("/agent-")[0]
             by_session[sess] = by_session.get(sess, 0) + n
         got = max(by_session.values(), default=0)
