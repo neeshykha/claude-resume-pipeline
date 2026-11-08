@@ -18,7 +18,10 @@ outcomes.csv rows that are still stage=surfaced. Schema:
   ]
 }
 
-Matching is by URL first (exact, normalized: trailing slash + case stripped),
+Matching is by URL first (exact, normalized: trailing slash + case stripped; a
+LinkedIn job link of any shape reduces to its job id, so the tracking-laden
+`/comm/jobs/view/<id>/?trackingId=...` link in an Easy Apply notice matches the
+row's `/jobs/view/<id>/`),
 falling back to company name (case-insensitive) only among rows still
 stage=surfaced. If a company name matches more than one surfaced row and no
 URL was given to disambiguate, the row is SKIPPED and reported as ambiguous
@@ -58,15 +61,20 @@ Behavior:
 import csv
 import json
 import os
+import re
 import shutil
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
 SEEN_JOBS = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
+LINKEDIN_JOB_RE = re.compile(r"linkedin\.com/(?:comm/)?jobs/view/(?:[^/?#]*-)?(\d+)(?=[/?#]|$)", re.I)
 
 
 def norm_url(u):
+    m = LINKEDIN_JOB_RE.search(u or "")
+    if m:
+        return f"https://www.linkedin.com/jobs/view/{m.group(1)}"
     return (u or "").strip().rstrip("/").lower()
 
 

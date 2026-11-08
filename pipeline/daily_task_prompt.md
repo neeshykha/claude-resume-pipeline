@@ -50,8 +50,10 @@ routine were the #1 cause of stalled runs — see memory `project_job_pipeline.m
 **Placeholder resolution (do this first, every run).** This file is published in a PUBLIC repo,
 so mail-routing details appear as `{{TOKEN}}` placeholders rather than literal values. Read
 `pipeline/local_config.json` (gitignored) once at the start of the run and substitute
-`{{APPLY_ACCOUNT}}`, `{{CONFIRM_ALIAS}}`, `{{DIGEST_RECIPIENT}}`, and
-`{{CONFIRMATIONS_LABEL_ID}}` wherever they appear below. **Never write a resolved value back
+`{{APPLY_ACCOUNT}}`, `{{CONFIRM_ALIAS}}`, `{{DIGEST_RECIPIENT}}`,
+`{{CONFIRMATIONS_LABEL_ID}}`, `{{MAIN_GMAIL_TOOLS}}`, and `{{JOB_GMAIL_TOOLS}}` (the two Gmail
+connectors' tool-name prefixes) wherever they appear below, and note its `JOB_MAIL_SOURCE`
+for Step 0.5. **Never write a resolved value back
 into this file or any other tracked file.** If `local_config.json` is missing, STOP and send a
 brief digest saying so rather than guessing an address.
 
@@ -144,6 +146,36 @@ brief digest saying so rather than guessing an address.
 
 ## Step 0.5: Application confirmation sync (Gmail `+jobs` alias)
 
+**Two inboxes, shadow week first (added 2026-11-07, Aneesh's go).** The job account
+(`{{APPLY_ACCOUNT}}`) has its own Gmail connector, `{{JOB_GMAIL_TOOLS}}*`; the main inbox is
+`{{MAIN_GMAIL_TOOLS}}*`. Both load through ToolSearch like any deferred tool. The six
+forwarding filters stay on, and their terms now live in `pipeline/job_mail_terms.json`, the
+only definition of "job mail" for a job-account search. `JOB_MAIL_SOURCE` in local_config
+says which copy the run acts on:
+
+- **`forwarded`** (the shadow week, from 2026-11-09): act on the `{{CONFIRM_ALIAS}}` copies
+  exactly as below. Also run each search's job-account twin (item 1, item 1b, and Step 1d-2)
+  right after its forwarded search, never before (mail arriving in between would read as a
+  miss), with `view: THREAD_VIEW_MINIMAL`, `pageSize: 50`, paging until no
+  `nextPageToken`. List it only: no bodies, and act on none of it. Step 1d-2 item g
+  compares the two.
+- **`job_account`** (after `job_mail.py --verdict` says PASS and Aneesh agrees): run the
+  job-account queries and act on those; the forwarded copy is the fallback below.
+
+`.venv/bin/python pipeline/job_mail.py` prints every query for both inboxes (so does
+`linkedin_window.py`); copy them from its output, never from memory. The job-account
+connector is read-only for this pipeline: never send, reply, draft, label, mark, or trash
+with it.
+
+**Lapse check, before the first search.** Call `{{JOB_GMAIL_TOOLS}}search_threads` with
+`newer_than:2d`, `pageSize: 1`, `view: THREAD_VIEW_IDS_ONLY`. LinkedIn alone sends that
+inbox about 14 emails a day, weekends included, so zero threads or an error means the
+connector lapsed. Record `job_account_lapsed: true` and the error in `run_[date].json`, put
+one line in the brief's `alerts` ("job-account connector returned nothing; reconnect it in
+claude.ai Connectors"), skip every job-account search and Step 1d-2 item g's compare this
+run, and act on the forwarded copy whatever `JOB_MAIL_SOURCE` says. That fallback works only while the forwarding filters stay
+on, which is why they do.
+
 **Added 2026-07-24, closes a real gap found the hard way:** on 2026-07-23 the pipeline
 skipped a genuinely fresh Assembled req on the mistaken assumption that an earlier
 `stage=surfaced` row in `outcomes.csv` meant Aneesh had actually applied. It didn't —
@@ -170,7 +202,11 @@ Deleting the subject filters would silently drop that class of confirmation.
 1. Search Gmail for
    `deliveredto:{{CONFIRM_ALIAS}} -from:linkedin.com -from:donotreply@jobalert.indeed.com -from:donotreply@match.indeed.com newer_than:3d` (the 3-day window
    gives safe overlap across runs; already-promoted rows won't match again since matching
-   only looks at `stage=surfaced` rows).
+   only looks at `stage=surfaced` rows). Its job-account twin is the long `Step 0.5`
+   query `job_mail.py` prints: the filters' senders and subject phrases named outright,
+   because the job account also holds mail that isn't job mail, plus `-in:sent` so his
+   own replies never read as receipts. Some non-job mail also reaches the alias through a
+   seventh filter; it never was a receipt, and the job-account query doesn't look for it.
 
    **The `-from:linkedin.com` exclusion is load-bearing.** LinkedIn job alerts are forwarded
    to this same alias on purpose (one verified forwarding address instead of two) and are
@@ -198,6 +234,27 @@ Deleting the subject filters would silently drop that class of confirmation.
    `label:{{CONFIRMATIONS_LABEL_ID}} -from:linkedin.com -from:donotreply@jobalert.indeed.com -from:donotreply@match.indeed.com`.
    The sender exclusions are what keep the alert streams apart from receipts, whichever
    selector is used.
+1b. **LinkedIn Easy Apply notices (added 2026-11-07).** The `-from:linkedin.com` exclusion
+   above also dropped LinkedIn's own application emails, so an Easy Apply send never reached
+   the tracker: Sigma Automate went out 2026-10-06, was rejected 2026-10-15, and its row read
+   `surfaced` until it was recorded by hand on 2026-11-07. Run the `Step 0.5 EA` search
+   `job_mail.py` prints (sender `jobs-noreply@linkedin.com`, subject "your application was
+   sent to" or "your application to", 3 days), then in the shadow week list its job-account
+   twin the same way as item 1's (listing only). Read each body of the copy the run acts on
+   (`messageFormat: PLAIN_TEXT`) and handle it by kind:
+   - **"…your application was sent to <Company>"** is a receipt. The body's first block is
+     the title line, the company line, a location, and `View job: <link>`; a line further
+     down reads `Applied on <Month D, YYYY>`. Write a confirmation with that title, company,
+     date, and the first `View job:` link as `url`, untrimmed: `mark_applied.py` reduces any
+     LinkedIn job link to its job id, so the tracking parameters don't matter. Everything
+     under "Now, take these next steps" is LinkedIn's similar jobs, never this application.
+   - **"Your application to <title> at <company>"** is a status update whose plain text is
+     nearly empty. Its links name the page type: `email_jobs_application_rejected_01` is a
+     rejection, so record `outcome: rejected` through item 5 with the title and company from
+     the subject and a note naming the page type. Any other page type: one line in the
+     brief's `alerts`, nothing recorded.
+   - "…was viewed by…" is left out of the search on purpose: it is neither a receipt nor an
+     outcome.
 2. For each result, read the sender/subject/body to identify the company and, if stated, the
    specific requisition URL. **Always try to extract the URL from the email body first** —
    confirmation emails from Greenhouse/Ashby/Lever/Workday usually restate the job link or a
@@ -874,8 +931,12 @@ that list is about.**
 
 a. Window, unchanged: `.venv/bin/python pipeline/linkedin_window.py`.
 b. **Hand the fetch to ONE Haiku helper (Agent tool, `model: haiku`), and do not fetch the
-   bodies yourself (changed 2026-09-28).** Give it the resolved Step 1d-2 query and this
-   brief: run it with `search_messages`; call `get_message` (`messageFormat: PLAIN_TEXT`) on
+   bodies yourself (changed 2026-09-28).** Give it the resolved Step 1d-2 query for the
+   copy the run acts on (Step 0.5's two-inboxes block), the full tool names to use
+   (`{{MAIN_GMAIL_TOOLS}}search_threads` and `get_message` while `JOB_MAIL_SOURCE` is
+   `forwarded`, `{{JOB_GMAIL_TOOLS}}…` once it is `job_account`; they load through
+   ToolSearch), and this
+   brief: run it with `search_threads`; call `get_message` (`messageFormat: PLAIN_TEXT`) on
    EVERY message from `jobalerts-noreply@` or `jobs-noreply@`, newest first, including every
    stacked message inside a thread; do not extract, grade, or summarize anything; answer in
    ONE line: `threads=N messages_fetched=M` plus any ids that errored. The records land in
@@ -936,6 +997,26 @@ e. Digest: the `.html` block (`linkedin_cards_[date].html`) goes in verbatim as 
    is the full graded record for grep and for handoff, not digest content.
 f. Item 3b below still applies by hand: the script lists the qualifying cards under
    `blind_spot_qualifying`; you decide which of them (max 3) get a verification search.
+g. **Shadow compare (the shadow week, from 2026-11-09).** While `JOB_MAIL_SOURCE` is
+   `forwarded`, and the Step 0.5 lapse check passed (on a lapsed day skip this item and
+   let `job_account_lapsed` say why), list this step's job-account twin too (`Step 1d-2`
+   job-account query from `job_mail.py`, `view: THREAD_VIEW_MINIMAL`, page to the end; no
+   bodies, no helpers), then run one command:
+
+   ```bash
+   .venv/bin/python pipeline/job_mail.py --compare
+   ```
+
+   It reads this run's transcript, matches every forwarded receipt, Easy Apply notice, and
+   LinkedIn alert from items 1, 1b, and this step to its job-account twin, and writes
+   `pipeline/jobs/mail_shadow_[date].json`. Copy its `SHADOW` lines into `run_[date].json ->
+   mail_shadow`. Every `SHADOW MISS` line, and a `JOB ACCOUNT RETURNED NOTHING` line, goes in
+   the brief's `alerts` (on the page; not a Step 5 email trigger). Mail "only in the job
+   account" is the gain, not a fault: list it in `pipeline_notes`. `harvest_linkedin.py`
+   ignores the job-account listings on its own (`other_inbox_records_dropped` in its
+   counters is expected to be non-zero this week). After the fifth shadow run,
+   `job_mail.py --verdict` says PASS or NOT YET; a PASS goes in the brief's alerts as
+   "ready to switch job mail to the job account", and the switch itself waits for Aneesh.
 
 **Fallback trigger:** a traceback, or `job_alert_threads_seen: 0` while the search returned
 job-alert threads (that means the records did not reach the transcript the script scans;

@@ -45,11 +45,15 @@ came from a confirmation backfill rather than a pipeline run.
 import csv
 import json
 import os
+import re
 import shutil
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
+# Same rule as mark_applied.py (2026-11-07): a LinkedIn job link of any shape
+# reduces to its job id, so a link out of a LinkedIn notice matches the row.
+LINKEDIN_JOB_RE = re.compile(r"linkedin\.com/(?:comm/)?jobs/view/(?:[^/?#]*-)?(\d+)(?=[/?#]|$)", re.I)
 
 # Terminal outcomes imply the application is closed; interview implies it is
 # still live. Used only to default `stage` when the caller omits it.
@@ -63,6 +67,9 @@ STAGE_DEFAULTS = {
 
 
 def norm_url(u):
+    m = LINKEDIN_JOB_RE.search(u or "")
+    if m:
+        return f"https://www.linkedin.com/jobs/view/{m.group(1)}"
     return (u or "").rstrip("/").lower()
 
 

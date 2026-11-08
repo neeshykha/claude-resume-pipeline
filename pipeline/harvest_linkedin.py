@@ -72,11 +72,18 @@ repo). So this script has three input paths, none of which is the connector:
                     from the API reference, not from a live run, and should be treated as
                     a starting point when the credential exists.
 
-The Gmail query is the Step 1d-2 one: `deliveredto:{{CONFIRM_ALIAS}} from:linkedin.com
-newer_than:Nd`, restricted after fetch to the two job senders. {{CONFIRM_ALIAS}} is read
-from pipeline/local_config.json at runtime and is never written into any output; the
-run artifacts carry the placeholder. The window defaults to what linkedin_window.py
-computes (gap since the last run_*.json plus one day, capped at 7).
+The Gmail query is the Step 1d-2 one from job_mail.py, restricted after fetch to the two
+job senders: `deliveredto:{{CONFIRM_ALIAS}} from:linkedin.com newer_than:Nd` on the
+forwarded copy, or `from:linkedin.com -in:sent newer_than:Nd` on the job account.
+{{CONFIRM_ALIAS}} is read from pipeline/local_config.json at runtime and is never
+written into any output; the run artifacts carry the placeholder. The window defaults to
+what linkedin_window.py computes (gap since the last run_*.json plus one day, capped at 7).
+
+Only records from the inbox the run acts on are graded (`JOB_MAIL_SOURCE` in
+local_config.json, added 2026-11-07). Each record names its inbox in its viewUrl; in the
+shadow week the run also lists the job account, and without this filter those listings
+would count as job-alert messages with no body and print a SHORTFALL. Records with no
+viewUrl (saved .eml files, bare bodies) are always kept.
 
 BODY SHAPE (verified against 14 real bodies from 2026-09-02, both senders)
 --------------------------------------------------------------------------
@@ -154,6 +161,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 
 import countries  # noqa: E402  (needs SCRIPT_DIR on the path first)
+import job_mail  # noqa: E402
 
 WATCHLIST = os.path.join(SCRIPT_DIR, "watchlist_companies.json")
 QUEUE = os.path.join(SCRIPT_DIR, "enrollment_candidates.json")
@@ -228,6 +236,7 @@ def _norm_record(d: dict, source: str) -> dict | None:
         "date": d.get("date") or "",
         "body": body,
         "source": source,
+        "account": job_mail.account_of(d),
     }
 
 
@@ -244,6 +253,7 @@ def _from_listing(d: dict, source: str) -> list[dict]:
                 "date": m.get("date") or "",
                 "body": "",
                 "source": source,
+                "account": job_mail.account_of(m, th),
             })
     return out
 
@@ -804,6 +814,14 @@ def resolve_alias() -> str | None:
         return json.load(f).get("CONFIRM_ALIAS")
 
 
+def drop_other_inbox(records: list[dict], acct: str | None) -> tuple[list[dict], int]:
+    """Keep the records from the inbox the run acts on (2026-11-07; module docstring).
+    A record with no inbox (an .eml, a bare body) is kept; so is everything when the
+    config names no inbox."""
+    kept = [r for r in records if not acct or not r.get("account") or r["account"] == acct]
+    return kept, len(records) - len(kept)
+
+
 def default_window(today: dt.date) -> tuple[str, str]:
     import linkedin_window as LW
     w = LW.compute_window(today)
@@ -1070,7 +1088,10 @@ def main() -> int:
     window, window_note = (args.newer_than, "from --newer-than") if args.newer_than \
         else default_window(today)
     window = window if window.endswith("d") else window + "d"
-    query_placeholder = f"deliveredto:{{{{CONFIRM_ALIAS}}}} from:linkedin.com newer_than:{window}"
+    mail_cfg = job_mail.load_config()
+    mail_source = job_mail.source(mail_cfg)
+    query_placeholder = job_mail.queries(job_mail.load_terms(), int(window[:-1]))[
+        "linkedin_alerts"][mail_source]
 
     with open(WATCHLIST, encoding="utf-8") as f:
         wl = json.load(f)
@@ -1110,11 +1131,17 @@ def main() -> int:
         records = load_input_dir(args.input_dir)
         input_mode = f"input-dir:{os.path.basename(os.path.normpath(args.input_dir))}"
 
+    acct = job_mail.source_account(mail_cfg)
+    records, other_inbox = drop_other_inbox(records, acct)
+    stale[:] = drop_other_inbox(stale, acct)[0]
+
     result = harvest(records, grader, today,
                      {"query": query_placeholder, "window_used": f"{window} ({window_note})",
                       "input_mode": input_mode},
                      load_listed_before(args.out_dir, today, grader.norm))
     c = result["counters"]
+    c["mail_source"] = mail_source
+    c["other_inbox_records_dropped"] = other_inbox
     # Old messages an undated listing named (2026-11-03): never graded or counted as
     # missing, but a helper that fetched one still delivered it, so the
     # --expect-messages check below credits its log.

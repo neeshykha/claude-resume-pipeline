@@ -900,10 +900,19 @@ that file (its Track Source File feature) and refreshes the page in place under 
 - **Open:** deferred on purpose: adapters for the Jobvite and Gem boards a few manual-check
   companies use, and the queue rows that report "N PDFs match" instead of one resume path.
 
-**Queue-vs-Gmail checks.** Aneesh applies only through the `+jobs` alias, so **no change to
-Step 0.5 is wanted** for mail that reached his other address. Before calling a queued role
-already sent, compare against the tracker row's URL and notes, not the company alone.
+**Queue-vs-Gmail checks.** Before calling a queued role already sent, compare against the
+tracker row's URL and notes, not the company alone.
 [D25](DECISIONS.md#d25-queue-vs-gmail-check)
+
+**Job mail comes from two inboxes (2026-11-07).** The job account has its own Gmail
+connector, and Step 0.5 and Step 1d-2 search it alongside the forwarded `+jobs` copy.
+`pipeline/job_mail_terms.json` is the only definition of job mail for that search, copied
+from the forwarding filters; change it there, and `job_mail.py` builds every query from it.
+`JOB_MAIL_SOURCE` in `local_config.json` says which copy the run acts on. Don't flip it to
+`job_account` until `job_mail.py --verdict` says PASS and Aneesh agrees, and leave the
+forwarding filters on either way: the inbox skill and the sent-asks watcher read the
+forwarded copies, and they're the run's fallback when the job account returns nothing.
+The job-account connector is read-only here. [D51](DECISIONS.md#d51-job-mail-from-the-job-account-shadow-week-first)
 
 ## JD Screen Fan-out + Rate-Limit Recheck (built 2026-09-25)
 

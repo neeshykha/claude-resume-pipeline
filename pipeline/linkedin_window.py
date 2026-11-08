@@ -105,8 +105,10 @@ def main() -> int:
     print()
     print(f"USE THIS WINDOW: newer_than:{window}d")
     print()
-    print(f"Step 0.5 query : deliveredto:{{{{CONFIRM_ALIAS}}}} -from:linkedin.com newer_than:3d")
-    print(f"Step 1d-2 query: deliveredto:{{{{CONFIRM_ALIAS}}}} from:linkedin.com newer_than:{window}d")
+    # Both inboxes' queries come from job_mail.py (2026-11-07), built from the
+    # forwarding filters' terms in job_mail_terms.json.
+    import job_mail
+    print("\n".join(job_mail.query_lines(window)))
     print()
     print(f"note           : {note}")
     print()

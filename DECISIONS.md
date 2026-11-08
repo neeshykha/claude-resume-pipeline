@@ -1245,3 +1245,37 @@ over only clearing the old queue.
   "Cleared, not tailored" to the near-miss list, and no code changed.
 - **The same night** `age_report.py --days 31 --apply` retired 47 packages more than a month
   old, so the queue counts what's still live.
+
+## D51. Job mail from the job account, shadow week first
+
+2026-11-07. The job account got its own Gmail connector that night, and he asked for the
+pipeline to stop depending on the mail forwarded into the main inbox. Searching both inboxes
+the same night showed forwarding already delivered everything: LinkedIn alerts were 200+ in
+each over 14 days, and every ATS receipt, rejection, and interview invite in a 30-day sample
+had a forwarded copy. So the switch adds no discovery volume. What it fixes is what forwarding
+can't: a sender no filter names (the 2026-10-20 Google referral never forwarded, and one filter
+saved wrong caught 7 of 43 until he fixed it), and LinkedIn Easy Apply notices, which Step 0.5
+dropped with the rest of linkedin.com. Sigma Automate went out by Easy Apply on 2026-10-06,
+was rejected 2026-10-15, and read `surfaced` until it was recorded by hand that night.
+
+His cards: mail steps only (Steps 0.5 and 1d-2; discovery, scoring, tailoring, and the
+dashboard untouched), and the forwarding filters stay on, because the inbox skill and the
+sent-asks watcher read the forwarded copies. A throwaway Auto-mode task proved an unattended
+run and its Haiku helper can both search the job account before anything was built.
+
+- **`pipeline/job_mail_terms.json`** copies the six job filters' senders and subject phrases,
+  read from the job account's Gmail settings. The job account has no job label, so this file
+  is the only definition of job mail for a direct search. `job_mail.py` builds every query
+  from it, for both inboxes.
+- **Shadow week.** `JOB_MAIL_SOURCE: "forwarded"` in local_config: the run acts on the
+  forwarded copy as before, lists the job account too, and `job_mail.py --compare` matches
+  each forwarded message to its job-account twin. Five runs with nothing missed is a PASS;
+  the flip to `"job_account"` waits for that and his yes. A lapse check alerts and falls back
+  to the forwarded copy when the job account returns nothing.
+- **Easy Apply notices** are their own Step 0.5 search. `mark_applied.py` and
+  `mark_outcome.py` reduce any LinkedIn job link to its job id, so a notice's tracking link
+  matches the row.
+- **`harvest_linkedin.py` grades only the inbox the run acts on.** Each record names its inbox
+  in `viewUrl`; without the filter, the shadow listings would count as job-alert messages with
+  no body and print a SHORTFALL.
+- D25's "no change to Step 0.5 is wanted" is retired by this entry.
