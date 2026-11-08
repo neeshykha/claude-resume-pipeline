@@ -428,3 +428,31 @@ after them. The section sits at the top of the page, under the tiles.
 - **Charts:** inline SVG, no library. Hover or arrow keys move a tooltip; every chart has a table
   underneath with the same numbers. Colors are the dataviz reference blue and orange, checked
   with its validator against the card color in both modes.
+
+## 2026-11-07: who he knows at each company
+
+He holds every referral ping until a role worth applying to turns up, then pings before he
+applies so the referral attaches. Nothing paired a surfaced role with a person, so a row now
+says when he has a first-degree LinkedIn connection at its company.
+
+- **Source:** the warm-path kit, outside this repo (`WARM_PATH_KIT`): its `export/Connections.csv`,
+  its `scripts/wpm_names.py` matcher (loaded by path, so nothing in the kit can shadow a pipeline
+  module), and `data/reviewed_matches.json`. Read fresh at each build and never copied anywhere
+  but the page. Only the first name, last name, company, title, and connected-on columns are
+  read; email and profile URL are not.
+- **Matching:** exact under the kit's `exact_keys()` (case, punctuation, legal form, and a name
+  the string itself declares, like "X, formerly Y"), plus the pairs he confirmed, in the
+  direction he confirmed them ([company as LinkedIn writes it, company on his lists]). A
+  look-alike never counts; the kit's check list is the only place those go.
+- **Rows:** the apply queue (and the last run's picks), cleared-not-tailored, weekly leads, and
+  manual checks. Not applications gone quiet: they're sent, and a ping rides on a role before
+  it goes out. The line reads "You know: name, title · connected Mon YYYY", newest connection
+  first, three shown and the rest in a "+N more" tooltip. "at <company>" when the person's
+  company is written differently (a declared name or a confirmed pair). A "same company?" tag
+  when the match is exact on a short or ordinary-word name (the kit's `common_name_risk`).
+  The line's tooltip dates the export file, since titles are as of then.
+- **When it can't read the kit:** no lines, one footer item saying why, and the run's summary
+  line says "no contacts (...)". Any other fault in the lookup does the same; the page builds.
+- **Never:** a name in a tracked file or a test fixture (fixtures are made up;
+  `test_no_real_connection_name_is_in_a_tracked_file` checks every tracked file against the real
+  export when it's on the machine), a drafted or sent message, or a LinkedIn page opened.

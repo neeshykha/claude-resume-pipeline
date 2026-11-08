@@ -5,6 +5,7 @@ companies; nothing here reads the real tracking files.
     .venv/bin/python pipeline/test_build_dashboard.py
 """
 import csv
+import io
 import json
 import os
 import re
@@ -50,6 +51,7 @@ def fixture(rows, watch=None, queue=None, pdfs=()):
     bd.APPLY_NOW = os.path.join(d, "tailored", "apply_now")
     bd.JOBS_DIR = os.path.join(d, "jobs")
     os.makedirs(bd.JOBS_DIR)
+    bd.WARM_PATH_KIT = os.path.join(d, "kit")  # absent unless a test builds one; never the real export
     return d
 
 
@@ -375,6 +377,155 @@ def test_leads_key_contract_with_shelf_inbox_and_lead_marks():
     data = build()
     assert data["lead_answered"] == ["4000009"], "the page prunes a lead mark only once a run recorded it"
     assert "done[k]||n==null||n>D.lead_mark_days" in bd.render(data)
+
+
+# Who he knows (2026-11-07). Every person and company below is made up. The kit is built in the
+# temp dir; the real one is read only to borrow its matcher and, in the last test, to check that
+# no real name has reached a tracked file.
+REAL_KIT = bd.WARM_PATH_KIT
+STAND_IN_MATCHER = '''import re
+def exact_key(name):
+    return re.sub(r"[^a-z0-9]", "", (name or "").lower())
+def exact_keys(name):
+    return [(exact_key(name), name)] if exact_key(name) else []
+'''
+CONN_HEADER = "First Name,Last Name,URL,Email Address,Company,Position,Connected On"
+
+
+def kit(people, accept=(), matcher=None, header=CONN_HEADER):
+    """A warm-path kit in the fixture's temp dir: LinkedIn's preamble, then the rows."""
+    k = bd.WARM_PATH_KIT
+    for sub in ("export", "data", "scripts"):
+        os.makedirs(os.path.join(k, sub), exist_ok=True)
+    lines = ["Notes:", '"When exporting your connection data, you may notice that some of the email addresses are missing."', "", header]
+    out = io.StringIO()
+    csv.writer(out, lineterminator="\n").writerows(people)
+    with open(os.path.join(k, "export", "Connections.csv"), "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n" + out.getvalue())
+    with open(os.path.join(k, "data", "reviewed_matches.json"), "w", encoding="utf-8") as f:
+        json.dump({"accept": [list(p) for p in accept], "reject": []}, f)
+    if matcher is None:
+        real = os.path.join(REAL_KIT, "scripts", "wpm_names.py")
+        with open(real if os.path.exists(real) else os.devnull, encoding="utf-8") as f:
+            matcher = f.read() or STAND_IN_MATCHER
+    with open(os.path.join(k, "scripts", "wpm_names.py"), "w", encoding="utf-8") as f:
+        f.write(matcher)
+
+
+def person(first, last, company, title="", when="", url="", email=""):
+    return [first, last, url, email, company, title, when]
+
+
+def names(x):
+    return [p["name"] for p in x.get("know") or []]
+
+
+def test_contacts_land_on_unsent_rows_and_manual_checks_only():
+    fixture([row(company="Zentrova", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/z"),
+             row(company="Quillfern", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/q"),
+             row(company="Marrowind", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/m"),
+             row(company="Zentrova", stage="applied", applied_date="2026-09-01", surfaced_date="2026-09-01",
+                 url="https://example.com/z-sent")],
+            watch={"_scoring_config": {}, "_blind_spot_companies": {"companies": [{"name": "Zentrova", "query": "x"}]}})
+    screened_file("2026-09-19", [{"company": "Brightwave Labs", "title": "Ops", "url": "https://example.com/b", "score": 90},
+                                 {"company": "Zentrova", "title": "Ops", "url": "https://example.com/z2", "score": 90}])
+    kit([person("Pat", "Example", "Zentrova", "Director of Support", "21 Jul 2017",
+                url="https://www.linkedin.com/in/pat-example-0", email="pat@example.com"),
+         person("Riley", "Sample", "Zentrova", "Recruiter", "03 Mar 2023"),
+         person("Casey", "Placeholder", "Brightwave Labs", "Engineer", "10 Jan 2020"),
+         person("Jamie", "Fictional", "Quillfern", "Analyst", "05 May 2019"),
+         person("", "", "Zentrova", "Hidden", "01 Jan 2020"),
+         person("Morgan", "Nocompany", "", "Consultant", "01 Jan 2020")],
+        accept=[("Brightwave Labs", "Quillfern")])
+    data = build()
+    q = {x["url"]: x for x in data["queue"]}
+    z = q["https://example.com/z"]
+    assert names(z) == ["Riley Sample", "Pat Example"], "newest connection first, a nameless row skipped"
+    assert z["know"][1] == {"name": "Pat Example", "title": "Director of Support", "since": "2017-07-21"}, z["know"]
+    # A confirmed pair counts in the direction he confirmed it, and the line says which company.
+    assert names(q["https://example.com/q"]) == ["Casey Placeholder", "Jamie Fictional"]
+    assert [p.get("at") for p in q["https://example.com/q"]["know"]] == ["Brightwave Labs", None]
+    s = {x["url"]: x for x in data["screened"]}
+    assert names(s["https://example.com/b"]) == ["Casey Placeholder"], "a pair never runs backwards"
+    assert names(s["https://example.com/z2"]) == ["Riley Sample", "Pat Example"]
+    assert "know" not in q["https://example.com/m"]
+    assert all("know" not in x for x in data["quiet"]), "already sent: a referral can't ride on it"
+    assert names(data["manual"][0]) == ["Riley Sample", "Pat Example"]
+    assert data["contacts"]["note"] == "" and data["contacts"]["rows"] == 4
+    html = bd.render(data)
+    assert "pat@example.com" not in html and "linkedin.com/in/" not in html, "email and profile link are never read"
+    assert "4 roles where you know someone" in bd.summary(data, TODAY)
+
+
+def test_contacts_missing_or_broken_kit_leaves_the_page_whole():
+    fixture([row(company="Zentrova", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/z")])
+    data = build()
+    assert data["queue"] and "know" not in data["queue"][0]
+    assert data["contacts"]["note"] == "the connections export wasn't found"
+    assert "no contacts (the connections export wasn't found)" in bd.summary(data, TODAY)
+    kit([person("Pat", "Example", "Zentrova")], header="Name,Employer")
+    assert build()["contacts"]["note"] == "the connections export has no header row"
+    kit([person("Pat", "Example", "Zentrova")], matcher="def exact_keys(:\n")
+    data = build()
+    assert data["queue"] and "know" not in data["queue"][0]
+    assert data["contacts"]["note"] == "the connections export couldn't be read (SyntaxError)"
+    kit([person("Pat", "Example", "Zentrova")])
+    with open(os.path.join(bd.WARM_PATH_KIT, "data", "reviewed_matches.json"), "w", encoding="utf-8") as f:
+        f.write("{not json")
+    assert "couldn't be read" in build()["contacts"]["note"]
+    real = bd.read_contacts
+    bd.read_contacts = lambda: 1 / 0
+    try:
+        data = build()
+    finally:
+        bd.read_contacts = real
+    assert data["queue"] and data["contacts"]["note"] == "the contact lookup failed (ZeroDivisionError)"
+
+
+def test_contacts_use_the_kits_exact_rules_and_never_a_look_alike():
+    if not os.path.exists(os.path.join(REAL_KIT, "scripts", "wpm_names.py")):
+        print("    (skipped: the warm-path kit isn't on this machine, so its matcher wasn't tested)")
+        return
+    fixture([row(company="ZENTROVA", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/z"),
+             row(company="Quorvex", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/q"),
+             row(company="Lantern", stage="surfaced", surfaced_date="2026-09-18", url="https://example.com/l")])
+    kit([person("Pat", "Example", "Zentrova, Inc.", "Lead", "21 Jul 2017"),
+         person("Riley", "Sample", "Zentrova Labs", "Lead", "21 Jul 2017"),
+         person("Casey", "Placeholder", "Nimbara, formerly Quorvex", "Lead", "21 Jul 2017"),
+         person("Jamie", "Fictional", "Lantern", "Lead", "21 Jul 2017")])
+    q = {x["url"]: x for x in build()["queue"]}
+    assert names(q["https://example.com/z"]) == ["Pat Example"], "legal form and case ignored; an extra word is a look-alike"
+    assert "at" not in q["https://example.com/z"]["know"][0]
+    assert q["https://example.com/q"]["know"][0]["at"] == "Nimbara, formerly Quorvex", "a declared former name counts"
+    assert q["https://example.com/l"]["know"][0].get("check"), "an ordinary-word name is flagged for a look"
+
+
+def test_no_real_connection_name_is_in_a_tracked_file():
+    import subprocess
+    path = os.path.join(REAL_KIT, "export", "Connections.csv")
+    if not os.path.exists(path):
+        print("    (skipped: no connections export on this machine)")
+        return
+    with open(path, encoding="utf-8-sig", errors="ignore") as f:
+        rows = list(csv.reader(f))
+    head = next(i for i, r in enumerate(rows) if {"first name", "last name"} <= {c.strip().lower() for c in r})
+    ci = {c.strip().lower(): i for i, c in enumerate(rows[head])}
+    full = {f"{r[ci['first name']].strip()} {r[ci['last name']].strip()}" for r in rows[head + 1:]
+            if len(r) > max(ci["first name"], ci["last name"]) and r[ci["first name"]].strip() and r[ci["last name"]].strip()}
+    tracked = subprocess.run(["git", "-C", bd.SCRIPT_DIR, "ls-files", "--full-name", ":/"],
+                             capture_output=True, text=True, check=True).stdout.split("\n")
+    root = os.path.dirname(bd.SCRIPT_DIR)
+    bad = []
+    for rel in filter(None, tracked):
+        try:
+            with open(os.path.join(root, rel), encoding="utf-8", errors="ignore") as f:
+                body = f.read()
+        except OSError:
+            continue
+        if any(n in body for n in full):
+            bad.append(rel)
+    # The files are named and the people aren't, so a failure here doesn't print one.
+    assert not bad, f"a connection's full name is in {len(bad)} tracked file(s): {bad}"
 
 
 def interviews_file(rounds):

@@ -54,6 +54,13 @@ and, for a package that has one, the paste sheet field_sheet.py wrote
 that file marks `personal` (address, phone) are never embedded in the page.
 A missing or malformed brief or field sheet is skipped, never an error.
 
+Since 2026-11-07 a role he hasn't sent yet, and a manual-check company, says who he knows
+there: first-degree LinkedIn connections (name, title, when they connected), read at build
+time from the warm-path kit's export, which lives outside this repo. Only exact names under
+the kit's own matcher and pairs he confirmed in its reviewed_matches.json count, never a
+look-alike. The names reach the page and nothing else; a missing kit means no contact lines
+and one footer note saying so. The page shows who; it never drafts or sends anything.
+
 jd_coverage_pct renders as a pass/fail chip at 80 and is never sortable, per the
 standing rule that it is a gate and not a ranking signal.
 
@@ -65,6 +72,8 @@ didn't (schedule-aware, so weekends don't cry wolf), because a failed build is o
 This file is committed to a public repo. No company names, no sample rows.
 """
 import csv
+import importlib.util
+import io
 import json
 import os
 import re
@@ -569,6 +578,116 @@ def read_fields(pdf_rel):
     return out or None
 
 
+# Who he knows at each company (added 2026-11-07). The export, the matcher, and his confirmed
+# pairs all stay in the warm-path kit and are read fresh at each build. A ping rides on a role
+# he'd apply to, before he applies, so the line goes on rows not yet sent and on manual checks.
+WARM_PATH_KIT = os.path.expanduser("~/Documents/Projects/Career/warm-path-map")
+KNOW_PER_ROW = 12  # the page shows three; the rest are in a tooltip
+
+
+def connected_on(s):
+    for fmt in ("%d %b %Y", "%Y-%m-%d", "%m/%d/%Y"):
+        try:
+            return datetime.strptime(s.strip(), fmt).date().isoformat()
+        except ValueError:
+            pass
+    return ""
+
+
+def read_contacts():
+    """(lookup, meta). lookup(company) lists the connections he has there, newest first, or
+    lookup is None and meta["note"] says why.
+
+    The kit's wpm_names.py is loaded by path, not imported, so nothing in the kit's folder can
+    shadow a pipeline module. Exact means equal under its exact_keys(), which counts a name the
+    string itself declares ("X, formerly Y", "X / Y"); a pair from reviewed_matches.json counts
+    only in the direction he confirmed it, [company as LinkedIn writes it, company on his lists].
+    Only the name, company, title, and connected-on columns are read; email and profile URL never are.
+    """
+    path = os.path.join(WARM_PATH_KIT, "export", "Connections.csv")
+    if not os.path.exists(path):
+        return None, {"note": "the connections export wasn't found"}
+    try:
+        spec = importlib.util.spec_from_file_location("wpm_names", os.path.join(WARM_PATH_KIT, "scripts", "wpm_names.py"))
+        wn = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(wn)
+        with open(path, "rb") as f:
+            raw = f.read()
+        try:
+            text = raw.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            text = raw.decode("latin-1")
+        rows = list(csv.reader(io.StringIO(text, newline="")))
+        # LinkedIn's export opens with a "Notes:" preamble, so the header is found by its columns.
+        head = next((i for i, r in enumerate(rows) if {"first name", "company"} <= {c.strip().lower() for c in r}), None)
+        if head is None:
+            return None, {"note": "the connections export has no header row"}
+        ci = {c.strip().lower(): i for i, c in enumerate(rows[head])}
+
+        def cell(r, name):
+            i = ci.get(name)
+            return r[i].strip() if i is not None and i < len(r) else ""
+
+        by_key, by_primary = {}, {}
+        for r in rows[head + 1:]:
+            name = clip(" ".join(filter(None, (cell(r, "first name"), cell(r, "last name")))), 80)
+            co = clip(cell(r, "company"), 120)
+            if not name or not co:
+                continue
+            p = {"name": name, "title": clip(cell(r, "position"), 120), "company": co,
+                 "since": connected_on(cell(r, "connected on"))}
+            for k, _ in wn.exact_keys(co):
+                by_key.setdefault(k, []).append(p)
+            by_primary.setdefault(wn.exact_key(co), []).append(p)
+        accepted = {}
+        rpath = os.path.join(WARM_PATH_KIT, "data", "reviewed_matches.json")
+        if os.path.exists(rpath):
+            with open(rpath, encoding="utf-8") as f:
+                for pair in json.load(f).get("accept") or []:
+                    if isinstance(pair, list) and len(pair) == 2 and all(isinstance(x, str) for x in pair):
+                        accepted.setdefault(wn.exact_key(pair[1]), set()).add(wn.exact_key(pair[0]))
+        risk = getattr(wn, "common_name_risk", lambda name: "")
+        as_of = date.fromtimestamp(os.path.getmtime(path)).isoformat()
+    except Exception as e:  # noqa: BLE001 - the kit is outside this repo; a fault there costs the lines, not the page
+        return None, {"note": f"the connections export couldn't be read ({type(e).__name__})"}
+
+    def lookup(company):
+        keys = [k for k, _ in wn.exact_keys(company or "")]
+        found = {}
+        for k in keys:
+            for p in by_key.get(k, ()):
+                found.setdefault(id(p), (p, False))
+            for ck in accepted.get(k, ()):
+                for p in by_primary.get(ck, ()):
+                    found.setdefault(id(p), (p, True))
+        out = []
+        for p, confirmed in found.values():
+            item = {"name": p["name"], "title": p["title"], "since": p["since"]}
+            if wn.exact_key(p["company"]) != wn.exact_key(company):
+                item["at"] = p["company"]  # a declared name or a pair he confirmed: say which company
+            if not confirmed and risk(p["company"]):
+                item["check"] = risk(p["company"])
+            out.append(item)
+        out.sort(key=lambda x: x["since"], reverse=True)
+        return out[:KNOW_PER_ROW]
+
+    return lookup, {"as_of": as_of, "note": ""}
+
+
+def attach_contacts(data):
+    """Adds `know` to every row not yet sent and every manual check, and returns the meta."""
+    lookup, meta = read_contacts()
+    if lookup is None:
+        return meta
+    rows = data["queue"] + data["screened"] + ((data.get("leads") or {}).get("rows") or [])
+    for x in rows + data["manual"]:
+        know = lookup(x.get("company") or x.get("name"))
+        if know:
+            x["know"] = know
+    meta["rows"] = sum(1 for x in rows if x.get("know"))
+    return meta
+
+
 # The Progress section, dashboard phase two (added 2026-10-15, D42): sends a day, interview
 # rounds, and what came of each send. Sends count from the epoch only; rounds are dated by
 # when they happened, which was never in doubt, so the log keeps the earlier ones too.
@@ -735,7 +854,7 @@ def build_data(today, now):
         progress = read_progress(today)
     except Exception as e:  # noqa: BLE001 - a bad chart input must not take the queue down with it
         progress = {"error": f"{type(e).__name__}: {e}"[:200]}
-    return {"generated": now.strftime("%Y-%m-%dT%H:%M"), "expiry_days": EXPIRY_DAYS, "progress": progress,
+    data = {"generated": now.strftime("%Y-%m-%dT%H:%M"), "expiry_days": EXPIRY_DAYS, "progress": progress,
             "fresh_days": 14, "expiring_days": 7, "quiet_days": 10,
             # The task runs `0 3 * * 1-5`; by 8 AM a weekday's page should exist. JS weekday numbers.
             "run_weekdays": [1, 2, 3, 4, 5], "run_ready_hour": 8,
@@ -744,6 +863,11 @@ def build_data(today, now):
             "brief": read_brief(today), "later_days": 3, "leads": read_leads(today),
             # Every job id a run has recorded. The page drops a lead mark once it's in here.
             "lead_answered": sorted(read_lead_marks()), "lead_mark_days": LEAD_MARK_DAYS}
+    try:
+        data["contacts"] = attach_contacts(data)
+    except Exception as e:  # noqa: BLE001 - same rule as Progress: the queue still builds
+        data["contacts"] = {"note": f"the contact lookup failed ({type(e).__name__})"}
+    return data
 
 
 def render(data):
@@ -765,10 +889,13 @@ def summary(data, today):
         return None if not d else data["expiry_days"] - (today - d).days
     expiring = sum(1 for i in data["queue"] if left(i) is not None and left(i) <= data["expiring_days"])
     leads = data.get("leads") or {}
+    contacts = data.get("contacts") or {}
     return (f"{len(data['queue'])} queue ({expiring} expiring), "
             f"{len(data.get('screened', []))} cleared, "
             f"{len(leads.get('rows') or [])} weekly leads, "
-            f"{len(data['manual'])} manual, {len(data['quiet'])} quiet")
+            f"{len(data['manual'])} manual, {len(data['quiet'])} quiet, "
+            + (f"{contacts.get('rows', 0)} roles where you know someone" if not contacts.get("note")
+               else f"no contacts ({contacts['note']})"))
 
 
 def main(argv):
@@ -845,6 +972,7 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 .right small{color:var(--mute);font-size:12px}
 .path{cursor:pointer;border-bottom:1px dotted var(--mute)}
 .why{font-size:13px;color:var(--mute);margin-top:3px}
+.know{font-size:13px;margin-top:3px}
 .hit{font-size:13px;margin-top:3px}
 .hit.live{color:var(--good)}
 input[type=checkbox]{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
@@ -978,6 +1106,7 @@ function since(s){var d=day(s);return d?Math.round((today-d)/DAY):null}
 function iso(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
 function ago(n){if(n==null)return'';if(n<=0)return'today';if(n===1)return'yesterday';if(n<14)return n+' days ago';if(n<60)return Math.round(n/7)+' wks ago';return Math.round(n/30)+' mos ago'}
 function nice(s){var d=day(s);return d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):''}
+function niceY(s,o){var d=day(s);return d?d.toLocaleDateString(undefined,o||{month:'short',day:'numeric',year:'numeric'}):''}
 function safeUrl(u){return /^https?:\/\//i.test(u||'')?u:''}
 
 // Ticks and marks. Storage can throw (private window, blocked site data); the page still works without it.
@@ -1106,8 +1235,17 @@ function briefPanel(q){var p=B&&B.picks?B.picks[q.key]:null,h='';if(!p)return h;
   if(p.check&&p.check.length)h+='<div class="promise"><b>Check before sending:</b> '+p.check.map(esc).join(' · ')+'</div>';
   if(p.changes&&p.changes.length)h+=det(q.key+'|changes','What changed in the resume')+'<ul>'+p.changes.map(function(c){return '<li>'+esc(c)+'</li>'}).join('')+'</ul></details>';
   return h}
+// Who he knows there (2026-11-07): first-degree LinkedIn connections at the row's company, read
+// from the warm-path kit's export at build time, so he can ask before he applies. Shown only.
+var KNOW_SHOW=3;
+function knowLine(x){var k=x.know;if(!k||!k.length)return '';
+  var C=D.contacts||{}, one=function(p){return esc(p.name)+(p.title?', '+esc(p.title):'')+(p.at?' at '+esc(p.at):'')+
+    (p.since?' · connected '+esc(niceY(p.since,{month:'short',year:'numeric'})):'')+(p.check?' <span class="tag warn" title="'+esc(p.check)+'">same company?</span>':'')};
+  var rest=k.slice(KNOW_SHOW).map(function(p){return p.name+(p.title?', '+p.title:'')+(p.at?' at '+p.at:'')}).join('\n');
+  return '<div class="know" title="From your LinkedIn connections export'+(C.as_of?', file dated '+esc(niceY(C.as_of)):'')+'. Titles and companies are as of then.">'+
+    '<b>You know:</b> '+k.slice(0,KNOW_SHOW).map(one).join('; ')+(rest?' <span title="'+esc(rest)+'">+'+(k.length-KNOW_SHOW)+' more</span>':'')+'</div>'}
 function rowHTML(q,full){
-  return '<div class="row'+(mk(q)?' dim':'')+'"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(q.score==null?'':Math.round(q.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(q.company)+'</span><span>'+titleLink(q)+'</span></div><div class="meta">'+tags(q)+'</div>'+(full?briefPanel(q):'')+fieldsPanel(q)+acts(q)+'</div><div class="right">'+leftCell(q)+'</div></div>'}
+  return '<div class="row'+(mk(q)?' dim':'')+'"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(q.score==null?'':Math.round(q.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(q.company)+'</span><span>'+titleLink(q)+'</span></div>'+knowLine(q)+'<div class="meta">'+tags(q)+'</div>'+(full?briefPanel(q):'')+fieldsPanel(q)+acts(q)+'</div><div class="right">'+leftCell(q)+'</div></div>'}
 
 function todayList(){
   var rows=D.queue.filter(isNew).sort(function(a,b){return (b.score||0)-(a.score||0)}), when=nice(runDate);
@@ -1177,7 +1315,7 @@ function screened(){
     if(s.scope)m.push('<span class="tag">'+esc(s.scope==='ic'?'IC':s.scope)+'</span>');
     if(s.gap)m.push('<span class="tag warn" title="'+esc(s.gap)+'">gap</span>');
     var n=since(s.first);
-    return '<div class="row"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(s.score==null?'':Math.round(s.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(s.company)+'</span><span>'+titleLink(s)+'</span></div>'+(s.why?'<div class="why">'+esc(s.why)+(s.gap?' · gap: '+esc(s.gap):'')+'</div>':'')+'<div class="meta">'+m.join('')+'</div></div><div class="right"><small>cleared '+esc(ago(n))+'<br>'+esc(nice(s.first))+'</small></div></div>'
+    return '<div class="row"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(s.score==null?'':Math.round(s.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(s.company)+'</span><span>'+titleLink(s)+'</span></div>'+knowLine(s)+(s.why?'<div class="why">'+esc(s.why)+(s.gap?' · gap: '+esc(s.gap):'')+'</div>':'')+'<div class="meta">'+m.join('')+'</div></div><div class="right"><small>cleared '+esc(ago(n))+'<br>'+esc(nice(s.first))+'</small></div></div>'
   }).join(''):'<div class="empty">'+(D.counts.screened_days?'Nothing cleared beyond what was tailored.':'No JD screen results yet. The daily run writes them from its next run on.')+'</div>'}
 
 // The weekly leads (2026-10-15, D41). Two answers a row: Tailor it queues a package for the
@@ -1201,7 +1339,7 @@ function leadRow(x){var t=[];
   if(x.note)t.push('<span>'+esc(x.note)+'</span>');
   // What the company does, from company_about.py's cache (2026-10-15). Absent until a run looks it up.
   var about=[x.about,x.industry,x.size].filter(Boolean).map(esc).join(' · ');
-  return '<div class="row'+(lmarks[x.id]?' dim':'')+'"><div class="body"><div class="top"><span class="co">'+esc(x.company)+'</span><span>'+titleLink(x)+'</span></div>'+(about?'<div class="why">'+about+'</div>':'')+'<div class="meta">'+t.join('')+'</div>'+leadActs(x)+'</div><div class="right"><small>'+(x.first?'first seen<br>'+esc(nice(x.first)):'')+'</small></div></div>'}
+  return '<div class="row'+(lmarks[x.id]?' dim':'')+'"><div class="body"><div class="top"><span class="co">'+esc(x.company)+'</span><span>'+titleLink(x)+'</span></div>'+knowLine(x)+(about?'<div class="why">'+about+'</div>':'')+'<div class="meta">'+t.join('')+'</div>'+leadActs(x)+'</div><div class="right"><small>'+(x.first?'first seen<br>'+esc(nice(x.first)):'')+'</small></div></div>'}
 function leadClick(t,a){if(a==='more'){leadsAll=true;leads();return}
   var k=t.getAttribute('data-k'),x=null;
   for(var i=0;i<LROWS.length;i++)if(LROWS[i].id===k){x=LROWS[i];break}
@@ -1243,7 +1381,7 @@ function manual(){
     h+='<div class="group">'+esc(g)+' · '+rows.filter(function(m){return tickState(m).due}).length+' due of '+rows.length+'</div>';
     rows.forEach(function(m){var s=tickState(m),u=safeUrl(m.link);
       var mine=!s.date?'not checked yet':(s.newer?'pipeline found something after your last look · ':s.stale?'stale · ':'')+'you checked '+ago(s.days);
-      h+='<div class="row'+(s.due?'':' dim')+'"><input type="checkbox" data-k="'+esc(m.key)+'"'+(s.date&&!s.stale&&!s.newer?' checked':'')+' aria-label="Checked '+esc(m.name)+'"><div class="body"><div class="top"><span class="co">'+(u?'<a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(m.name)+'</a>':esc(m.name))+'</span>'+(m.link_kind==='search'?'<span class="tag">search link</span>':'')+'</div><div class="why">'+esc(m.why)+'</div>'+(m.last_hit?'<div class="hit'+(m.hit_is_live?' live':'')+'">Pipeline: '+esc(m.last_hit)+'</div>':'')+'</div><div class="right"><small>'+esc(mine)+(s.date?'<br>'+esc(nice(s.date)):'')+'</small></div></div>'})});
+      h+='<div class="row'+(s.due?'':' dim')+'"><input type="checkbox" data-k="'+esc(m.key)+'"'+(s.date&&!s.stale&&!s.newer?' checked':'')+' aria-label="Checked '+esc(m.name)+'"><div class="body"><div class="top"><span class="co">'+(u?'<a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(m.name)+'</a>':esc(m.name))+'</span>'+(m.link_kind==='search'?'<span class="tag">search link</span>':'')+'</div>'+knowLine(m)+'<div class="why">'+esc(m.why)+'</div>'+(m.last_hit?'<div class="hit'+(m.hit_is_live?' live':'')+'">Pipeline: '+esc(m.last_hit)+'</div>':'')+'</div><div class="right"><small>'+esc(mine)+(s.date?'<br>'+esc(nice(s.date)):'')+'</small></div></div>'})});
   el('manual').innerHTML=h||'<div class="empty">No manual-check companies in the watchlist.</div>';
   Array.prototype.forEach.call(el('manual').querySelectorAll('input'),function(c){c.onchange=function(){
     var k=c.getAttribute('data-k'); if(c.checked)ticks[k]=iso(today); else delete ticks[k];
@@ -1429,6 +1567,7 @@ function foot(){var c=D.counts,f=[];
   if(c.unpollable_unreported)f.push(c.unpollable_unreported+' unpollable companies waiting their turn in the weekly report.');
   if(c.in_process)f.push(c.in_process+' rows with an in-process stage ('+esc((c.unknown_stages||[]).join(', '))+'). Their interview rounds are charted under Progress.');
   if(c.skipped)f.push(c.skipped+' roles you marked skip. They stay in the tracker until they retire.');
+  if(D.contacts&&D.contacts.note)f.push('Who you know at each company: '+esc(D.contacts.note)+', so no row shows a contact.');
   el('foot').innerHTML=f.map(function(x){return '<li>'+x+'</li>'}).join('')}
 
 el('stamp').textContent='Generated '+new Date(D.generated).toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
