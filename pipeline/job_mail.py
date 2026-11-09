@@ -32,6 +32,12 @@ transcript dir, its helpers' logs, and its spilled tool results). Each listing r
 names its inbox in `viewUrl` (`authuser=<address>`), which is how the two sides are
 told apart. A forwarded copy keeps the original `To:`, so a main-inbox record counts
 as forwarded only when it is addressed to the job account.
+
+A twin is the same sender within 15 minutes with the same subject. The run lists the
+forwarded LinkedIn alerts with the metadata-only view, which carries no subject, so a
+listed message takes its subject from the run's body fetch of the same id; one no helper
+fetched pairs on sender and time alone, and the result counts those. Without this the
+2026-11-09 run matched 0 of 70 LinkedIn alerts that were all there.
 """
 import argparse
 import datetime as dt
@@ -264,17 +270,39 @@ def newest_session(tdir: str) -> str | None:
 # ── Compare ──────────────────────────────────────────────────────────────────
 
 def _dedupe(records: list[dict]) -> list[dict]:
-    seen, out = set(), []
+    """One record per message. The first copy wins, but a blank subject is filled from a
+    later copy of the same id: the run lists the forwarded LinkedIn alerts with the
+    metadata-only view, which carries no subject, and its helpers' body fetches do."""
+    seen, out = {}, []
     for r in records:
         key = r["id"] or (r["sender"], r["subject"], r["date"])
         if key not in seen:
-            seen.add(key)
-            out.append(r)
+            seen[key] = dict(r)
+            out.append(seen[key])
+        elif not seen[key]["subject"] and r["subject"]:
+            seen[key]["subject"] = r["subject"]
     return out
 
 
 def _norm_subject(s: str) -> str:
     return " ".join(s.lower().split())
+
+
+def _twin(f: dict, pool: list[dict], by_subject: bool) -> dict | None:
+    """The closest record in `pool` from f's sender within TWIN_TOLERANCE. With
+    `by_subject`, both subjects must be known and equal; without it, only a pair where
+    one side has no subject qualifies, so a known different subject never matches."""
+    fs = _norm_subject(f["subject"])
+
+    def fits(j):
+        js = _norm_subject(j["subject"])
+        both = bool(fs and js)
+        if by_subject != both or (both and fs != js):
+            return False
+        return j["sender"] == f["sender"] and abs(j["date"] - f["date"]) <= TWIN_TOLERANCE
+
+    return min((j for j in pool if fits(j)), key=lambda j: abs(j["date"] - f["date"]),
+               default=None)
 
 
 def _brief(r: dict) -> dict:
@@ -316,23 +344,30 @@ def compare(records: list[dict], cfg: dict, terms: dict, windows: dict,
             if oldest and oldest.get("truncated"):
                 edge = max(edge, oldest["date"])
         unmatched = list(jac)
-        matched, missed, outside = 0, [], 0
-        for f in sorted(fwd, key=lambda r: r["date"]):
-            if f["date"] < edge:
-                outside += 1
-                continue
-            twin = next((j for j in unmatched
-                         if j["sender"] == f["sender"]
-                         and _norm_subject(j["subject"]) == _norm_subject(f["subject"])
-                         and abs(j["date"] - f["date"]) <= TWIN_TOLERANCE), None)
+        inside = sorted((f for f in fwd if f["date"] >= edge), key=lambda r: r["date"])
+        outside = len(fwd) - len(inside)
+        # Subject twins first, so a message with no subject can't take the copy a
+        # subject match needs. What's left pairs on sender and time alone, which shows a
+        # copy arrived at that second but not that it's the same alert.
+        left = []
+        for f in inside:
+            twin = _twin(f, unmatched, by_subject=True)
             if twin:
                 unmatched.remove(twin)
-                matched += 1
+            else:
+                left.append(f)
+        by_time, missed = 0, []
+        for f in left:
+            twin = _twin(f, unmatched, by_subject=False)
+            if twin:
+                unmatched.remove(twin)
+                by_time += 1
             else:
                 missed.append(_brief(f))
         extras = [_brief(j) for j in unmatched if j["date"] >= edge]
         result["classes"][c] = {
-            "forwarded": len(fwd), "job_account": len(jac), "matched": matched,
+            "forwarded": len(fwd), "job_account": len(jac),
+            "matched": len(inside) - len(missed), "matched_by_time": by_time,
             "outside_overlap": outside, "missed": missed, "only_in_job_account": extras,
         }
         result["missed_total"] += len(missed)
@@ -346,8 +381,10 @@ def summary_lines(result: dict) -> list[str]:
     lines = []
     for c in CLASSES:
         r = result["classes"][c]
+        by_time = (f" ({r['matched_by_time']} on sender and time alone)"
+                   if r["matched_by_time"] else "")
         lines.append(f"SHADOW {c}: {r['forwarded']} forwarded, {r['job_account']} in the job "
-                     f"account, {r['matched']} matched, {len(r['missed'])} missed, "
+                     f"account, {r['matched']} matched{by_time}, {len(r['missed'])} missed, "
                      f"{len(r['only_in_job_account'])} only in the job account")
         # A silent job account makes every forwarded message a "miss"; the one line
         # below says what happened instead of a hundred alerts on a Monday.

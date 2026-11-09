@@ -165,6 +165,36 @@ full = [dict(rec(JOB, "jobalerts-noreply@linkedin.com", "TAM at Acme", -60), tru
 fr = JM.compare(full, CFG, TERMS, dict(WINDOWS, linkedin_alerts=7), NOW)["classes"]["linkedin_alerts"]
 check(fr["matched"] == 2 and [m["subject"] for m in fr["missed"]] == ["TAM at Gamma"],
       f"a listing paged to the end must still report the older miss: {fr}")
+# The run lists forwarded alerts with the metadata-only view, which has no subject: on
+# 2026-11-09 that matched 0 of 70. A body fetch of the same id fills the subject, and
+# one no helper fetched pairs on sender and time.
+LI = "jobalerts-noreply@linkedin.com"
+nosub = [rec(MAIN, LI, "", 10, rid="f1"),                  # the listing
+         rec(MAIN, LI, "TAM at Acme", 10, rid="f1"),       # the helper's body fetch
+         rec(MAIN, LI, "", 130, rid="f2"),                 # listed, never fetched
+         rec(JOB, LI, "TAM at Acme", 10, rid="j1"),
+         rec(JOB, LI, "CSM at Beta", 130, rid="j2")]
+nr = JM.compare(nosub, CFG, TERMS, WINDOWS, NOW)
+nl = nr["classes"]["linkedin_alerts"]
+check(nl["forwarded"] == 2 and nl["matched"] == 2 and nl["matched_by_time"] == 1
+      and not nl["missed"] and not nl["only_in_job_account"],
+      f"an alert listed without its subject must still find its twin: {nl}")
+check(any("1 on sender and time alone" in line for line in JM.summary_lines(nr)),
+      "the summary says how many matched without a subject")
+# Two alerts in the same second: the one with no subject must not take the copy the
+# subject match needs.
+same_sec = [rec(MAIN, LI, "", 200, rid="f3"),
+            rec(MAIN, LI, "TAM at Acme", 200, rid="f4"),
+            rec(JOB, LI, "TAM at Acme", 200, rid="j3"),
+            rec(JOB, LI, "CSM at Beta", 200, rid="j4")]
+sl = JM.compare(same_sec, CFG, TERMS, WINDOWS, NOW)["classes"]["linkedin_alerts"]
+check(sl["matched"] == 2 and sl["matched_by_time"] == 1 and not sl["missed"],
+      f"subject twins pair first: {sl}")
+# Two known subjects that differ are never twins, however close in time.
+diff = [rec(MAIN, LI, "TAM at Acme", 220, rid="f5"), rec(JOB, LI, "CSM at Gamma", 220, rid="j5")]
+dl = JM.compare(diff, CFG, TERMS, WINDOWS, NOW)["classes"]["linkedin_alerts"]
+check(dl["matched"] == 0 and len(dl["missed"]) == 1 and len(dl["only_in_job_account"]) == 1,
+      f"a different subject in the same second is a miss and an extra: {dl}")
 silent_lines = JM.summary_lines(silent)
 check(not any(line.startswith("SHADOW MISS") for line in silent_lines)
       and any("RETURNED NOTHING" in line for line in silent_lines),
