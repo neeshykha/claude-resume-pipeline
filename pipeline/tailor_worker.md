@@ -58,6 +58,21 @@ prompt. Never touch any other file there.
 Light tier is a summary rewrite and a skills reorder only: no bullet reorder, no letter, and
 only the first two files.
 
+**A recruiter note, when your prompt says `Recruiter note: yes` (added 2026-11-08).** Write
+`<stem>_note.md`: what Aneesh pastes into a LinkedIn message to the recruiter or hiring
+manager at the hiring company after he applies. He finds the person and sends it himself.
+- It opens `Hi [name],` with the bracket left for him, then three short sentences, at most
+  200 characters after the greeting so it fits a free LinkedIn connection note.
+- Say which role he applied for, give one fact from `master_resume.md` that answers the JD's
+  top need (the letter's lead story is a good source), and close with something he can offer.
+  Never ask them to do anything: no "please", no "let me know", no question.
+- Same voice rules as the letter: contractions, no "excited", no AI tells. Never mention pay,
+  a timeline, that he's looking quietly, or anything from his employer's systems or data.
+
+**Stop if the posting bars AI (added 2026-11-08).** If the JD asks applicants not to use AI
+to write their materials, write no files and say so in field 12 of your final message. The
+orchestrator lists the role for him to write himself.
+
 ## Budgets: write the first draft to fit
 
 A draft that fits costs you one message. A draft that runs long costs one more for every
@@ -193,3 +208,4 @@ tracking row from them and cannot ask you a follow-up cheaply.
     The orchestrator audits the letter independently, so report what you saw, not what
     you hope it finds.
 12. Anything you were unsure of or could not verify.
+13. The recruiter note verbatim, or "no note" when your prompt didn't ask for one.

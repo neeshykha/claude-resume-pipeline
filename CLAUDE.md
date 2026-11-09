@@ -481,6 +481,11 @@ Light tailoring (summary rewrite + skills reorder only, no bullet reorder, no co
 still covers a higher-scoring role that the hard-requirement cap or the IC-comp rule drops to
 light, plus the safety, requested, and industrial-lane slots.
 
+**Workday postings under 110 stopped getting packages on 2026-11-08** (5 of 34 sent, none to
+an interview); they go on "Cleared, not tailored" like the 78–87 band, and the five slots
+move to the next role in line. The cap is unchanged.
+[D52](DECISIONS.md#d52-workday-postings-under-110-stopped-getting-packages)
+
 ### Scoring Guardrails (apply when computing the full score)
 
 These prevent company-level attributes from drowning out role fit. Added 2026-06-23 after a

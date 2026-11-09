@@ -1279,3 +1279,39 @@ run and its Haiku helper can both search the job account before anything was bui
   in `viewUrl`; without the filter, the shadow listings would count as job-alert messages with
   no body and print a SHORTFALL.
 - D25's "no change to Step 0.5 is wanted" is retired by this entry.
+
+## D52. Workday postings under 110 stopped getting packages
+
+2026-11-08. An outside-in review judged the pipeline by interviews per week. From 2026-07-28
+to 2026-11-07, Workday packages scoring under 110 went out 5 of 34 times and none reached an
+interview, while Greenhouse and Ashby packages went out 93 of 196 times. Workday forms are the
+long ones, and he skipped them. He picked this on the review page.
+
+- **The five daily slots** take a Workday posting only at `company_cap_threshold` or above.
+  One under it goes on "Cleared, not tailored" with "Workday" in its line, and he asks by name
+  for one he wants.
+- **The cap is unchanged.** The slot goes to the next role in line, so this changes which
+  roles get packages, not how many.
+- Like D50, it binds the five only: the safety, requested, and industrial-lane slots keep
+  their own rules.
+
+## D53. A note to a person on his top sends
+
+2026-11-08. The same review found that 5 of his 6 interview-stage roles since 2026-07-28 came
+from roles he found or a recruiter brought him, and 2 of the 6 started with a recruiter
+writing first. The pipeline's own finds reached an interview once in 101 sends. Nothing had
+ever followed an application with a note to a person: the May 2026 plan in `STRATEGY.md` for
+notes after applying was never built. He said yes to drafting them, with one condition:
+"i don't wanna tell my company folk tho."
+
+- **Up to three a week**, Monday on: his requested roles first, then picks at or above
+  `company_cap_threshold`. The writer drafts `<stem>_note.md` (rules in `tailor_worker.md`),
+  the pick carries it as `note_draft`, and the dashboard shows it with a copy button. Roles he
+  tailors interactively get one too and count toward the three.
+- **He sends it himself**, on LinkedIn, after he applies, only to the recruiter or hiring
+  manager at the hiring company. Never to anyone at his employer, never as a post. Open to
+  Work stays recruiters-only.
+- **The bar:** by 2026-12-31, at least one reply per ten notes sent, or the notes stop.
+- **A posting that asks applicants not to use AI gets no package** and assisted apply stops
+  on it: he writes that one himself. This came from the review's pass over a friend's
+  job-search setup.

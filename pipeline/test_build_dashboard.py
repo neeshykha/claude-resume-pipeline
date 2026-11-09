@@ -244,7 +244,7 @@ def test_brief_newest_wins_is_capped_and_survives_junk():
     brief_file("2026-09-18", {
         "note": "x" * 2000, "alerts": ["one", 7, ""],
         "picks": [{"url": "https://Example.com/a/", "read": "why", "commitment": "a promise",
-                   "check": ["phrase", None], "changes": ["c1", "c2"]},
+                   "check": ["phrase", None], "changes": ["c1", "c2"], "note_draft": "Hi [name], " + "n" * 900},
                   {"read": "no url, dropped"}, "junk"],
         "sections": [{"title": "Near-misses", "note": "n", "lines": ["plain string",
                       {"text": "with link", "url": "https://example.com/x", "label": "board"}, {"url": "no text"}]},
@@ -254,6 +254,7 @@ def test_brief_newest_wins_is_capped_and_survives_junk():
     assert b["alerts"] == ["one"]
     assert list(b["picks"]) == ["https://example.com/a"], "picks are keyed like queue rows"
     assert b["picks"]["https://example.com/a"]["check"] == ["phrase"]
+    assert len(b["picks"]["https://example.com/a"]["note_draft"]) == 700, "the recruiter note is clipped like the other fields"
     assert len(b["sections"]) == 1 and [l["text"] for l in b["sections"][0]["lines"]] == ["plain string", "with link"]
     brief_file("2026-09-19", ["not", "an", "object"])
     assert build()["brief"]["run_date"] == "2026-09-18", "an unreadable newer brief falls back, it doesn't blank the page"

@@ -428,7 +428,8 @@ def read_brief(today):
                 continue
             picks[key] = {"read": clip(p.get("read"), 900), "commitment": clip(p.get("commitment"), 700),
                           "check": [clip(x, 300) for x in (p.get("check") or []) if clip(x, 300)][:8],
-                          "changes": [clip(x, 400) for x in (p.get("changes") or []) if clip(x, 400)][:12]}
+                          "changes": [clip(x, 400) for x in (p.get("changes") or []) if clip(x, 400)][:12],
+                          "note_draft": clip(p.get("note_draft"), 700)}
         sections = []
         for s in raw.get("sections") or []:
             if not isinstance(s, dict) or not clip(s.get("title"), 80):
@@ -1233,6 +1234,8 @@ function briefPanel(q){var p=B&&B.picks?B.picks[q.key]:null,h='';if(!p)return h;
   if(p.read)h+='<div class="why">'+esc(p.read)+'</div>';
   if(p.commitment)h+='<div class="promise"><b>The letter promises:</b> '+esc(p.commitment)+'</div>';
   if(p.check&&p.check.length)h+='<div class="promise"><b>Check before sending:</b> '+p.check.map(esc).join(' · ')+'</div>';
+  // A note for the recruiter or hiring manager there (2026-11-08, D53); he sends it himself after applying.
+  if(p.note_draft)h+='<div class="promise"><b>Note for a person there, after you apply:</b> <span class="path" data-copy="'+esc(p.note_draft)+'" title="click to copy">'+esc(p.note_draft)+'</span></div>';
   if(p.changes&&p.changes.length)h+=det(q.key+'|changes','What changed in the resume')+'<ul>'+p.changes.map(function(c){return '<li>'+esc(c)+'</li>'}).join('')+'</ul></details>';
   return h}
 // Who he knows there (2026-11-07): first-degree LinkedIn connections at the row's company, read

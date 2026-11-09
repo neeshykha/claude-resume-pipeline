@@ -1753,6 +1753,15 @@ light, and for the safety, requested, and industrial-lane slots, which keep thei
 If fewer than 3 clear the full threshold, send what you have — never pad. The cap is on
 tailoring, not on surfacing: see the next paragraph.
 
+**Workday postings take one of the five only at `company_cap_threshold` or above
+(Aneesh's call, 2026-11-08).** A role whose apply link is on Workday (`myworkdayjobs.com`,
+`myworkdaysite.com`, or a watchlist entry with `ats: workday`) and scores under
+`company_cap_threshold` goes on "Cleared, not tailored" with "Workday" in its line, and the
+slot goes to the next role in line. From Jul 28 to Nov 7 he sent 5 of 34 such packages and
+none reached an interview, against 93 of 196 on Greenhouse and Ashby. Like D50, this binds
+the five only; the safety, requested, and industrial-lane slots keep their own rules, and he
+asks by name for one he wants. [D52](../DECISIONS.md#d52-workday-postings-under-110-stopped-getting-packages)
+
 **Fit first, reach fills (Aneesh's call, 2026-10-15).** Fill the five slots in two passes.
 First, every cleared role with 0 or 1 unmet hard requirements and no hard-requirement cap,
 highest score first. Then, only if slots remain, the reach roles (cap fired, or 2+ unmet),
@@ -1799,7 +1808,8 @@ its `source_channel`. In the digest it is its own picks-table row marked "asked"
 
 **Cleared, not tailored (added 2026-09-25).** Every Step 2-JD role that you scored at or
 above `light_tailoring_threshold` but did not tailor (it scored under
-`full_tailoring_threshold`, ranked below the 5, or lost a same-company tiebreak) goes on the digest's "Cleared, not tailored" list with its score, one
+`full_tailoring_threshold`, ranked below the 5, lost a same-company tiebreak, or is a Workday
+posting under `company_cap_threshold`) goes on the digest's "Cleared, not tailored" list with its score, one
 line on why it cleared, and its apply link, and into `jobs/screened_[date].json` at Step 6
 so the Shelf dashboard shows it. These are real, JD-checked candidates: the whole point of
 reading 70+ JDs is that Aneesh sees every one that clears, not just the ones there was time
@@ -2313,7 +2323,7 @@ The split: **you choose the angle and the files, the writer writes every word,
    (absolute paths; drop a line whose slot is empty):
 
    > You are a tailoring writer. Your instructions are /Users/aneesh/Documents/resume_project/pipeline/tailor_worker.md; follow them exactly. In ONE first message, Read that file and all of these: /Users/aneesh/.claude/projects/-Users-aneesh/memory/user_writing_style.md, /Users/aneesh/Documents/resume_project/.claude/skills/career-narrative/SKILL.md, /Users/aneesh/Documents/resume_project/master_resume.md, /Users/aneesh/Documents/resume_project/portfolio_projects.md, the JD at [absolute path under pipeline/jobs/jd_cache/[date]/], the calibration package [tailored/[stem]_data.json and tailored/[stem]_cover.md], the sibling package [same two files, or drop this clause], the last five letters [the five paths from fit_check.py --recent 5], and /Users/aneesh/.claude/skills/avoid-ai-writing/SKILL.md, /Users/aneesh/.claude/skills/avoid-ai-writing/references/voice-profile.md, /Users/aneesh/.claude/skills/avoid-ai-writing/references/pattern-catalog.md.
-   > Package stem: Aneesh_Khan_[Company]_[Role]. Tier: [full | light]. ATS variant: [yes | no].
+   > Package stem: Aneesh_Khan_[Company]_[Role]. Tier: [full | light]. ATS variant: [yes | no]. Recruiter note: [yes | no].
    > Role: [company], "[title]", [location], [pay], posted [date], [apply URL]. [Manages a team | IC].
    > Sibling package, already sent, never edit: [stem, with one line on what must differ].
    > Known gaps, already judged from the JD: [each gap, with the JD's own wording]. The letter names one: [the largest]. Hard-requirement cap trigger: [verbatim | none].
@@ -2326,6 +2336,19 @@ The split: **you choose the angle and the files, the writer writes every word,
    example becomes the sentence every letter uses (CLAUDE.md's ramp rule exists because of
    exactly that). A light-tier job drops the letters, the three avoid-ai-writing files, the
    sibling line, and the openers line.
+
+   **Recruiter note: yes for at most three packages a week (Aneesh's call, 2026-11-08).**
+   Count the picks with a non-empty `note_draft` in this week's `jobs/brief_[date].json`
+   files (Monday on), and give `yes` to the remaining slots in this order: `lane:requested`
+   picks, then picks at or above `company_cap_threshold`, highest score first. Everything
+   else gets `no`. The writer's field 13 is the note; it goes into the pick's `note_draft` at
+   Step 5a. Notes go only to people at the hiring company, never to anyone at his employer
+   and never as a post: he doesn't want his own company to see him looking.
+   [D53](../DECISIONS.md#d53-a-note-to-a-person-on-his-top-sends)
+
+   **A writer that stops because the posting bars AI** (its field 12 says so) leaves no
+   files. Don't redispatch it: the role goes on "Cleared, not tailored" with "asks
+   applicants not to use AI; yours to write" in its line, and its claimed stem stays unused.
 
 4. **While they run**, carry on with the steps that do not depend on them (Step 6.7 fits
    here). Each writer answers once, in the fixed fields `tailor_worker.md` lists.
@@ -2713,7 +2736,8 @@ the rest collapsed underneath. Shape:
             "read": "the read on this pick: why it's here and what to weigh",
             "commitment": "what its cover letter promises, or \"\" when it promises nothing",
             "check": ["a resume or letter phrasing he should confirm"],
-            "changes": ["one tailoring-diff line", "another"]}],
+            "changes": ["one tailoring-diff line", "another"],
+            "note_draft": "the writer's recruiter note verbatim, or \"\" when it wrote none"}],
  "sections": [{"title": "Near-misses", "note": "optional one-line count or caveat",
                "lines": [{"text": "one line as it used to appear in the digest",
                           "url": "https://...", "label": "link"}]}]}
