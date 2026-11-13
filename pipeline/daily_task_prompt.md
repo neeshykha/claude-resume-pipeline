@@ -304,6 +304,9 @@ Deleting the subject filters would silently drop that class of confirmation.
    - Use `title_exact` when one req's title is a prefix of another's at the same company
      (Talkdesk "CX Manager" vs "CX Manager - Health & Life Sciences").
    - Record only what the email literally says. Never infer an outcome from silence.
+   - An `assessment`, `interview`, `onsite`, or `offer` outcome sets `furthest_stage` on
+     its own. When a rejection or closure says the role got that far, add
+     `"furthest_stage": "<that stage>"` to the item; the column only moves right.
    - Set `source_channel` to `referral` or `user_surfaced` when the email establishes it.
 6. Note the promoted count and any outcomes in `run_[date].json → pipeline_notes` and
    `SESSION_STATE.md`. Do not mention this step in the digest email unless something

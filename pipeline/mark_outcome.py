@@ -23,6 +23,10 @@ Input schema:
       "outcome_date": "2026-07-15",           # optional
       "notes": "role filled",                 # optional, appended to notes
       "source_channel": "pipeline",           # optional, only used on append
+      "furthest_stage": "interview",          # optional; the furthest point the
+                                              # role is KNOWN to have reached,
+                                              # for an outcome that does not say
+                                              # so itself (see below)
       "title_exact": false,                   # optional; require an exact
                                               # title match instead of a
                                               # substring, for when one req's
@@ -41,6 +45,34 @@ row is SKIPPED and reported, never guessed.
 to before the pipeline covered them, or found through channels it cannot poll.
 Appended rows carry stage/outcome from the input and a note recording that they
 came from a confirmation backfill rather than a pipeline run.
+
+`furthest_stage` (added 2026-11-12; CLAUDE.md "Tracking files", DECISIONS.md
+D7). `outcome` holds one terminal state, so a rejection that follows an
+interview leaves the row reading only `rejected`. The `furthest_stage` column
+is what keeps the interview, and until this date nothing in this script wrote
+it: the rule said to set it alongside every run that records an interview, so
+it was filled in outside this script or not at all. Now:
+
+  - an outcome of assessment, interview, onsite, or offer is itself a stage
+    the role reached, and moves the row's furthest_stage to it;
+  - an item may name the stage outright, which is how a rejection that
+    followed an interview is recorded: outcome "rejected", furthest_stage
+    "interview";
+  - the column only moves right (the order is repair_outcomes.FURTHEST_STAGES).
+    A value at or left of what the row holds changes nothing, the column is
+    never cleared, and a rejection or closure that names no stage never sets
+    it: empty means NOT RECORDED, not "never interviewed";
+  - a value outside that vocabulary is refused. The item is printed under
+    REFUSED and nothing is written for it (no outcome, stage, or notes
+    either), and the script exits 1 after doing the rest of its work.
+
+An item that names a stage still needs its `outcome`. This script writes
+whatever outcome the item carries, an empty one included, so to add a stage to
+a row whose outcome is already right, restate that outcome.
+
+The three sections this adds to the output (moved right, NOT RECORDED, REFUSED)
+print only when they have something in them, so a run that touches no
+furthest_stage prints exactly what it always printed.
 """
 import csv
 import json
@@ -48,6 +80,8 @@ import os
 import re
 import shutil
 import sys
+
+from repair_outcomes import FURTHEST_STAGES
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
@@ -64,6 +98,34 @@ STAGE_DEFAULTS = {
     "interview": "interview",
     "pending": "applied",
 }
+
+# furthest_stage. The vocabulary and its order live in repair_outcomes.py and
+# nowhere else. "" (not recorded) ranks lowest, so any stage is a move right
+# from an empty cell.
+STAGE_RANK = {s: i for i, s in enumerate(FURTHEST_STAGES)}
+# An outcome to the right of `applied` in that list is itself a stage the role
+# reached. rejected, closed, and pending are not stages and never move the
+# column.
+OUTCOME_STAGES = FURTHEST_STAGES[FURTHEST_STAGES.index("applied") + 1:]
+
+
+def wanted_furthest(entry, outcome):
+    """The furthest_stage one input item asks its row to hold: (stage, error).
+
+    It is the further right of the item's own `furthest_stage` and its outcome,
+    when the outcome is a stage. "" means the item says nothing about it. An
+    explicit value outside the vocabulary comes back as an error, and the
+    caller writes nothing at all for that item.
+    """
+    given = entry.get("furthest_stage")
+    if given is None:
+        given = ""
+    if not isinstance(given, str) or given.strip().lower() not in STAGE_RANK:
+        return "", (f"furthest_stage {given!r} is not one of: "
+                    f"{', '.join(s for s in FURTHEST_STAGES if s)}")
+    given = given.strip().lower()
+    reached = outcome.lower() if outcome.lower() in OUTCOME_STAGES else ""
+    return max(given, reached, key=STAGE_RANK.get), None
 
 
 def norm_url(u):
@@ -109,7 +171,33 @@ def main():
     def well_formed(r):
         return len(r) == len(header)
 
+    # A file on a schema older than 2026-08-27 has no furthest_stage column.
+    # Everything else here still works on it, so that is not an error: the
+    # stage is reported as not recorded instead.
+    fi = header.index("furthest_stage") if "furthest_stage" in header else None
+
     updated, appended, ambiguous, missing = [], [], [], []
+    moved, unrecorded, refused = [], [], []
+
+    def advance(r, want):
+        """Move one row's furthest_stage right to `want`: never left, never cleared."""
+        if not want:
+            return
+        c, t = r[ci["company"]], r[ci["title"]]
+        if fi is None:
+            unrecorded.append((c, t, want, "outcomes.csv has no furthest_stage column; "
+                                           "run repair_outcomes.py --apply first"))
+            return
+        have = r[fi].strip().lower()
+        if have not in STAGE_RANK:
+            # It cannot be ranked, so there is no telling whether `want` is a
+            # move right. Leave the cell for a person to look at.
+            unrecorded.append((c, t, want, f"the row holds {r[fi]!r}, which is not in the "
+                                           f"vocabulary; left as it is"))
+            return
+        if STAGE_RANK[want] > STAGE_RANK[have]:
+            r[fi] = want
+            moved.append((c, t, have, want))
 
     for e in entries:
         company = (e.get("company") or "").strip()
@@ -117,6 +205,13 @@ def main():
         url = norm_url(e.get("url"))
         outcome = (e.get("outcome") or "").strip()
         stage = (e.get("stage") or STAGE_DEFAULTS.get(outcome, "")).strip()
+
+        # Checked before the row is looked for, so a refused item writes
+        # nothing: no outcome, no notes, no appended row.
+        furthest, problem = wanted_furthest(e, outcome)
+        if problem:
+            refused.append((company, title, problem))
+            continue
 
         candidates = [r for r in rows if well_formed(r)]
         matches = []
@@ -149,6 +244,7 @@ def main():
             r[ci["notes"]] = merge_notes(r[ci["notes"]], e.get("notes"))
             if e.get("source_channel"):
                 r[ci["source_channel"]] = e["source_channel"]
+            advance(r, furthest)
             updated.append((r[ci["company"]], r[ci["title"]], outcome))
         elif len(matches) > 1:
             ambiguous.append((company, title, len(matches)))
@@ -163,6 +259,7 @@ def main():
             new[ci["notes"]] = merge_notes(
                 e.get("notes"), "added by confirmation backfill")
             new[ci["source_channel"]] = e.get("source_channel", "pipeline")
+            advance(new, furthest)
             rows.append(new)
             appended.append((company, title, outcome))
         else:
@@ -191,6 +288,19 @@ def main():
         print(f"NO MATCH and append_if_missing not set ({len(missing)}):")
         for c, t in missing:
             print(f"  {c} / {t}")
+    if moved:
+        print(f"furthest_stage moved right on {len(moved)} rows")
+        for c, t, was, now in moved:
+            print(f"  {c} / {t}: {was or '(not recorded)'} -> {now}")
+    if unrecorded:
+        print(f"FURTHEST_STAGE NOT RECORDED ({len(unrecorded)}):")
+        for c, t, want, why in unrecorded:
+            print(f"  {c} / {t}: wanted {want}; {why}")
+    if refused:
+        print(f"REFUSED, nothing written for these ({len(refused)}):")
+        for c, t, why in refused:
+            print(f"  {c} / {t or '(no title given)'}: {why}")
+        return 1
     return 0
 
 
