@@ -336,9 +336,12 @@ rejected reads only `rejected`; this column is what keeps the interview.
 Vocabulary, weakest to strongest, in `FURTHEST_STAGES` (`repair_outcomes.py`):
 `applied` · `assessment` · `interview` · `onsite` · `offer`.
 **Empty means NOT RECORDED, not "never interviewed."** Rows that predate the column
-(2026-08-27) stay blank on purpose; never backfill them to "no interview." Populate it going
-forward whenever a stage is confirmed, and set it alongside any `mark_outcome.py` run that
-records an interview, assessment, or offer. [D7](DECISIONS.md#d7-furthest_stage-and-the-lost-interviews)
+(2026-08-27) stay blank on purpose; never backfill them to "no interview." `mark_outcome.py`
+writes it (2026-11-12): an `assessment`, `interview`, `onsite`, or `offer` outcome moves the
+row there by itself, and a rejection or closure that followed one names the stage on its item
+(`"furthest_stage": "interview"`). A stage counts from the invite.
+[D7](DECISIONS.md#d7-furthest_stage-and-the-lost-interviews),
+[D55](DECISIONS.md#d55-four-repairs-and-the-three-calls-inside-them)
 
 Columns 11–13 [D8](DECISIONS.md#d8-conversion-audit-columns):
 
@@ -430,15 +433,26 @@ Plus a monthly trend of what gets tailored (median score, pay midpoint, reach sh
 high" is checked as a behavior. Every rate is post-epoch and prints its n; samples are small,
 so don't act on a single month.
 
-- **Fit first, reach fills (2026-10-15).** The daily run fills its five tailoring slots with
-  0-1 unmet roles first and reach roles only after; unmet counts stated requirements only.
+**"Sent" has one home, `pipeline/stages.py` (2026-11-12).** This report's send count is
+`stages.counts_as_sent()`: a stage that proves a send, his `sent_*` verdict, or a `closed` row
+whose closing note shows one (an applied-date line, or a company email or notice) and carries
+no never-sent marker. A `closed` row with nothing either way isn't a send. The other meanings
+(the guard that protects a sent letter, the Sent mark that's already recorded) are named sets
+in the same file. A script that needs a new meaning adds a named set there and never keeps a
+`SENT_STAGES` of its own. [D55](DECISIONS.md#d55-four-repairs-and-the-three-calls-inside-them)
+
+- **Fit only in the main slots (2026-10-15, narrowed 2026-11-12).** The daily run fills its
+  two main tailoring slots with 0-1 unmet roles. Reach roles go to "Cleared, not tailored"
+  and he asks by name; unmet counts stated requirements only.
   Spec: `daily_task_prompt.md` Step 2c. [D40](DECISIONS.md#d40-reach-roles-stopped-taking-the-first-slots)
 - **Safety slot (2026-10-15).** One likely-yes role a run, outside the five, light tier,
   tagged `lane:safety`: a title he has held, 0 unmet, no score floor. For interview practice;
   judged at the 2026-11-12 reassessment alongside fit and reach. Same spec section and D40.
-- **Do not cut the tailoring cap to raise the send rate.** He wants everything over the
-  threshold available; a low send rate is a signal to read through `his_verdict`, not a
-  volume problem to solve by producing less.
+- **Packages follow his choice (2026-11-12).** He chose to have packages written after he
+  picks a role, which replaced his 2026-09-30 call not to cut the cap. Until the dashboard
+  has a button for that, the run writes two ahead and lists every other cleared role under
+  "Cleared, not tailored", where everything over the threshold stays available by name.
+  [D54](DECISIONS.md#d54-packages-follow-his-choice)
 - **Judge a pipeline change by the thing it fixed**, not by outcome metrics. A plumbing fix
   (LinkedIn body counts, a poller crash) won't move interview rate, and expecting it to makes
   good fixes look useless.
@@ -810,6 +824,14 @@ the incident that set it.
   `harvest_linkedin.py`'s `has_us` still carries the trailing-period bug. Cases live in
   `test_tier3_gate.py → POLL_CASES`.
   [D22](DECISIONS.md#d22-boundary-based-location-matching)
+- **The poll's pay floor checks the midpoint (Aneesh, 2026-11-12).** When a posting gives both
+  ends of a range, `under_salary_floor()` compares the midpoint with `salary_floor_usd`, as the
+  JD screen does; with only a minimum it compares that, and unread pay drops nothing. Only
+  Ashby and Pinpoint pay is parsed, so the pre-score's pay points are off
+  (`_scoring_config.pay_points_enabled`, absent means off) until the ranking rebuild can read
+  other boards' pay. `ashby_salary_range()` declines hourly, monthly, and non-USD figures and
+  on-target earnings filed as salary. Cases live in `test_ashby_compensation.py`.
+  [D55](DECISIONS.md#d55-four-repairs-and-the-three-calls-inside-them)
 - **The industry filter matches whole words.** `description_excluded()` runs `EXCLUDED_TERMS`
   through `_boundary_pattern()`, so every spelling has to be listed ("cryptocurrency" is,
   "cryptography" isn't, on purpose), and an empty list excludes nothing. Only payloads with a
@@ -931,7 +953,8 @@ Spec: `daily_task_prompt.md` Step 2-JD and Step 6.7.
   `cards_batch_NN.json` (quoted facts only, never scores), answers in one line.
 - `pipeline/jd_screen_table.py` joins cards to one PASS/CHECK/FAIL line per role on location,
   pay midpoint, and hard red flags; the orchestrator scores PASS/CHECK with the normal rubric.
-- Tailoring cap is 5; every other role at or above the light threshold goes to the digest's
+- Tailoring cap is 2 (5 until 2026-11-12, D54; "the five" elsewhere in this file means these
+  main slots); every other role at or above the light threshold goes to the digest's
   "Cleared, not tailored" section and `jobs/screened_<date>.json`, which
   `build_dashboard.py` shows on the Shelf (last 7 days, dropped once in `outcomes.csv`).
 - Workable gives this machine a fixed request allowance per window (~26-45 requests), not a

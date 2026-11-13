@@ -1741,8 +1741,11 @@ capped role from a missed one — which is the state the tracker was in before 2
 **Diversity cap:** surface ≤2 roles per company per run; fully tailor only the single
 best-scoring one — additional same-company roles are "also live (FYI)" digest lines.
 
-**Pick up to 5 jobs to tailor** (was 3-4 until 2026-09-25; the Step 2-JD fan-out took JD
-reading out of this context, which is what the lower number was protecting). Tailoring tiers
+**Pick up to 2 jobs to tailor** (Aneesh's call, 2026-11-12: packages get written after he
+chooses a role, and until the dashboard has a button for that the run writes two ahead.
+It was 5 from 2026-09-25 and 3-4 before that). Wherever this file says "the five", it means
+these main slots, now two.
+[D54](../DECISIONS.md#d54-packages-follow-his-choice) Tailoring tiers
 come from `_scoring_config`:
 ≥`company_cap_threshold` priority/full · ≥`full_tailoring_threshold` full · below that,
 none of the five: a role at or above `light_tailoring_threshold` goes on "Cleared, not
@@ -1765,11 +1768,11 @@ none reached an interview, against 93 of 196 on Greenhouse and Ashby. Like D50, 
 the five only; the safety, requested, and industrial-lane slots keep their own rules, and he
 asks by name for one he wants. [D52](../DECISIONS.md#d52-workday-postings-under-110-stopped-getting-packages)
 
-**Fit first, reach fills (Aneesh's call, 2026-10-15).** Fill the five slots in two passes.
-First, every cleared role with 0 or 1 unmet hard requirements and no hard-requirement cap,
-highest score first. Then, only if slots remain, the reach roles (cap fired, or 2+ unmet),
-highest score first. A reach role that loses its slot this way goes on "Cleared, not
-tailored" with its gap, exactly like any other. Count unmet hard requirements the way Step 6
+**Fit only in the main slots (Aneesh's calls, 2026-10-15 and 2026-11-12).** Fill the main
+slots with cleared roles that have 0 or 1 unmet hard requirements and no hard-requirement
+cap, highest score first. A reach role (cap fired, or 2+ unmet) no longer fills a leftover
+slot: it goes on "Cleared, not tailored" with its gap, exactly like any other, and he asks
+for it by name. A slot with no fit role stays empty. Count unmet hard requirements the way Step 6
 defines them: only what the JD states as required. A "preferred", "a plus", "nice to have",
 or "or the ability to quickly get there" item is not unmet, and neither is location, which
 the location gate already handles. Why: by 2026-10-15 all 4 post-epoch advances had 0 or 1

@@ -1315,3 +1315,51 @@ notes after applying was never built. He said yes to drafting them, with one con
 - **A posting that asks applicants not to use AI gets no package** and assisted apply stops
   on it: he writes that one himself. This came from the review's pass over a friend's
   job-search setup.
+
+## D54. Packages follow his choice
+
+On 2026-11-12 a bottom-to-top review of the pipeline counted 328 packages since the
+2026-07-28 epoch and 131 sent (40%), at about $33.61 a run on the 2026-10-26 cost view. He
+marks in bursts (5 of the 30 days before the review) and sends a role within three days of
+seeing it or not at all (81% of sends). Asked whether packages should be written after he
+chooses a role, with two written ahead until then, he answered "Yes, choose first." That
+replaced his 2026-09-30 call not to cut the cap of five. The same day, on a card about the
+fit and reach reassessment, he picked "Shift toward fit": reach roles stop filling leftover
+slots.
+
+What changed: the main slots went from five to two, and they take fit roles only. Every
+other cleared role is listed under "Cleared, not tailored" and gets a package when he asks
+by name. The safety, requested, and industrial-lane slots kept their own rules.
+
+What had not been built on that date: the button that lets him say Want on the page and get
+a package back in the same sitting. Until it exists, asking by name in a session is the path.
+
+## D55. Four repairs and the three calls inside them
+
+The 2026-11-12 review (D54) found four things broken in plain sight. The Step 6.7 recheck had
+picked the same ten throttled names on every run since 2026-10-12, because the picker sorted
+on rejection date alone. `mark_outcome.py` had no way to write `furthest_stage`, though D7's
+rule said to set it with every interview. Five scripts each kept a `SENT_STAGES` of their own,
+holding four different sets. And Ashby's pay field was never parsed, so `salary_min` was null
+on every row from the watchlist's 251 Ashby boards and the pay floor never fired for them.
+
+All four were fixed that day, each with a test file. Three carried a decision, and he made
+each on a card:
+
+- **The floor checks the midpoint.** Switched on at the posted minimum, the floor would have
+  dropped 46 Ashby roles that passed every other gate, 29 of them with a midpoint at or over
+  $100K. On the midpoint it drops 17. The JD screen already judged pay on the midpoint.
+- **Pay points wait.** Only Ashby and Pinpoint pay can be read, so the pre-score's +5 and +10
+  would have ranked those boards' roles over the rest for a fact about the board. The points
+  sit behind `_scoring_config.pay_points_enabled`, off, until the ranking rebuild.
+- **A closed row has to show a send.** The quality report counted every `closed` row as sent
+  and said 142. Eleven of the nineteen closed rows had never gone out. Counted from the notes
+  it's 131 of 328.
+
+He also confirmed that an interview counts from the invite, which is how `mark_outcome.py`
+already wrote the stage, and approved a four-row backfill of `furthest_stage` that ran the
+same day.
+
+What was left alone: `shelf_inbox.py` and `mark_applied.py` treat `onsite` and `offer`
+differently from the other scripts when a second send signal arrives. `stages.py` names that
+gap and doesn't close it.
