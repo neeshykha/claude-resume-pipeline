@@ -567,18 +567,18 @@ def test_progress_rounds_attach_to_the_right_send_and_fill_the_funnel():
              row(company="Bolt", stage="applied", applied_date="2026-08-02", surfaced_date="2026-08-02"),
              row(company="Cove", stage="applied", applied_date="2026-09-15", surfaced_date="2026-09-15"),
              row(company="Dune", stage="interview", applied_date="2026-08-20", surfaced_date="2026-08-20"),
-             row(company="Echo", stage="applied", applied_date="2026-08-21", surfaced_date="2026-08-21")])
+             row(company="Eddy", stage="applied", applied_date="2026-08-21", surfaced_date="2026-08-21")])
     interviews_file([
         # No URL: the company's latest send on or before the round, so the OLD Acme posting.
         {"company": "acme", "date": "2026-08-15", "kind": "screen"},
         {"company": "Acme", "date": "2026-08-25", "kind": "interview"},
-        {"company": "Echo", "date": "2026-08-30", "kind": "assessment"},
+        {"company": "Eddy", "date": "2026-08-30", "kind": "assessment"},
         {"company": "Elsewhere", "date": "2026-09-01", "kind": "screen", "round": 1},
         {"company": "Bad", "date": "someday", "kind": "screen"},
         {"company": "Bad", "date": "2026-09-01", "kind": "coffee"}])
     p = build()["progress"]
     assert [(r["company"], r["round"]) for r in p["rounds"]] == [
-        ("acme", 1), ("Acme", 2), ("Echo", None), ("Elsewhere", 1)], p["rounds"]
+        ("acme", 1), ("Acme", 2), ("Eddy", None), ("Elsewhere", 1)], p["rounds"]
     assert "2 unreadable entries" in p["rounds_note"]
     f = p["funnel"]
     # Acme-old: two rounds, then rejected, so it counts as interviewed and reached a later round.
@@ -623,6 +623,369 @@ def test_page_script_parses_as_javascript():
         f.write(scripts[0])
     r = subprocess.run([node, "--check", path], capture_output=True, text=True)
     assert r.returncode == 0, "the page's script does not parse:\n" + r.stderr[:600]
+
+
+# The letter view (2026-11-12). The letter below is made up, like every company in this file.
+STEM = bd.PDF_PREFIX + "Acme_OpsLead"
+LETTER_HEAD = "November 9, 2026\n\nHiring Team\nAcme"
+LETTER_TAIL = "Best,\nJane Doe"
+WHY = ("I'm applying for the Operations Lead role at Acme because the job is the warehouse floor and "
+       "the people on it, and that's where I do my best work.")
+TIE = "I'd bring that same patience to Acme's floor."
+PROMISE = "During my first month I'd spend each morning with the floor leads, learning the scanner flow from them."
+LETTER = [
+    "A customer of ours once waited nine days for a replacement part, and nobody had told her why. "
+    "I called her, found the order stuck in a queue that no one owned, and stayed on it until the part shipped.",
+    "That kind of follow-through is why the work suits me. " + WHY + " I'd like the job.",
+    "At my last job I rebuilt the intake form, cut the handoffs from five to two, and wrote the guide "
+    "the team still uses. The numbers moved, and the questions stopped coming. " + TIE,
+    "I've never run a warehouse system. " + PROMISE + " Until that day the vendor's public "
+    "manual is my reading, one chapter a night.",
+]
+
+
+def letter_files(d, stem=STEM, paras=LETTER, md_paras=None, json_file=True):
+    with open(os.path.join(d, "tailored", stem + "_cover.md"), "w", encoding="utf-8") as f:
+        f.write("\n\n".join([LETTER_HEAD] + list(md_paras or paras) + [LETTER_TAIL]) + "\n")
+    if json_file:
+        with open(os.path.join(d, "tailored", stem + "_cover_data.json"), "w", encoding="utf-8") as f:
+            json.dump({"date": "November 9, 2026", "recipient": "Hiring Team<br/>Acme", "paragraphs": list(paras)}, f)
+
+
+def letter_row(company="Acme", stem=STEM, url="https://example.com/acme", **kw):
+    kw.setdefault("notes", f"Full tier. tailored/apply_now/{stem}.pdf + _cover.pdf")
+    return row(company=company, stage="surfaced", surfaced_date="2026-09-19", url=url, **kw)
+
+
+def test_sentence_finder_finds_the_three_and_nothing_it_is_not_sure_of():
+    assert bd.find_letter_sentences(LETTER) == {"why": WHY, "tie": TIE, "promise": PROMISE}
+
+    def found(paras, key):
+        return bd.find_letter_sentences(paras).get(key)
+
+    def with_p(i, text):
+        paras = list(LETTER)
+        paras[i] = text
+        return paras
+    # Why: said outright, once, early.
+    assert found(with_p(1, "A floor like that is why I want the Operations Lead role at Acme. I'd like the job."), "why") \
+        == "A floor like that is why I want the Operations Lead role at Acme."
+    assert found(with_p(1, "What drew me to the Operations Lead role was the floor itself."), "why")
+    assert found(with_p(1, "I like the work. I'd like the job."), "why") is None, "no fallback sentence"
+    assert found(with_p(1, "Applying the same checklist to every vendor is how I work. I'd like the job."), "why") is None
+    assert found(with_p(1, LETTER[1] + " I'm applying now because the timing is right."), "why") is None, "two candidates: not sure"
+    assert found([LETTER[0], "I like the work.", LETTER[2], LETTER[1], LETTER[3]], "why") is None, "too late in the letter"
+    assert found(with_p(1, "Running that floor as Acme's Operations Lead is the job I'd pick."), "why") is None
+    # Tie-back: the last sentence of the paragraph before the last, when there is one to speak of.
+    assert found(LETTER[:2], "tie") is None, "two paragraphs have no paragraph to tie back from"
+    assert found([LETTER[0], "It suits me. " + WHY, LETTER[3]], "tie") is None, "it would be the why sentence again"
+    assert found(with_p(2, "The numbers moved, and the questions stopped coming, which is the patience I'd bring"), "tie") is None
+    assert found(with_p(2, 'My manager said it best. "Nobody asks anymore."'), "tie") == '"Nobody asks anymore."'
+    # Promise: one sentence in the last paragraph with a time and a commitment.
+    for text in ("By November 30, I'll have the scanner flow written up in my public notes.",
+                 "I'll have walked a shift at a friend's warehouse before we talk, and I'll bring my notes.",
+                 "Its manual is public, and I'm reading the receiving chapter this week.",
+                 "Every floor lead would have my written notes on their station by the end of my first month.",
+                 "Before I change a single scanner setting, I'd count a full pallet by hand with each lead.",
+                 "At the first inventory count after I start, I'll shadow whoever runs it."):
+        assert found(with_p(3, "I've never run a warehouse system. " + text), "promise") == text, text
+    for text in ("I'd set up my first week differently depending on which it is.",
+                 "Glad to walk through how I'd spend the first 30 days.",
+                 "Whichever it is shapes my first quarter, and I'd rather know before I start.",
+                 "When that system arrived I'd never administered one, and I ran it alone for the first two months.",
+                 "The plan only holds if I'm standing on the floor when the leads meet every Monday.",
+                 "May I ask how the floor is staffed? I'd like to hear it.",
+                 "I'd be glad to learn it. I'm keen on the work from day one.",
+                 "I'd love to hear about the floor before we talk terms."):
+        assert found(with_p(3, "I've never run a warehouse system. " + text), "promise") is None, text
+    two = with_p(3, PROMISE + " By November 30, I'll have the scanner flow written up.")
+    assert found(two, "promise") is None, "two promises: it doesn't pick"
+    moved = [LETTER[0], LETTER[1], LETTER[3], LETTER[2]]
+    assert found(moved, "promise") is None, "a promise that isn't in the last paragraph isn't marked"
+    assert bd.find_letter_sentences([]) == {} and bd.find_letter_sentences(["One line, no stop"]) == {}
+
+
+def test_sentence_spans_keep_abbreviations_and_numbers_whole():
+    def cut(text):
+        return [text[a:b] for a, b in bd.sentence_spans(text)]
+    assert cut("I ran the queue. Then I rebuilt it! Did it hold? It did.") == \
+        ["I ran the queue.", "Then I rebuilt it!", "Did it hold?", "It did."]
+    assert cut("I reported to the Sr. Manager of the U.S. team. It went well.") == \
+        ["I reported to the Sr. Manager of the U.S. team.", "It went well."]
+    assert cut("Volume rose 3.5 times, e.g. on Mondays. Tier 1. Then Tier 2.") == \
+        ["Volume rose 3.5 times, e.g. on Mondays.", "Tier 1.", "Then Tier 2."]
+    assert cut('She said "it works." Then she left') == ['She said "it works."', "Then she left"]
+    assert cut("") == []
+
+
+def test_letter_rides_only_on_unsent_rows_that_have_one():
+    other = bd.PDF_PREFIX + "Bolt_SupportMgr"
+    d = fixture([letter_row(),
+                 letter_row("Light Tier", bd.PDF_PREFIX + "Light_TAM", "https://example.com/light"),
+                 letter_row("Sent Verdict", other, "https://example.com/sv", his_verdict="sent_as_is"),
+                 letter_row("Skipped", other, "https://example.com/sk", his_verdict="skip_fit"),
+                 row(company="Applied", stage="applied", applied_date="2026-09-10", surfaced_date="2026-09-09",
+                     url="https://example.com/ap", notes=f"tailored/apply_now/{other}.pdf + _cover.pdf"),
+                 letter_row("Files Disagree", bd.PDF_PREFIX + "Drift_Role", "https://example.com/drift"),
+                 letter_row("Md Only", bd.PDF_PREFIX + "MdOnly_Role", "https://example.com/mdonly"),
+                 letter_row("Slug Matched", "", "https://example.com/slug", notes="Full tier, no file named.")],
+                pdfs=[f"apply_now/{bd.PDF_PREFIX}SlugMatched_Role.pdf", f"apply_now/{bd.PDF_PREFIX}SlugMatched_Role_cover.pdf"])
+    letter_files(d)
+    letter_files(d, other)
+    drifted = [LETTER[0], LETTER[1].replace("I'd like the job.", "I'd like this job.")] + LETTER[2:]
+    letter_files(d, bd.PDF_PREFIX + "Drift_Role", md_paras=drifted)
+    letter_files(d, bd.PDF_PREFIX + "MdOnly_Role", json_file=False)
+    letter_files(d, bd.PDF_PREFIX + "SlugMatched_Role")
+    data = build()
+    q = {i["company"]: i for i in data["queue"]}
+    L = q["Acme"]["letter"]
+    assert set(L) == {"head", "tail", "paras", "sha", "marks"}, "the words and nothing about the files"
+    assert (L["head"], L["tail"], L["paras"]) == (LETTER_HEAD, LETTER_TAIL, LETTER)
+    assert L["sha"] == bd.letter_sha(LETTER) and L["marks"] == {"why": WHY, "tie": TIE, "promise": PROMISE}
+    assert "letter" not in q["Light Tier"] and "letter_note" not in q["Light Tier"], "no letter is not a fault"
+    assert "letter" not in q["Sent Verdict"], "his word that it went out closes the letter"
+    assert "Skipped" not in q and all("letter" not in z for z in data["quiet"])
+    assert "letter" not in q["Files Disagree"] and "don't hold the same paragraphs" in q["Files Disagree"]["letter_note"]
+    assert "letter" not in q["Md Only"] and "no _cover_data.json" in q["Md Only"]["letter_note"]
+    slug = q["Slug Matched"]["letter"]
+    assert slug["paras"] == LETTER and "don't name its package" in slug["no_edit"], "shown, but an edit couldn't be applied"
+    assert data["letter_limits"] == bd.LETTER_LIMITS
+    html = bd.render(data)
+    assert "raw_md" not in html and "raw_json" not in html
+
+
+def test_letter_reader_takes_the_archives_shapes_and_survives_junk():
+    d = fixture([letter_row()])
+    # Bold and an entity differ between the two files and read as the same words; a title line
+    # and a salutation above the body are kept as the head.
+    with open(os.path.join(d, "tailored", STEM + "_cover.md"), "w", encoding="utf-8") as f:
+        f.write("# Cover letter\r\n\r\nNovember 9, 2026\r\n\r\nHiring Team\r\nAcme\r\n\r\nDear team,\r\n\r\n"
+                + "\r\n\r\n".join([LETTER[0].replace("nine days", "**nine days**"), LETTER[1] + " R&D too.",
+                                   LETTER[2], LETTER[3]]) + "\r\n\r\nBest,\r\n\r\nJane Doe\r\n")
+    with open(os.path.join(d, "tailored", STEM + "_cover_data.json"), "w", encoding="utf-8") as f:
+        json.dump({"date": "x", "recipient": "y", "closing": "Best,", "paragraphs": [
+            LETTER[0].replace("nine days", "<b>nine days</b>"), LETTER[1] + " R&amp;D too.", LETTER[2], LETTER[3]]}, f)
+    letter, why = bd.read_letter(bd.TAILORED, STEM)
+    assert letter, why
+    assert letter["paras"] == [LETTER[0], LETTER[1] + " R&D too.", LETTER[2], LETTER[3]]
+    assert letter["head"] == "# Cover letter\n\nNovember 9, 2026\n\nHiring Team\nAcme\n\nDear team,"
+    assert letter["tail"] == "Best,\n\nJane Doe"
+    assert "**nine days**" in letter["raw_md"][0] and "<b>nine days</b>" in letter["raw_json"][0]
+    assert bd.letter_sha(letter["paras"]) == letter["sha"] and len(letter["sha"]) == 16
+    # A paragraph in the .md that the JSON lacks is prose the PDF wouldn't carry.
+    letter_files(d, md_paras=LETTER + [LETTER[0]])
+    assert bd.read_letter(bd.TAILORED, STEM) == (None, "its .md has a paragraph the JSON the PDF renders from lacks")
+    for junk in ("{not json", "[1, 2]", '{"paragraphs": "one string"}', '{"paragraphs": []}', '{"paragraphs": ["a", 7]}'):
+        with open(os.path.join(d, "tailored", STEM + "_cover_data.json"), "w", encoding="utf-8") as f:
+            f.write(junk)
+        letter, why = bd.read_letter(bd.TAILORED, STEM)
+        assert letter is None and why, junk
+        q = build()["queue"][0]
+        assert "letter" not in q and q["letter_note"], "the row still builds, and says why"
+    assert bd.read_letter(bd.TAILORED, bd.PDF_PREFIX + "Nobody_Home") == (None, "")
+    assert bd.package_stem(f"tailored/apply_now/{STEM}.pdf + _cover.pdf") == STEM
+    assert bd.package_stem(f"{STEM}_cover.pdf and {STEM}_ATS.pdf") == STEM
+    assert bd.package_stem(f"{STEM}.pdf, sibling of {STEM}2.pdf") == "" and bd.package_stem("") == ""
+    assert bd.edit_paragraphs(" One  line\nwrapped.\r\n\r\n\n  Two.\n \n") == ["One line wrapped.", "Two."]
+
+
+def results_file(rows):
+    with open(os.path.join(bd.JOBS_DIR, bd.LETTER_RESULTS), "w", encoding="utf-8") as f:
+        json.dump({"rows": rows}, f)
+
+
+def test_letter_states_come_from_the_results_file_and_only_while_they_hold():
+    d = fixture([letter_row()])
+    letter_files(d)
+    key, sha = "https://example.com/acme", bd.letter_sha(LETTER)
+    assert "edited" not in build()["queue"][0]["letter"]
+    results_file({key: {"applied": {"saved_at": "2026-09-18T23:10:00.000Z", "at": "2026-09-19", "new_sha": sha},
+                        "last": {"status": "applied"}}})
+    L = build()["queue"][0]["letter"]
+    assert L["edited"] == "2026-09-18T23:10:00.000Z" and "refused" not in L
+    results_file({key: {"applied": {"at": "2026-09-19", "new_sha": sha}}})
+    assert build()["queue"][0]["letter"]["edited"] == "2026-09-19", "no save time recorded: the day it was applied"
+    results_file({key: {"applied": {"saved_at": "x", "new_sha": "an older letter's hash"},
+                        "last": {"status": "refused", "reason": "The tracker row is applied.", "saved_at": "s", "base_sha": "b"}}})
+    L = build()["queue"][0]["letter"]
+    assert "edited" not in L, "the letter was rewritten since; it is no longer his version"
+    assert L["refused"] == {"reason": "The tracker row is applied.", "saved_at": "s", "base_sha": "b"}
+    results_file({key: {"last": {"status": "failed", "reason": "The PDF couldn't be rendered.", "saved_at": 5}}})
+    assert build()["queue"][0]["letter"]["refused"]["saved_at"] == "", "a failed render shows the same way; junk is dropped"
+    for junk in ("{not json", '{"rows": [1]}', '{"rows": {"%s": "text"}}' % key):
+        with open(os.path.join(bd.JOBS_DIR, bd.LETTER_RESULTS), "w", encoding="utf-8") as f:
+            f.write(junk)
+        L = build()["queue"][0]["letter"]
+        assert "edited" not in L and "refused" not in L, junk
+
+
+def run_page(html, storage, actions=()):
+    """Run the page's script in node against a stub DOM and return a snapshot after load and
+    after each click: the two queue lists' markup and the page's storage. None without node."""
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        return None
+    data = json.loads(re.search(r'<script id="data" type="application/json">(.*?)</script>', html, re.S).group(1))
+    data["progress"] = {"error": "not drawn in this harness"}      # the charts need a real DOM
+    script = re.findall(r"<script>(.*?)</script>", html, re.S)[0]
+    harness = r"""
+const fs=require('fs');const input=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+const store=input.storage,els={},handlers={};
+function stub(id){return els[id]||(els[id]={id:id,innerHTML:'',textContent:'',style:{},children:[],title:'',
+  querySelectorAll:function(){return []},querySelector:function(){return null},scrollIntoView:function(){},
+  getAttribute:function(){return null},setAttribute:function(){},removeAttribute:function(){},
+  appendChild:function(c){return c},focus:function(){}})}
+const doc={getElementById:function(id){return id==='data'?{textContent:input.data}:stub(id)},
+  addEventListener:function(t,f){(handlers[t]=handlers[t]||[]).push(f)},
+  createElement:function(){return stub('_'+Object.keys(els).length)},
+  createElementNS:function(){return stub('_'+Object.keys(els).length)},
+  createTextNode:function(){return {}},body:{appendChild:function(){},removeChild:function(){}}};
+const ls={getItem:function(k){return k in store?store[k]:null},setItem:function(k,v){store[k]=String(v)},
+  removeItem:function(k){delete store[k]}};
+new Function('document','localStorage','window','navigator',input.script)(doc,ls,{addEventListener:function(){}},{});
+function target(a){return {getAttribute:function(n){return n in a.attrs?a.attrs[n]:null},closest:function(sel){
+  if(sel==='.lt')return {querySelector:function(s){return s==='textarea'&&a.value!=null?{value:a.value}:null}};
+  if(sel==='.list')return {querySelectorAll:function(){return []}};return null}}}
+function snap(){return {today:els.today.innerHTML,queue:els.queue.innerHTML,marknote:els.marknote.textContent,
+  strips:els.strips.innerHTML,store:JSON.parse(JSON.stringify(store))}}
+const snaps=[snap()];
+input.actions.forEach(function(a){handlers.click.forEach(function(f){f({target:target(a)})});snaps.push(snap())});
+process.stdout.write(JSON.stringify(snaps));
+"""
+    d = tempfile.mkdtemp(prefix="dash_page_")
+    with open(os.path.join(d, "harness.js"), "w", encoding="utf-8") as f:
+        f.write(harness)
+    with open(os.path.join(d, "input.json"), "w", encoding="utf-8") as f:
+        json.dump({"data": json.dumps(data), "script": script, "storage": dict(storage), "actions": list(actions)}, f)
+    r = subprocess.run([node, os.path.join(d, "harness.js"), os.path.join(d, "input.json")],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, "the page's script threw:\n" + r.stderr[-900:]
+    return json.loads(r.stdout)
+
+
+EKEY, IKEY = "jobdash.letters.v1", "jobdash.inbox.v1"
+EDITED = [LETTER[0], LETTER[1], LETTER[2].replace(TIE, "I'd bring that same patience to the floor at Acme."), LETTER[3]]
+
+
+def saved_edit(paras, sha, saved="2026-09-19T12:00:00.000Z"):
+    return {"text": "\n\n".join(paras), "base_sha": sha, "saved_at": saved}
+
+
+def test_page_draws_the_letter_and_its_three_states():
+    d = fixture([letter_row(), letter_row("Bolt", bd.PDF_PREFIX + "Bolt_SupportMgr", "https://example.com/bolt"),
+                 letter_row("Cove", bd.PDF_PREFIX + "Cove_TAM", "https://example.com/cove"),
+                 letter_row("Dune", bd.PDF_PREFIX + "Dune_Lead", "https://example.com/dune"),
+                 letter_row("Eddy", bd.PDF_PREFIX + "Eddy_Lead", "https://example.com/eddy")])
+    for stem in (STEM, bd.PDF_PREFIX + "Bolt_SupportMgr", bd.PDF_PREFIX + "Cove_TAM", bd.PDF_PREFIX + "Dune_Lead",
+                 bd.PDF_PREFIX + "Eddy_Lead"):
+        letter_files(d, stem)
+    sha = bd.letter_sha(LETTER)
+    results_file({"https://example.com/bolt": {"applied": {"saved_at": "2026-09-18T23:10:00.000Z", "new_sha": sha}},
+                  "https://example.com/cove": {"last": {"status": "refused", "saved_at": "2026-09-19T12:00:00.000Z", "base_sha": sha,
+                                                        "reason": "The tracker row is applied, so this letter may have gone out."}}})
+    html = bd.render(build())
+    snaps = run_page(html, {EKEY: json.dumps({"https://example.com/acme": saved_edit(EDITED, sha),
+                                              "https://example.com/cove": saved_edit(EDITED, sha),
+                                              "https://example.com/dune": saved_edit(LETTER, sha),
+                                              "https://example.com/eddy": saved_edit(EDITED, "an older letter's hash"),
+                                              "https://example.com/left-before": saved_edit(EDITED, sha, "2026-09-18T12:00:00.000Z"),
+                                              "https://example.com/left-after": saved_edit(EDITED, sha, "2026-09-20T12:00:00.000Z")}),
+                             IKEY: json.dumps({"https://example.com/dune": {"a": "sent", "d": "2026-09-19", "ts": 1,
+                                                                            "u": "https://example.com/dune"}})})
+    if snaps is None:
+        print("    (skipped: node is not installed, so the page's letter markup was not run)")
+        return
+    rows = {m.group(1): m.group(0) for m in re.finditer(r'<div class="row wrap[^"]*">.*?<span class="co">(\w+)</span>.*?</details></div></div>',
+                                                         snaps[0]["today"], re.S)}
+    assert set(rows) == {"Acme", "Bolt", "Cove", "Dune", "Eddy"}, set(rows)
+    # Saved, not applied yet: his text shows, and the row says what happens next.
+    a = rows["Acme"]
+    assert '<span class="tag warn">edit saved</span> Your edit is saved. It\'s applied at the next run, or tell Claude: apply my letter edits.' in a
+    assert "<summary>Letter, with your edit</summary>" in a and "the floor at Acme." in a and TIE.replace("'", "&#39;") not in a
+    assert '<mark class="lm lm-w" title="why this job">' + WHY.replace("'", "&#39;") + "</mark>" in a, "an untouched sentence keeps its mark"
+    assert 'class="lm lm-t"' not in a and 'class="lm lm-p"' in a, "the sentence he rewrote loses its mark"
+    assert "the tie-back</span>" not in a and '<i class="sw lm-p"></i>the promise' in a, "and the legend lists only what is marked"
+    assert "<b>Why this job, from the letter:</b> " + WHY.replace("'", "&#39;") in a
+    assert 'data-lt="copy"' in a and 'data-lt="edit"' in a and 'data-lt="discard"' in a
+    assert '<div class="lhd">November 9, 2026\n\nHiring Team\nAcme</div>' in a and '<div class="lhd">Best,\nJane Doe</div>' in a
+    # Applied on an earlier run: the files hold his version.
+    b = rows["Bolt"]
+    assert re.search(r'<span class="tag good">Edited by you, [A-Z][a-z]{2} \d{1,2}</span>', b), b[:400]
+    assert "<summary>Letter</summary>" in b and 'data-lt="discard"' not in b and "edit saved" not in b
+    assert b.count("<mark ") == 3 and '<i class="sw lm-p"></i>the promise' in b
+    # Refused: the reason, and that nothing was lost.
+    c = rows["Cove"]
+    assert ('<span class="tag bad">edit not applied</span> The tracker row is applied, so this letter may have gone out. '
+            "Your text is still saved on this page.") in c
+    # The letter was rewritten under a saved edit: the page says so before any run does.
+    assert ('<span class="tag bad">edit not applied</span> The letter was rewritten after you saved this edit, '
+            "so it won't be applied.") in rows["Eddy"]
+    # Marked Sent on the page: readable and copyable, closed to edits.
+    u = rows["Dune"]
+    assert 'data-lt="copy"' in u and 'data-lt="edit"' not in u and "Marked Sent, so the letter is closed to edits." in u
+    # What the page clears by itself on load, and what it keeps.
+    left = json.loads(snaps[0]["store"][EKEY])
+    assert "https://example.com/dune" not in left, "an edit equal to the letter now embedded was applied (or changed nothing)"
+    assert "https://example.com/left-before" not in left, "its row left the queue and the page is newer"
+    assert set(left) == {"https://example.com/acme", "https://example.com/cove", "https://example.com/eddy",
+                         "https://example.com/left-after"}
+    assert "3 letter edits saved. The next weekday run applies them." in snaps[0]["marknote"]
+
+
+def test_page_edit_box_saves_checks_and_discards():
+    d = fixture([letter_row()])
+    letter_files(d)
+    key, sha = "https://example.com/acme", bd.letter_sha(LETTER)
+
+    def click(act, value=None):
+        return {"attrs": {"data-lt": act, "data-k": key}, "value": value}
+    wrapped = "\n\n".join(EDITED).replace("the floor at Acme.", "the floor\n   at   Acme.") + "\n\n\n"
+    snaps = run_page(bd.render(build()), {}, [
+        click("edit"), click("save", "Too short.\n\nStill too short."), click("save", "\n\n".join(LETTER) + "\n\n* * *"),
+        click("save", wrapped), click("edit"), click("cancel"), click("edit"), click("save", "\n\n".join(LETTER)),
+        click("edit"), click("save", wrapped), click("discard")])
+    if snaps is None:
+        print("    (skipped: node is not installed, so the page's edit box was not run)")
+        return
+    load, opened, short, empty, saved, reopened, cancelled, _, back, _, again, gone = snaps
+    assert EKEY not in load["store"] and "<textarea" not in load["today"]
+    assert '<textarea class="lta" data-ledit="%s"' % key in opened["today"] and "Save edit" in opened["today"]
+    assert LETTER[2].replace("'", "&#39;") in opened["today"], "the box opens on the letter as it stands"
+    assert "Not saved: that&#39;s 5 words in 2 paragraphs." in short["today"] and EKEY not in short["store"]
+    assert "<textarea" in short["today"], "a refused save keeps the box open"
+    assert "Not saved: one paragraph has no words in it." in empty["today"] and EKEY not in empty["store"]
+    got = json.loads(saved["store"][EKEY])[key]
+    assert set(got) == {"text", "base_sha", "saved_at"} and got["base_sha"] == sha, "the shape letter_edits.py reads"
+    assert got["text"] == "\n\n".join(EDITED), "saved as paragraphs, his line breaks inside one collapsed"
+    assert bd.edit_paragraphs(got["text"]) == EDITED and re.match(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d", got["saved_at"])
+    assert "<textarea" not in saved["today"] and "Your edit is saved." in saved["today"]
+    assert "the floor at Acme." in reopened["today"].split("<textarea")[1], "reopening starts from his saved text"
+    assert "<textarea" not in cancelled["today"] and json.loads(cancelled["store"][EKEY])[key] == got
+    assert json.loads(back["store"][EKEY]) == {}, "typing his way back to the letter as it stands clears the edit"
+    assert key in json.loads(again["store"][EKEY]) and json.loads(gone["store"][EKEY]) == {}
+    assert "Your edit is saved." not in gone["today"] and "<summary>Letter</summary>" in gone["today"]
+
+
+def test_page_and_generator_split_paragraphs_the_same_way():
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    src = re.search(r"^function lparas\(t\)\{.*\}$", bd.PAGE, re.M)
+    assert src, "lparas() moved; edit_paragraphs() in the generator has to keep matching it"
+    if not node:
+        print("    (skipped: node is not installed, so lparas() was not run against edit_paragraphs())")
+        return
+    cases = ["One.\n\nTwo.", " One  line\nwrapped.\r\n\r\n\n  Two.\n \n", "\n\n\n", "", "A\tb\u00a0c.\n \t \nD.",
+             "One.\rTwo.\r\rThree.", "Only one paragraph", "x\n\n\n\n\ny\n\nz"]
+    d = tempfile.mkdtemp(prefix="dash_page_")
+    with open(os.path.join(d, "lparas.js"), "w", encoding="utf-8") as f:
+        f.write("const lparas=(" + src.group(0) + ");\n"
+                "process.stdout.write(JSON.stringify(JSON.parse(process.argv[2]).map(lparas)));\n")
+    r = subprocess.run([node, os.path.join(d, "lparas.js"), json.dumps(cases)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[:400]
+    assert json.loads(r.stdout) == [bd.edit_paragraphs(c) for c in cases]
 
 
 def test_failure_exits_zero_and_writes_nothing():

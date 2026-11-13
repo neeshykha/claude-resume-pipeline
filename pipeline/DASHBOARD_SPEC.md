@@ -456,3 +456,97 @@ says when he has a first-degree LinkedIn connection at its company.
 - **Never:** a name in a tracked file or a test fixture (fixtures are made up;
   `test_no_real_connection_name_is_in_a_tracked_file` checks every tracked file against the real
   export when it's on the machine), a drafted or sent message, or a LinkedIn page opened.
+
+## 2026-11-12: the letter view
+
+His ask: "a quick view at a cover letter and see if I want to make swift edits." Until now a
+queue row carried a chip that copied the cover PDF's path and never showed the letter, and
+changing one sentence meant the same edit in two files and a re-render. Tried on copies of the
+real files before it touched one. The nightly run needs no new command: `shelf_inbox.py
+--apply` at Step 0 item 4b now applies saved edits too.
+
+**On the page** (`build_dashboard.py`). A queue row whose tracker row has no `his_verdict` and
+whose package has a letter gets a second, full-width line:
+
+- **Why this job, from the letter:** the one sentence where he says which job he wants and why,
+  when the finder is sure of it. The run's "The letter promises" line stays as it was.
+- **Letter**, a disclosure. Inside: the lines the `.md` has above the body (date, recipient),
+  the paragraphs, and the sign-off. Up to three sentences are marked, with a legend: why this
+  job, the tie-back, the promise. A sentence the finder isn't sure of gets no mark.
+- **Copy letter** puts the `.md` paste format on the clipboard, with his edit when one is saved.
+- **Edit** turns the paragraphs into one text box, a blank line between each. Save edit stores
+  `{text, base_sha, saved_at}` under `jobdash.letters.v1`, keyed by the row's key like a mark;
+  `base_sha` is the hash of the body the generator embedded. Discard edit removes it. The page
+  refuses to save fewer than two paragraphs, an empty one, or anything outside 150 to 600 words.
+- **States on the row:** "edit saved" with what happens next (and that the PDF has the earlier
+  text until then); "Edited by you, <date>" once an edit is applied and the files still hold
+  it; "edit not applied" with the reason and that his text is still saved. The last also shows
+  with no run involved when the letter was rewritten under a saved edit. On load the page drops
+  a saved edit whose text is the letter now embedded, and one whose row has left the queue.
+- A row marked Sent on the page, a row that can't take marks, and a row whose notes don't
+  name its package show the letter and Copy, and no Edit. A letter whose `.md` and JSON
+  disagree isn't shown; the row says why.
+
+**The finder** (`find_letter_sentences`). Each rule finds exactly one sentence or nothing.
+
+- *Why:* the only sentence in the letter that says "I'm applying", "why I want the ... role",
+  or "drew me to the ... role", and it's in the first or second paragraph.
+- *Tie-back:* the last sentence of the paragraph before the last, in a letter of three or more
+  paragraphs, when it ends in a full stop and isn't the why sentence. Positional, as he
+  defined it; in a letter that ends on a question it marks the end of the gap paragraph.
+- *Promise:* the only sentence in the last paragraph with a time he can be held to (a month or
+  weekday, this or next week or month, "before we talk", "my first ...", "before I" and a
+  present-tense verb), a verb that commits ("I'll", "I'd", "I'm ...ing", "we'd", "would
+  have"), and no sign of being a closing question ("depending on the answer", "I'd rather").
+
+Measured on the 319 letters in `tailored/` whose two files agree (of 374 `.md` files; 32 have
+no JSON and 23 disagree): tie-back 319, why 57, promise 35. On the 60 dated 2026-10-13 or
+later, the ones the current rules produce: tie-back 60, why 47, promise 35, all three 31.
+Every promise it found in those 60 was read and is one. Letters from before the closing
+question came out (2026-10-22) end on a question and have no promise to find.
+
+**Applying an edit** (`letter_edits.py`, new). `shelf_inbox.py --apply` calls it from the
+nightly inbox step and prints a `letters:` clause on its line; `letter_edits.py --apply` is the
+same thing on demand, and both are report-only without `--apply`. For each saved edit:
+
+- **Refused unless** exactly one tracker row has the URL, its stage is exactly `surfaced`
+  (any other stage is refused; the ones in `stages.ASSUME_SENT_FOR_SAFETY` with the reason
+  that the letter may have gone out), `his_verdict` is empty, no Sent mark for the row is
+  waiting in the page's inbox, the row's notes name one package, no other row naming that
+  package has left `surfaced` or carries a verdict, its `_cover.md` and `_cover_data.json`
+  both exist and agree, and the hash of the body on disk equals `base_sha`. His text must
+  also be a letter: two or more paragraphs, none empty, 150 to 600 words.
+- **Already applied** when the body on disk equals his text: nothing is touched.
+- **Keeps the old version** in `tailored/_letter_versions/<stem>/<timestamp>/` (the `.md`, the
+  JSON, and each copy of the cover PDF) before anything changes. A row that reads unsent may
+  still have gone out.
+- **Writes both files from one function** (`compose`): his paragraphs between the head and
+  tail the `.md` already had, the JSON's other keys untouched. A paragraph he left alone keeps
+  each file's own spelling (bold, entities). Before any write the result is read back in
+  memory with the page's own reader and must give exactly his paragraphs.
+- **Renders** with `render_pdf.py cover` into a staging folder, and only then moves the three
+  files into place, so a failed render leaves the package as it was. The PDF replaces the copy
+  that exists (`apply_now/`, or `tailored/` after rotation, both when both exist).
+- **Runs `check_voice.py`** on the result and records its line. Information only.
+- **Logs** each edit to `jobs/letter_edits.jsonl` (a refused edit's text is in its line) and
+  writes `jobs/letter_edit_results.json`, which the next build reads for the row states. An
+  edit whose result hasn't changed since the last run is not logged again.
+- Says so when the first sentence or the promise sentence changed, and changes nothing because
+  of it: not `_cover_openers.md`, not the brief file, not the tracker, not the Shelf's files.
+
+**Contracts to keep in step.**
+- The storage key and the edit shape are shared by the page script (`EKEY`) and
+  `letter_edits.py` (`LETTERS_KEY`); `test_contracts_with_the_page_and_the_generator` pins both.
+- What a letter's body is, its hash, and how his text splits into paragraphs live in
+  `build_dashboard.py` (`parse_letter`, `letter_sha`, `edit_paragraphs`) and `letter_edits.py`
+  imports them. The page's `lparas()` mirrors `edit_paragraphs()`, and a test runs both.
+- The generator still writes nothing but the page and imports nothing from a writer.
+  `letter_edits.py` imports the generator, not the other way round.
+- `LETTER_LIMITS` is the one home of the paragraph and word limits, for the page and the applier.
+
+**Known limits.** An edit saved on the phone stays on the phone, like a mark. Copy letter
+uses his saved edit, so he can paste an edit into a form before any run has applied it; the
+PDF still has the earlier text until then, and the row says so. If he then marks the row Sent,
+the edit is refused and the files keep the earlier text, with his text in the log. Bold in a
+paragraph he edits is not carried into the new text. An edited letter's files get a new
+modified time, so listings sorted by time treat it as recent.

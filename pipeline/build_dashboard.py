@@ -13,7 +13,12 @@ READ-ONLY against every tracking file. It shows state and never sets it: marking
 a role applied stays with mark_applied.py, outcomes with mark_outcome.py. It
 imports nothing from the writers and must stay that way.
 
-The page keeps three kinds of state, all in the Shelf's per-page storage:
+The page keeps four kinds of state, all in the Shelf's per-page storage:
+  letters  an edit he saved to a cover letter (added 2026-11-12), keyed like the marks under
+         `jobdash.letters.v1` as {text, base_sha, saved_at}. An inbox too: letter_edits.py
+         applies it to the letter's files and writes jobs/letter_edit_results.json, which
+         this script reads for "Edited by you" and for a refusal's reason. See the letter
+         view section below, by read_letter().
   ticks  "I checked this site" on the manual list. The pipeline never reads them.
   leads  Tailor it / Pass on a weekly lead (added 2026-10-15, D41), keyed by LinkedIn job
          id under `jobdash.leads.v1`. Also an inbox: shelf_inbox.py records them in
@@ -72,6 +77,8 @@ didn't (schedule-aware, so weekends don't cry wolf), because a failed build is o
 This file is committed to a public repo. No company names, no sample rows.
 """
 import csv
+import hashlib
+import html
 import importlib.util
 import io
 import json
@@ -245,6 +252,7 @@ def read_outcomes(today, cfg):
         return r[ci[name]].strip() if name in ci else ""
 
     pdfs = list_pdfs()
+    letter_results = read_letter_results()
     queue, quiet = [], []
     counts = {"bad_rows": 0, "in_process": 0, "pre_epoch_quiet": 0, "unknown_stages": [], "skipped": 0}
     for r in rows:
@@ -278,6 +286,13 @@ def read_outcomes(today, cfg):
             fields = read_fields(item.get("resume") or item.get("ats") or "")
             if fields:
                 item["fields"] = fields
+            if not col(r, "his_verdict"):
+                # Any verdict on the row is his word that he sent it or passed on it, so only
+                # a row with none gets its letter (letter_edits.py refuses the rest anyway).
+                try:
+                    attach_letter(item, col(r, "notes"), letter_results)
+                except Exception:  # noqa: BLE001 - a letter that won't read costs its panel, not the queue
+                    pass
             queue.append(item)
         elif stage == "applied" and col(r, "outcome") in ("", "pending"):
             sd, ad = parse_date(col(r, "surfaced_date")), parse_date(col(r, "applied_date"))
@@ -584,6 +599,266 @@ def read_fields(pdf_rel):
     return out or None
 
 
+# The letter view (added 2026-11-12). A queue row whose package has a cover letter carries the
+# letter itself, so he can read it, copy it, and save an edit to it on the page. A saved edit
+# waits in the Shelf's storage under `jobdash.letters.v1` and letter_edits.py applies it to the
+# letter's files; this script still writes nothing but the page. Whatever decides what a
+# letter's body IS lives here (parse_letter, letter_sha, edit_paragraphs) and letter_edits.py
+# imports it, so the hash a saved edit carries and the hash the applier checks can't differ.
+LETTER_RESULTS = "letter_edit_results.json"  # letter_edits.py owns it; read here, never written
+LETTER_MAX_CHARS = 30000                     # a letter runs about 2,500; near this it isn't one
+LETTER_FURNITURE_WORDS = 25                  # fit_check.py's TWIN_FURNITURE_WORDS, same purpose
+# What a saved edit has to be before it can replace a letter. The page checks these when he
+# saves and letter_edits.py checks them again before it writes.
+LETTER_LIMITS = {"min_paragraphs": 2, "min_words": 150, "max_words": 600}
+_MD_ESCAPE = re.compile(r"\\([\\`*_{}\[\]()#+\-.!])")
+_PACKAGE_RE = re.compile(r"(?<![A-Za-z0-9_])(" + re.escape(PDF_PREFIX) + r"[A-Za-z0-9_\-]+?)(?i:_cover|_ats)?\.pdf")
+
+
+def package_stems(notes):
+    """Every package a tracker row's notes name, as file stems."""
+    return {m.group(1) for m in _PACKAGE_RE.finditer(notes or "")}
+
+
+def package_stem(notes):
+    """The one package a tracker row's notes name ("tailored/apply_now/<stem>.pdf +
+    _cover.pdf"), as a file stem. "" when they name none, or more than one."""
+    stems = package_stems(notes)
+    return stems.pop() if len(stems) == 1 else ""
+
+
+def letter_plain(text):
+    """The words a reader sees: renderer markup off, whitespace collapsed. The same
+    normalization fit_check.py's twin check runs on both of a letter's files."""
+    t = re.sub(r"<br\s*/?>", " ", str(text or ""))
+    t = re.sub(r"<[^>]+>", "", t)
+    t = html.unescape(t).replace("\u00a0", " ")
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def edit_paragraphs(text):
+    """Text from the page's edit box as paragraphs: split on blank lines, the whitespace
+    inside each collapsed. lparas() in the page script does the same."""
+    text = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
+    return [" ".join(p.split()) for p in re.split(r"\n\s*\n", text) if p.strip()]
+
+
+def letter_sha(paras):
+    """The hash a saved edit carries as base_sha: the body it was made against."""
+    return hashlib.sha256("\n\n".join(paras).encode("utf-8")).hexdigest()[:16]
+
+
+def parse_letter(md_text, data):
+    """(letter, "") when the .md and the JSON hold the same paragraphs, else (None, why).
+
+    The body is the run of blank-line-separated blocks in the .md that equal the JSON's
+    paragraphs, in order, compared as fit_check.py's twin check compares them. Whatever sits
+    above it (date, recipient) and below it (sign-off) is kept exactly as written. A letter
+    whose two files disagree is not shown: the .md is what he pastes, the JSON is what the PDF
+    renders from, and picking one of them would be a guess.
+    """
+    raw_json = data.get("paragraphs") if isinstance(data, dict) else None
+    if not isinstance(raw_json, list) or not raw_json or not all(isinstance(p, str) for p in raw_json):
+        return None, "its JSON has no list of paragraphs"
+    if not isinstance(md_text, str) or len(md_text) > LETTER_MAX_CHARS:
+        return None, "its .md is too long to be a letter"
+    text = md_text.replace("\r\n", "\n").replace("\r", "\n")
+    spans, pos = [], 0
+    for m in re.finditer(r"\n\s*\n", text):
+        spans.append((pos, m.start()))
+        pos = m.end()
+    spans.append((pos, len(text)))
+    spans = [(a, b) for a, b in spans if text[a:b].strip()]
+    in_md = [letter_plain(_MD_ESCAPE.sub(r"\1", text[a:b].replace("**", ""))) for a, b in spans]
+    paras = [letter_plain(p) for p in raw_json]
+    n = len(paras)
+    first = in_md.index(paras[0]) if paras[0] and paras[0] in in_md else -1
+    if first < 0 or not all(paras) or in_md[first:first + n] != paras:
+        return None, "its .md and the JSON the PDF renders from don't hold the same paragraphs"
+    outside = in_md[:first] + in_md[first + n:]
+    if any(len(b.split()) > LETTER_FURNITURE_WORDS for b in outside):
+        return None, "its .md has a paragraph the JSON the PDF renders from lacks"
+    return {"head": text[:spans[first][0]].strip(), "tail": text[spans[first + n - 1][1]:].strip(),
+            "paras": paras, "sha": letter_sha(paras),
+            # The two files' own spelling of each paragraph (bold, entities), for letter_edits.py
+            # to carry over on the paragraphs an edit leaves alone. Never embedded in the page.
+            "raw_md": [text[a:b].strip() for a, b in spans[first:first + n]],
+            "raw_json": list(raw_json), "data": data}, ""
+
+
+def read_letter(tailored, stem):
+    """(letter, "") for tailored/<stem>_cover.md and _cover_data.json, or (None, why).
+    why is "" when the package simply has no letter, which a light-tier package doesn't."""
+    md_path = os.path.join(tailored, stem + "_cover.md")
+    json_path = os.path.join(tailored, stem + "_cover_data.json")
+    if not os.path.exists(md_path):
+        return None, ""
+    if not os.path.exists(json_path):
+        return None, "it has no _cover_data.json beside the .md"
+    try:
+        with open(md_path, encoding="utf-8") as f:
+            md_text = f.read(LETTER_MAX_CHARS + 1)
+        with open(json_path, encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:  # noqa: BLE001 - both files are model output
+        return None, f"its files couldn't be read ({type(e).__name__})"
+    letter, why = parse_letter(md_text, data)
+    if letter:
+        letter["stem"] = stem
+    return letter, why
+
+
+# The three sentences the letter view marks. Each rule either finds exactly one sentence it
+# can stand behind or finds nothing; there is no fallback sentence and no fallback paragraph.
+_ABBREVIATIONS = frozenset(("mr", "mrs", "ms", "dr", "sr", "jr", "st", "vs", "etc", "inc", "co",
+                            "corp", "ltd", "no", "e.g", "i.e", "a.m", "p.m", "u.s"))
+_CLOSERS = "\"')\\]\u201d\u2019"
+_SENTENCE_END = re.compile(r"[.!?]+[" + _CLOSERS + r"]*(?=\s|$)")
+_SENTENCE_START = re.compile("[\"'(\\[\u201c\u2018]?[A-Z0-9]")
+_ENDS_CLEANLY = re.compile(r"[.!?][" + _CLOSERS + r"]*$")
+_MONTHS = "January|February|March|April|June|July|August|September|October|November|December"
+_WEEKDAYS = "Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday"
+_AP = "(?:'|\u2019)"
+# Why: he says he's applying, or says outright why he wants the role or what drew him to it.
+_WHY = re.compile(r"\bI(?:" + _AP + r"m| am) applying\b"
+                  r"|\bwhy I(?:" + _AP + r"d| would)? want the\b.*\brole\b"
+                  r"|\b(?:drew|draws) me to the\b.*\brole\b")
+# Promise: a time he can be held to, and a verb that commits him to something by then.
+_PROMISE_WHEN = re.compile(
+    # a date: a month, or a weekday that isn't "every Monday" ("May" only where it can't be the verb)
+    r"\b(?:" + _MONTHS + r")\b|(?<!every )\b(?:" + _WEEKDAYS + r")\b|\bMay \d|\b(?:by|in|before|of|through|until|from) May\b"
+    r"|\b(?:this|next) (?:week|weekend|month|quarter)\b|\b(?:tonight|tomorrow)\b|\bby then\b"
+    # the hiring process as the deadline
+    r"|\b(?:[Bb]efore|[Bb]y the time) (?:we|you and I) (?:talk|speak|meet)\b"
+    r"|\b(?:[Bb]efore|[Dd]uring|[Aa]head of) (?:the|a|an|our|my|your) (?:first |next )?(?:interview|screen|call)\b"
+    # his first days in the role
+    r"|\b[Mm]y first (?!question\b)|\b(?:[Ii]n|[Ww]ithin|[Dd]uring|[Oo]ver|[Aa]t|[Ff]or|[Bb]y the end of) the first\b"
+    r"|\bfirst (?:30|60|90|thirty|sixty|ninety) days\b|\b(?:day|week) (?:one|1)\b"
+    # before he does the thing itself ("Before I change a setting, I'd ...")
+    r"|\b[Bb]efore I (?!was\b|had\b|did\b|got\b|came\b|left\b|took\b|ran\b|led\b|\w+ed\b)\w+")
+_PROMISE_VERB = re.compile(
+    # "I'll" or "I'd", unless it is a question about himself ("how I'd spend it"), a past
+    # perfect ("I'd never used one"), or a wish ("I'd like to hear"); "I'm" only with a verb
+    # under way ("I'm reading", not "I'm keen on")
+    r"(?<![Hh]ow )(?<![Ww]hat )(?<![Ww]here )(?<![Ww]hich )\bI" + _AP + r"(?:ll|d)\b"
+    r"(?! (?:also )?(?:never|already|just|been|had|once|only|rather|want|like|love|welcome|enjoy|be glad|be happy)\b)"
+    r"|\bI" + _AP + r"m (?:\w+ )?\w+ing\b"
+    # or the result stated for him: "we'd count it together", "it'll be done", "they would have seen it"
+    r"|\b(?:we|it)" + _AP + r"(?:ll|d)\b|\b(?:will|would) have\b")
+# A closing question dressed as a plan ("I'd set up my first week differently depending on
+# which it is") names a time and a first-person verb and promises nothing.
+_NOT_A_PROMISE = re.compile(r"\bI" + _AP + r"d rather\b|\bdepending on\b|\bthe answer\b")
+
+
+def sentence_spans(par):
+    """[(start, end)] for each sentence of one paragraph of plain text.
+
+    A full stop ends a sentence only when what follows starts like one, and never after a
+    listed abbreviation or a lone initial. When that is wrong it joins two sentences; it
+    doesn't cut one in half, which is the safer way to be wrong for a mark on the page.
+    """
+    spans, start = [], 0
+    for m in _SENTENCE_END.finditer(par):
+        rest = par[m.end():].lstrip()
+        if rest and not _SENTENCE_START.match(rest):
+            continue
+        if par[m.start()] == ".":
+            word = re.search(r"[A-Za-z.]+$", par[start:m.start()])
+            w = word.group() if word else ""
+            if w.lower() in _ABBREVIATIONS or (len(w) == 1 and w.isupper() and w != "I"):
+                continue
+        spans.append((start, m.end()))
+        start = len(par) - len(rest)
+    if start < len(par):
+        spans.append((start, len(par)))
+    return spans
+
+
+def is_promise(sentence):
+    return bool(_PROMISE_WHEN.search(sentence) and _PROMISE_VERB.search(sentence)
+                and not _NOT_A_PROMISE.search(sentence))
+
+
+def find_letter_sentences(paras):
+    """{"why": ..., "tie": ..., "promise": ...}: sentences quoted from the letter, each key
+    present only when its rule found exactly one. The rules:
+
+      why      the only sentence in the letter that says "I'm applying" (or "I am applying"),
+               "why I want the ... role" (or "why I'd want"), or "drew me to the ... role"
+               (or "draws me"), and it sits in the first or second paragraph.
+      tie      the last sentence of the paragraph before the last, in a letter of three
+               paragraphs or more, when it ends in a full stop and isn't the why sentence.
+      promise  the only sentence in the last paragraph that names a time (_PROMISE_WHEN: a
+               month or weekday; this or next week, month, or quarter; "by then"; before we
+               talk or before an interview; "my first ...", "in the first ..."; "before I"
+               and a present-tense verb), commits to something by then (_PROMISE_VERB:
+               "I'll", "I'd", "I'm ...ing", "we'd", "it'll", "would have", but not "how I'd",
+               "I'd never", or "I'd like"), and isn't a question about the role
+               (_NOT_A_PROMISE).
+    """
+    out = {}
+    sents = [[p[a:b] for a, b in sentence_spans(p)] for p in paras]
+    hits = [(i, s) for i, ss in enumerate(sents) for s in ss if _WHY.search(s)]
+    if len(hits) == 1 and hits[0][0] <= 1 and _ENDS_CLEANLY.search(hits[0][1]):
+        out["why"] = hits[0][1]
+    if len(paras) >= 3 and sents[-2]:
+        last = sents[-2][-1]
+        if _ENDS_CLEANLY.search(last) and last != out.get("why"):
+            out["tie"] = last
+    if len(paras) >= 2:
+        made = [s for s in sents[-1] if is_promise(s)]
+        if len(made) == 1 and _ENDS_CLEANLY.search(made[0]) and made[0] not in out.values():
+            out["promise"] = made[0]
+    return out
+
+
+def read_letter_results():
+    """{row key: {"last": ..., "applied": ...}} from jobs/letter_edit_results.json, which
+    letter_edits.py writes after it applies or refuses an edit. Missing or malformed: {}."""
+    try:
+        with open(os.path.join(JOBS_DIR, LETTER_RESULTS), encoding="utf-8") as f:
+            rows = json.load(f).get("rows")
+    except Exception:
+        return {}
+    return {k: v for k, v in rows.items() if isinstance(v, dict)} if isinstance(rows, dict) else {}
+
+
+def matched_stem(item):
+    """The package match_pdfs() settled on for a row, as a file stem, or ""."""
+    for kind, cut in (("resume", len(".pdf")), ("cover", len("_cover.pdf")), ("ats", len("_ATS.pdf"))):
+        if item.get(kind):
+            return os.path.basename(item[kind])[:-cut]
+    return ""
+
+
+def attach_letter(item, notes, results):
+    """Adds `letter` to a queue row whose package has one, or `letter_note` when the letter is
+    there and can't be shown. The page gets the words and nothing about the files."""
+    named = package_stem(notes)
+    stem = named or matched_stem(item)
+    if not stem:
+        return
+    letter, why = read_letter(TAILORED, stem)
+    if letter is None:
+        if why:
+            item["letter_note"] = why
+        return
+    page = {"head": letter["head"], "tail": letter["tail"], "paras": letter["paras"],
+            "sha": letter["sha"], "marks": find_letter_sentences(letter["paras"])}
+    if named != stem:
+        # letter_edits.py finds a row's files by the package its notes name, and nothing else.
+        page["no_edit"] = "This row's tracker notes don't name its package, so an edit made here couldn't be matched to the files."
+    res = results.get(item["key"]) or {}
+    done, last = res.get("applied"), res.get("last")
+    if isinstance(done, dict) and done.get("new_sha") == letter["sha"]:
+        # Still his version on disk. A later rewrite of the letter changes the hash and drops the tag.
+        page["edited"] = clip(done.get("saved_at"), 40) or clip(done.get("at"), 10)
+    if isinstance(last, dict) and last.get("status") in ("refused", "failed"):
+        page["refused"] = {"reason": clip(last.get("reason"), 400), "saved_at": clip(last.get("saved_at"), 40),
+                           "base_sha": clip(last.get("base_sha"), 64)}
+    item["letter"] = page
+
+
 # Who he knows at each company (added 2026-11-07). The export, the matcher, and his confirmed
 # pairs all stay in the warm-path kit and are read fresh at each build. A ping rides on a role
 # he'd apply to, before he applies, so the line goes on rows not yet sent and on manual checks.
@@ -869,6 +1144,7 @@ def build_data(today, now):
             "queue": queue, "quiet": quiet, "manual": read_manual(watch), "counts": counts,
             "screened": screened, "screened_window": SCREENED_DAYS,
             "brief": read_brief(today), "later_days": 3, "leads": read_leads(today),
+            "letter_limits": LETTER_LIMITS,
             # Every job id a run has recorded. The page drops a lead mark once it's in here.
             "lead_answered": sorted(read_lead_marks()), "lead_mark_days": LEAD_MARK_DAYS}
     try:
@@ -997,6 +1273,20 @@ font:inherit;font-size:12.5px;cursor:pointer}
 .ed{display:inline-flex;align-items:center;color:var(--mute)}
 .ed input{width:14px;height:14px;margin:0 4px 0 0}
 .promise{font-size:13px;margin-top:4px}
+/* The letter view (2026-11-12): a second line of the row, full width, so a letter reads at phone width too. */
+.row.wrap{flex-wrap:wrap;row-gap:2px}
+.ltr{flex:0 0 100%;min-width:0;padding-left:54px}
+.ltr>details{margin-top:2px}
+.lt{max-width:700px;padding:2px 0 4px}
+.lt p{margin:0 0 10px;font-size:14px;line-height:1.5;color:var(--ink);word-break:break-word}
+.lhd{font-size:12.5px;color:var(--mute);white-space:pre-line;margin:8px 0 10px;word-break:break-word}
+.lm{color:inherit;border-radius:3px;padding:1px 0;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.lm-w{background:var(--goodbg)}.lm-t{background:var(--chip);box-shadow:inset 0 -2px 0 var(--axis)}.lm-p{background:var(--warnbg)}
+.lt .legend i.sw{border:1px solid var(--axis)}
+.lta{display:block;width:100%;min-height:340px;margin:8px 0;padding:10px;font:inherit;font-size:14px;line-height:1.5;
+color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;resize:vertical}
+.lmsg{color:var(--bad);margin-top:4px}
+@media (max-width:560px){.ltr{padding-left:0}}
 details{margin-top:6px;font-size:13px}
 summary{cursor:pointer;color:var(--accent)}
 details ul{margin:6px 0 2px;padding-left:18px;color:var(--mute)}
@@ -1066,7 +1356,7 @@ footer li{margin:3px 0}
 <div class="list" id="today"></div>
 
 <h2 id="h-queue">Apply queue</h2>
-<div class="sub">Tailored, not confirmed sent. Rows retire at <span id="exp"></span> days. Mark a row Sent or Skip and the next weekday run records it; a confirmation email still does the same on its own.</div>
+<div class="sub">Tailored, not confirmed sent. Rows retire at <span id="exp"></span> days. Mark a row Sent or Skip and the next weekday run records it; a confirmation email still does the same on its own. Open Letter on a row to read, copy, or edit its cover letter.</div>
 <div class="sub" id="marknote"></div>
 <div class="chips" id="qchips"></div>
 <div class="sub" id="bulk"></div>
@@ -1104,7 +1394,7 @@ footer li{margin:3px 0}
 <script>
 (function(){
 var D=JSON.parse(document.getElementById('data').textContent);
-var DAY=86400000, KEY='jobdash.ticks.v1', IKEY='jobdash.inbox.v1', LKEY='jobdash.leads.v1';
+var DAY=86400000, KEY='jobdash.ticks.v1', IKEY='jobdash.inbox.v1', LKEY='jobdash.leads.v1', EKEY='jobdash.letters.v1';
 var SKIP={fit:'not a fit',time:'no time',materials:'materials',other:'other'};
 function el(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -1118,15 +1408,18 @@ function niceY(s,o){var d=day(s);return d?d.toLocaleDateString(undefined,o||{mon
 function safeUrl(u){return /^https?:\/\//i.test(u||'')?u:''}
 
 // Ticks and marks. Storage can throw (private window, blocked site data); the page still works without it.
-var ticks={}, marks={}, lmarks={}, storageOK=true;
+var ticks={}, marks={}, lmarks={}, ledits={}, storageOK=true;
 try{ticks=JSON.parse(localStorage.getItem(KEY)||'{}')||{};marks=JSON.parse(localStorage.getItem(IKEY)||'{}')||{};
-  lmarks=JSON.parse(localStorage.getItem(LKEY)||'{}')||{}}catch(e){storageOK=false}
+  lmarks=JSON.parse(localStorage.getItem(LKEY)||'{}')||{};ledits=JSON.parse(localStorage.getItem(EKEY)||'{}')||{}}catch(e){storageOK=false}
 function saveTicks(){try{localStorage.setItem(KEY,JSON.stringify(ticks))}catch(e){storageOK=false;strips()}}
 // IKEY and the mark shape {a,r,e,d,ts,u,c,t} are read by pipeline/shelf_inbox.py. Change both together.
 function saveMarks(){try{localStorage.setItem(IKEY,JSON.stringify(marks))}catch(e){storageOK=false;strips()}}
 // LKEY and the lead mark shape {a,d,ts,u,c,t,l,tier,loc}, keyed by LinkedIn job id, are read by
 // pipeline/shelf_inbox.py and recorded by pipeline/lead_marks.py. Change all three together.
 function saveLeadMarks(){try{localStorage.setItem(LKEY,JSON.stringify(lmarks))}catch(e){storageOK=false;strips()}}
+// EKEY and the edit shape {text,base_sha,saved_at}, keyed the way a mark is, are read by
+// pipeline/letter_edits.py. Change both together.
+function saveEdits(){try{localStorage.setItem(EKEY,JSON.stringify(ledits))}catch(e){storageOK=false;strips()}}
 (function prune(){var live={},changed=false;D.manual.forEach(function(m){live[m.key]=1});
   Object.keys(ticks).forEach(function(k){if(!live[k]){delete ticks[k];changed=true}});if(changed)saveTicks()})();
 
@@ -1139,6 +1432,17 @@ function saveLeadMarks(){try{localStorage.setItem(LKEY,JSON.stringify(lmarks))}c
     if(m.a==='later'){var n=since(m.d);if(n==null||n>=D.later_days||!live[k]){delete marks[k];changed=true}}
     else if(!live[k]&&(m.ts||0)<gen){delete marks[k];changed=true}});
   if(changed)saveMarks()})();
+
+// A saved letter edit (2026-11-12) is cleared here in two cases: its text is the letter now
+// embedded (letter_edits.py applied it, or it changed nothing), or its row has left the queue
+// and this page was built after the edit was saved. A refused edit stays, with the reason on
+// its row. lparas() is edit_paragraphs() in the generator: change both together.
+function lparas(t){return String(t==null?'':t).replace(/\r\n?/g,'\n').split(/\n\s*\n/).map(function(p){return p.replace(/\s+/g,' ').trim()}).filter(Boolean)}
+(function pruneEdits(){var rows={},gen=new Date(D.generated).getTime(),changed=false;
+  D.queue.forEach(function(q){rows[q.key]=q});
+  Object.keys(ledits).forEach(function(k){var e=ledits[k]||{},q=rows[k];
+    if(q?(!!q.letter&&lparas(e.text).join('\n\n')===q.letter.paras.join('\n\n')):(new Date(e.saved_at).getTime()||0)<gen){delete ledits[k];changed=true}});
+  if(changed)saveEdits()})();
 
 // A lead mark is dropped only once a run has recorded it (its id is in lead_marks.json), or
 // after LEAD_MARK_DAYS as a backstop. Not on the lead leaving the data: Thursday's file
@@ -1181,7 +1485,7 @@ function strips(){var h='';
   if(gen<dueDay)h+='<div class="strip bad">This page is from '+esc(nice(D.generated))+' and the '+esc(due.toLocaleDateString(undefined,{weekday:'long'}))+' run should have replaced it. The daily build may have failed.</div>';
   if(D.counts.bad_rows)h+='<div class="strip warn">'+D.counts.bad_rows+' tracker rows are unreadable (column drift) and are missing from every list. Run repair_outcomes.py.</div>';
   if(B)(B.alerts||[]).forEach(function(a){h+='<div class="strip warn">'+esc(a)+'</div>'});
-  if(!storageOK)h+='<div class="strip warn">Storage is unavailable here, so ticks and marks last only until this page closes and no run will see them.</div>';
+  if(!storageOK)h+='<div class="strip warn">Storage is unavailable here, so ticks, marks, and letter edits last only until this page closes and no run will see them.</div>';
   el('strips').innerHTML=h}
 
 function tiles(){
@@ -1254,14 +1558,94 @@ function knowLine(x){var k=x.know;if(!k||!k.length)return '';
   var rest=k.slice(KNOW_SHOW).map(function(p){return p.name+(p.title?', '+p.title:'')+(p.at?' at '+p.at:'')}).join('\n');
   return '<div class="know" title="From your LinkedIn connections export'+(C.as_of?', file dated '+esc(niceY(C.as_of)):'')+'. Titles and companies are as of then.">'+
     '<b>You know:</b> '+k.slice(0,KNOW_SHOW).map(one).join('; ')+(rest?' <span title="'+esc(rest)+'">+'+(k.length-KNOW_SHOW)+' more</span>':'')+'</div>'}
+// The letter view (2026-11-12). q.letter holds the letter as plain paragraphs, the lines above
+// and below them in the .md, and the sentences the generator's finder was sure of. An edit is
+// the paragraphs only. Nothing here reaches the files: Save edit stores his text under EKEY and
+// pipeline/letter_edits.py applies it, at the next run or when he asks.
+var LIM=D.letter_limits||{min_paragraphs:2,min_words:150,max_words:600}, drafts={}, lmsg={};
+var LMARK={why:['w','why this job'],tie:['t','the tie-back'],promise:['p','the promise']};
+function ledit(q){var e=canMark(q)?ledits[q.key]:null;return e&&typeof e.text==='string'?e:null}
+function lshown(q){var e=ledit(q);return e?lparas(e.text):q.letter.paras}
+function lwords(ps){return ps.join(' ').split(/\s+/).filter(Boolean).length}
+function lcount(t){var ps=lparas(t);return lwords(ps)+' words in '+plural(ps.length,'paragraph')}
+// What Copy letter puts on the clipboard: the .md he pastes into forms, with his edit when one is saved.
+function ltext(q){return [q.letter.head,lshown(q).join('\n\n'),q.letter.tail].filter(Boolean).join('\n\n')+'\n'}
+function niceTs(s){var d=new Date(s);return /T/.test(String(s))&&!isNaN(d)?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):nice(s)}
+function letterWhy(q){var L=q.letter,w=L&&L.marks?L.marks.why:'',e=L?ledit(q):null;
+  return w&&!(e&&e.text.indexOf(w)<0)?'<div class="promise"><b>Why this job, from the letter:</b> '+esc(w)+'</div>':''}
+function letterState(q){var L=q.letter,e=ledit(q),m=mk(q),r=L.refused,h='';
+  if(e&&r&&r.saved_at===e.saved_at&&r.base_sha===e.base_sha)h='<span class="tag bad">edit not applied</span> '+esc(r.reason)+' Your text is still saved on this page.';
+  else if(e&&e.base_sha!==L.sha)h='<span class="tag bad">edit not applied</span> '+"The letter was rewritten after you saved this edit, so it won't be applied. Your text is still saved on this page; discard it to edit the letter as it stands.";
+  else if(e&&m&&m.a==='sent')h='<span class="tag warn">edit saved</span> '+"You marked this row Sent, so the edit won't be applied to the letter's files. Undo the mark if it hasn't gone out.";
+  else if(e)h='<span class="tag warn">edit saved</span> '+"Your edit is saved. It's applied at the next run, or tell Claude: apply my letter edits. Until then the PDF has the earlier text.";
+  else if(L.edited)h='<span class="tag good">Edited by you, '+esc(niceTs(L.edited))+'</span>';
+  return h?'<div class="promise">'+h+'</div>':''}
+// A marked sentence is found by its own text, so a paragraph he hasn't touched keeps its marks
+// while his edit is showing and a sentence he rewrote simply loses its mark.
+function lmarked(ps,M,used){return ps.map(function(p){var rs=[];
+  Object.keys(LMARK).forEach(function(n){var s=M&&M[n],i=s&&!used[n]?p.indexOf(s):-1;if(i>=0){used[n]=1;rs.push([i,i+s.length,n])}});
+  rs.sort(function(a,b){return a[0]-b[0]});var h='',at=0;
+  rs.forEach(function(r){if(r[0]<at)return;h+=esc(p.slice(at,r[0]))+'<mark class="lm lm-'+LMARK[r[2]][0]+'" title="'+esc(LMARK[r[2]][1])+'">'+esc(p.slice(r[0],r[1]))+'</mark>';at=r[1]});
+  return '<p>'+h+esc(p.slice(at))+'</p>'}).join('')}
+function letterPanel(q){var L=q.letter;
+  if(!L)return q.letter_note?'<div class="ltr"><div class="sub">'+"This row's letter isn't shown: "+esc(q.letter_note)+'.</div></div>':'';
+  var k=esc(q.key),e=ledit(q),m=mk(q),ps=lshown(q),M=L.marks||{};
+  var shut=!canMark(q)?"This row can't take marks, so its letter can't be edited here either.":(L.no_edit||(m&&m.a==='sent'?'Marked Sent, so the letter is closed to edits.':''));
+  var h='<div class="ltr">'+letterWhy(q)+letterState(q)+det(q.key+'|letter',e?'Letter, with your edit':'Letter')+'<div class="lt">';
+  if(L.head)h+='<div class="lhd">'+esc(L.head)+'</div>';
+  if(drafts[q.key]!=null&&!shut){
+    h+='<textarea class="lta" data-ledit="'+k+'" aria-label="The letter\'s paragraphs, a blank line between each">'+esc(drafts[q.key])+'</textarea>';
+    if(L.tail)h+='<div class="lhd">'+esc(L.tail)+'</div>';
+    h+='<div class="acts"><button class="act go" data-lt="save" data-k="'+k+'">Save edit</button><button class="act" data-lt="cancel" data-k="'+k+'">Cancel</button>'+(e?'<button class="act" data-lt="discard" data-k="'+k+'">Discard edit</button>':'')+'<span class="sk" data-lcount="1">'+esc(lcount(drafts[q.key]))+'</span></div>';
+    h+='<div class="sub">Only the paragraphs change; the date, the recipient, and the sign-off stay as they are. Keep a blank line between paragraphs.</div>';
+    if(lmsg[q.key])h+='<div class="sub lmsg">'+esc(lmsg[q.key])+'</div>';
+  }else{
+    var used={};
+    h+='<div class="lbody">'+lmarked(ps,M,used)+'</div>';
+    if(L.tail)h+='<div class="lhd">'+esc(L.tail)+'</div>';
+    var lg=Object.keys(LMARK).filter(function(n){return used[n]}).map(function(n){return '<span><i class="sw lm-'+LMARK[n][0]+'"></i>'+esc(LMARK[n][1])+'</span>'}).join('');
+    if(lg)h+='<div class="legend">'+lg+'</div>';
+    h+='<div class="acts"><button class="act go" data-lt="copy" data-k="'+k+'">Copy letter</button>'+(shut?'':'<button class="act" data-lt="edit" data-k="'+k+'">Edit</button>'+(e?'<button class="act" data-lt="discard" data-k="'+k+'">Discard edit</button>':''))+'<span class="sk">'+plural(lwords(ps),'word')+'</span></div>';
+    if(shut)h+='<div class="sub">'+esc(shut)+'</div>';
+  }
+  return h+'</div></details></div>'}
+function letterClick(t,a){var k=t.getAttribute('data-k'),q=null;
+  for(var i=0;i<D.queue.length;i++)if(D.queue[i].key===k){q=D.queue[i];break}
+  if(!q||!q.letter)return;
+  var L=q.letter,e=ledit(q),box=t.closest?t.closest('.lt'):null,host=t.closest?t.closest('.list'):null;
+  if(a==='copy'){copyText(t,ltext(q),function(){return box?box.querySelector('.lbody'):null});return}
+  delete lmsg[k];
+  if(a==='edit')drafts[k]=(e?lparas(e.text):L.paras).join('\n\n');
+  else if(a==='cancel')delete drafts[k];
+  else if(a==='discard'){delete ledits[k];delete drafts[k];saveEdits()}
+  else if(a==='save'){var ta=box?box.querySelector('textarea'):null;if(ta)drafts[k]=ta.value;
+    var ps=lparas(drafts[k]),n=lwords(ps),text=ps.join('\n\n');
+    // Saving the letter as it stands is not an edit, and it clears one he typed his way back out of.
+    if(text===L.paras.join('\n\n')){delete ledits[k];delete drafts[k];saveEdits()}
+    else if(ps.some(function(p){return !/[A-Za-z0-9]/.test(p)}))lmsg[k]='Not saved: one paragraph has no words in it.';
+    else if(ps.length<LIM.min_paragraphs||n<LIM.min_words||n>LIM.max_words)lmsg[k]="Not saved: that's "+plural(n,'word')+' in '+plural(ps.length,'paragraph')+'. A letter here is at least '+LIM.min_paragraphs+' paragraphs and '+LIM.min_words+' to '+LIM.max_words+" words, so a slip can't wipe one.";
+    else if(!canMark(q)||L.no_edit)lmsg[k]="Not saved: this row's letter can't be edited here.";
+    else{ledits[k]={text:text,base_sha:L.sha,saved_at:new Date().toISOString()};delete drafts[k];saveEdits()}}
+  else return;
+  openD[k+'|letter']=1;todayList();queue();
+  if(a==='edit'&&host){var tas=host.querySelectorAll('textarea[data-ledit]');
+    for(var j=0;j<tas.length;j++)if(tas[j].getAttribute('data-ledit')===k){tas[j].focus();break}}}
+// An edit box is as tall as its letter, so the whole letter is in view while he edits it.
+function lgrow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px'}
+function lfit(id){Array.prototype.forEach.call(el(id).querySelectorAll('textarea[data-ledit]'),lgrow)}
+// Redrawing the lists rebuilds an open edit box, so what he has typed is kept as he types it.
+document.addEventListener('input',function(ev){var t=ev.target,k=t&&t.getAttribute?t.getAttribute('data-ledit'):null;
+  if(k==null)return;drafts[k]=t.value;lgrow(t);
+  var c=t.parentNode?t.parentNode.querySelector('[data-lcount]'):null;if(c)c.textContent=lcount(t.value)});
 function rowHTML(q,full){
-  return '<div class="row'+(mk(q)?' dim':'')+'"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(q.score==null?'':Math.round(q.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(q.company)+'</span><span>'+titleLink(q)+'</span></div>'+knowLine(q)+'<div class="meta">'+tags(q)+'</div>'+(full?briefPanel(q):'')+fieldsPanel(q)+acts(q)+'</div><div class="right">'+leftCell(q)+'</div></div>'}
+  return '<div class="row'+(q.letter||q.letter_note?' wrap':'')+(mk(q)?' dim':'')+'"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(q.score==null?'':Math.round(q.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(q.company)+'</span><span>'+titleLink(q)+'</span></div>'+knowLine(q)+'<div class="meta">'+tags(q)+'</div>'+(full?briefPanel(q):'')+fieldsPanel(q)+acts(q)+'</div><div class="right">'+leftCell(q)+'</div>'+letterPanel(q)+'</div>'}
 
 function todayList(){
   var rows=D.queue.filter(isNew).sort(function(a,b){return (b.score||0)-(a.score||0)}), when=nice(runDate);
   el('h-today').textContent='New from the '+when+' run';
   el('today-sub').textContent=(B&&B.note)?B.note:(rows.length?'Tailored on or after '+when+'.':'');
-  el('today').innerHTML=rows.length?rows.map(function(q){return rowHTML(q,true)}).join(''):'<div class="empty">No new packages from the '+esc(when)+' run.</div>'}
+  el('today').innerHTML=rows.length?rows.map(function(q){return rowHTML(q,true)}).join(''):'<div class="empty">No new packages from the '+esc(when)+' run.</div>';
+  lfit('today')}
 
 function runNotes(){var secs=(B&&B.sections)||[];
   el('run-wrap').style.display=secs.length?'':'none'; if(!secs.length)return;
@@ -1271,17 +1655,24 @@ function runNotes(){var secs=(B&&B.sections)||[];
 
 function legacyCopy(p){var ta=document.createElement('textarea'),ok=false;ta.value=p;ta.style.position='fixed';ta.style.opacity='0';
   document.body.appendChild(ta);ta.select();try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);return ok}
-function copy(s){if(s.getAttribute('data-busy'))return;var p=s.getAttribute('data-copy'),old=s.textContent;
-  function done(){s.setAttribute('data-busy','1');s.textContent='copied';setTimeout(function(){s.textContent=old;s.removeAttribute('data-busy')},900)}
+// `where` is for a value too long to show in its own button (a whole letter): it returns the
+// element that already displays the text, and the last resort selects that instead.
+function copyText(s,p,where){if(s.getAttribute('data-busy'))return;var old=s.textContent;
+  function flash(msg,ms){s.setAttribute('data-busy','1');s.textContent=msg;setTimeout(function(){s.textContent=old;s.removeAttribute('data-busy')},ms)}
+  function done(){flash('copied',900)}
   // Last resort when neither clipboard path is allowed: show the value and select it, so
   // Command-C finishes the job. (window.prompt is not available in every embedded browser.)
   function fallback(){if(legacyCopy(p)){done();return}
-    try{s.textContent=p;var r=document.createRange();r.selectNodeContents(s);var w=window.getSelection();w.removeAllRanges();w.addRange(r);s.title='Selected. Press Command-C to copy.'}catch(e){}}
+    try{var n=where?where():s;if(!n)return;if(!where)s.textContent=p;var r=document.createRange();r.selectNodeContents(n);var w=window.getSelection();w.removeAllRanges();w.addRange(r);
+      s.title='Selected. Press Command-C to copy.';if(where)flash('Selected. Press Command-C.',2500)}catch(e){}}
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(p).then(done,fallback);else fallback()}
+function copy(s){copyText(s,s.getAttribute('data-copy'))}
 // One listener for every copy target and every mark button, wherever the row is drawn.
 document.addEventListener('click',function(ev){var t=ev.target;if(!t||!t.getAttribute)return;
   var la=t.getAttribute('data-lact');
   if(la){leadClick(t,la);return}
+  var lt=t.getAttribute('data-lt');
+  if(lt){letterClick(t,lt);return}
   var a=t.getAttribute('data-act');
   if(!a){var c=t.closest?t.closest('[data-copy]'):null;if(c)copy(c);return}
   if(a==='bulk'){oldRows().forEach(function(o){marks[o.key]={a:'skip',r:'other',bulk:true,d:iso(today),ts:Date.now(),u:o.url,c:o.company,t:o.title}});
@@ -1310,12 +1701,15 @@ function queue(){
   bulkBar();
   var done=D.queue.filter(isDone).length;
   QF.marked[0]='Marked ('+done+')';
-  el('marknote').textContent=done?done+' marked. The next weekday run records them, and they leave this list.':'';
+  var edited=D.queue.filter(function(q){return q.letter&&ledit(q)}).length;
+  el('marknote').textContent=(done?done+' marked. The next weekday run records them, and they leave this list.':'')+
+    (edited?(done?' ':'')+plural(edited,'letter edit')+' saved. The next weekday run applies '+(edited===1?'it':'them')+'.':'');
   chips('qchips',QF,qFilter,function(k){qFilter=k;queue()});
   var rows=D.queue.filter(QF[qFilter][1]).slice();
   rows.sort(qFilter==='expiring'?function(a,b){return a.left-b.left}:function(a,b){
     if((a.age==null)!==(b.age==null))return a.age==null?1:-1; return (b.score||0)-(a.score||0)});
-  el('queue').innerHTML=rows.length?rows.map(function(q){return rowHTML(q,false)}).join(''):'<div class="empty">Nothing in this view.</div>'}
+  el('queue').innerHTML=rows.length?rows.map(function(q){return rowHTML(q,false)}).join(''):'<div class="empty">Nothing in this view.</div>';
+  lfit('queue')}
 
 function screened(){
   var rows=(D.screened||[]).slice().sort(function(a,b){return (b.score||0)-(a.score||0)});

@@ -69,6 +69,14 @@ drain_leads() hands them to lead_marks.py, which records them in jobs/lead_marks
 It runs first, reports as one `leads:` clause on the same line, and a failure there
 never stops the queue marks.
 
+LETTER EDITS (added 2026-11-12)
+A queue row with a cover letter shows the letter, and an edit he saves to it waits under
+a third key, `jobdash.letters.v1`, keyed by posting URL like a mark. drain_letters()
+hands those to letter_edits.py, which owns every rule about when an edit may be applied
+and every write to the letter's files (never the tracker). It reports as one `letters:`
+clause on the same line, with a detail line per edit, and a failure there never stops
+the queue marks either. `letter_edits.py --apply` does the same thing on its own.
+
 This file is committed to a public repo. No company names, no sample rows.
 """
 import contextlib
@@ -178,6 +186,26 @@ def drain_leads(inbox_path, today, apply):
                 f"{n_pass} passed{extra}")
     except Exception as e:  # noqa: BLE001
         return f"leads: FAILED {type(e).__name__}: {e}"
+
+
+def drain_letters(inbox_path, today, apply):
+    """Apply the letter edits he saved on the page (added 2026-11-12).
+
+    Returns one clause for the `shelf_inbox:` line, or "" when no edit is saved. Never
+    raises, like drain_leads(): a failure is reported and the queue marks still record.
+    letter_edits.py owns every rule and every write; this hands it the inbox and this
+    module's tracker and jobs paths, and prints its detail lines. It runs before the marks
+    are recorded, which is safe either way round: letter_edits.py refuses a row with a Sent
+    mark still waiting here, and refuses a row the marks have already moved past `surfaced`.
+    """
+    try:
+        import letter_edits
+        r = letter_edits.drain(inbox_path, today, apply, outcomes=OUTCOMES, jobs_dir=JOBS_DIR)
+        for line in r["lines"]:
+            print(f"  letter {line}" if not line.startswith(" ") else f"  {line}")
+        return f"letters: {r['summary']}" if r["seen"] else ""
+    except Exception as e:  # noqa: BLE001
+        return f"letters: FAILED {type(e).__name__}: {e}"
 
 
 def read_rows():
@@ -360,8 +388,10 @@ def main(argv=None):
             raise ValueError("--today needs YYYY-MM-DD")
         inbox = argv[argv.index("--inbox") + 1] if "--inbox" in argv else None
         lead_note = drain_leads(inbox, today, "--apply" in argv)
-        sfx = f"; {lead_note}" if lead_note else ""
-        lead_failed = lead_note.startswith("leads: FAILED")
+        letter_note = drain_letters(inbox, today, "--apply" in argv)
+        sfx = "".join(f"; {note}" for note in (lead_note, letter_note) if note)
+        # One flag for both side drains: strict mode surfaces a failure in either.
+        lead_failed = lead_note.startswith("leads: FAILED") or " FAILED" in letter_note
         marks, why = load_marks(inbox)
         if not marks:
             print(f"shelf_inbox: nothing to record ({why or 'no marks on the page'}){sfx}")

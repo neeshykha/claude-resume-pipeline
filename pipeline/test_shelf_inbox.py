@@ -462,6 +462,97 @@ def test_a_lead_failure_never_stops_queue_marks():
         assert f.read() == "{broken", "a malformed record is never overwritten"
 
 
+# --- Letter edits (2026-11-12) -------------------------------------------------------------
+# letter_edits.py has its own tests for every rule. These cover the hand-off: the same drain
+# that records the marks applies a saved edit, and neither can break the other. The letter is
+# the made-up one from test_letter_edits.py, and the renderer is its stand-in.
+
+def letter_fixture(marks, edit_paras=None, **row_kw):
+    import check_voice
+    import letter_edits
+    import test_letter_edits as tle
+    d, inbox = fixture([row(company="Acme", title="Operations Lead", url=tle.URL,
+                            notes=f"tailored/apply_now/{tle.STEM}.pdf + _cover.pdf", **row_kw),
+                        row(company="B", url="https://example.com/b")], marks)
+    letter_edits.TAILORED = os.path.join(d, "tailored")
+    letter_edits.render_cover = tle.fake_render
+    check_voice.OUTCOMES = si.OUTCOMES
+    os.makedirs(os.path.join(letter_edits.TAILORED, "apply_now"))
+    tle.write_letter(letter_edits.TAILORED)
+    new = edit_paras or tle.changed()
+    with open(inbox, encoding="utf-8") as f:
+        store = json.load(f)
+    store[letter_edits.LETTERS_KEY] = json.dumps({tle.URL: {
+        "text": "\n\n".join(new), "base_sha": letter_edits.bd.letter_sha(tle.PARAS), "saved_at": "2026-10-11T22:00:00.000Z"}})
+    with open(inbox, "w", encoding="utf-8") as f:
+        json.dump(store, f)
+    return inbox, letter_edits, tle, new
+
+
+def letter_on_disk(le, tle):
+    return le.bd.read_letter(le.TAILORED, tle.STEM)[0]["paras"]
+
+
+def test_a_letter_edit_is_applied_in_the_same_drain_as_the_marks():
+    b = "https://example.com/b"
+    inbox, le, tle, new = letter_fixture({b: mark("skip", b, r="fit")})
+    rc, out = run(inbox)
+    assert rc == 0 and "letters: would apply 1, would refuse 0" in out and "(report only" in out, out
+    assert letter_on_disk(le, tle) == tle.PARAS and os.listdir(si.JOBS_DIR) == [], "report mode writes nothing"
+    rc, out = run(inbox, "--apply")
+    assert rc == 0 and "recorded 0 sent, 1 verdicts (1 skips)" in out, out
+    assert "; letters: applied 1, refused 0" in out and "  letter applied: Acme: Operations Lead" in out, out
+    assert letter_on_disk(le, tle) == new
+    assert tracker()["Acme"]["stage"] == "surfaced" and tracker()["Acme"]["notes"].startswith("tailored/"), \
+        "a letter edit never touches the tracker"
+    assert os.path.exists(os.path.join(si.JOBS_DIR, le.LOG_NAME)) and os.path.exists(os.path.join(si.JOBS_DIR, le.RESULTS_NAME))
+    rc, out = run(inbox, "--apply")
+    assert "letters: applied 0, refused 0, 1 unchanged since an earlier run" in out, out
+
+
+def test_no_letter_edit_adds_nothing_to_the_line():
+    url = "https://example.com/a"
+    d, inbox = fixture([row(company="A", url=url)], {url: mark("later", url)})
+    rc, out = run(inbox, "--apply")
+    assert "letters:" not in out and "letter " not in out, out
+
+
+def test_a_sent_mark_and_an_edit_on_one_row_send_the_letter_as_it_was():
+    import test_letter_edits as tle
+    inbox, le, tle, new = letter_fixture({tle.URL: mark("sent", tle.URL)})
+    rc, out = run(inbox, "--apply")
+    assert "recorded 1 sent, 1 verdicts" in out and "letters: applied 0, refused 1" in out, out
+    assert "A Sent mark for this row is waiting on the page" in out, out
+    assert tracker()["Acme"]["stage"] == "applied"
+    assert letter_on_disk(le, tle) == tle.PARAS, "what may have gone out is not rewritten after the fact"
+    assert not os.path.exists(os.path.join(le.TAILORED, le.VERSIONS_DIR))
+    rc, out = run(inbox, "--apply")     # the mark is recorded now; the row's stage refuses it on its own
+    assert "The tracker row is applied, so this letter may have gone out" in out and letter_on_disk(le, tle) == tle.PARAS, out
+
+
+def test_a_letter_failure_never_stops_queue_marks():
+    b = "https://example.com/b"
+    inbox, le, tle, new = letter_fixture({b: mark("skip", b, r="time")})
+    with open(os.path.join(si.JOBS_DIR, le.RESULTS_NAME), "w", encoding="utf-8") as f:
+        f.write("{broken")
+    rc, out = run(inbox, "--apply")
+    assert rc == 0 and "recorded 0 sent, 1 verdicts" in out and "letters: FAILED" in out, out
+    assert tracker()["B"]["his_verdict"] == "skip_time" and letter_on_disk(le, tle) == tle.PARAS
+    assert run(inbox, "--apply", "--strict")[0] == 1, "strict mode surfaces the letter failure"
+    os.remove(os.path.join(si.JOBS_DIR, le.RESULTS_NAME))
+    rc, out = run(inbox, "--apply", "--strict")
+    assert rc == 0 and "letters: applied 1" in out, out
+    # A render that fails is a problem on the line, and still not a failed run.
+    inbox, le, tle, new = letter_fixture({})
+
+    def boom(json_path, pdf_path):
+        raise RuntimeError("renderer down")
+    le.render_cover = boom
+    rc, out = run(inbox, "--apply")
+    assert rc == 0 and "letters: applied 0, refused 0, 1 FAILED" in out and "renderer down" in out, out
+    assert run(inbox, "--apply", "--strict")[0] == 1
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:
