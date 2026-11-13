@@ -82,6 +82,13 @@ NEAR_WINDOW_SIZE = 40  # ranks just below the cutoff, emitted as compressed FYI 
 # Populated from watchlist_companies.json by _init_config():
 ATS_ENDPOINTS = {}       # ← _endpoints (workday excluded; fetch_workday builds its URL from wd_* fields)
 MIN_SALARY = None        # ← _scoring_config.salary_floor_usd
+# The pre-score's pay points (+10 at a $130K minimum, +5 at the floor). Off
+# unless the JSON says `"pay_points_enabled": true`; the key is absent on
+# purpose (2026-11-12). Only Ashby and Pinpoint postings carry a parsed
+# minimum, so the points would rank those two boards' roles over every other
+# board's for a fact about the board. They come back with the ranking rebuild,
+# when other boards' pay can be read too. The floor gate does not use this.
+PAY_POINTS_ENABLED = False  # ← _scoring_config.pay_points_enabled (absent = off)
 # Hard freshness filter (CLAUDE.md Step 2b) — all ATSes; Workday dates are
 # approximate, see extract_posted_date. Raised 21 -> 40 on 2026-07-27 from the
 # funnel audit: it was the 2nd-largest killer of title-matched jobs (509 of
@@ -204,11 +211,15 @@ def _init_config(watchlist: dict):
     """Load all shared knobs from the parsed watchlist JSON into module globals."""
     global MIN_SALARY, COMPANY_CAP, CAP_PENDING_MAX_AGE_DAYS, MATCHER
     global FRESH_TOP_BAND_DAYS, FRESH_TOP_BAND_TRACKS_RUN_GAP
+    global PAY_POINTS_ENABLED
     ATS_ENDPOINTS.clear()
     ATS_ENDPOINTS.update({k: v for k, v in watchlist["_endpoints"].items()
                           if not v.startswith("POST")})
     sc = watchlist["_scoring_config"]
     MIN_SALARY = sc["salary_floor_usd"]
+    # Optional, and absent means off. Only a JSON `true` turns the points on:
+    # a hand-typed "false" or 1 is not read as yes.
+    PAY_POINTS_ENABLED = sc.get("pay_points_enabled", False) is True
     COMPANY_CAP = sc["company_cap_max_applied_pending"]
     CAP_PENDING_MAX_AGE_DAYS = sc.get("company_cap_pending_max_age_days", 60)
     # Direct indexing, like salary_floor_usd above: validate_config.py makes both
@@ -1082,12 +1093,143 @@ def extract_posted_date(job_data: dict, ats: str) -> date | None:
     return None
 
 
+# ── Ashby pay (added 2026-11-12) ────────────────────────────────────────────
+# Ashby's posting API returns pay only when asked (`?includeCompensation=true`,
+# which _endpoints.ashby has carried all along), in a shape extract_salary_min
+# never read:
+#
+#   compensation = {
+#     "compensationTierSummary": "$95.8K – $140K • Offers Bonus",
+#     "scrapeableCompensationSalarySummary": "$95.8K - $140K",
+#     "summaryComponents": [{"compensationType": "Salary", "interval": "1 YEAR",
+#                            "currencyCode": "USD", "minValue": 95800,
+#                            "maxValue": 140000}, ...one per pay type],
+#     "compensationTiers": [{"title", "additionalInformation", "tierSummary",
+#                            "components": [the same five fields plus a
+#                                           free-text "summary"]}],
+#   }
+#
+# So salary_min was null on every Ashby row (17 of the 56 matched on
+# 2026-11-10), and neither the floor gate nor the pre-score's pay points ever
+# fired for them.
+#
+# A read of all 251 Ashby boards on the watchlist on 2026-11-12 (11,704
+# postings, 5,814 with pay) is what the rules below come from:
+#   - "Salary" is not always base pay. Ashby has no OTE type, so companies file
+#     OTE as Salary and say so only in free text: the component's own label
+#     ("OTE $217K – $298K", "On-Target Earnings ..."), the tier title ("OTE"),
+#     or the tier note ("75/25 split", "Target total cash compensation ...").
+#     Roughly one Salary component in ten carries such a label, and the label
+#     is NOT in summaryComponents or in the summary string.
+#   - interval is "1 YEAR" on most but also "1 HOUR", "1 MONTH", "1 WEEK", and
+#     the currency is one of 19 others on 626 postings.
+#   - The numbers are typed by hand: hourly rates filed as yearly ($23 – $25),
+#     a dropped "K" ($110 – $165,000), a zero minimum ($0 – $298K).
+# Whatever cannot be read with confidence comes back (None, None). An unread
+# salary is neutral everywhere downstream; a misread one drops the role at the
+# floor gate or pays it pre-score points it did not earn.
+ASHBY_PLAUSIBLE_ANNUAL_USD = (15_000, 1_000_000)   # a full-time year at the US federal minimum wage is $15,080
+_ASHBY_NOT_BASE_RE = re.compile(r"\bote\b|on[- ]target|\bsplit\b|\btcc\b|\bcash\b", re.I)
+_ASHBY_LABEL_NOT_BASE_RE = re.compile(r"commission|bonus", re.I)   # "Base + Commission $X – $Y"
+_ASHBY_MONEY = r"\$\s?(\d[\d,]*(?:\.\d+)?)\s?([KkMm])?"
+_ASHBY_RANGE_RE = re.compile(rf"{_ASHBY_MONEY}(?:\s*(?:[–—-]|to)\s*{_ASHBY_MONEY})?")
+
+
+def _ashby_plausible(lo: int, hi) -> tuple:
+    """(lo, hi) when both read as a yearly USD salary, else (None, None)."""
+    floor, ceiling = ASHBY_PLAUSIBLE_ANNUAL_USD
+    if not floor <= lo <= ceiling:
+        return (None, None)
+    if hi is None:
+        return (lo, None)
+    if not lo <= hi <= ceiling:
+        return (None, None)
+    return (lo, hi)
+
+
+def ashby_salary_range(compensation) -> tuple:
+    """(annual USD base-salary minimum, maximum) from an Ashby posting's
+    `compensation` object, or (None, None).
+
+    Structured values first: the Salary entry of `summaryComponents` (Ashby's
+    own roll-up, one per posting), and when that one is not yearly USD, the
+    yearly USD Salary entries of `compensationTiers` (some boards list a CAD
+    roll-up over US tiers). The summary string is read only when the posting carries no
+    structured Salary entry at all, so a string can never overrule an entry
+    that says hourly, monthly, or another currency.
+
+    Not read as base salary, on purpose: any interval but "1 YEAR", any currency
+    but USD, the Bonus / Commission / Equity entries, a figure outside
+    ASHBY_PLAUSIBLE_ANNUAL_USD, and any posting whose free text says the figure
+    is on-target earnings, a base/variable split, or total cash.
+    """
+    nothing = (None, None)
+    if not isinstance(compensation, dict):
+        return nothing
+
+    def dicts(value):
+        return [x for x in value if isinstance(x, dict)] if isinstance(value, list) else []
+
+    def salary(parts):
+        return [c for c in parts if c.get("compensationType") == "Salary"]
+
+    def yearly_usd(parts):
+        return [c for c in salary(parts)
+                if c.get("interval") == "1 YEAR" and c.get("currencyCode") == "USD"]
+
+    def number(v):
+        return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+    tiers = dicts(compensation.get("compensationTiers"))
+    tier_parts = [c for t in tiers for c in dicts(t.get("components"))]
+    summary_parts = dicts(compensation.get("summaryComponents"))
+
+    notes = [compensation.get("compensationTierSummary")]
+    for t in tiers:
+        notes += [t.get("title"), t.get("additionalInformation"), t.get("tierSummary")]
+    labels = [c.get("summary") for c in salary(tier_parts)]
+    if any(isinstance(s, str) and _ASHBY_NOT_BASE_RE.search(s) for s in notes + labels):
+        return nothing
+    if any(isinstance(s, str) and _ASHBY_LABEL_NOT_BASE_RE.search(s) for s in labels):
+        return nothing
+
+    picked = yearly_usd(summary_parts) or yearly_usd(tier_parts)
+    if picked:
+        lows = [c.get("minValue") for c in picked]
+        highs = [c.get("maxValue") for c in picked if number(c.get("maxValue"))]
+        if not all(number(v) for v in lows):
+            return nothing
+        return _ashby_plausible(int(round(min(lows))),
+                                int(round(max(highs))) if highs else None)
+    if salary(summary_parts) or salary(tier_parts):
+        return nothing  # pay is stated, and not as a yearly USD salary
+
+    # No structured entry: the first "•" segment of the tier summary is the
+    # salary ("$95.8K – $140K • Offers Bonus"). fullmatch, so "CA$120K – CA$150K",
+    # "$32 – $39 per hour" and "$40K – $60K Commission" all fail to read.
+    text = compensation.get("compensationTierSummary")
+    if isinstance(text, str) and text.strip():
+        text = text.split("•")[0]
+    else:
+        text = compensation.get("scrapeableCompensationSalarySummary")
+    m = _ASHBY_RANGE_RE.fullmatch(text.strip()) if isinstance(text, str) else None
+    if not m:
+        return nothing
+
+    def amount(digits, suffix):
+        scale = {"k": 1_000, "m": 1_000_000}.get((suffix or "").lower(), 1)
+        return int(round(float(digits.replace(",", "")) * scale))
+
+    lo = amount(m.group(1), m.group(2))
+    return _ashby_plausible(lo, amount(m.group(3), m.group(4)) if m.group(3) else lo)
+
+
 def extract_salary_min(compensation) -> int | None:
     """Try to extract minimum salary from various ATS compensation formats."""
     if not compensation:
         return None
     if isinstance(compensation, dict):
-        # Ashby format
+        # Flat keys (fetch_pinpoint writes {"min": ...}). Not Ashby's shape.
         for key in ("min", "minimum", "minValue", "floor"):
             if key in compensation:
                 try:
@@ -1098,6 +1240,10 @@ def extract_salary_min(compensation) -> int | None:
         for key in ("salary", "compensation", "range"):
             if key in compensation and isinstance(compensation[key], dict):
                 return extract_salary_min(compensation[key])
+        # Ashby (2026-11-12). Reached only by a dict the two loops above could
+        # not read, which used to fall through to None, so every input they
+        # handle returns what it always did.
+        return ashby_salary_range(compensation)[0]
     if isinstance(compensation, str):
         # Try to extract number from string like "$120,000" or "120000"
         nums = re.findall(r'[\$]?\s*([\d,]+)', compensation)
@@ -1107,6 +1253,57 @@ def extract_salary_min(compensation) -> int | None:
             except ValueError:
                 pass
     return None
+
+
+def extract_salary_max(compensation) -> int | None:
+    """Top of the posted range, from the dict shapes extract_salary_min reads a
+    minimum from: flat keys (fetch_pinpoint writes {"min": ..., "max": ...}),
+    one nested level, and Ashby's object. Added 2026-11-12 for the floor gate.
+
+    None when only a minimum is posted. None for a plain string too: the string
+    branch of extract_salary_min takes the first number it finds, and a second
+    number in free text ("$32 - $39 per hour", "$120K plus $20K bonus") is not
+    a maximum anyone can vouch for. A role read that way is judged on its
+    minimum, as it always was.
+    """
+    if not compensation or not isinstance(compensation, dict):
+        return None
+    for key in ("max", "maximum", "maxValue", "ceiling"):
+        if key in compensation:
+            try:
+                return int(compensation[key])
+            except (ValueError, TypeError):
+                pass
+    for key in ("salary", "compensation", "range"):
+        if key in compensation and isinstance(compensation[key], dict):
+            return extract_salary_max(compensation[key])
+    return ashby_salary_range(compensation)[1]
+
+
+def salary_floor_basis(salary_min, salary_max=None):
+    """The one figure the pay floor is compared with, or None when no pay was read.
+
+    The MIDPOINT of the posted range when both ends are known, the minimum when
+    only a minimum is. His call, 2026-11-12: the JD screen already judges pay on
+    the midpoint (jd_screen_table.py), and a floor on the minimum dropped 46
+    gate-passing Ashby roles of which 29 had a midpoint at or over $100K
+    ($95.8K to $140K, $90K to $120K). A maximum under its own minimum is a
+    typo, not a range, and is ignored.
+    """
+    if not salary_min:
+        return None
+    if salary_max and salary_max >= salary_min:
+        return (salary_min + salary_max) / 2
+    return salary_min
+
+
+def under_salary_floor(salary_min, salary_max=None, floor=None) -> bool:
+    """True when the posted pay puts the role under the floor (MIN_SALARY unless
+    `floor` is given). Unread pay is never under it: no figure, no drop."""
+    basis = salary_floor_basis(salary_min, salary_max)
+    if basis is None:
+        return False
+    return basis < (MIN_SALARY if floor is None else floor)
 
 
 def _apply_workplace_type(full: str, workplace_type) -> str:
@@ -1707,6 +1904,12 @@ def fetch_pinpoint(slug: str) -> list[dict]:
     will need revisiting, but it's untested as of this writing. Normalizes
     `compensation` into the {"min": ...} shape extract_salary_min already
     understands, so the generic salary path in poll_all works unchanged.
+
+    The top of the range rides along as "max" when the posting has one
+    (2026-11-12), so the floor gate can check the midpoint here as it does for
+    Ashby. `compensation_maximum` is Pinpoint's sibling of `compensation_minimum`;
+    the name was not re-read from a live board when this line was added, and a
+    posting without the key is judged on its minimum, as before.
     """
     url = ATS_ENDPOINTS["pinpoint"].format(slug=slug)
     try:
@@ -1717,6 +1920,8 @@ def fetch_pinpoint(slug: str) -> list[dict]:
         for j in jobs:
             if j.get("compensation_visible") and j.get("compensation_minimum"):
                 j["compensation"] = {"min": j["compensation_minimum"]}
+                if j.get("compensation_maximum"):
+                    j["compensation"]["max"] = j["compensation_maximum"]
         return jobs
     except Exception as e:
         return [{"_error": f"{type(e).__name__}: {e}"}]
@@ -2438,9 +2643,17 @@ def poll_all(run_date: date, fail_memory: bool = True) -> dict:
             # Compensation
             comp = job_data.get("compensation") or job_data.get("salary")
             salary_min = extract_salary_min(comp)
+            # Top of the range, for the boards that post one in a shape this
+            # file reads (Ashby, Pinpoint). Kept only beside a minimum it is
+            # not under, and carried on the entry as an optional key.
+            salary_max = extract_salary_max(comp)
+            if not (salary_min and salary_max and salary_max >= salary_min):
+                salary_max = None
 
-            # Salary filter
-            if salary_min and salary_min < MIN_SALARY:
+            # Salary filter: the MIDPOINT of the posted range against the floor
+            # when both ends are known, the minimum when only a minimum is
+            # (see salary_floor_basis). No pay read, no drop.
+            if under_salary_floor(salary_min, salary_max):
                 stats["excluded"] += 1
                 continue
 
@@ -2546,6 +2759,8 @@ def poll_all(run_date: date, fail_memory: bool = True) -> dict:
                 "title_tier": exact_match[0] if is_exact else None,
                 "title_prescore": exact_match[1] if is_exact else None,
             }
+            if salary_max:
+                entry["salary_max"] = salary_max
             if new_req_of_applied:
                 entry["new_req_of_applied_title"] = True
             if is_ai_wildcard:
@@ -2742,11 +2957,15 @@ def poll_all(run_date: date, fail_memory: bool = True) -> dict:
             score += 6
         score -= min(recent_surfaced.get(co_slug, 0) * 3, 9)
 
-        # Salary
-        if job.get("salary_min") and job["salary_min"] >= 130_000:
-            score += 10
-        elif job.get("salary_min") and job["salary_min"] >= MIN_SALARY:
-            score += 5
+        # Salary. Behind PAY_POINTS_ENABLED, which is off unless
+        # _scoring_config.pay_points_enabled is true (see the note at the top
+        # of the file). Switched on, the points are what they always were, on
+        # the posted MINIMUM: the floor gate's midpoint rule does not reach here.
+        if PAY_POINTS_ENABLED:
+            if job.get("salary_min") and job["salary_min"] >= 130_000:
+                score += 10
+            elif job.get("salary_min") and job["salary_min"] >= MIN_SALARY:
+                score += 5
 
         # AI/voice boost — TITLE ONLY. Previously also matched the company name,
         # which auto-granted +10 to every role at an AI-named company (Cresta,
