@@ -924,6 +924,17 @@ that file (its Track Source File feature) and refreshes the page in place under 
   came of each send. Rounds come from `pipeline/jobs/interviews.json` (gitignored), written only
   by `log_interview.py` from the interview-loop skill's Step 5.
   [D42](DECISIONS.md#d42-the-dashboard-got-a-progress-section)
+- **The page shows each unsent letter and takes edits to it (2026-11-12).** A queue row whose
+  package has a letter carries a Letter panel: the letter with up to three sentences marked
+  (why this job, the tie-back, the promise), Copy letter, and Edit. A saved edit waits in the
+  Shelf's storage under `jobdash.letters.v1`, and `pipeline/letter_edits.py` applies it: from
+  `shelf_inbox.py --apply` at Step 0 item 4b, or when he says "apply my letter edits" (run
+  `.venv/bin/python pipeline/letter_edits.py --apply`, then `build_dashboard.py`). It refuses
+  unless the row is plainly unsent (stage exactly `surfaced`, no verdict, no Sent mark
+  waiting) and the letter on disk is the one he edited. It keeps the earlier version in
+  `tailored/_letter_versions/`, writes the `.md` and the JSON from one function, and
+  re-renders the PDF. `check_voice.py` runs for information only: an applied edit is his
+  wording, and no run rewrites it. Spec: `DASHBOARD_SPEC.md`, 2026-11-12 section.
 - **Open:** deferred on purpose: adapters for the Jobvite and Gem boards a few manual-check
   companies use, and the queue rows that report "N PDFs match" instead of one resume path.
 

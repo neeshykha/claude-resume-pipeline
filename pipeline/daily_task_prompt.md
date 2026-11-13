@@ -117,6 +117,23 @@ brief digest saying so rather than guessing an address.
      row; this command records them in `pipeline/jobs/lead_marks.json` through
      `lead_marks.py`. A Pass is finished. A Tailor it waits there for Step 1d-4. A
      `leads: FAILED` or `not recorded` clause gets one alert line, same as above.
+   - **The same line ends with a `letters:` clause when he saved an edit to a cover letter
+     (added 2026-11-12).** A queue row with a letter shows it on the dashboard, and he can save
+     an edit to it there. This command hands saved edits to `pipeline/letter_edits.py`, which
+     rewrites the letter's `.md` and `_cover_data.json` from his text, re-renders the cover PDF,
+     and keeps the earlier version under `tailored/_letter_versions/`. It prints one
+     `letter ...` line per edit above the `shelf_inbox:` line.
+     - **An applied edit is his wording. Leave it alone.** Don't send that letter back to a
+       writer, don't apply voice-gate or `avoid-ai-writing` findings to it, and don't re-render
+       it from anything but its own JSON. The `check_voice.py` line is information for him.
+     - **`refused` is not a failure.** It refuses any row that isn't plainly unsent (a stage
+       past `surfaced`, a verdict, a Sent mark waiting) and any edit made on a letter that has
+       since changed. His text stays on the page and in `jobs/letter_edits.jsonl`. Nothing to do.
+     - **`FAILED` gets one alert line**, worded for him: which role, and that his edit is still
+       saved. Don't retry it and don't debug it inside the run.
+     - A `note:` line saying the first sentence or the promise sentence changed goes in that
+       pick's `check` list when the role is in today's brief, otherwise in `pipeline_notes`.
+       Don't edit `tailored/_cover_openers.md` or the pick's `commitment` because of it.
    - Never write to anything under the Shelf's own folder. The page forgets a mark by itself
      once its row has left the queue.
 
