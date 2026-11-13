@@ -28,13 +28,16 @@ import statistics
 from collections import Counter, defaultdict
 
 from mark_verdict import VERDICT_SINCE
+from stages import closed_row_evidence, counts_as_sent
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
 EPOCH = "2026-07-28"
 
-# stage values that mean the application went out
-SENT_STAGES = {"applied", "assessment", "interview", "onsite", "offer", "rejected", "closed"}
+# What counts as sent is one rule, stages.counts_as_sent(), read through is_sent()
+# below. This file keeps no stage set of its own: until 2026-11-12 it counted every
+# `closed` row as a send, and 11 of the 19 closed rows then on the tracker had
+# never gone out.
 ADVANCED = {"assessment", "interview", "onsite", "offer"}
 PAY_RE = re.compile(r"\$(\d{2,3})(?:,\d{3}|K)\s*[-–]\s*\$?(\d{2,3})(?:,\d{3}|K)", re.I)
 # The stamp update_tracking.py writes when a retailor reopens a row. Keep the two in sync.
@@ -57,7 +60,11 @@ def stretch(r):
 
 
 def is_sent(r):
-    return r["stage"].strip() in SENT_STAGES or (r.get("his_verdict") or "").startswith("sent")
+    """Did this row's application go out? The rule is stages.counts_as_sent(): the
+    stage proves it, or his verdict says so, and a `closed` row counts only when
+    the row shows a send. Every send count in this report comes through here (the
+    headline, the traction split, the monthly trend), so they cannot disagree."""
+    return counts_as_sent(r)
 
 
 def advanced(r):
@@ -108,6 +115,17 @@ def report(rows, leads=None):
     open_ = [r for r in rows if r["stage"].strip() == "surfaced"]
     expired = [r for r in rows if r["stage"].strip() == "expired"]
     out(f"Tailored: {len(rows)} | sent: {pct(len(sent), len(rows))} | still open: {len(open_)} | expired unsent: {len(expired)}")
+    # Closed rows that are not sends are in none of the three counts above, so say
+    # how many there are. One with a send on the row AND a never-sent note is left
+    # out too (the note wins); name those, because one of the two is wrong.
+    closed_unsent = [r for r in rows if r["stage"].strip() == "closed" and not is_sent(r)]
+    if closed_unsent:
+        n = len(closed_unsent)
+        both = sum(1 for r in closed_unsent if all(closed_row_evidence(r)))
+        out(f"  {n} closed {'row is' if n == 1 else 'rows are'} not counted as sent: nothing on "
+            f"{'it' if n == 1 else 'them'} shows a send, or the notes say it never went out"
+            + (f" ({both} of these {'has' if both == 1 else 'have'} a send on the row and a "
+               f"never-sent note; check by hand)" if both else ""))
     # A reopened row is one posting counted once, under its newest package. The package
     # it replaced went unsent and has left these counts, so say how many did.
     reopened = sum(1 for r in rows if REOPENED_RE.search(r.get("notes") or ""))

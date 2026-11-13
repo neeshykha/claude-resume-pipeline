@@ -120,6 +120,8 @@ import re
 import shutil
 import sys
 
+from stages import SEND_PROVEN
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SEEN_JOBS = os.path.join(SCRIPT_DIR, "jobs", "seen_jobs.json")
 SEEN_URLS = os.path.join(SCRIPT_DIR, "jobs", "seen_urls.json")
@@ -137,9 +139,9 @@ OUTCOMES_HEADER = ["applied_date", "company", "title", "url", "fit_score",
 # Retailor (see the docstring). jobs/ is gitignored, like outcomes.csv itself.
 REOPENED_ROWS = os.path.join(SCRIPT_DIR, "jobs", "reopened_rows.jsonl")
 REOPEN_BACKUP = ".prereopen.bak"     # pipeline/*.bak* is gitignored
-# The application went out. Same stages mark_applied.py and shelf_inbox.py treat
-# as sent, less `closed`, which is handled on its own.
-SENT_STAGES = ("applied", "rejected", "interview", "assessment", "onsite", "offer")
+# The application went out, and the stage alone proves it. The set lives in
+# stages.py. `closed` is not in it and is handled on its own.
+SENT_STAGES = SEND_PROVEN
 PACKAGE_PDFS = (".pdf", "_cover.pdf", "_ATS.pdf")
 # A package stem inside a row's notes ("tailored/X.pdf + _cover.pdf" gives X).
 PACKAGE_IN_NOTES = re.compile(

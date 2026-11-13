@@ -34,12 +34,14 @@ import os
 import re
 import sys
 
+from stages import ASSUME_SENT_FOR_SAFETY
+
 OUTCOMES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outcomes.csv")
 
 # Stages that mean the letter has already gone out. A letter in one of these is
-# a RECORD of what was sent, not a draft.
-SENT_STAGES = {"applied", "rejected", "closed", "expired", "interview",
-               "assessment", "onsite", "offer"}
+# a RECORD of what was sent, not a draft. The set lives in stages.py; it is the
+# widest one there, because this is a guard and has to lean toward "sent".
+SENT_STAGES = ASSUME_SENT_FOR_SAFETY
 
 
 def stage_of(cover_path):

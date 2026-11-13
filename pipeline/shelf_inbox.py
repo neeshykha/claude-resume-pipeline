@@ -93,7 +93,12 @@ BACKUP_SUFFIX = ".bak-shelf-inbox"   # + "-mon" .. "-sun"; pipeline/*.bak* is gi
 
 SKIP_VERDICTS = {"fit": "skip_fit", "time": "skip_time",
                  "materials": "skip_materials", "other": "skip_other"}
-SENT_STAGES = {"applied", "rejected", "closed", "interview", "assessment"}
+# A Sent mark on a row at one of these stages is already recorded. The set lives in
+# stages.py, which says how it differs from the other meanings of "sent".
+try:
+    from stages import SEND_ALREADY_RECORDED as SENT_STAGES
+except Exception:  # an inbox failure must never fail the run; test_stages.py fails if this copy drifts
+    SENT_STAGES = frozenset(("applied", "rejected", "closed", "interview", "assessment"))
 
 
 def norm_url(u):

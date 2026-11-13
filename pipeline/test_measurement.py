@@ -86,8 +86,46 @@ check("pre-epoch rows are excluded", "Tailored: 3" in rep)
 check("fit advance counted", "fit         advanced 1/1" in rep)
 check("reach send counted", "reach       advanced 0/1" in rep)
 check("skip verdict shows in breakdown", "skip_fit" in rep)
+check("no closed rows, no line about them", "closed row" not in rep)
 
-for f in (p, p + ".bak", p2):
+# A `closed` row is a send only when the row shows one (stages.counts_as_sent, 2026-11-12),
+# and every send count in the report moves with it. Eight made-up rows, three of them sends.
+STAMP = "Full tailoring + cover; outcome 2026-09-20; "
+p3 = write([row(stage="applied", furthest_stage="interview", unmet_hard_reqs="0", hard_req_cap_trigger="none"),
+            row(stage="rejected", unmet_hard_reqs="3", hard_req_cap_trigger="none"),
+            row(stage="closed", notes=STAMP + "Email 2026-09-20 from the recruiting inbox: role filled",
+                unmet_hard_reqs="0", hard_req_cap_trigger="none"),
+            row(stage="closed", notes=STAMP + "posting gone 2026-09-20, closed at his OK; never sent"),
+            row(stage="closed", notes="Full tailoring + cover"),
+            row(stage="closed", his_verdict="sent_as_is", notes=STAMP + "posting gone 2026-09-20"),
+            row(stage="surfaced"),
+            row(stage="expired", surfaced_date="2026-10-02")])
+rows3 = pq.load(p3, pq.EPOCH)
+rep3 = pq.report(rows3)
+head = rep3.splitlines()[0]
+check("a closed row counts as sent only when the row shows a send",
+      head == "Tailored: 8 | sent: 3/8 (38%) | still open: 1 | expired unsent: 1")
+check("the closed rows left out are counted on the next line",
+      rep3.splitlines()[1].startswith("  3 closed rows are not counted as sent"))
+check("a closed row with a send and a never-sent note is named for a look by hand",
+      "(1 of these has a send on the row and a never-sent note; check by hand)" in rep3.splitlines()[1])
+traction = [ln.split("advanced ")[1].split()[0] for ln in rep3.splitlines() if " advanced " in ln]
+check("traction is split over the same three sends: two fit (one advanced), one reach, none unrecorded",
+      traction == ["1/2", "0/1", "0/0"])
+trend = {ln.split()[0]: ln.split()[2] for ln in rep3.splitlines() if ln.startswith("  2026-")}
+check("the monthly trend's sent column adds up to the same three", trend == {"2026-09": "3", "2026-10": "0"})
+check("is_sent, the headline, traction, and the trend all agree",
+      sum(pq.is_sent(r) for r in rows3) == 3
+      == sum(int(t.split("/")[1]) for t in traction) == sum(int(n) for n in trend.values()))
+
+p4 = write([row(stage="applied"), row(stage="closed", notes=STAMP + "closed at his OK; never sent")])
+rep4 = pq.report(pq.load(p4, pq.EPOCH))
+check("one closed row left out reads in the singular",
+      rep4.splitlines()[:2] == ["Tailored: 2 | sent: 1/2 (50%) | still open: 0 | expired unsent: 0",
+                                "  1 closed row is not counted as sent: nothing on it shows a send, "
+                                "or the notes say it never went out"])
+
+for f in (p, p + ".bak", p2, p3, p4):
     if os.path.exists(f):
         os.remove(f)
 print(f"\n{'ALL PASS' if not FAILS else str(len(FAILS)) + ' FAILED'}")

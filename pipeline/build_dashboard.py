@@ -109,6 +109,11 @@ try:
 except Exception:  # the number has one home, but a broken import can't sink the build
     EXPIRY_DAYS = 45
 
+try:
+    from stages import SEND_PROVEN
+except Exception:  # same rule as EXPIRY_DAYS; test_stages.py fails if this copy drifts from stages.py
+    SEND_PROVEN = frozenset(("applied", "rejected", "interview", "assessment", "onsite", "offer"))
+
 
 def parse_date(s):
     try:
@@ -692,7 +697,9 @@ def attach_contacts(data):
 # The Progress section, dashboard phase two (added 2026-10-15, D42): sends a day, interview
 # rounds, and what came of each send. Sends count from the epoch only; rounds are dated by
 # when they happened, which was never in doubt, so the log keeps the earlier ones too.
-SENT_STAGES = ("applied", "rejected", "interview", "assessment", "onsite", "offer")
+# SENT_STAGES is the set in stages.py where the stage alone proves a send; a `closed`
+# row is not in it and read_progress() counts one only with evidence.
+SENT_STAGES = SEND_PROVEN
 FURTHEST_RANK = {"applied": 0, "assessment": 1, "interview": 2, "onsite": 3, "offer": 4}
 TARGET_PER_DAY = (6, 7)  # his ramp target, set 2026-10-15
 GHOST_DAYS = 30          # 24 of the first 27 post-epoch rejections arrived inside 30 days
@@ -759,8 +766,8 @@ def read_rounds():
 def read_progress(today):
     """Sends a day since the epoch, interview rounds, and the funnel by send week.
 
-    A send is a row past `surfaced` (the same stages mark_applied.py and shelf_inbox.py
-    treat as sent), dated by applied_date, which a confirmation or a Sent mark sets. A
+    A send is a row past `surfaced` at a stage that proves it went out (SEND_PROVEN in
+    stages.py), dated by applied_date, which a confirmation or a Sent mark sets. A
     `closed` row counts only with evidence it went out: a sent verdict, or a confirmation
     file that names it. Today's Sent clicks not yet recorded are added on the page itself.
     """
