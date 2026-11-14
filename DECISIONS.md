@@ -1455,3 +1455,17 @@ same day.
 What was left alone: `shelf_inbox.py` and `mark_applied.py` treat `onsite` and `offer`
 differently from the other scripts when a second send signal arrives. `stages.py` names that
 gap and doesn't close it.
+
+## D56. The rate-limit recheck runs on Fridays
+
+On 2026-11-13, the first run after D55's rotation fix picked ten new parked names for the
+Step 6.7 recheck, and none of them resolved to a board with fit titles. Looking back, the
+27 runs from 2026-10-06 to 2026-11-13 hadn't turned up one either, while the backlog grew
+from 200 to 453. The only enrollment the recheck ever made was on 2026-10-05, before it
+became a dry run (2026-10-12). The 2026-11-12 review had already found the parked pile
+isn't a hidden pool: 0 of 100 sampled had a fit board.
+
+Asked whether to keep it daily, run it weekly, or retire it, he picked weekly. Step 6.7
+now runs on Fridays only, and the other weekday runs record it as skipped. At ten names a
+week the rotation takes most of a year to get through today's backlog. That's accepted:
+the step finds companies, not reqs, and nothing in it goes stale.

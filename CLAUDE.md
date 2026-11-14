@@ -1005,8 +1005,8 @@ Spec: `daily_task_prompt.md` Step 2-JD and Step 6.7.
   `build_dashboard.py` shows on the Shelf (last 7 days, dropped once in `outcomes.csv`).
 - Workable gives this machine a fixed request allowance per window (~26-45 requests), not a
   rate, so `harvest_ats.py` probes it with only the first 4 slug spellings
-  (`WORKABLE_MAX_VARIANTS`), and Step 6.7 re-probes the 10 oldest `throttled` rejections late
-  in the run via `throttle_recheck_pick.py`. Dry run: 10 of 10 resolved, 0 throttled.
+  (`WORKABLE_MAX_VARIANTS`), and on Fridays only (D56) Step 6.7 re-probes ten parked
+  `throttled` rejections, rotating through the backlog, via `throttle_recheck_pick.py`.
 - Cost: ~150K Sonnet tokens per worker. Since 2026-10-12 `jd_prefetch.py` reuses a card when
   the same URL comes back with the same text and a worker read it in the last two to three
   weeks (`cards_batch_cached.json`, `reused_from`), so a normal run dispatches two or three

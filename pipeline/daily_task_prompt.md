@@ -2961,6 +2961,7 @@ an email of its own. (The weekly channel report at Step 6.5 was a second email u
   - JD screen (Step 2-JD): JDs fetched, carded, PASS/CHECK/FAIL, missing, re-dispatches,
     and whether the fallback ran
   - Rate-limit recheck (Step 6.7): backlog size, names re-probed, and what they resolved to
+    (Fridays only; other days say "skipped, not Friday")
   - WebSearch discovery: which sources the Step 1c rotation selected and ran, **which ones it
     deferred to the next run**, and a compressed list of what surfaced (mostly-known vs.
     genuinely new). Carry `websearch_rotation.py`'s staleness alarm here verbatim when it
@@ -3224,6 +3225,10 @@ point in the run the window has reset, and `harvest_ats.py` now probes Workable 
 likeliest slug spellings per name (`WORKABLE_MAX_VARIANTS`), which is what makes a batch of 10
 fit: the 2026-09-25 dry run resolved 10 of 10 parked names with zero throttling, where the same
 walk that morning had 3 of 5 refused.
+
+**Fridays only (Aneesh's call, 2026-11-13, [D56](../DECISIONS.md#d56-the-rate-limit-recheck-runs-on-fridays)).** On any other weekday, skip both
+commands and record `run_[date].json → throttle_recheck: {"skipped": "not Friday"}`. If the
+Friday run fails, the recheck waits for the next Friday; nothing here is perishable.
 
 Two commands, nothing chained onto either:
 
