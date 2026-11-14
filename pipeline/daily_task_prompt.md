@@ -326,10 +326,12 @@ Deleting the subject filters would silently drop that class of confirmation.
      `"furthest_stage": "<that stage>"` to the item; the column only moves right.
    - Set `source_channel` to `referral` or `user_surfaced` when the email establishes it.
 6. Note the promoted count and any outcomes in `run_[date].json → pipeline_notes` and
-   `SESSION_STATE.md`. Do not mention this step in the digest email unless something
-   promoted, an outcome landed, or something was ambiguous — routine zero-result runs are
-   silent housekeeping, not digest content. **A rejection or interview always goes in the
-   digest**, with the stated reason when one is given.
+   `SESSION_STATE.md`. Do not mention this step in the brief unless something promoted, an
+   outcome landed, or something was ambiguous — routine zero-result runs are silent
+   housekeeping, not brief content. **A rejection, closure, interview, or acknowledgement
+   always goes in the brief's `alerts`**, with the stated reason when one is given. Only a
+   confirmation (an acknowledgement, an interview, an offer) is a Step 5 email trigger (D45);
+   a rejection or closure reaches him on the page.
 
 ## Step 1: ATS polling
 
@@ -2436,9 +2438,9 @@ The split: **you choose the angle and the files, the writer writes every word,
    per-letter gates cannot see two letters built on the same story or the same construction,
    and you are the only one who sees all of them. No gate reads tone either, so read each
    one as the hiring manager: it says which job he wants and why, there is a person in its
-   story besides him, it doesn't grade the reader, and it ends inviting (CLAUDE.md Step 8,
-   the warmth rules and "People first"). Bridges and closing
-   lines count as constructions here, and so do the closing question's shape and the Maven
+   story besides him, it doesn't grade the reader, and it doesn't end on a question to the
+   reader (CLAUDE.md Step 8, the warmth rules and "People first"). Bridges and closing
+   lines count as constructions here, and so does the Maven
    sentence: writers dispatched together can't see each other, so the same three-part Maven
    sentence in two of the run's letters is yours to catch. A paragraph that is one short
    sentence standing alone goes back too
@@ -2702,6 +2704,31 @@ short clause: a step that only speaks up when it fails is a step nobody can tell
 
 ## Step 5: Email digest
 
+**Alerts only, since 2026-10-26 (his card answer, follow-ups ledger `1026-rgb`).** The run
+sends an email only when at least one of these is true:
+
+1. **The run failed.** A step errored, or something was skipped in a way that changes what he
+   received today: a failed package, SHORTFALL, a fallback that ran, a rejected push at Step 7.
+2. **A confirmation landed at Step 0.5.** An application acknowledgement, an interview, or an
+   offer, matched and recorded this run.
+3. **A promise is due, and the company has answered.** A dated commitment in a sent letter
+   (the `commitment` field of a pick whose tracker row is in a sent stage) with a date that is
+   today or has passed, where the company has responded since the letter went: an interview,
+   a recruiter or hiring-manager reply, or an acknowledgement that names a next step. A plain
+   auto-ack doesn't count. A letter's promise is conditional on hearing back (D46, his words,
+   Oct 27 2026); until the company responds it stays dormant, fires nothing, and is never
+   nagged. Nothing tracks these dates yet, so read them from the briefs of the last few weeks;
+   a promise the run can't see doesn't fire this.
+
+The picks never earn an email on their own. They live on the Shelf dashboard (Step 6.6), which
+takes his Sent, Skip, and Later marks, and the brief (5a) is what puts them there. A run with
+no alert writes the brief, rebuilds the page, sends nothing, and says so in the Step 8 final
+message. The Shelf's iPhone app is read-only, which is why an alert still travels by email.
+The Oct 12 rework (5a) said the email portion could go once the dashboard pathway worked; it
+did, and this is that step. [D45](../DECISIONS.md#d45-the-digest-email-became-alerts-only)
+
+Everything below governs the email on a day one goes out.
+
 Gmail MCP `create_draft` to **{{DIGEST_RECIPIENT}}**.
 
 **Drafting is a CHOICE, not a capability limit. Corrected 2026-08-28.** This file and the
@@ -2782,11 +2809,13 @@ the rest collapsed underneath. Shape:
 - **The same goes for every other step.** Where another step in this file says a line or a
   section "goes in the digest" (Step 1d-3's "LinkedIn roles followed up", a stretch-lane or
   industrial-lane line, a housekeeping note), it goes in the brief as a section or a
-  housekeeping line. Three kinds of line still go in the EMAIL as alerts, because they need
-  him: an outcome (a rejection, an interview, a closure), anything that failed or was skipped
-  in a way that changes what he received today (a failed package, SHORTFALL, a fallback that
-  ran, a dirty working tree, a `shelf_inbox:` problem), and anything a step says is his call.
-  Put those in the brief's `alerts` as well so the page shows them.
+  housekeeping line. Three kinds of line go in the brief's `alerts`, because they need him:
+  an outcome (a rejection, an interview, a closure), anything that failed or was skipped in a
+  way that changes what he received today (a failed package, SHORTFALL, a fallback that ran, a
+  dirty working tree, a `shelf_inbox:` problem), and anything a step says is his call. Until
+  2026-10-26 these went in the email too; now the email goes out only when one of them is a
+  D45 trigger (a failure, a confirmation, a promise due), and it carries the whole `alerts`
+  list when it does.
 - **Anything that needs him goes on the page, not only in this session (Aneesh, 2026-10-19).**
   He doesn't open the scheduled run's session, so a question asked in its final message, a
   blocked push, or a decision parked in the handoff never reaches him. Every item that waits on
@@ -2799,30 +2828,35 @@ the rest collapsed underneath. Shape:
 - If the brief can't be written, send the digest in its old long form for that run and say so
   in its first line. A short email with nothing behind it is worse than a long one.
 
-**The email then contains, in this order, and nothing else:**
-1. The top note.
+**When a D45 trigger fires, the email contains, in this order, and nothing else:**
+1. The top note, which names the trigger in its first sentence.
 2. Alerts and outcomes: the same lines as the brief's `alerts`, plus any rejection, interview,
-   or closure from Step 0.5.
-3. The picks table, under every rule below (columns, an apply link on every row, the IC note,
-   provenance tags, plain `<th>`).
-4. "Confirm before sending": per pick, the commitment its letter makes and any phrasing to
-   check. This stays in the email on purpose, since it's the one thing he must read before a
-   package goes out.
-5. One closing paragraph that says what is waiting on the Shelf, with counts, for example:
-   "On the Shelf dashboard: the read on each pick and what changed in each resume, 9 cleared
-   but not tailored, 15 LinkedIn roles followed up, 10 near-misses, 30 below the cutoff, 21
-   held back after failing the screen, and the full run breakdown. Mark each pick Sent or Skip
-   there and tomorrow's run records it."
-6. The file manifest for `tailored/apply_now/`.
+   or closure from Step 0.5. A line that names a role carries its link.
+3. One closing paragraph that says what is waiting on the Shelf, with counts, for example:
+   "On the Shelf dashboard: today's 4 picks with the read on each, what each letter
+   promises, and what changed in each resume; 9 cleared but not tailored, 15 LinkedIn roles
+   followed up, 10 near-misses, 30 below the cutoff, 21 held back after failing the screen,
+   and the full run breakdown. Mark each pick Sent or Skip there and tomorrow's run records
+   it."
 
-One digest email a run: nothing that used to follow the picks gets an email of its own. (The
-weekly channel report at Step 6.5 was a second email until 2026-10-15; it's a section of the
-dashboard now and sends nothing.)
+The picks table, the "Confirm before sending" block, and the file manifest left the email on
+2026-10-26. The page carries all three: each pick's `commitment` and `check` lines are its
+"confirm before sending," and the queue row shows the resume path. Until then the email kept
+the picks table under every rule in 5b, and "Confirm before sending" stayed in the email on
+purpose as the one thing he had to read before a package went out; the brief's `commitment`
+field is where that reads now, so fill it with care.
+
+At most one email a run, and most runs send none: nothing that used to follow the picks gets
+an email of its own. (The weekly channel report at Step 6.5 was a second email until
+2026-10-15; it's a section of the dashboard now and sends nothing.)
 
 ### 5b. Email mechanics
 
-- Subject: `Daily Job Matches — [date] ([N] jobs)`
-- Top note: one or two sentences on the day, the same text as the brief's `note`. (Until
+- Subject: `Job pipeline alert — [date]: [trigger]`, the trigger in a few words ("run failed
+  at Step 4-W", "application acknowledged", "promise due"). `Daily Job Matches — [date] ([N]
+  jobs)` was the subject through 2026-10-26 and stays only for an email sent because of
+  picks, which D45 no longer allows; a Gmail filter keyed on it won't see alert emails.
+- Top note: the trigger that sent this email in one sentence, then the brief's `note`. (Until
   2026-10-12 this line read "Open this draft, attach the PDFs listed at the bottom, and
   send," a leftover from when the digest was a draft. Don't bring it back.)
 - **Pass RAW HTML to `htmlBody`, never HTML-escaped entities.** Write `<p>`, not `&lt;p&gt;`.
@@ -3171,8 +3205,11 @@ and keeps a dated copy in `pipeline/jobs/`. Since 2026-10-12 it also reads today
 after both exist; a missing or malformed one is skipped, not an error. The page it writes is
 where he marks a role Sent or Skip, and Step 0 item 4b reads those marks on the next run; this
 command itself still writes nothing but the page. Copy its single output line into the run summary. If
-that line starts with `dashboard: FAILED`, note it in SESSION_STATE and continue; do not retry,
-do not debug it inside the run, and do not mention it in the digest. Never hand-edit the HTML,
+that line starts with `dashboard: FAILED`, note it in SESSION_STATE and continue; do not retry
+and do not debug it inside the run. Since 2026-10-26 the picks reach him only through this page,
+so a failed rebuild is a run failure under Step 5 (D45): if no email went out today, send the
+alert now, naming the failure and pointing at `pipeline/jobs/brief_[date].json` and
+`tailored/apply_now/` until the next run redraws the page. Never hand-edit the HTML,
 and never write a replacement dashboard inline. Spec: `pipeline/DASHBOARD_SPEC.md`.
 
 ## Step 6.7: Rate-limit recheck (added 2026-09-25)
@@ -3290,7 +3327,7 @@ file already holds.**
    ````markdown
    # Job search handoff: [YYYY-MM-DD] ([weekday]) run
 
-   Run finished [HH:MM local]. Digest sent (Gmail message [id]). Repo [pushed | NOT pushed: why].
+   Run finished [HH:MM local]. Email: [none (no D45 trigger) | sent for <trigger> (Gmail message [id])]. Repo [pushed | NOT pushed: why].
    If that date is not today's, say so before answering anything: a newer run may have failed.
 
    ## For the session reading this
@@ -3321,9 +3358,10 @@ file already holds.**
 
    ## Where today's evidence is
    - The run in prose: the first entry of `pipeline/SESSION_STATE.md` (Read with limit 40).
-   - What the digest used to carry (the read on each pick, tailoring diffs, the FYI lists,
-     housekeeping, the full breakdown): `pipeline/jobs/brief_[date].json`. The dashboard
-     shows the same file.
+   - The picks and what the email used to carry (the read on each pick, what its letter
+     promises, tailoring diffs, the FYI lists, housekeeping, the full breakdown):
+     `pipeline/jobs/brief_[date].json`. The dashboard shows the same file; the email is
+     alerts-only (D45).
    - Stats, near-misses, run notes: `pipeline/jobs/run_[date].json`.
    - Each pick's score breakdown: `pipeline/jobs/track_[date].json`.
    - Every JD read today: `pipeline/jobs/jd_cache/[date]/`. One role's card:
@@ -3343,7 +3381,8 @@ file already holds.**
    - Score it: the rubric runs from `### 2b. Hard filters` to `## Step 3` in
      `pipeline/daily_task_prompt.md`; the numbers are in
      `pipeline/watchlist_companies.json` under `_scoring_config`.
-   - Tailor it: CLAUDE.md "Default Behavior", Steps 0 to 9. Step 9 emails him the package.
+   - Tailor it: CLAUDE.md "Default Behavior", Steps 0 to 9. Step 9 puts the package on the
+     dashboard by way of the day's brief; no package email (D45).
    - Track it: write `pipeline/jobs/track_[date]b.json` in the Step 6 shape, then
      `.venv/bin/python pipeline/update_tracking.py pipeline/jobs/track_[date]b.json`.
    - Commit: a local commit on `main` is as good as published. Show him what is staged first.
@@ -3358,7 +3397,8 @@ file already holds.**
    > This session is at [N]K tokens. A reply here after an hour re-reads all of it before it answers; a new session starts near 100K.
 
    Fill in [N] from this session's size. Keep the rest of the final message as it is, and
-   keep it short: he reads the digest for the picks and the dashboard for the detail.
+   keep it short: he reads the dashboard for the picks and the detail, and an email only
+   when a D45 trigger sent one.
 
 3. **If he replies in this session anyway, answer.** The whole context was re-read the
    moment his message arrived, so refusing saves nothing. Answer, add what you did under

@@ -178,7 +178,7 @@ The #1 failure pattern: opening with a philosophical statement about what the co
 - "~30% of my weekly time in cross-functional meetings" as a verbatim line — it appears in too many letters; show the cross-functional work through a specific example instead
 - "Here's how my experience maps to the role:" — just make the case
 
-**Close — be specific.** "I'd welcome the chance to discuss how my experience translates. Thank you for your consideration." adds nothing. The close must include at least one sentence specific to this role or company — a real question, an observation about the team structure, a practical note. Keep it short.
+**Close — be specific.** "I'd welcome the chance to discuss how my experience translates. Thank you for your consideration." adds nothing. The close must include at least one sentence specific to this role or company — an observation about the team structure, a practical note, or the last substantive paragraph itself. Keep it short.
 
 **Warmth: the letter has to sound like he wants the job (added 2026-10-12).** Aneesh read a
 sent letter closely and called it "a little disjointed and, honestly, kind of harshly
@@ -204,15 +204,19 @@ out. These six put something back, and they're requirements, not permissions.
   a single short sentence standing alone: the one-line pivot is a longform move, and in a
   letter it's the terse fragment he reads as brutalist.
   [D37](DECISIONS.md#d37-the-one-line-pivot-and-two-new-repeats)
-- **End inviting.** The close may ask one real question, then ends on a short line that
-  invites a reply. Don't follow the question with a maxim: "X reads (runs, looks) differently
-  depending on the answer" closed four of five letters in one week and is retired.
+- **No closing question (changed 2026-10-22).** Don't end a letter on a question to the
+  reader. He cut it from both Google letters before submitting and called the move "a little
+  bit excessive." The letter can end on its last substantive paragraph, often the gap and its
+  plan, then the sign-off. Don't swap in a maxim or a stock line either: "X reads (runs,
+  looks) differently depending on the answer" closed four of five letters in one week and
+  stays retired. He's A/B testing letter output in a separate file, and those results drive
+  any larger change to these rules. [D43](DECISIONS.md#d43-the-closing-question-came-out)
 - **Sign off.** `Best,` on its own line above his name in the `.md`, which is the copy he
   pastes into forms. The PDF renderer already adds it.
 
-Bridges and closing lines converge the way openers and ramp sentences did, and so do the
-closing question's shape and the Maven sentence. Before saving, read all four in the last five
-letters in `tailored/` and don't reuse their wording or their build.
+Bridges and closing lines converge the way openers and ramp sentences did, and so does the
+Maven sentence. Before saving, read all three in the last five letters in `tailored/` and don't
+reuse their wording or their build.
 [D37](DECISIONS.md#d37-the-one-line-pivot-and-two-new-repeats)
 
 **People first: one story, and a person is at its center (added 2026-10-13).** The warmth
@@ -278,22 +282,37 @@ The daily pipeline runs this plus an `avoid-ai-writing` detect pass at Step 4.5.
   drift only shows in aggregate, which is why it's a script and not a habit.
   [D6](DECISIONS.md#d6-voice-gate-and-the-contraction-slip)
 
-### 9. Email the package (interactive tailoring only)
-**Standing rule, Aneesh's call 2026-10-04: when a role is tailored outside the daily run, email
-it to him when it's done, without asking.** He had to ask "did you send the email" twice in one
-week. The daily run already sends its digest (`daily_task_prompt.md` Step 5); this covers
-everything else: a pasted JD, a user-surfaced find, a scan, a "tailor that one."
+### 9. Put the package on the dashboard (interactive tailoring only)
+**Standing rule, changed 2026-10-26 (his card answer; follow-ups ledger `1026-rgb`): the email
+is alerts only, and a package is not an alert.** From 2026-10-04 to 2026-10-26 every role
+tailored outside the daily run was emailed to him when it was done, after he had to ask "did
+you send the email" twice in one week. The picks now live on the Shelf dashboard, which takes
+his Sent, Skip, and Later marks, and that covers everything tailored here too: a pasted JD, a
+user-surfaced find, a scan, a "tailor that one."
+[D45](DECISIONS.md#d45-the-digest-email-became-alerts-only)
 
-- Recipient is `DIGEST_RECIPIENT` from `pipeline/local_config.json` (gitignored). Never write the
-  address into a tracked file.
-- Create the draft, then send it (same two calls as Step 5). One email per session's batch is
-  fine; don't send one per role when several finish together.
-- Contents: a table with title, company, location, pay, score, unmet hard reqs, scope, and the
-  apply link; coverage and the genuine gaps; **every commitment a cover letter makes, called out
-  for him to confirm before sending**; anything unverified; and the PDF filenames in
-  `tailored/apply_now/`. No attachments, same reasoning as the digest.
-- Same HTML rules as the digest: raw HTML, plain `<th>`, every role carries its link.
-- This authorizes the email to him only. It never authorizes sending anything to an employer.
+- Track it (Step 6 row, `notes` naming the PDFs), add it to the newest
+  `pipeline/jobs/brief_[date].json` as a pick in the Step 5a shape (`read`, `commitment`,
+  `check`, `changes`; create today's file when none exists in the last five days), then rebuild
+  the page with `build_dashboard.py` (Step 6.6). The page joins a pick to its queue row by URL,
+  so the URL must equal the tracker row's.
+- **Every commitment a cover letter makes goes in the pick's `commitment`**, worded for him to
+  confirm before the package goes out; anything unverified goes in `check`. That block used to
+  be the email's reason to exist, and the page is where it reads now.
+- Say the same in the session's final message: the role, the apply link, the commitments, the
+  genuine gaps, and the PDF filenames in `tailored/apply_now/`. He's in the session; the email
+  was never the only copy.
+- An email goes out only on a `daily_task_prompt.md` Step 5 trigger (a failure, a confirmation,
+  a promise due), to `DIGEST_RECIPIENT` from `pipeline/local_config.json` (gitignored), same
+  two calls and same HTML rules as Step 5. Never write the address into a tracked file.
+- **A recruiter note for his own picks (2026-11-08).** A role he found or asked for gets a
+  `<stem>_note.md` from `pipeline/tailor_worker.md`'s note rules, and its text goes in the
+  pick's `note_draft`. It counts toward the three a week the daily run allows. He sends it
+  himself on LinkedIn, only to people at the hiring company.
+  [D53](DECISIONS.md#d53-a-note-to-a-person-on-his-top-sends)
+- **A posting that asks applicants not to use AI gets no package** from here or the daily
+  run. Tell him; it's his to write. Same D53.
+- Nothing here authorizes sending anything to an employer.
 
 ## Important Rules
 - NEVER invent experience, certifications, or skills that aren't in `master_resume.md`
@@ -747,6 +766,15 @@ When Aneesh asks to prep for a new interview round:
   backfills what it flags. A late post-mortem writes `predicted: none (late)` so it counts as
   unscorable, never as open. Silence past a promised date is named as silence and marked as an
   inference; it never becomes an outcome in `outcomes.csv`. The script is read-only. Same D44.
+- **A recorded round drafts its own post-mortem (2026-10-26).** The `postmortem-draft` scheduled
+  task (weekdays 7 PM) finds interview-shaped Wispr Flow recordings, drafts
+  `postmortem_round[N]_[type].md` from the transcript by `pipeline/postmortem_draft_worker.md`,
+  saves the transcript beside it, and posts one line to #follow-ups. `pipeline/postmortem_draft.py`
+  owns the handled ledger (`pipeline/jobs/postmortem_drafts.json`), the round inference, the shape
+  check, and the post, and it never writes over a file already in the company folder. The draft's
+  grades are proposals: grade it with the postmortem skill, which promotes the lessons and updates
+  the counts. The routine never touches `_lessons_learned.md`, the ledgers, or the interview-loop
+  state file. Same D44.
 
 ## User-Surfaced Finds Protocol (LinkedIn/Indeed alerts, word of mouth)
 
@@ -890,7 +918,9 @@ that file (its Track Source File feature) and refreshes the page in place under 
 - **The digest is short and the page carries the rest (2026-10-12).** The run writes
   `pipeline/jobs/brief_[date].json` at Step 5a. The page shows the last run's picks on top
   (the read on each, what its letter promises, the tailoring diff) and the FYI lists and run
-  audit collapsed. The email keeps the picks table, alerts, and "confirm before sending."
+  audit collapsed. The email kept the picks table, alerts, and "confirm before sending" until
+  2026-10-26; since D45 it is alerts-only (a failure, a confirmation, a promise due), and the
+  picks' commitments read on the page. [D45](DECISIONS.md#d45-the-digest-email-became-alerts-only)
 - **A cleared row he has passed on stays hidden (2026-10-13).** `build_dashboard.py` drops any
   URL listed in `pipeline/jobs/screened_dismissed.json` (gitignored) from "Cleared, not
   tailored". The daily run re-lists a cleared role every day it reads the JD again, so
@@ -924,6 +954,11 @@ that file (its Track Source File feature) and refreshes the page in place under 
   came of each send. Rounds come from `pipeline/jobs/interviews.json` (gitignored), written only
   by `log_interview.py` from the interview-loop skill's Step 5.
   [D42](DECISIONS.md#d42-the-dashboard-got-a-progress-section)
+- **Who he knows (2026-11-07).** Unsent rows and manual checks carry "You know: name, title"
+  when he has a first-degree LinkedIn connection at the company, read at build time from the
+  warm-path kit outside this repo (exact names and his confirmed pairs only). No connection
+  name ever goes in a tracked file or fixture; `test_build_dashboard.py` checks the tracked
+  files against the real export. Spec: `DASHBOARD_SPEC.md`, 2026-11-07 section.
 - **The page shows each unsent letter and takes edits to it (2026-11-12).** A queue row whose
   package has a letter carries a Letter panel: the letter with up to three sentences marked
   (why this job, the tie-back, the promise), Copy letter, and Edit. A saved edit waits in the

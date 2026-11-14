@@ -1090,6 +1090,21 @@ linkedin.com mail, so those applications aren't on the chart. And a round reache
 through interview-loop (the Monday and Thursday scan, or when he runs it), which inherits that
 skill's own blind spots: the second mailbox, InMail, and phone calls.
 
+## D43. The closing question came out
+
+2026-10-22. Pasting the two Google letters into Google's form, he cut the closing question
+from both before submitting. Asked what it added, he said he didn't understand the motivation
+and found it "a little bit excessive." The question came from the D36 warmth rule "End
+inviting," which let the close ask one real question and end on a line inviting a reply; in
+practice nearly every letter got one, and the second sentence of the Store and Fi version
+("I have my own view on how to count it, and I'd like to hear yours") read as performed
+curiosity. A recruiter screening a paste box doesn't answer it either.
+
+The rule now says not to end on a question to the reader; a letter can end on its last
+substantive paragraph and the sign-off. The worker brief and the run's side-by-side read
+changed to match. The rest of D36 stands. He's A/B testing letter output in a separate file,
+and those results, not this one change, decide anything larger.
+
 ## D44. The prep page never carried the focus areas
 
 2026-10-23. The Global-e hiring-manager round was debriefed from a Wispr Flow transcript
@@ -1120,6 +1135,82 @@ the Oct 26 freeze decision, with this round as its proof case. The Mon/Thu inter
 Sep 30 Discord sweep dropped stays dropped; the transcript trigger would fire on the artifact
 instead. How we'd know the repairs worked: focus-area hits and the rehearsal line in the next
 two post-mortems, and every calibration section filled.
+
+**Implementation note, 2026-10-26.** The freeze lifted that morning and he chose "Build it"
+(ledger `1026-lyj`). The transcript trigger is `pipeline/postmortem_draft.py` plus the scheduled
+task `postmortem-draft` (weekdays 7 PM, `model: opus`, his pick from three cadences on a card). The
+routine's Claude reads Wispr Flow and writes the draft by `pipeline/postmortem_draft_worker.md`;
+the script owns what has to be deterministic: a handled ledger in
+`pipeline/jobs/postmortem_drafts.json` so no meeting is drafted twice; company and round inference
+(a logged round on the same day wins, then the prep doc with no post-mortem, then one past the last
+round, with the type taken from the prep doc's own name when there is one); a shape check that
+rejects a draft missing a section, a grade, a prediction, or carrying a banned phrase; and the one
+#follow-ups line. A file already in the company folder is never written over, edited or not: the
+meeting is recorded as `exists` and nothing posts. Interview-shaped means an interview word in the
+title or summary, or a company with a process on file named in either; a tracker-only company's
+name counts alone only in the title, because the applied-to list includes Zendesk, Workday, Cursor,
+and Writer, and his work meetings name all four.
+
+Proof case: a fresh Opus run drafted this round from the transcript, walled off from the graded
+file and the post-call lessons edits. Same eight sections, the same seven questions in the same
+order, the same prediction (advance, medium). Grades matched exactly on two, sat one notch apart on
+five, and two notches apart on three (the draft read the RCA and the IC-path question harder and
+the product answer softer). It found the same misses (the third volume number, the untold
+debugging story, "not specifically" with twenty minutes left, the seat misread) and two the recall
+walk hadn't: an 18-person First Alert team that matches no resume figure, and "well beyond me"
+echoing Engagifii R2's "a little beyond me." It missed the sf-caseops cue. It ran 6,100 words to
+the graded 3,500, so the brief gained a length rule. One caveat: the plan's focus-area column
+carried post-call text into the proof, so the focus-area comparison wasn't blind; the grades and
+findings were. First real output: the Oct 22 recruiter screen,
+`interview_prep/Global-e/postmortem_round1_recruiter_screen.md`, drafted from its transcript with
+`predicted: none (late)` and announced in #follow-ups on his yes. The Monday interview-scan keeps
+its job (rounds no recording caught, stalls, missing debriefs); the Thursday run stays dropped. How
+we'd know this worked: the next recorded round has its draft the same evening, and the grading pass
+is ten minutes, not forty-five. A two-week check is in the ledger.
+
+## D45. The digest email became alerts-only
+
+2026-10-26. Follow-ups ledger item `1026-rgb` asked him to pick one of drop, alerts only, or
+keep for the daily digest email, and he answered the card the same day: alerts only. The Oct
+12 rework (D34, and Step 5a of `daily_task_prompt.md`) had already cut the email to the picks
+table, the "confirm before sending" block, and a closing pointer, and said the email portion
+could go once the dashboard pathway worked. It worked: he marks Sent, Skip, and Later on the
+Shelf page, and the page carries the read on each pick, what its letter promises, and the
+tailoring diff. What the email still did that the page couldn't was reach him when something
+needed him: the Shelf's iPhone app is read-only, with no notification of its own.
+
+So the email now goes out only on one of three triggers: the run failed, a confirmation landed
+(an application acknowledgement, an interview, an offer), or a promise is due. The picks never
+send one. The same call retired the 2026-10-04 Step 9 rule that emailed him every package
+tailored outside the daily run; those go on the dashboard the same way, by way of the day's
+brief. Rejections and closures, and decisions a step calls his call, stay in the brief's
+`alerts` and reach him on the page; widening the email to them is his call, not an inference
+from this one. Not built: anything that tracks a letter's promise dates, so the third trigger
+fires only on what a run can read from recent briefs. The email's subject line and the Step 8
+final-message template still read as if a digest went out every day; neither was changed here.
+
+**Implementation note, Oct 26 2:40 PM.** He kept the wider Step 9 change on a second card
+(interactive packages go to the dashboard; the 2026-10-04 package-email rule stays retired)
+and asked for the stale references fixed in the same pass. Touched: `CLAUDE.md` (Step 9, and
+the D34 dashboard bullet), `pipeline/daily_task_prompt.md` (the Step 5 gate, 5a, the 5b
+subject and top note, Step 0.5's rejection line, Step 6.6's dashboard-failure line, Step 8's
+final-message template and handoff pointers), `pipeline/SESSION_STATE.md` (one dated entry), and, outside the repo,
+`~/.claude/scheduled-tasks/daily-job-pipeline/SKILL.md` (description and environment notes;
+backed up beside itself as `SKILL.md.bak-20261026`). Nothing committed or pushed, no run
+triggered. Still not built: a promise-date tracker, so trigger 3 is read by hand from recent
+briefs.
+
+## D46. A letter's promise waits for the company to answer
+
+2026-10-27. The Oct 27 pipeline alert fired on the Hightouch TAM letter (applied Oct 10, no
+outcome), whose promise of a graded SQL session was dated Oct 13. His call on a card: he
+starts on a letter's promise once the company has responded. So trigger 3 in
+`pipeline/daily_task_prompt.md` (Step 5) now requires a company
+response since the letter went (an interview, a recruiter or hiring-manager reply, or an
+acknowledgement that names a next step; a plain auto-ack doesn't count) before a promise is
+treated as due. Until then it is dormant: no alert, no nag, no ledger item. The Hightouch
+promise is dormant under this rule. Edited in a desk session, uncommitted, his to commit; a
+backup of both files sits in that session's scratchpad.
 
 ## D47. The product-manager leak and two more
 
@@ -1203,6 +1294,7 @@ Two known effects. The first run after this needs `jd_prefetch.py --no-reuse`, b
 changed. Location holds formed from reads under the old wording stand until they expire, up to
 20 days, and some of those would read "unclear" now. Roles screened PASS or CHECK that come
 back every day (about 19.5 rows a run on 10-12) were measured and left out.
+
 
 ## D49. Factual screening answers get filled
 

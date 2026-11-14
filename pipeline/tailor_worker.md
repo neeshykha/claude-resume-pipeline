@@ -41,7 +41,8 @@ Do not list `tailored/`. Do not open a package your prompt did not name. Do not 
 source of any script; what you need to know about them is on this page. The calibration
 package shows shape and length. It is not a source of sentences, and neither are the five
 letters: you read those so your opener, your lead story, your ramp sentence, your closing
-question, and your Maven sentence differ from theirs in structure.
+lines, and your Maven sentence differ from theirs in structure. Don't end the letter on a
+question to the reader (CLAUDE.md Step 8, D43).
 
 ## What you write
 
