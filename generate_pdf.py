@@ -97,7 +97,7 @@ story.append(HRFlowable(width="100%", thickness=0.5, color=HexColor(ACCENT), spa
 story.append(Paragraph("PROFESSIONAL EXPERIENCE", section_style))
 
 # iApts
-story.append(Paragraph("<b>Technical Support Operations Manager</b>", job_title_style))
+story.append(Paragraph("<b>Tech Support and AI Ops Lead</b>", job_title_style))
 story.append(Paragraph("<b>iApts Inc.</b> &nbsp;|&nbsp; February 2023 – Present", company_style))
 iapts_bullets = [
     "Lead a globally distributed team of 8 agents across the Philippines, Dominican Republic, and Brazil, overseeing hiring, scheduling, performance reviews, and training across time zones",
