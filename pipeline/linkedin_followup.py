@@ -30,11 +30,18 @@ workers and jd_screen_table.py then read them unchanged:
 
     .venv/bin/python pipeline/jd_screen_table.py --date <date>_linkedin
 
-Selection, in order, capped at --max (default 24, i.e. three worker batches):
-  1. cards at companies the pipeline has never resolved (new, or parked on a
-     timeout / rate limit), strong tier or AI wildcard;
-  2. aggregator reposts with a strong title (employer unknown);
-  3. cards at companies rejected or covered only by a manual rotation.
+Selection, capped at --max (default 24, i.e. three worker batches). Three kinds
+of card are eligible, all strong tier or AI wildcard:
+  * cards at companies the pipeline has never resolved (new, or parked on a
+    timeout / rate limit);
+  * aggregator reposts with a strong title (employer unknown);
+  * cards at companies rejected or covered only by a manual rotation.
+They are ordered by title tier, then location, and only then by that company
+status (never-resolved, aggregator, rejected) to break ties (D57). Status used
+to lead, and on 2026-11-14 the cap deferred the day's tier-1 cards at rejected
+companies behind weaker never-resolved ones. That was backwards: a
+never-resolved company has a second path (harvest_ats.py resolves it, then
+poll_ats.py reads its board), and a rejected company's card has only this one.
 Cards at watchlist companies are skipped: the poller reads those boards daily.
 Non-US cards, demoted and hard-excluded titles, and VP-and-above are skipped.
 A role already in outcomes.csv is skipped. Each job id is fetched once, ever
@@ -168,13 +175,15 @@ def select(cards_doc, seen, limit):
         if any(c and (c in co or co in c) and t == ti for c, t in tracked):
             skipped["tracked"] += 1
             continue
-        picked.append((cls, TIER_RANK[card["tier_name"]],
-                       LOC_RANK.get(card.get("location_verdict"), 9), card["company"].lower(), card))
+        # Title tier and location lead; company status only breaks ties (D57).
+        picked.append((TIER_RANK[card["tier_name"]],
+                       LOC_RANK.get(card.get("location_verdict"), 9), cls,
+                       card["company"].lower(), card))
     picked.sort(key=lambda x: x[:4])
     # One follow-up per (company, title): saved searches re-send the same role
     # under a new job id, and aggregators do it on purpose.
     out, dupes = [], set()
-    for cls, _, _, _, card in picked:
+    for _, _, cls, _, card in picked:
         k = (norm(card["company"]), norm(card["title"]))
         if k in dupes:
             continue

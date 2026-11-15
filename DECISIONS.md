@@ -1469,3 +1469,22 @@ Asked whether to keep it daily, run it weekly, or retire it, he picked weekly. S
 now runs on Fridays only, and the other weekday runs record it as skipped. At ten names a
 week the rotation takes most of a year to get through today's backlog. That's accepted:
 the step finds companies, not reqs, and nothing in it goes stale.
+
+## D57. The LinkedIn follow-up put title before company status
+
+On 2026-11-14 Step 1d-3 selected 24 cards and deferred 21, and the deferred list held the
+strongest cards of the day: a tier-1 Atlanta support-operations manager role, a tier-1
+technical support manager role, and a support engineering manager role, all at companies
+the pipeline had rejected. `select()` sorted on company status first, so any card at a
+never-resolved company ranked above any card at a rejected one, whatever its title.
+Deferred ids roll to the next run, but new never-resolved cards arrive every day and cut
+ahead of them again.
+
+That order was backwards. A never-resolved company has a second path: `harvest_ats.py`
+resolves it and `poll_ats.py` reads its board from then on. A rejected company's card has
+no other reader.
+
+He weighed three fixes (reorder, raise the cap, reserve slots for tier 1) and picked the
+reorder. The sort is now title tier, then location, with company status breaking ties.
+The cap stays at 24, and the one-per-(company, title) dedupe still runs after the sort.
+`pipeline/test_linkedin_followup.py` pins the order.

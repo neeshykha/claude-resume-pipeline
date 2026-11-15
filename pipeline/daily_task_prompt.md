@@ -1298,8 +1298,10 @@ full JD for any job id. So, after `harvest_linkedin.py --apply`:
 
 It selects up to 24 cards (strong tier or AI wildcard; not non-US, demoted, or VP-level;
 not at a watchlist company, since the poller reads those boards; not already in
-`outcomes.csv`; never fetched before), ordered never-resolved companies first, then
-aggregator reposts, then rejected and manual-rotation companies. It fetches each JD once
+`outcomes.csv`; never fetched before), ordered by title tier, then location, with company
+status breaking ties (never-resolved, then aggregator reposts, then rejected and
+manual-rotation companies), so a tier-1 card at a rejected company, which no other step
+reads, isn't cut by the cap behind weaker cards at never-resolved ones (D57). It fetches each JD once
 and writes them to `pipeline/jobs/jd_cache/<date>_linkedin/` in the Step 2-JD shape, with
 `batch_NN.json` files. It drops closed postings and US-city cards whose own JD says on-site
 or hybrid without saying remote, and prints both. Ids cut by the cap are not marked seen, so
