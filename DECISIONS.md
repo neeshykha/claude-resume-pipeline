@@ -1488,3 +1488,21 @@ He weighed three fixes (reorder, raise the cap, reserve slots for tier 1) and pi
 reorder. The sort is now title tier, then location, with company status breaking ties.
 The cap stays at 24, and the one-per-(company, title) dedupe still runs after the sort.
 `pipeline/test_linkedin_followup.py` pins the order.
+
+## D58. The detect pass runs on the style guide
+
+On 2026-11-13 a blind test asked whether the `avoid-ai-writing` skill still makes the Step 4.5
+detect pass better on Opus. Six of this pipeline's letters from Nov 2 to 13 (three the pass had
+flagged for wording, three it hadn't) were each audited twice by Opus with the skill and twice
+without it, both with his style guide. The same writer applied each audit's clear problems, and
+he picked blind between the two fixed letters. The skill won 6 of 12 against a bar of 9 set
+before the runs. Both arms caught every line the real pass had flagged, and the skill arm cost
+about twice as much per audit ($0.52 against $0.27). His picks went to the right-hand letter 10
+times of 12, with the skill on the right in 6, which reads as no visible difference.
+
+The real pass was already close to the no-skill arm. Since 2026-10-13 the orchestrator had
+invoked the skill every run but never opened its catalog, word tiers, or voice profile, so it
+audited on the skill's short SKILL.md and the style guide. He picked trim: the detect pass
+audits against the style guide alone, the skill stays installed for use on request, and the
+writers keep reading its three files while drafting, since the test didn't cover that use.
+The test kit and its results live outside this repo (`skill-earns-its-place-test`).

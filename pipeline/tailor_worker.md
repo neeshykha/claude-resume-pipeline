@@ -168,7 +168,7 @@ stop and hand back with that line quoted. Do not keep going.
 ## If the orchestrator writes back
 
 After you hand back, the orchestrator runs the same fit check itself, reads the run's
-letters side by side, and runs its own avoid-ai-writing detect pass on your letter. If any
+letters side by side, and runs its own detect pass on your letter against his style guide. If any
 of that finds something, you get ONE message describing the problems. It will not supply
 replacement words; those are yours. Make every edit in one message (both letter files when
 the letter changes), run the fit check once as the last call, and answer with the fields

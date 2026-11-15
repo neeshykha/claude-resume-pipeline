@@ -272,7 +272,7 @@ The move is: gap, dated commitment, re-read the requirement, aim at what it actu
 line. For a letter outside a package check, run
 `.venv/bin/python pipeline/check_voice.py --drafted-now <cover.md>`. It checks
 the contraction ratio, the em-dash cap, and sentence-length uniformity, and exits 1 on failure.
-The daily pipeline runs this plus an `avoid-ai-writing` detect pass at Step 4.5.
+The daily pipeline runs this plus a detect pass against his style guide at Step 4.5.
 - **Never edit a letter that has already been sent** — the file is the record of what the
   employer read, and editing it makes the archive disagree with the submission. The script
   labels each letter's stage. `surfaced` does NOT mean unsent: it means no confirmation was
@@ -1048,8 +1048,9 @@ Spec: `daily_task_prompt.md` Step 4-W, Step 4.5, and Step 8.
 - **A Step 6 tracking row's `notes` must name the package's PDFs**
   (`tailored/apply_now/[stem].pdf + _cover.pdf`). That filename is how `fit_check.py`,
   `check_voice.py`, and `rotate_apply_folder.py` find the row.
-- The orchestrator runs the `avoid-ai-writing` detect pass on every letter after the writers
-  return and sends the findings back. A writer's "clean" is a self-report, not this check.
+- The orchestrator runs the detect pass on every letter after the writers return, against
+  his style guide rather than the `avoid-ai-writing` skill (D58), and sends the findings
+  back. A writer's "clean" is a self-report, not this check.
 - The run ends by writing `pipeline/jobs/handoff.md` (gitignored). A follow-up on the day's
   run starts in a new session that reads that file first. Never write it anywhere tracked.
 - **Open:** the first real run is Mon 2026-10-12. Unverified until then: whether a writer

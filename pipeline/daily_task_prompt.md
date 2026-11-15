@@ -124,7 +124,7 @@ brief digest saying so rather than guessing an address.
      and keeps the earlier version under `tailored/_letter_versions/`. It prints one
      `letter ...` line per edit above the `shelf_inbox:` line.
      - **An applied edit is his wording. Leave it alone.** Don't send that letter back to a
-       writer, don't apply voice-gate or `avoid-ai-writing` findings to it, and don't re-render
+       writer, don't apply voice-gate or detect-pass findings to it, and don't re-render
        it from anything but its own JSON. The `check_voice.py` line is information for him.
      - **`refused` is not a failure.** It refuses any row that isn't plainly unsent (a stage
        past `surfaced`, a verdict, a Sent mark waiting) and any edit made on a letter that has
@@ -2594,7 +2594,7 @@ whose row is in a sent stage, or whose row was surfaced on an earlier day. What 
 you is the detect pass, the side-by-side read (Step 4-W item 6), and the report (item 4).
 
 **Cover letters only.** Do not run this on resumes: resume bullets are deliberately terse,
-verb-initial fragments, and the pattern catalog would flag a register that is correct there.
+verb-initial fragments, and the detect pass would flag a register that is correct there.
 
 ### 0. NEVER EDIT A LETTER THAT HAS ALREADY BEEN SENT
 
@@ -2660,11 +2660,16 @@ of output. The tell is the aggregate, and only counting finds it.
 ### 2. Judgment pass
 
 **You run this, on every letter written this run, after the writers return** (Step 4-W
-item 6). Invoke the **`avoid-ai-writing`** skill in **detect mode**; it defaults to Aneesh's
-voice profile. Load it once and audit all of the run's letters in that one pass. Each writer
-has already held its letter against the same catalog while drafting (`tailor_worker.md` has
-it read the catalog first, so most tells never get written) and reports what it flagged,
-but a writer's "clean" is a self-report and not this check. The pass did not run at all on
+item 6). Audit all of the run's letters in one pass against `user_writing_style.md`, which
+you read at the start of the run: for each letter, quote the prose that reads machine-written
+or off his voice, split into clear problems and judgment calls. **Don't invoke the
+`avoid-ai-writing` skill for this pass.** A blind test on 2026-11-13 found no difference
+here: on six of this pipeline's letters, Opus with the style guide alone tied Opus with the
+skill, caught the same lines, and cost half as much
+([D58](../DECISIONS.md#d58-the-detect-pass-runs-on-the-style-guide)). Each writer has
+already held its letter against the skill's catalog while drafting (`tailor_worker.md` has it
+read the catalog first, so most tells never get written) and reports what it flagged, but a
+writer's "clean" is a self-report and not this check. The pass did not run at all on
 2026-10-08 or 2026-10-09, which is why it stays an independent step (Aneesh, 2026-10-09).
 
 **You find; the writer fixes.** Send the clear problems back to that letter's writer in the
@@ -2674,17 +2679,16 @@ finding to a letter file yourself. In the fallback, where you wrote the letter, 
 them. **The item 0 stage gate binds here too**: audit a sent letter if it is useful, but
 the output is a lesson for the next letter, not an edit.
 
-**Protected — never "fix" these**, they are the voice and the skill's own profile carves them
-out: the opening line (the anti-template log in Step 4 item 5 governs it, not this step), the
-honesty moment naming a real gap, transitional qualifiers ("having said that", "given that"),
-and sports or nature analogies. The single-sentence pivot came off this list on 2026-10-13: in
+**Protected — never "fix" these**, they are the voice: the opening line (the anti-template
+log in Step 4 item 5 governs it, not this step), the honesty moment naming a real gap,
+transitional qualifiers ("having said that", "given that"), and sports or nature analogies. The single-sentence pivot came off this list on 2026-10-13: in
 a letter, a one-line paragraph is a finding to send back, not a move to protect
 ([D37](../DECISIONS.md#d37-the-one-line-pivot-and-two-new-repeats)).
 
 **Targeted edits only, never a wholesale rewrite.** These letters are built from the CLAUDE.md
 voice rules plus the career-narrative skill; a full rewrite would sand off the deliberate
-honesty moments and the hard-won opener. If a letter trips five or more vocabulary flags across
-several categories, that is a signal the draft was wrong to begin with: say so in the digest
+honesty moments and the hard-won opener. If a letter has five or more word-choice problems of
+several kinds, that is a signal the draft was wrong to begin with: say so in the digest
 rather than laundering it.
 
 ### 3. Re-render whatever changed
