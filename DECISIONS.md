@@ -1506,3 +1506,16 @@ audited on the skill's short SKILL.md and the style guide. He picked trim: the d
 audits against the style guide alone, the skill stays installed for use on request, and the
 writers keep reading its three files while drafting, since the test didn't cover that use.
 The test kit and its results live outside this repo (`skill-earns-its-place-test`).
+
+## D59. The SuccessFactors lane board lost its age exception
+
+On 2026-10-10 the industrial lane (D31) gave its SuccessFactors board one exception: the
+board's feed carries no posting date, so the poller's 40-day limit can't see a role's age,
+and Step 3.6 reported the `POSTED` date from the JD read instead of dropping on it, until
+the 2026-11-09 review.
+
+On 2026-11-16 he answered the parked ask (a165) on a card: apply 40 days. Step 3.6 now fails
+a candidate from that board whose `POSTED` date is more than 40 days before the run, adds it
+to `disposed` so later runs skip it, and gives it no digest line. A read with no date is
+judged as before. Every lane board now has the same limit; this one applies it at the JD read
+instead of the poll.

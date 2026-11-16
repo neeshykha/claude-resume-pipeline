@@ -2155,12 +2155,16 @@ Mechanics:
    A failed gate costs one housekeeping line ("checked, disqualified by <quoted
    requirement>") and no further budget.
 
-   **Age, on a lane board whose feed carries no posting date** (the SuccessFactors one;
-   Aneesh, 2026-10-10): the date first shows up as `POSTED` in this read, after the
-   poller's 40-day limit has already passed the candidate unseen. Until the 2026-11-09
-   review, report it and don't drop on it: write `posted <date>` on the digest line, and
-   let age cost what it costs any role at Step 2c. The lane boards that do publish a
-   date are still cut at 40 days by the poller, so this is one board's exception.
+   **Age, on a lane board whose feed carries no posting date** (the SuccessFactors one):
+   the date first shows up as `POSTED` in this read, after the poller's 40-day limit has
+   already passed the candidate unseen, so apply the same limit here (Aneesh, 2026-11-16,
+   [D59](../DECISIONS.md#d59-the-successfactors-lane-board-lost-its-age-exception)). A
+   `POSTED` date more than 40 days before the run date fails the candidate: add it to
+   `disposed` with `posted <date>, over the 40-day limit` as the why, give it no digest
+   line, and count the read against the cap like any other. A read with no `POSTED` date
+   is judged on the two gates as before and its digest line says `posted date unknown`.
+   Every lane board now has the same 40-day limit; this one applies it at the read
+   instead of the poll.
 4. **Score a passing role on the normal Step 2c rubric, with nothing added.** A
    review-only title has no tier: score it as the nearest real tier by function, the
    existing rule for `supplemental` hits. The watchlist +10 applies only to the polled
