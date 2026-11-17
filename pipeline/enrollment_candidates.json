@@ -5342,6 +5342,42 @@
       "via": "harvest_ats.py",
       "source": "LinkedIn alert",
       "first_seen": "2026-11-16"
+    },
+    {
+      "name": "Meow",
+      "ats": "ashby",
+      "slug": "meow",
+      "enrolled_date": "2026-11-17",
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Cobot",
+      "ats": "ashby",
+      "slug": "cobot",
+      "enrolled_date": "2026-11-17",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "TicketManager",
+      "ats": "jazzhr",
+      "slug": "ticketmanager",
+      "enrolled_date": "2026-11-17",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Vestwell",
+      "ats": "greenhouse",
+      "slug": "vestwell",
+      "enrolled_date": "2026-11-17",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
     }
   ],
   "rejected": [
@@ -31163,6 +31199,449 @@
       "card_url": "https://www.linkedin.com/jobs/view/4490004403/",
       "source": "LinkedIn alert",
       "first_seen": "2026-11-16"
+    },
+    {
+      "name": "Huzzle Ltd",
+      "ats": "workable",
+      "slug": "huzzle",
+      "rejected_date": "2026-11-17",
+      "reason": "Board resolves and is live (2137 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Bankrate",
+      "ats": "greenhouse",
+      "slug": "bankrate",
+      "rejected_date": "2026-11-17",
+      "reason": "Board resolves and is live (6 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Angi",
+      "ats": "ashby",
+      "slug": "angi",
+      "rejected_date": "2026-11-17",
+      "reason": "Board resolves and is live (19 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "United States",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "PROBABLE NAME COLLISION. A name variant resolved to greenhouse/unitedstates (8 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'InfoTrack US' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "collision_board": "greenhouse/unitedstates",
+      "collision_suspected": true,
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "InfoTrack US -- LinkedIn card role; board resolved to a different company",
+      "card_title": "InfoTrack US",
+      "card_job_id": "4473802054",
+      "card_url": "https://www.linkedin.com/jobs/view/4473802054/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "MathCo",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "PROBABLE NAME COLLISION. A name variant resolved to pinpoint/mathco (3 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'AI Activation Lead' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "collision_board": "pinpoint/mathco",
+      "collision_suspected": true,
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "AI Activation Lead -- LinkedIn card role; board resolved to a different company",
+      "card_title": "AI Activation Lead",
+      "card_job_id": "4489330225",
+      "card_url": "https://www.linkedin.com/jobs/view/4489330225/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "AssetMark",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "PROBABLE NAME COLLISION. A name variant resolved to workday/assetmark (40 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'Salesforce Administrator' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "collision_board": "workday/assetmark",
+      "collision_suspected": true,
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Salesforce Administrator -- LinkedIn card role; board resolved to a different company",
+      "card_title": "Salesforce Administrator",
+      "card_job_id": "4475042097",
+      "card_url": "https://www.linkedin.com/jobs/view/4475042097/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Essex Solutions",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "PROBABLE NAME COLLISION. A name variant resolved to workday/essex (71 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'IT Relationship Manager' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "collision_board": "workday/essex",
+      "collision_suspected": true,
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "IT Relationship Manager -- LinkedIn card role; board resolved to a different company",
+      "card_title": "IT Relationship Manager",
+      "card_job_id": "4491073425",
+      "card_url": "https://www.linkedin.com/jobs/view/4491073425/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "Bechtel Corporation",
+      "ats": "workable",
+      "slug": "bechtel-corporation",
+      "rejected_date": "2026-11-17",
+      "reason": "Board RESOLVED at workable/bechtel-corporation but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/bechtel-corporation.) 2 probe(s) were rate-limited (HTTP 429) and never answered (workday x2), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workday/bechtelcorporation",
+        "workday/bechtel"
+      ],
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "University of California, Riverside",
+      "ats": "workable",
+      "slug": "university-of-california-riverside",
+      "rejected_date": "2026-11-17",
+      "reason": "Board RESOLVED at workable/university-of-california-riverside but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/university-of-california-riverside.) 2 probe(s) were rate-limited (HTTP 429) and never answered (workday x2), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workday/universityofcaliforniariverside",
+        "workday/university"
+      ],
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "DHL Supply Chain",
+      "ats": "workable",
+      "slug": "dhl-supply-chain",
+      "rejected_date": "2026-11-17",
+      "reason": "Board RESOLVED at workable/dhl-supply-chain but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/dhl-supply-chain.) 2 probe(s) were rate-limited (HTTP 429) and never answered (workday x2), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workday/dhlsupplychain",
+        "workday/dhl"
+      ],
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Unissant",
+      "ats": "workable",
+      "slug": "unissant",
+      "rejected_date": "2026-11-17",
+      "reason": "Board RESOLVED at workable/unissant but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/unissant.) 1 probe(s) were rate-limited (HTTP 429) and never answered (workday x1), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workday/unissant"
+      ],
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "San Francisco, CA",
+      "ats": "workable",
+      "slug": "san-francisco-ca",
+      "rejected_date": "2026-11-17",
+      "reason": "Board RESOLVED at workable/san-francisco-ca but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/san-francisco-ca.) 2 probe(s) were rate-limited (HTTP 429) and never answered (workday x2), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workday/sanfranciscoca",
+        "workday/san"
+      ],
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Bunge",
+      "ats": "workable",
+      "slug": "bunge",
+      "rejected_date": "2026-11-17",
+      "reason": "Board RESOLVED at workable/bunge but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/bunge.) 1 probe(s) were rate-limited (HTTP 429) and never answered (workday x1), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workday/bunge"
+      ],
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Westerra Credit Union",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workday x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Westerra Credit Union\"), NOT a manual search. Throttled: workday/westerracreditunion, workday/westerra.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workday/westerracreditunion",
+        "workday/westerra"
+      ],
+      "source": "BuiltIn directory",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Partners Health Management",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workday x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Partners Health Management\"), NOT a manual search. Throttled: workday/partnershealthmanagement, workday/partners.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workday/partnershealthmanagement",
+        "workday/partners"
+      ],
+      "manual_review": true,
+      "manual_review_why": "Claims Systems Manager (Remote) [Elkin, NC] -- tier2c title, Remote US; LinkedIn job 4491265429",
+      "card_title": "Claims Systems Manager (Remote)",
+      "card_job_id": "4491265429",
+      "card_url": "https://www.linkedin.com/jobs/view/4491265429/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17",
+      "manual_review_surfaced": true
+    },
+    {
+      "name": "ID Logistics US",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 5 probe(s) were refused with HTTP 429 even after one retry (workable x3, workday x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"ID Logistics US\"), NOT a manual search. Throttled: workable/id-logistics-us, workable/idlogisticsusio, workable/idlogisticsushq, workday/idlogisticsus, workday/id.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/id-logistics-us",
+        "workable/idlogisticsusio",
+        "workable/idlogisticsushq",
+        "workday/idlogisticsus",
+        "workday/id"
+      ],
+      "card_title": "Manager, Operations",
+      "card_job_id": "4491236444",
+      "card_url": "https://www.linkedin.com/jobs/view/4491236444/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "PPC Partners Inc.",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workable x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"PPC Partners Inc.\"), NOT a manual search. Throttled: workable/ppcpartners, workable/ppcpartnersinc..",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/ppcpartners",
+        "workable/ppcpartnersinc."
+      ],
+      "card_title": "Service Operations Manager",
+      "card_job_id": "4491249172",
+      "card_url": "https://www.linkedin.com/jobs/view/4491249172/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "New Jersey, United States",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workable x1, workday x1), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"New Jersey, United States\"), NOT a manual search. Throttled: workable/newjerseyunitedstateshq, workday/newjerseyunitedstates.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/newjerseyunitedstateshq",
+        "workday/newjerseyunitedstates"
+      ],
+      "card_title": "Snowflake",
+      "card_job_id": "4457035108",
+      "card_url": "https://www.linkedin.com/jobs/view/4457035108/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "DApps Platform Systems Inc.",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 5 probe(s) were refused with HTTP 429 even after one retry (workable x2, workday x3), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"DApps Platform Systems Inc.\"), NOT a manual search. Throttled: workable/dappsplatformsystems, workable/dappsplatformsystemsinc., workday/dappsplatformsystemsinc, workday/dappsplatformsystems, workday/dapps.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/dappsplatformsystems",
+        "workable/dappsplatformsystemsinc.",
+        "workday/dappsplatformsystemsinc",
+        "workday/dappsplatformsystems",
+        "workday/dapps"
+      ],
+      "card_title": "Vice President Operations",
+      "card_job_id": "4491281341",
+      "card_url": "https://www.linkedin.com/jobs/view/4491281341/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Civil Consulting - Specifying Engineer",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 3 probe(s) were refused with HTTP 429 even after one retry (workable x1, workday x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Civil Consulting - Specifying Engineer\"), NOT a manual search. Throttled: workable/civilconsultingspecifyingengineerio, workday/civilconsultingspecifyingengineer, workday/civil.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/civilconsultingspecifyingengineerio",
+        "workday/civilconsultingspecifyingengineer",
+        "workday/civil"
+      ],
+      "card_title": "Director of Customer Operations & Revenue Enablement",
+      "card_job_id": "4489711440",
+      "card_url": "https://www.linkedin.com/jobs/view/4489711440/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Bio-Rad Laboratories",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 2 probe(s) were refused with HTTP 429 even after one retry (workable x1, workday x1), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Bio-Rad Laboratories\"), NOT a manual search. Throttled: workable/bioradlaboratorieshq, workday/bio.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/bioradlaboratorieshq",
+        "workday/bio"
+      ],
+      "card_title": "Global Customer Service Process Lead",
+      "card_job_id": "4473195157",
+      "card_url": "https://www.linkedin.com/jobs/view/4473195157/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "PPT Consulting",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 5 probe(s) were refused with HTTP 429 even after one retry (workable x4, workday x1), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"PPT Consulting\"), NOT a manual search. Throttled: workable/pptconsulting, workable/ppt-consulting, workable/pptconsultingio, workable/pptconsultinghq, workday/ppt.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/pptconsulting",
+        "workable/ppt-consulting",
+        "workable/pptconsultingio",
+        "workable/pptconsultinghq",
+        "workday/ppt"
+      ],
+      "card_title": "AI Transformation Manager",
+      "card_job_id": "4489878953",
+      "card_url": "https://www.linkedin.com/jobs/view/4489878953/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Magma Math US",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 3 probe(s) were refused with HTTP 429 even after one retry (workable x1, workday x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Magma Math US\"), NOT a manual search. Throttled: workable/magmamathushq, workday/magmamathus, workday/magma.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/magmamathushq",
+        "workday/magmamathus",
+        "workday/magma"
+      ],
+      "card_title": "Customer Success Manager - Southeast (US)",
+      "card_job_id": "4490236639",
+      "card_url": "https://www.linkedin.com/jobs/view/4490236639/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Compucom Staffing",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 5 probe(s) were refused with HTTP 429 even after one retry (workable x3, workday x2), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Compucom Staffing\"), NOT a manual search. Throttled: workable/compucomstaffing, workable/compucom-staffing, workable/compucomstaffinghq, workday/compucomstaffing, workday/compucom.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/compucomstaffing",
+        "workable/compucom-staffing",
+        "workable/compucomstaffinghq",
+        "workday/compucomstaffing",
+        "workday/compucom"
+      ],
+      "card_title": "Identity Access Management Operations Manager",
+      "card_job_id": "4480172193",
+      "card_url": "https://www.linkedin.com/jobs/view/4480172193/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
+    },
+    {
+      "name": "Dynasty Financial Partners",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-17",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 3 probe(s) were refused with HTTP 429 even after one retry (workable x2, workday x1), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Dynasty Financial Partners\"), NOT a manual search. Throttled: workable/dynastyfinancialpartnersio, workable/dynastyfinancialpartnershq, workday/dynasty.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/dynastyfinancialpartnersio",
+        "workable/dynastyfinancialpartnershq",
+        "workday/dynasty"
+      ],
+      "card_title": "Salesforce Administrator",
+      "card_job_id": "4482782442",
+      "card_url": "https://www.linkedin.com/jobs/view/4482782442/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-17"
     }
   ]
 }

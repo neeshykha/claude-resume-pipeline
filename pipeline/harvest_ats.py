@@ -266,6 +266,13 @@ NON_US_MARKERS = (
     "portugal", "romania", "indonesia", "thailand", "vietnam", "south africa",
     "london", "dublin", "berlin", "paris", "amsterdam", "sydney", "toronto",
     "vancouver", "bangalore", "tel aviv",
+    # Workable's Huzzle board, 2026-11-17: "Remote Venezuela, Boliva" passed as
+    # remote-US and made the company enrollable on three non-US CSM roles.
+    # "peru" left out on purpose: Peru, Indiana and Peru, Illinois.
+    "venezuela", "bolivia", "boliva", "chile", "ecuador", "uruguay",
+    "costa rica",
+    # vCluster Labs' "Remote United Arab Emirates" reached the shortlist the same day.
+    "united arab emirates", "dubai", "abu dhabi", "saudi arabia", "qatar",
     # Canadian cities, for strings that name the city and never the country.
     # Comeet locations are built from city + state, so Dot Compliance's Canada
     # role reads "Montreal, Remote" (found 2026-09-11).

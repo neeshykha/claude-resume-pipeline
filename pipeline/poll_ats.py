@@ -525,6 +525,13 @@ LOCATION_EXCLUDE = [
     "new zealand", "sydney", "latin america", "colombia", "argentina",
     "poland", "sweden", "portugal", "romania", "great britain",
     "montreal", "montréal", "quebec", "québec", "ottawa", "calgary",
+    # Added 2026-11-17 with the same terms in harvest_ats.NON_US_MARKERS:
+    # Workable's "Remote Venezuela, Boliva" (Huzzle) read as remote.
+    # "peru" left out on purpose: Peru, Indiana and Peru, Illinois.
+    "venezuela", "bolivia", "boliva", "chile", "ecuador", "uruguay",
+    "costa rica",
+    # vCluster Labs' "Remote United Arab Emirates" reached the shortlist the same day.
+    "united arab emirates", "dubai", "abu dhabi", "saudi arabia", "qatar",
     "mandarin", "cantonese",  # language-specific roles
 ]
 
