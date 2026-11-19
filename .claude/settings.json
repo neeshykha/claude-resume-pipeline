@@ -32,7 +32,6 @@
       "Bash(pgrep:*)",
       "Bash(grep:*)",
       "Bash(jq:*)",
-      "Bash(curl:*)",
       "WebSearch",
       "WebFetch",
       "ToolSearch",

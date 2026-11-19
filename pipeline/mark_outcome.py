@@ -31,7 +31,10 @@ Input schema:
                                               # title match instead of a
                                               # substring, for when one req's
                                               # title is a prefix of another's
-      "append_if_missing": true               # optional, default false
+      "append_if_missing": true,              # optional, default false
+      "sender": "Acme Talent <no-reply@acme.example>"
+                                              # the From address, when the
+                                              # outcome came from an email
     }
   ]
 }
@@ -73,6 +76,15 @@ a row whose outcome is already right, restate that outcome.
 The three sections this adds to the output (moved right, NOT RECORDED, REFUSED)
 print only when they have something in them, so a run that touches no
 furthest_stage prints exactly what it always printed.
+
+`sender` (added 2026-11-19, DECISIONS.md D60). Step 0.5 writes the From address
+of every outcome email, and sender_check.py decides whether that sender may move
+a row: an ATS domain, LinkedIn's application sender, Indeed, or the matched
+row's own job-URL domain. Any other sender writes nothing for that item (no
+outcome, stage, notes, or appended row), is listed under UNTRUSTED SENDER, and
+goes in the brief's alerts. An appended row has no tracker URL to vouch for the
+sender, so only the first three count there. Items without a sender (outcomes
+he records by hand, the interview loop) are not checked.
 """
 import csv
 import json
@@ -81,7 +93,9 @@ import re
 import shutil
 import sys
 
-from repair_outcomes import FURTHEST_STAGES
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from repair_outcomes import FURTHEST_STAGES  # noqa: E402
+import sender_check  # noqa: E402
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
@@ -178,6 +192,7 @@ def main():
 
     updated, appended, ambiguous, missing = [], [], [], []
     moved, unrecorded, refused = [], [], []
+    untrusted = []
 
     def advance(r, want):
         """Move one row's furthest_stage right to `want`: never left, never cleared."""
@@ -232,6 +247,13 @@ def main():
                 else:
                     matches = [r for r in matches
                                if title.lower() in r[ci["title"]].lower()]
+
+        if "sender" in e:
+            row_url = matches[0][ci["url"]] if len(matches) == 1 else ""
+            ok, why = sender_check.check(e.get("sender"), row_url)
+            if not ok:
+                untrusted.append((company, title, why))
+                continue
 
         if len(matches) == 1:
             r = matches[0]
@@ -288,6 +310,10 @@ def main():
         print(f"NO MATCH and append_if_missing not set ({len(missing)}):")
         for c, t in missing:
             print(f"  {c} / {t}")
+    if untrusted:
+        print(f"UNTRUSTED SENDER, nothing recorded; put each in the brief's alerts ({len(untrusted)}):")
+        for c, t, why in untrusted:
+            print(f"  {c} / {t or '(no title given)'}: {why}")
     if moved:
         print(f"furthest_stage moved right on {len(moved)} rows")
         for c, t, was, now in moved:

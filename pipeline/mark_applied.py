@@ -57,6 +57,12 @@ Behavior:
   a title is matched as a substring. Rows marked Sent on the dashboard are
   promoted before their confirmation email arrives, which would have made that
   the common path rather than a rare one.
+- A confirmation that carries a "sender" (the From address of the receipt;
+  Step 0.5 writes it for every email) is checked by sender_check.py once its
+  row is found (added 2026-11-19, DECISIONS.md D60). A sender that isn't on an
+  ATS domain, LinkedIn's application sender, Indeed, or the row's own job-URL
+  domain promotes nothing and is listed as UNTRUSTED SENDER. Confirmations
+  without a sender (his Sent marks, via shelf_inbox.py) are not checked.
 """
 import csv
 import json
@@ -64,6 +70,9 @@ import os
 import re
 import shutil
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import sender_check  # noqa: E402
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTCOMES = os.path.join(SCRIPT_DIR, "outcomes.csv")
@@ -118,6 +127,7 @@ def main() -> int:
     promoted_urls = []
     unverified = []
     already, elsewhere = [], []
+    untrusted = []
     sent_stages = {"applied", "rejected", "closed", "interview", "assessment"}
 
     for c in confirmations:
@@ -159,6 +169,11 @@ def main() -> int:
 
         if len(matches) == 1:
             row = matches[0]
+            if "sender" in c:
+                ok, why = sender_check.check(c.get("sender"), row[col["url"]])
+                if not ok:
+                    untrusted.append((row[col["company"]], row[col["title"]], why))
+                    continue
             row[col["applied_date"]] = applied_date
             row[col["stage"]] = "applied"
             promoted.append((row[col["company"]], row[col["title"]]))
@@ -223,6 +238,10 @@ def main() -> int:
               f"look at it by hand): {len(elsewhere)}")
         for company, title, stage in elsewhere:
             print(f"  {company} — {title} [{stage}]   <-- a late send to a retired row?")
+    if untrusted:
+        print(f"UNTRUSTED SENDER (not promoted; put each in the brief's alerts): {len(untrusted)}")
+        for company, title, why in untrusted:
+            print(f"  {company} — {title}: {why}")
     if ambiguous:
         print(f"AMBIGUOUS (skipped, multiple surfaced rows, no URL to disambiguate): {len(ambiguous)}")
         for c in ambiguous:

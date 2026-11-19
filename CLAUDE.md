@@ -340,6 +340,12 @@ The daily pipeline's canonical, executable spec is **`pipeline/daily_task_prompt
 | `jobs/lead_marks.json` (his Tailor it / Pass on the weekly leads) | `lead_marks.py`, by way of `shelf_inbox.py`; `linkedin_followup.py --requested` stamps each read | hand-edit, or record an answer he didn't click |
 | `jobs/interviews.json` (one entry per interview round, dated; the dashboard's Progress charts read it) | `log_interview.py`, run by the interview-loop skill at its Step 5 | hand-edit, or log a round that hasn't happened yet [D42](DECISIONS.md#d42-the-dashboard-got-a-progress-section) |
 
+**A receipt or outcome from email carries its `sender`, and `sender_check.py` decides whether
+it may move a row:** an ATS domain in `job_mail_terms.json`, LinkedIn's application sender,
+Indeed, or the row's own job-URL domain. Anything else moves nothing and goes in the brief's
+alerts; he marks the row Sent on the dashboard if it was his.
+[D60](DECISIONS.md#d60-a-strangers-receipt-moved-the-tracker)
+
 **`outcomes.csv` canonical schema (17 columns as of 2026-09-30, when `his_verdict` landed):**
 `applied_date,company,title,url,fit_score,jd_coverage_pct,stage,outcome,notes,source_channel,surfaced_date,unmet_hard_reqs,vendor_tool_named_in_jd,hard_req_cap_trigger,furthest_stage,ic_scope,his_verdict`
 
