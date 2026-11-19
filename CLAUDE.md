@@ -418,8 +418,10 @@ effectiveness, and any claim about what happened to an application should be com
 `surfaced_date >= 2026-07-28` and say so. A pre-epoch row is fine to leave sitting in whatever
 state it is in; correct one only when Aneesh raises that specific role.
 
-`source_channel` is `pipeline`, `user_surfaced`, `referral`, or `linkedin`, because a referral
-and a cold ATS apply convert at very different rates. Vocabulary lives in `KNOWN_CHANNELS`
+`source_channel` is `pipeline`, `user_surfaced`, `referral`, `linkedin`, `recruiter` (a recruiter
+brought the role to him), or `community` (a member of a community he belongs to posted or passed
+it on), because a referral and a cold ATS apply convert at very different rates. `recruiter` and
+`community` were added 2026-11-19 so the people channel gets its own count. Vocabulary lives in `KNOWN_CHANNELS`
 (`repair_outcomes.py`); add there first or the migration will treat the row as drifted.
 
 **This schema is duplicated in two places on purpose** (`OUTCOMES_HEADER` in

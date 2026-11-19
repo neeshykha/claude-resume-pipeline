@@ -71,8 +71,12 @@ no years minimum at all.
 
 `source_channel` records how the role reached Aneesh: "pipeline" (the daily
 run surfaced it), "user_surfaced" (his own browsing, fed in by hand), "referral"
-(an employee referral), or "linkedin" (a company that entered the watchlist via
-the Step 1d-2 LinkedIn lead harvest). Added because the 2026-07-28 confirmation
+(an employee referral), "linkedin" (a company that entered the watchlist via
+the Step 1d-2 LinkedIn lead harvest), "recruiter" (an outside or in-house
+recruiter brought it to him), or "community" (a member of a professional
+community he belongs to posted or passed it on: Preflight, Support Driven, the
+Atlanta Salesforce admin group, and the like; added 2026-11-19 for the
+people-channel count in the pipeline rebuild spec). Added because the 2026-07-28 confirmation
 backfill turned up a CodeRabbit application submitted through their Employee
 Referral program, a channel the tracker had no way to represent and which
 converts at a very different rate from cold ATS applications. The point of the
@@ -191,7 +195,7 @@ def merge_notes(notes, pdf):
     return f"{notes}; {pdf}"
 
 
-KNOWN_CHANNELS = {"", "pipeline", "user_surfaced", "referral", "linkedin"}
+KNOWN_CHANNELS = {"", "pipeline", "user_surfaced", "referral", "linkedin", "recruiter", "community"}
 
 
 def pad(row):
