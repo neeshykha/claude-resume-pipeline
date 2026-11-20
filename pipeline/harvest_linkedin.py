@@ -587,7 +587,7 @@ class Grader:
                "hard_excluded": False, "seniority": P.title_exclusion_reasons(title),
                "loose_tier": None}
         for cfg, tier in self.loose_titles:
-            t = title.lower()
+            t = P.normalize_ai(title).lower()
             if cfg in t or t in cfg:
                 out["loose_tier"] = TIER_LABELS[tier]
                 break

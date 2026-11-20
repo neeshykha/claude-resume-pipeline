@@ -1548,3 +1548,40 @@ He also kept the run's right to fix its own instructions in the same run, with o
 when Step 7 stages `daily_task_prompt.md`, `CLAUDE.md`, or a worker brief, the changed lines
 go in the brief's alerts. Those files are what every later run obeys, and the same red team
 found that a bad line already in an agent's memory was acted on 3 of 3 times.
+
+## D61. "Artificial Intelligence" didn't read as "AI"
+
+On 2026-11-20 a check of the LinkedIn cards found a university's "Artificial Intelligence
+Platform and Service Lead" graded `none` on 2026-10-26. It's an enterprise AI platform admin
+and support role that fits him closely, and Step 1d-3 never read it. Every AI title in the
+config is written "AI ...", and the tokenizer had no rule joining the two forms: "AI Platform
+Manager" matched tier2c and "Artificial Intelligence Platform Manager" matched nothing. The AI
+wildcard, the engineer route, and the pre-score's AI boost look for a word-bounded "ai" in the
+raw title, so they missed the spelled-out form too. In the 56 card files from 2026-09-02 to
+2026-11-19 (9,856 card lines), 15 lines spelled it out: 7 graded none, 3 supp, and 5 tier2,
+the last only because those titles also carried "(AI)".
+
+`poll_ats.normalize_ai` now folds "Artificial Intelligence" to "AI": any case, a space or a
+hyphen between the words, and a following "(AI)" absorbed so it isn't counted twice.
+`tokenize()`, both wildcard checks, the pre-score AI boost, and `harvest_linkedin.py`'s
+loose-tier check all run titles through it. The spelled-out form now grades exactly like its
+"AI" form, so this is a fix with no scoring change of its own. Replayed over every card, it
+moved one title: a September "Artificial Intelligence & Digital Transformation Manager" went
+from none to tier2.
+
+It didn't move the card that started this. "AI Platform and Service Lead" matched no pattern
+either, and neither did "AI Support Manager". Shown a replay of each candidate pattern over
+every card, he added two the same day: "AI Platform Lead" to tier2c beside "AI Platform
+Manager" (and to `jd_verification_required_titles` with it), and "AI Solutions Lead" to the
+tier2b explicit titles. He passed on "AI Support Manager" and "AI Support Lead" for tier2.
+Over the 57 card files through 2026-11-20, the fix and the two patterns together move eight
+cards to a followed tier: the platform lead, six solutions-lead cards, and the September
+transformation manager.
+
+The replay turned up one more gap. The supplemental "AI Solutions", "AI Adoption", and "AI
+Specialist" entries match before the AI wildcard is consulted, so a title the wildcard would
+send to Step 1d-3 lands in supp, which isn't followed. That held 24 cards from 2026-09-09 to
+2026-11-19. He left it for later. The new "AI Solutions Lead" pattern clears six of them, and
+the other 18 ("AI Adoption Lead", "AI Deployment Specialist", and the like) still sit in supp.
+
+`pipeline/test_title_matcher.py` pins the normalization and both patterns.

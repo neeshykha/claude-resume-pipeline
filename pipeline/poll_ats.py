@@ -291,6 +291,22 @@ _TOKEN_ALIASES = {
     "generalists": "generalist",
 }
 
+# Spelled-out "Artificial Intelligence" reads as "AI" in every title check: the
+# tier tokenizer, the \bai\b tests (AI wildcard, engineer route), and the
+# pre-score AI boost. A trailing "(AI)" is absorbed, so "Artificial Intelligence
+# (AI) Support Manager" reads as "AI Support Manager", not "AI AI Support
+# Manager". Every AI title in the config is written "AI ...", and until
+# 2026-11-20 a posting that spelled it out matched none of them:
+# "Artificial Intelligence Platform Manager" missed tier2c's "AI Platform
+# Manager", and the AI wildcard never saw it.
+_AI_SPELLED_OUT = re.compile(r"\bartificial[\s-]+intelligence\b(?:\s*\(\s*ai\s*\))?",
+                             re.IGNORECASE)
+
+
+def normalize_ai(text: str) -> str:
+    """Fold spelled-out "Artificial Intelligence" (and "... (AI)") to "AI"."""
+    return _AI_SPELLED_OUT.sub("AI", text)
+
 # Suffixes stripped longest-first, repeatedly, with a minimum stem of 4 chars.
 # Deliberately tiny (not a full Porter stemmer): just enough that the word
 # forms that actually appear in job titles collapse together —
@@ -317,10 +333,11 @@ def _stem(tok: str) -> str:
 
 
 def tokenize(text: str) -> list[str]:
-    """Title → list of normalized word stems (lowercased, punctuation-split,
-    stopwords dropped, aliases folded, suffix-stemmed)."""
+    """Title → list of normalized word stems ("Artificial Intelligence" folded
+    to "AI", lowercased, punctuation-split, stopwords dropped, aliases folded,
+    suffix-stemmed)."""
     out = []
-    for raw in re.split(r"[^a-z0-9]+", text.lower()):
+    for raw in re.split(r"[^a-z0-9]+", normalize_ai(text).lower()):
         if not raw or raw in _STOPWORDS:
             continue
         out.append(_TOKEN_ALIASES.get(raw) or _stem(raw))
@@ -473,7 +490,7 @@ class TitleMatcher:
         without needing to clear the generic borderline threshold. Coding/IC
         titles (AI Engineer, AI Architect) are excluded so this doesn't
         re-create the FDE problem under a new name."""
-        t = title.lower()
+        t = normalize_ai(title).lower()
         if not re.search(r'\bai\b', t):
             return False
         if any(ex in t for ex in self.wc_exclude):
@@ -487,7 +504,7 @@ class TitleMatcher:
         20-slot borderline cap; this routes them to the Step 3.5 stretch lane
         instead, never to the shortlist. Exclusions that are NOT routed
         (scientist, researcher) still drop the title outright."""
-        t = title.lower()
+        t = normalize_ai(title).lower()
         if not self.stretch_routed or not re.search(r'\bai\b', t):
             return False
         if any(ex in t for ex in self.wc_exclude if ex not in self.stretch_routed):
@@ -2981,7 +2998,8 @@ def poll_all(run_date: date, fail_memory: bool = True) -> dict:
         # "ai" is word-boundary matched (2026-07-09 fix) — a bare substring check
         # would false-positive on any title containing "domain," "maintain,"
         # "captain," etc.
-        if re.search(r'\bai\b', t) or any(kw in t for kw in ["agentic", "voice", "llm", "machine learning"]):
+        if (re.search(r'\bai\b', normalize_ai(t).lower())
+                or any(kw in t for kw in ["agentic", "voice", "llm", "machine learning"])):
             score += 10
         # IoT boost — company-name match retained: Aneesh's IoT background is a
         # genuine domain differentiator and few watchlist companies are IoT-named.

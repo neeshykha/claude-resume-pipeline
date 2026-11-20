@@ -6,6 +6,7 @@
   product manager      a PM title must not ride tier1 "Product Support Manager"
   executive support    an executive-assistant org is not "Head of Support"
   technical accounting "accounting" stems to "account", so it rode "Technical Account Manager"
+  artificial intelligence  a spelled-out "Artificial Intelligence" title missed every "AI ..." tier
 
 The first three were fixed 2026-10-09, the last three 2026-10-10. The first is a
 tokenizer fix (_TOKEN_ALIASES keeps "generalist" whole). The rest are
@@ -13,6 +14,12 @@ _poller_config.hard_exclude_title_terms entries, because an exact tier1
 match overrides TITLE_EXCLUDE and tier1 is protected from function_mismatch_titles,
 so the hard list is the only config that reaches a tier1 match. Controls matter as
 much as the targets: each fix has a real title sitting right next to it.
+
+The last was fixed 2026-11-20 in the tokenizer and the \\bai\\b checks
+(poll_ats.normalize_ai), not in config: the cases below pin that the spelled-out
+form grades exactly like its "AI" form, whatever that grade is. The same day he
+added "AI Platform Lead" (tier2c) and "AI Solutions Lead" (tier2b) and declined
+"AI Support Manager", so that title is left out of CASES on purpose.
 """
 import json, os, sys
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -44,6 +51,8 @@ T1 = "tier1_true_match"
 T2 = "tier2_strong_overlap"
 T2D = "tier2d_generalist_ops"
 T3 = "tier3_reasonable_stretch"
+T2C = "tier2c_tooling_systems"
+T2B = "tier2b_ai_wildcard"
 
 CASES = [
     # (title, expected, why)
@@ -90,7 +99,30 @@ CASES = [
     ("Product Operations Manager", T2, "control"),
     ("Technical Account Manager", T2, "control: 'account', not 'accounting'"),
     ("Partner Customer Success Manager (Accounting)", T3, "control: why the term isn't bare 'accounting'"),
+
+    ("Artificial Intelligence Platform Manager", T2C, "spelled out, was dropped before 2026-11-20"),
+    ("AI Platform Manager", T2C, "control: the config title"),
+    ("Artificial Intelligence & Digital Transformation Manager", T2, "Sept card, was dropped"),
+    ("Artificial Intelligence (AI) Program Manager", T2, "the '(AI)' is absorbed, not doubled"),
+    ("Artificial-Intelligence Operations Manager", T2, "hyphenated spelling"),
+    ("Artificial Intelligence Platform and Service Lead", T2C, "Oct 26 card: normalization plus 'AI Platform Lead'"),
+    ("AI Platform Lead", T2C, "config title, added 2026-11-20"),
+    ("Artificial Intelligence (AI) Solutions Lead - AI and Automation", T2B, "Oct 19 card, was supp"),
+    ("AI Solutions and Adoption Lead", T2B, "Nov 9 card, was supp"),
+    ("AI Solutions Specialist", "supplemental", "control: non-Lead 'AI Solutions' titles stay supp"),
 ]
+
+# The AI wildcard and engineer route test a word-bounded "ai" on the raw title,
+# outside the tokenizer, so they need their own spelled-out cases.
+WILDCARD_CASES = [
+    # (title, matches_ai_wildcard, matches_ai_engineer_stretch)
+    ("Artificial Intelligence Knowledge Lead", True, False),
+    ("AI Knowledge Lead", True, False),
+    ("Artificial Intelligence Engineer", False, False),
+    ("Artificial Intelligence Automation Engineer", False, True),
+    ("Artificially Intelligent Knowledge Lead", False, False),
+]
+assert poll_ats.normalize_ai("Artificial Intelligence (AI) Support Manager") == "AI Support Manager"
 
 fails = 0
 for title, want, why in CASES:
@@ -99,6 +131,15 @@ for title, want, why in CASES:
     fails += not ok
     print(f"  [{'ok ' if ok else 'FAIL'}] {got:22s} (want {want:22s})  {title!r:52s} {why}")
 print(f"  {len(CASES) - fails}/{len(CASES)} passed\n")
+
+wfails = 0
+for title, want_wc, want_eng in WILDCARD_CASES:
+    got = (MATCHER.matches_ai_wildcard(title), MATCHER.matches_ai_engineer_stretch(title))
+    ok = got == (want_wc, want_eng)
+    wfails += not ok
+    print(f"  [{'ok ' if ok else 'FAIL'}] wildcard={got[0]!s:5s} engineer={got[1]!s:5s}  {title!r}")
+print(f"  {len(WILDCARD_CASES) - wfails}/{len(WILDCARD_CASES)} wildcard cases passed\n")
+fails += wfails
 
 # A hard-exclude term that is a substring of a configured title would kill that
 # title outright, with no digest trace.
