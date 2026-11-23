@@ -1585,3 +1585,31 @@ send to Step 1d-3 lands in supp, which isn't followed. That held 24 cards from 2
 the other 18 ("AI Adoption Lead", "AI Deployment Specialist", and the like) still sit in supp.
 
 `pipeline/test_title_matcher.py` pins the normalization and both patterns.
+
+## D62. Quality leads and operational excellence matched no tier
+
+On 2026-11-23 a desk session checked which careers from his "Careers Next Door" page the
+scan can see. It ran the poller in memory over 778 companies and 44,870 postings with 55
+extra titles and wrote nothing. Two in-lane roles had matched no tier: Airbnb's "Lead,
+Quality, Elevated Support" (Partner QA Lead for BPO sites, $106K-125K, remote US, posted
+2026-11-13, never in `seen_jobs.json`) and Recidiviz's "Operational Excellence Lead"
+(user-surfaced 2026-11-04, hand-scored 100). "Support Quality Manager" needs "manager", and no
+title spelled operational excellence.
+
+On his cards, tier2 gained "Operational Excellence Lead", "Operational Excellence Manager",
+"Support Quality Lead", and "Quality Operations Manager". That day they caught 4 roles: those
+two, Upstart's "Senior Operations Manager, Quality Control", and a Devoted Health
+payment-integrity manager. The broad forms ("Quality Lead", "Quality Manager") pulled clinical,
+ad, supplier, and field quality, so they stay out. He also added "Product Operations Lead"
+knowing its cost: "production" stems to "product", so plant titles like "Production Operations
+Lead" match too (about 3 of 6 that day). "Agentforce" became a review-only title (supplemental
+plus `function_mismatch_titles`) for the AI agent designer path: 3 NeuraFlash roles, one a fit.
+A side effect: "Forward Deployed Engineer, AI & Agentforce" used to grade tier4 and is now an
+FYI line, because supplemental outranks tier4.
+
+He declined plain AI governance titles. They added 1 role that day (a product lead), and the
+one ops-shaped AI governance role seen that week, Coca-Cola's Atlanta "Manager, AI Governance
+Operations" on 2026-11-17, already came through "AI Operations Manager". Multifamily operators,
+building analytics vendors, and civic tech contractors stay unenrolled: their boards held no
+title worth adding. Cases are in `pipeline/test_title_matcher.py`; the probe kit is in
+`~/Documents/Projects/Career/career-tangents/scan-probe/`.

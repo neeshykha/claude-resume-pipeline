@@ -7,6 +7,7 @@
   executive support    an executive-assistant org is not "Head of Support"
   technical accounting "accounting" stems to "account", so it rode "Technical Account Manager"
   artificial intelligence  a spelled-out "Artificial Intelligence" title missed every "AI ..." tier
+  quality lead         a support-quality lead and an operational excellence lead matched no tier
 
 The first three were fixed 2026-10-09, the last three 2026-10-10. The first is a
 tokenizer fix (_TOKEN_ALIASES keeps "generalist" whole). The rest are
@@ -20,6 +21,11 @@ The last was fixed 2026-11-20 in the tokenizer and the \\bai\\b checks
 form grades exactly like its "AI" form, whatever that grade is. The same day he
 added "AI Platform Lead" (tier2c) and "AI Solutions Lead" (tier2b) and declined
 "AI Support Manager", so that title is left out of CASES on purpose.
+
+The quality-lead gap was fixed 2026-11-23 in config (D62): four narrow tier2 titles,
+"Product Operations Lead" with its stemming cost pinned below, and "Agentforce" as a
+review-only title. The broad forms ("Quality Lead", "Quality Manager") stay out, and
+the controls below pin that.
 """
 import json, os, sys
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -110,6 +116,17 @@ CASES = [
     ("Artificial Intelligence (AI) Solutions Lead - AI and Automation", T2B, "Oct 19 card, was supp"),
     ("AI Solutions and Adoption Lead", T2B, "Nov 9 card, was supp"),
     ("AI Solutions Specialist", "supplemental", "control: non-Lead 'AI Solutions' titles stay supp"),
+
+    ("Lead, Quality, Elevated Support", T2, "Airbnb, Nov 13: no tier before 2026-11-23"),
+    ("Operational Excellence Lead", T2, "Recidiviz, Nov 4: user-surfaced, no tier"),
+    ("Senior Operations Manager, Quality Control", T2, "Upstart, Nov 23 probe"),
+    ("Operational Excellence Manager", T2, "config title"),
+    ("Product Operations Lead", T2, "Athos Commerce, Nov 23 probe"),
+    ("Production Operations Lead", T2, "known cost he accepted: 'production' stems to 'product'"),
+    ("Support Quality Manager", T2, "control: the older config title"),
+    ("Clinical Quality Lead - PsyD/PhD", "dropped", "control: why the entry isn't bare 'Quality Lead'"),
+    ("Consumer Ad Quality Lead", "dropped", "control: same"),
+    ("Functional Lead, AI & Agentforce Delivery", "supplemental", "NeuraFlash: review-only, FYI line"),
 ]
 
 # The AI wildcard and engineer route test a word-bounded "ai" on the raw title,
