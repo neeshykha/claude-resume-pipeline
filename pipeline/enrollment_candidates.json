@@ -5477,6 +5477,33 @@
       "via": "harvest_ats.py",
       "source": "HN Who is hiring (Ask HN: Who is hiring? (November 2026))",
       "first_seen": "2026-11-23"
+    },
+    {
+      "name": "Aya Healthcare",
+      "ats": "greenhouse",
+      "slug": "ayahealthcare",
+      "enrolled_date": "2026-11-24",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "Prefect",
+      "ats": "ashby",
+      "slug": "prefect",
+      "enrolled_date": "2026-11-24",
+      "via": "harvest_ats.py",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "Banyan Software",
+      "ats": "greenhouse",
+      "slug": "banyansoftware",
+      "enrolled_date": "2026-11-24",
+      "via": "harvest_ats.py",
+      "source": "BuiltIn directory",
+      "first_seen": "2026-11-24"
     }
   ],
   "rejected": [
@@ -33255,6 +33282,163 @@
       ],
       "source": "BuiltIn directory",
       "first_seen": "2026-11-23"
+    },
+    {
+      "name": "Welch's",
+      "ats": "greenhouse",
+      "slug": "welchsinc",
+      "rejected_date": "2026-11-24",
+      "reason": "Board resolves and is live (25 jobs) but ZERO qualifying fit-titles at harvest time: no tier1/tier2/tier2c anywhere US-reachable, and no tier3 in Atlanta or remote-US. Rejected on fit-space, not pollability -- recheck if the company resurfaces. NOTE: a tier3 role outside Atlanta/remote-US does NOT qualify, so this company may still have a Boston or SF CSM open; that is intended.",
+      "recheck_if_resurfaced": true,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "Prowess Consulting",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-24",
+      "reason": "PROBABLE NAME COLLISION. A name variant resolved to jazzhr/prowessconsulting (9 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'Information Technology Manager' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "collision_board": "jazzhr/prowessconsulting",
+      "collision_suspected": true,
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Information Technology Manager -- LinkedIn card role; board resolved to a different company",
+      "card_title": "Information Technology Manager",
+      "card_job_id": "4484886711",
+      "card_url": "https://www.linkedin.com/jobs/view/4484886711/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "SpotOn",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-24",
+      "reason": "PROBABLE NAME COLLISION. A name variant resolved to ashby/spoton (73 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'Platform Engineering Manager' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "collision_board": "ashby/spoton",
+      "collision_suspected": true,
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Platform Engineering Manager -- LinkedIn card role; board resolved to a different company",
+      "card_title": "Platform Engineering Manager",
+      "card_job_id": "4485383413",
+      "card_url": "https://www.linkedin.com/jobs/view/4485383413/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "Greystar",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-24",
+      "reason": "PROBABLE NAME COLLISION. A name variant resolved to workday/greystar (1392 jobs, zero fit-titles), but the LinkedIn card that queued this company was for 'Area Community Manager' and no title on that board matches it, so the board most likely belongs to a different company with a similar name. The real board is unfound: open the posting's own apply link, then enroll with the exact slug via --names. (If the req merely closed, this is an ordinary no-fit and can be dismissed.)",
+      "collision_board": "workday/greystar",
+      "collision_suspected": true,
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "manual_review": true,
+      "manual_review_why": "Area Community Manager -- LinkedIn card role; board resolved to a different company",
+      "card_title": "Area Community Manager",
+      "card_job_id": "4492143898",
+      "card_url": "https://www.linkedin.com/jobs/view/4492143898/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "Voya Financial",
+      "ats": "workable",
+      "slug": "voya-financial",
+      "rejected_date": "2026-11-24",
+      "reason": "Board RESOLVED at workable/voya-financial but returned ZERO jobs, so there was nothing to score. This is NOT an unpollable company and a manual site: search will not help: the slug is known and re-checking costs one API call. Either the board is between postings or the company has paused hiring. Recheck on any resurfacing and enroll directly if it has repopulated. (Slugs that resolved empty: workable/voya-financial.)",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "National Consolidator Services",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-24",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/iCIMS/Gem/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity and ADP WorkforceNow boards are GUID-addressed and SuccessFactors boards are per-company-host RMK sites; none can ever be auto-resolved by name. probe_adp and probe_successfactors can validate a cid or host found by hand, e.g. from a careers-page link or job-alert email, but cannot discover one). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "card_title": "Vice President of Customer Operations",
+      "card_job_id": "4492308936",
+      "card_url": "https://www.linkedin.com/jobs/view/4492308936/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "Smurfit Westrock",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-24",
+      "reason": "No board resolved: no deterministic name-variant slug matched Greenhouse/Ashby/Lever/Workable/Pinpoint/Rippling/JazzHR/iCIMS/Gem/SmartRecruiters; no Workday tenant answered; no Comeet widget was found on a name-derived careers page. May still be pollable under a non-obvious slug, on a careers page this script could not guess the domain of, or on an ATS with no adapter yet (Paylocity and ADP WorkforceNow boards are GUID-addressed and SuccessFactors boards are per-company-host RMK sites; none can ever be auto-resolved by name. probe_adp and probe_successfactors can validate a cid or host found by hand, e.g. from a careers-page link or job-alert email, but cannot discover one). Worth one manual look at the company's own careers page if the company matters.",
+      "recheck_if_resurfaced": true,
+      "unpollable": true,
+      "card_title": "Manager IT Solutions - Atlanta, GA",
+      "card_job_id": "4492497723",
+      "card_url": "https://www.linkedin.com/jobs/view/4492497723/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "Contabo GmbH",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-24",
+      "reason": "UNRESOLVED ON TIMEOUT, not on evidence. The probe walk hit the 60s per-company wall-clock cap after 60s, during the Workday tenant walk, so the remaining probes never ran and nothing is known about whether this company has a board. Typical cause: a Workday tenant that resolves but matches none of the site names tried, which costs the full 5-host walk. Cheap next step is a targeted re-run (--names \"Contabo GmbH\" --budget-seconds 300), NOT a manual site:myworkdayjobs.com search. 3 probe(s) were rate-limited (HTTP 429) and never answered (workable x3), so a board at one of those addresses was not ruled out.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "timed_out": true,
+      "source": "BuiltIn directory",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "Voya Investment Management",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-24",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 4 probe(s) were refused with HTTP 429 even after one retry (workable x4), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Voya Investment Management\"), NOT a manual search. Throttled: workable/voyainvestmentmanagement, workable/voya-investment-management, workable/voyainvestmentmanagementio, workable/voyainvestmentmanagementhq.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/voyainvestmentmanagement",
+        "workable/voya-investment-management",
+        "workable/voyainvestmentmanagementio",
+        "workable/voyainvestmentmanagementhq"
+      ],
+      "card_title": "AVP Middle Office Manager",
+      "card_job_id": "4432463103",
+      "card_url": "https://www.linkedin.com/jobs/view/4432463103/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
+    },
+    {
+      "name": "Insmed Incorporated",
+      "ats": null,
+      "slug": null,
+      "rejected_date": "2026-11-24",
+      "reason": "UNRESOLVED ON RATE LIMIT, not on evidence. No probe that answered found a board, but 4 probe(s) were refused with HTTP 429 even after one retry (workable x4), so nothing is known about a board at those addresses. This is NOT an unpollable company. Cheap next step is a targeted re-run later (--names \"Insmed Incorporated\"), NOT a manual search. Throttled: workable/insmedincorporated, workable/insmed-incorporated, workable/insmedincorporatedio, workable/insmedincorporatedhq.",
+      "recheck_if_resurfaced": true,
+      "unpollable": false,
+      "throttled": true,
+      "throttled_probes": [
+        "workable/insmedincorporated",
+        "workable/insmed-incorporated",
+        "workable/insmedincorporatedio",
+        "workable/insmedincorporatedhq"
+      ],
+      "card_title": "Manager, Project Management \u2013 Technical Operations",
+      "card_job_id": "4466914966",
+      "card_url": "https://www.linkedin.com/jobs/view/4466914966/",
+      "source": "LinkedIn alert",
+      "first_seen": "2026-11-24"
     }
   ]
 }
