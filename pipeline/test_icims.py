@@ -7,13 +7,16 @@ Usage:
 Four sections, matching the contract's four numbered items:
 
   1. Live integration -- resolve a REAL board (RealPage,
-     careers-realpagepms.icims.com), find a named real requisition on it
-     (req 14575, "Customer Success Manager II - HOA/Real Estate", verified
-     live 2026-09-18), and parse title/location/apply URL. This section is
-     WRITTEN TO FAIL before ats_icims.py/poll_ats.fetch_icims exist -- it was
-     run against the pre-implementation tree (`git stash` of everything but
-     this file) to capture the failing output the build report quotes
-     verbatim, then re-run after implementing.
+     careers-realpagepms.icims.com), pick a real requisition off it at run
+     time (the first one listed with a title), and parse title/location/apply
+     URL. Until 2026-11-26 this looked for one named requisition (req 14575,
+     "Customer Success Manager II - HOA/Real Estate", verified live
+     2026-09-18) and failed once RealPage closed it, so no requisition is
+     named now. This section was WRITTEN TO FAIL before
+     ats_icims.py/poll_ats.fetch_icims existed -- it was run against the
+     pre-implementation tree (`git stash` of everything but this file) to
+     capture the failing output the build report quotes verbatim, then re-run
+     after implementing.
   2. No-board classification in CASES form: a bogus tenant -> None (live), a
      real tenant with jobs -> a list (live), a real tenant whose classic page
      is only a client redirect to a custom front end (GitHub) -> None (live,
@@ -48,7 +51,6 @@ import ats_icims as ICIMS  # noqa: F401 (kept for parity with other adapters' te
 LIVE_TENANT = "realpagepms"           # RealPage -- small board, live-integration target
 PAGINATION_TENANT = "peraton"         # Peraton -- 1526 reqs / 31 pages, pagination proof
 REDIRECT_SKIN_TENANT = "githubinc"    # GitHub -- real tenant, unreadable custom skin
-KNOWN_REQ_TITLE_SUBSTR = "Customer Success Manager II"  # req 14575, verified live 2026-09-18
 
 fails = 0
 total = 0
@@ -73,13 +75,12 @@ check(board_ok, f"fetch_icims({LIVE_TENANT!r}) returns a non-error job list "
                 f"({len(jobs) if board_ok else 0} jobs"
                 f"{'' if board_ok else ': ' + str(jobs[0].get('_error')) if jobs else ' (empty)'})")
 
+# The board changes as RealPage opens and closes roles, so take whatever it
+# lists today: the first requisition with a title, or the first one listed.
 found = None
 if board_ok:
-    for j in jobs:
-        if KNOWN_REQ_TITLE_SUBSTR.lower() in (j.get("title") or "").lower():
-            found = j
-            break
-check(found is not None, f"named requisition found (title contains {KNOWN_REQ_TITLE_SUBSTR!r})")
+    found = next((j for j in jobs if (j.get("title") or "").strip()), jobs[0])
+check(found is not None, "picked a live requisition to check")
 
 if found:
     title = found.get("title", "")
