@@ -849,7 +849,8 @@ function target(a){return {getAttribute:function(n){return n in a.attrs?a.attrs[
   if(sel==='.lt')return {querySelector:function(s){return s==='textarea'&&a.value!=null?{value:a.value}:null}};
   if(sel==='.list')return {querySelectorAll:function(){return []}};return null}}}
 function snap(){return {today:els.today.innerHTML,queue:els.queue.innerHTML,marknote:els.marknote.textContent,
-  strips:els.strips.innerHTML,store:JSON.parse(JSON.stringify(store))}}
+  strips:els.strips.innerHTML,screened:els.screened.innerHTML,snote:els['screened-note'].textContent,
+  store:JSON.parse(JSON.stringify(store))}}
 const snaps=[snap()];
 input.actions.forEach(function(a){handlers.click.forEach(function(f){f({target:target(a)})});snaps.push(snap())});
 process.stdout.write(JSON.stringify(snaps));
@@ -986,6 +987,126 @@ def test_page_and_generator_split_paragraphs_the_same_way():
     r = subprocess.run([node, os.path.join(d, "lparas.js"), json.dumps(cases)], capture_output=True, text=True)
     assert r.returncode == 0, r.stderr[:400]
     assert json.loads(r.stdout) == [bd.edit_paragraphs(c) for c in cases]
+
+
+# --- Tailor it on "Cleared, not tailored" (D63, 2026-11-26) --------------------------------
+CKEY = "jobdash.cleared.v1"
+
+
+def requests_file(reqs):
+    with open(os.path.join(bd.JOBS_DIR, bd.CLEARED_REQUESTS), "w", encoding="utf-8") as f:
+        f.write(reqs if isinstance(reqs, str) else json.dumps({"requests": reqs}))
+
+
+def test_cleared_key_contract_with_shelf_inbox_and_cleared_requests():
+    import cleared_requests
+    import shelf_inbox
+    fixture([])
+    screened_file("2026-09-19", [{"company": "Acme", "title": "Ops Lead", "url": "https://example.com/a", "score": 91}])
+    html = bd.render(build())
+    assert "CKEY='%s'" % shelf_inbox.CLEARED_KEY in html and shelf_inbox.CLEARED_KEY == CKEY
+    assert bd.CLEARED_REQUESTS == os.path.basename(cleared_requests.PATH)
+    assert bd.CLEARED_PER_RUN == cleared_requests.CLEARED_MAX, "the page's queue estimate uses the run's cap"
+    for u in ("https://Example.com/A/", " https://example.com/a", "https://example.com/a?x=1"):
+        assert bd.norm_url(u) == shelf_inbox.norm_url(u) == cleared_requests.norm_url(u), u
+    assert "c:s.company,t:s.title,s:s.score,g:s.gap" in html, "cleared_requests.record reads a, d, u, c, t, s, g"
+
+
+def test_cleared_rows_carry_a_key_and_their_recorded_request():
+    fixture([])
+    screened_file("2026-09-19", [
+        {"company": "Acme", "title": "Ops Lead", "url": "https://example.com/Acme/1/", "score": 91},
+        {"company": "Bolt", "title": "Support Mgr", "url": "https://example.com/b", "score": 84},
+        {"company": "Cove", "title": "TAM", "url": "https://example.com/c", "score": 112}])
+    requests_file({"https://example.com/acme/1": {"action": "tailor", "marked": "2026-09-18", "recorded": "2026-09-19"},
+                   "https://example.com/c": {"action": "tailor", "marked": "2026-09-16", "recorded": "2026-09-17",
+                                             "read": "2026-09-17", "read_status": "closed"},
+                   "https://example.com/old": {"action": "tailor", "recorded": "2026-07-01", "read": "2026-07-01"},
+                   "https://example.com/gone": {"action": "tailor", "recorded": "2026-09-18"}})
+    data = build()
+    rows = {s["company"]: s for s in data["screened"]}
+    assert rows["Acme"]["key"] == "https://example.com/acme/1"
+    assert rows["Acme"]["req"] == {"marked": "2026-09-18", "read": "", "status": ""}
+    assert rows["Cove"]["req"] == {"marked": "2026-09-16", "read": "2026-09-17", "status": "closed"}
+    assert "req" not in rows["Bolt"]
+    assert data["cleared_answered"] == ["https://example.com/acme/1", "https://example.com/c", "https://example.com/gone"], \
+        "a request recorded long ago can't have a mark left on the page"
+    assert data["cleared_queue"] == ["https://example.com/gone", "https://example.com/acme/1"], \
+        "recorded and not read, whether or not its row is still listed, in the order the run takes them"
+    assert data["cleared_per_run"] == 5
+    for junk in ("not json", '{"requests": []}', '[]'):
+        requests_file(junk)
+        data = build()
+        assert all("req" not in s for s in data["screened"]) and data["cleared_answered"] == [], junk
+        assert data["cleared_queue"] == [], junk
+
+
+def test_page_tailor_it_on_cleared_rows_records_survives_a_reload_and_undoes():
+    from datetime import timedelta
+    fixture([])
+    roles = [{"company": c, "title": "Ops Lead", "url": f"https://example.com/{c.lower()}", "score": s, "gap": "a gap"}
+             for c, s in (("Acme", 99), ("Bolt", 97), ("Cove", 95), ("Dune", 93), ("Eddy", 91))]
+    roles += [{"company": "Fern", "title": "Ops Lead", "url": "mailto:jobs@example.com", "score": 89},
+              {"company": "Gale", "title": "Ops Lead", "url": "https://example.com/gale", "score": 88},
+              {"company": "Gale2", "title": "Ops Lead", "url": "https://example.com/Gale/", "score": 87}]
+    screened_file("2026-09-19", roles)
+    requests_file({"https://example.com/cove": {"action": "tailor", "marked": "2026-09-18", "recorded": "2026-09-19"},
+                   "https://example.com/dune": {"action": "tailor", "marked": "2026-09-17", "recorded": "2026-09-18",
+                                                "read": "2026-09-18", "read_status": "closed"},
+                   "https://example.com/eddy": {"action": "tailor", "marked": "2026-09-17", "recorded": "2026-09-18",
+                                                "read": "2026-09-18", "read_status": "live"}})
+    html = bd.render(build())
+    real_today = date.today()
+    recent, stale = real_today.isoformat(), (real_today - timedelta(days=30)).isoformat()
+    store = {CKEY: json.dumps({
+        "https://example.com/bolt": {"a": "tailor", "d": recent, "ts": 1, "u": "https://example.com/bolt"},
+        "https://example.com/cove": {"a": "tailor", "d": recent, "ts": 1},          # recorded by a run: dropped
+        "https://example.com/aged-out": {"a": "tailor", "d": recent, "ts": 1},      # row left the list: kept
+        "https://example.com/aged-out2": {"a": "tailor", "d": recent, "ts": 1},
+        "https://example.com/aged-out3": {"a": "tailor", "d": recent, "ts": 1},
+        "https://example.com/stale": {"a": "tailor", "d": stale, "ts": 1}})}        # past the backstop: dropped
+    click_a = {"attrs": {"data-cact": "tailor", "data-k": "https://example.com/acme"}}
+    snaps = run_page(html, store, [click_a])
+    if snaps is None:
+        print("    (skipped: node is not installed, so the cleared rows' buttons were not run)")
+        return
+
+    def rows(h):
+        return {m.group(1): m.group(0) for m in re.finditer(r'<div class="row[^"]*">.*?<span class="co">(\w+)</span>.*?</small></div></div>', h, re.S)}
+
+    first = rows(snaps[0]["screened"])
+    assert set(first) == {"Acme", "Bolt", "Cove", "Dune", "Eddy", "Fern", "Gale", "Gale2"}, set(first)
+    assert 'data-cact="tailor" data-k="https://example.com/acme">Tailor it</button>' in first["Acme"]
+    assert "asked " in first["Bolt"] and "the next weekday run writes it" in first["Bolt"] and 'data-cact="undo"' in first["Bolt"]
+    assert "the next weekday run writes it" in first["Cove"] and "data-cact" not in first["Cove"], "recorded: no undo"
+    assert "posting closed when the run read it" in first["Dune"] and "data-cact" not in first["Dune"]
+    assert "and not tailored; that run's alerts say why" in first["Eddy"]
+    assert "data-cact" not in first["Fern"], "no posting URL, nothing the run could read"
+    assert "data-cact" not in first["Gale"] and "data-cact" not in first["Gale2"], "two rows, one key: no click"
+    assert first["Bolt"].startswith('<div class="row dim">') and first["Acme"].startswith('<div class="row">')
+    kept = json.loads(snaps[0]["store"][CKEY])
+    assert set(kept) == {"https://example.com/bolt", "https://example.com/aged-out", "https://example.com/aged-out2",
+                         "https://example.com/aged-out3"}, kept
+    assert snaps[0]["snote"] == ("4 asked here; the next weekday run records them. 1 recorded earlier and still "
+                                 "in line. Runs write 5 a run, oldest click first."), snaps[0]["snote"]
+    # The click: stored in the shape cleared_requests.record() reads, and drawn as asked. It is the
+    # sixth in line (one recorded, four clicked earlier), so it says it's a run further out.
+    after = json.loads(snaps[1]["store"][CKEY])["https://example.com/acme"]
+    assert after["a"] == "tailor" and after["d"] == recent and after["u"] == "https://example.com/acme"
+    assert after["c"] == "Acme" and after["t"] == "Ops Lead" and after["s"] == 99 and after["g"] == "a gap"
+    a = rows(snaps[1]["screened"])["Acme"]
+    assert "in line, about 2 weekday runs out" in a and ">Tailor it</button>" not in a, a
+    assert "the next weekday run writes it" in rows(snaps[1]["screened"])["Bolt"], "earlier clicks keep their place"
+    assert snaps[1]["snote"].endswith("so the last of these is about 2 weekday runs out."), snaps[1]["snote"]
+    # A reload (a fresh page over the same storage) keeps it; undo takes it back off.
+    undo_a = {"attrs": {"data-cact": "undo", "data-k": "https://example.com/acme"}}
+    snaps = run_page(html, snaps[1]["store"], [undo_a])
+    assert "in line, about 2 weekday runs out" in rows(snaps[0]["screened"])["Acme"], "the click survives a reload"
+    assert "https://example.com/acme" not in json.loads(snaps[1]["store"][CKEY])
+    assert ">Tailor it</button>" in rows(snaps[1]["screened"])["Acme"]
+    # A click on a recorded row's key changes nothing.
+    snaps = run_page(html, {}, [{"attrs": {"data-cact": "tailor", "data-k": "https://example.com/cove"}}])
+    assert CKEY not in snaps[1]["store"] or "https://example.com/cove" not in json.loads(snaps[1]["store"][CKEY])
 
 
 def test_failure_exits_zero_and_writes_nothing():

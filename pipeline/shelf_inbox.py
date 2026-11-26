@@ -69,6 +69,14 @@ drain_leads() hands them to lead_marks.py, which records them in jobs/lead_marks
 It runs first, reports as one `leads:` clause on the same line, and a failure there
 never stops the queue marks.
 
+CLEARED ROLES (added 2026-11-26, D63)
+Each row in "Cleared, not tailored" has a Tailor it button. His clicks wait under a fourth
+key, `jobdash.cleared.v1`, keyed by posting URL like a queue mark. Those roles aren't
+outcomes.csv rows either (a cleared role has no package behind it), so drain_cleared()
+hands them to cleared_requests.py, which records them in jobs/cleared_requests.json for
+Step 1d-4 to read. It reports as one `cleared:` clause, and a failure never stops the
+queue marks.
+
 LETTER EDITS (added 2026-11-12)
 A queue row with a cover letter shows the letter, and an edit he saves to it waits under
 a third key, `jobdash.letters.v1`, keyed by posting URL like a mark. drain_letters()
@@ -97,6 +105,7 @@ SHELF_DIR = os.path.expanduser("~/Library/Application Support/HTMLShelf")
 PAGE_FILE = "job_dashboard.html"   # the page's originalName in the Shelf library
 INBOX_KEY = "jobdash.inbox.v1"     # must match build_dashboard.py's page script
 LEADS_KEY = "jobdash.leads.v1"     # the weekly leads' Tailor it / Pass; same page, same rule
+CLEARED_KEY = "jobdash.cleared.v1" # Tailor it on a cleared role (D63); same page, same rule
 BACKUP_SUFFIX = ".bak-shelf-inbox"   # + "-mon" .. "-sun"; pipeline/*.bak* is gitignored
 
 SKIP_VERDICTS = {"fit": "skip_fit", "time": "skip_time",
@@ -186,6 +195,29 @@ def drain_leads(inbox_path, today, apply):
                 f"{n_pass} passed{extra}")
     except Exception as e:  # noqa: BLE001
         return f"leads: FAILED {type(e).__name__}: {e}"
+
+
+def drain_cleared(inbox_path, today, apply):
+    """Record Tailor it on the "Cleared, not tailored" rows (added 2026-11-26, D63).
+
+    Returns one clause for the `shelf_inbox:` line, or "" when there were none. Never
+    raises, like drain_leads(). cleared_requests.py owns jobs/cleared_requests.json.
+    """
+    try:
+        marks, _ = load_marks(inbox_path, CLEARED_KEY)
+        if not marks:
+            return ""
+        import cleared_requests
+        p, n_new = cleared_requests.record(marks, today, apply=apply)
+        for item in p["bad"]:
+            print(f"  cleared role not recorded: {item}")
+        extra = (f", {len(p['already'])} already recorded" if p["already"] else "") + (
+            f", {len(p['bad'])} not recorded" if p["bad"] else "")
+        if not n_new:
+            return f"cleared: nothing new{extra}"
+        return f"cleared: {'recorded' if apply else 'would record'} {n_new} to tailor{extra}"
+    except Exception as e:  # noqa: BLE001
+        return f"cleared: FAILED {type(e).__name__}: {e}"
 
 
 def drain_letters(inbox_path, today, apply):
@@ -388,10 +420,12 @@ def main(argv=None):
             raise ValueError("--today needs YYYY-MM-DD")
         inbox = argv[argv.index("--inbox") + 1] if "--inbox" in argv else None
         lead_note = drain_leads(inbox, today, "--apply" in argv)
+        cleared_note = drain_cleared(inbox, today, "--apply" in argv)
         letter_note = drain_letters(inbox, today, "--apply" in argv)
-        sfx = "".join(f"; {note}" for note in (lead_note, letter_note) if note)
-        # One flag for both side drains: strict mode surfaces a failure in either.
-        lead_failed = lead_note.startswith("leads: FAILED") or " FAILED" in letter_note
+        sfx = "".join(f"; {note}" for note in (lead_note, cleared_note, letter_note) if note)
+        # One flag for every side drain: strict mode surfaces a failure in any of them.
+        lead_failed = (lead_note.startswith("leads: FAILED") or cleared_note.startswith("cleared: FAILED")
+                       or " FAILED" in letter_note)
         marks, why = load_marks(inbox)
         if not marks:
             print(f"shelf_inbox: nothing to record ({why or 'no marks on the page'}){sfx}")

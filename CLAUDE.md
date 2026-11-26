@@ -479,7 +479,9 @@ in the same file. A script that needs a new meaning adds a named set there and n
   picks a role, which replaced his 2026-09-30 call not to cut the cap. Until the dashboard
   has a button for that, the run writes two ahead and lists every other cleared role under
   "Cleared, not tailored", where everything over the threshold stays available by name.
-  [D54](DECISIONS.md#d54-packages-follow-his-choice)
+  [D54](DECISIONS.md#d54-packages-follow-his-choice) The button arrived 2026-11-26 (D63);
+  the run keeps writing two ahead until he decides whether they stop (his call 2026-11-26:
+  a week first; follow-ups ledger `1203-kri`, due 2026-12-03).
 - **Judge a pipeline change by the thing it fixed**, not by outcome metrics. A plumbing fix
   (LinkedIn body counts, a poller crash) won't move interview rate, and expecting it to makes
   good fixes look useless.
@@ -517,7 +519,7 @@ directly, always do full tailoring regardless of score.
 |-------|------|-------|
 | 110+  | Priority / Full | Full tailoring — required for company-capped roles |
 | 88–109 | Full | Summary rewrite, bullet reorder, skills reorder, cover letter |
-| 78–87 | Cleared, not tailored | Listed with its apply link; tailored only when he asks by name |
+| 78–87 | Cleared, not tailored | Listed with its apply link; tailored only when he asks by name or clicks Tailor it ([D63](DECISIONS.md#d63-cleared-roles-got-a-tailor-it-button)) |
 | <78  | Skip | Do not surface |
 
 The daily run stopped tailoring the 78–87 band on 2026-10-28: he had sent 16 of 75 of those
@@ -939,6 +941,12 @@ that file (its Track Source File feature) and refreshes the page in place under 
   taking a row out of one day's `screened_[date].json` never held. To dismiss one, add
   `{"url": "..."}` to that file's `dismissed` list; to bring one back, delete its entry. The
   run still writes `screened_[date].json` as before, and the page has no button for this yet.
+- **Cleared rows take Tailor it (2026-11-26).** A click waits under `jobdash.cleared.v1`,
+  `shelf_inbox.py` records it in `pipeline/jobs/cleared_requests.json` (gitignored) through
+  `cleared_requests.py`, and Step 1d-4 runs `cleared_requests.py --read`: five a run, each
+  posting re-read at its own URL, the earlier screen card reused when the text is the same.
+  Each gets a full package in the requested slot, never light and never a main slot.
+  [D63](DECISIONS.md#d63-cleared-roles-got-a-tailor-it-button)
 - **The weekly report is a section of the page, not an email (2026-10-15).** Thursdays,
   `weekly_channel_report.py --page --apply` writes `pipeline/jobs/weekly_leads_[date].json`
   and the page shows it as "This week's leads": every strong LinkedIn role the run didn't turn

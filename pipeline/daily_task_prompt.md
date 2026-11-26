@@ -124,6 +124,11 @@ brief digest saying so rather than guessing an address.
      row; this command records them in `pipeline/jobs/lead_marks.json` through
      `lead_marks.py`. A Pass is finished. A Tailor it waits there for Step 1d-4. A
      `leads: FAILED` or `not recorded` clause gets one alert line, same as above.
+   - **The same line ends with a `cleared:` clause when he clicked Tailor it on a
+     "Cleared, not tailored" row (added 2026-11-26, D63).** This command records each one in
+     `pipeline/jobs/cleared_requests.json` through `cleared_requests.py`, and Step 1d-4 reads
+     it. A `cleared: FAILED` or `not recorded` clause gets one alert line, same as above.
+     [D63](../DECISIONS.md#d63-cleared-roles-got-a-tailor-it-button)
    - **The same line ends with a `letters:` clause when he saved an edit to a cover letter
      (added 2026-11-12).** A queue row with a letter shows it on the dashboard, and he can save
      an edit to it there. This command hands saved edits to `pipeline/letter_edits.py`, which
@@ -1407,6 +1412,47 @@ one line in the digest's alerts saying which role and why, since he asked for it
 
 Record `run_[date].json → requested: {waiting_before, read, tailored, not_tailored: [why]}`.
 
+**Cleared roles he asked for (added 2026-11-26, D63).** Each row in the dashboard's
+"Cleared, not tailored" section has a Tailor it button too, and Step 0 item 4b records those
+clicks in `pipeline/jobs/cleared_requests.json`. Run:
+
+```bash
+.venv/bin/python pipeline/cleared_requests.py --read
+```
+
+It takes up to 5 waiting requests, oldest click first, apart from the weekly leads' three.
+These roles were already read and carded by an earlier run's Step 2-JD screen, so it doesn't
+go through LinkedIn: it re-reads each posting at its own URL (a LinkedIn posting URL through
+the guest endpoint), which is the check that the posting is still open, and reuses the
+earlier card when the text hasn't changed. Output goes to
+`pipeline/jobs/jd_cache/<date>_cleared/` in the Step 2-JD shape, and each request is stamped:
+
+- `OK ... card reused`: nothing to dispatch.
+- `OK ... needs a worker`: the text changed since the screen read it. Dispatch **one Sonnet
+  worker with the exact Step 2-JD worker prompt** on `batch_01.json` there, alongside the
+  other workers.
+- `CACHED`: the live read failed for a reason other than a closed posting, so the copy an
+  earlier run read stands in. Tailor it, and put "the posting couldn't be confirmed open on
+  [date]; check it before applying" in the pick's `check` list.
+- `CLOSED`: not tailored. One line in the digest's alerts naming the role.
+- `UNREAD`: no live read and no cached copy. WebFetch its URL once; if that reads the
+  posting, save it into the same dir and send it to the worker with the others. Otherwise one
+  alert line.
+- `SKIPPED`: already in `outcomes.csv`, so a package exists another way. Nothing to do.
+
+Then read the cards with:
+
+```bash
+.venv/bin/python pipeline/jd_screen_table.py --date <date>_cleared
+```
+
+A row the table marks FAIL (new text that moved the role on site elsewhere, or under the pay
+floor) isn't tailored, and gets one alert line saying why, since he asked for it. Every PASS
+or CHECK row goes to Step 2c's requested slot with the score it cleared with (`score` in the
+manifest); score it again on the normal rubric only when a worker read new text. Record
+`run_[date].json → requested.cleared: {waiting_before, read, live, cached, tailored,
+not_tailored: [why]}`. `0 selected of 0 waiting` is the normal quiet answer.
+
 ### 1e. Housekeeping: headcount_band backfill (max 3/run)
 
 Most watchlist companies are missing `headcount_band`, which makes the small-company bonus
@@ -1785,7 +1831,8 @@ best-scoring one — additional same-company roles are "also live (FYI)" digest 
 
 **Pick up to 2 jobs to tailor** (Aneesh's call, 2026-11-12: packages get written after he
 chooses a role, and until the dashboard has a button for that the run writes two ahead.
-It was 5 from 2026-09-25 and 3-4 before that). Wherever this file says "the five", it means
+It was 5 from 2026-09-25 and 3-4 before that. The button arrived 2026-11-26, D63; keep
+writing two ahead until he decides whether they stop). Wherever this file says "the five", it means
 these main slots, now two.
 [D54](../DECISIONS.md#d54-packages-follow-his-choice) Tailoring tiers
 come from `_scoring_config`:
@@ -1845,14 +1892,28 @@ housekeeping. The row goes through Step 4 like any pick (already-applied guard, 
 Record `run_[date].json → safety_slot: {candidates, picked, why, skipped_reason}`.
 
 **Requested slot: the roles he asked for, outside the five (Aneesh's call, 2026-10-15).**
-Every Step 1d-4 role that cleared its hard filters gets a package this run, at most three, and
-none of them takes one of the five or the safety slot. Its tier comes from its score
+Every Step 1d-4 weekly-lead role that cleared its hard filters gets a package this run, at most
+three, and none of them takes one of the five or the safety slot. Its tier comes from its score
 (priority, full, or light) with **light as the floor**: he asked for it, so a score under the
 light threshold is recorded honestly and the role still gets a resume. Fit first and the
 same-company cap don't apply to it, though the already-applied guard in Step 4-pre does. The
 row goes through Step 4 like any pick with `lane:requested` in its `notes` and `linkedin` as
 its `source_channel`. In the digest it is its own picks-table row marked "asked".
 [D41](../DECISIONS.md#d41-the-weekly-report-became-a-page)
+
+**The cleared roles he asked for take the requested slot too, with their own five
+(Aneesh's calls, 2026-11-26: five a run, and a full package for every one).** Every Step 1d-4 cleared request that passed its read gets a
+package this run. Its tier is **full, or priority at `company_cap_threshold`, never light**:
+he picked it from the list with its gap showing, which is asking for it by name, and a role
+he names gets a full package with a cover letter (CLAUDE.md Step 1). The HARD-REQUIREMENT
+TIER CAP and the IC-comp rule don't lower it; record `hard_req_cap_trigger` honestly as for
+any row, and the letter names the gap the way the gap rules say. `cleared_requests.py --read`
+prints each request's tier. It never takes one of the main slots or the safety slot: if the
+main slots would pick the same role this run, the next role in line takes that slot. Fit
+first and the same-company cap don't apply; the already-applied guard does. Its row carries
+`lane:requested` in `notes`, `pipeline` as `source_channel` (`linkedin` when its URL is a
+LinkedIn posting), and it is a picks-table row marked "asked".
+[D63](../DECISIONS.md#d63-cleared-roles-got-a-tailor-it-button)
 
 **Cleared, not tailored (added 2026-09-25).** Every Step 2-JD role that you scored at or
 above `light_tailoring_threshold` but did not tailor (it scored under
@@ -1861,7 +1922,8 @@ posting under `company_cap_threshold`) goes on the digest's "Cleared, not tailor
 line on why it cleared, and its apply link, and into `jobs/screened_[date].json` at Step 6
 so the Shelf dashboard shows it. These are real, JD-checked candidates: the whole point of
 reading 70+ JDs is that Aneesh sees every one that clears, not just the ones there was time
-to tailor. If he asks for one to be tailored, it is a normal interactive tailoring.
+to tailor. If he asks for one to be tailored in a session, it is a normal interactive
+tailoring; if he clicks Tailor it on its dashboard row, Step 1d-4 reads it on the next run.
 
 **Capture near-misses (do NOT tailor):** (A) score near-miss — passed every hard filter
 but scored below `light_tailoring_threshold` (no lower bound); (B) salary near-miss —

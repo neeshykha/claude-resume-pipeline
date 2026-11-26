@@ -462,6 +462,72 @@ def test_a_lead_failure_never_stops_queue_marks():
         assert f.read() == "{broken", "a malformed record is never overwritten"
 
 
+# --- Tailor it on a cleared role (D63, 2026-11-26) ------------------------------------------
+# cleared_requests.py has its own tests for every rule. These cover the hand-off.
+
+def cleared_fixture(cleared_on_page, queue_marks=None):
+    import cleared_requests
+    d, inbox = fixture([row(company="A", url="https://example.com/a")], queue_marks or {})
+    with open(inbox, encoding="utf-8") as f:
+        store = json.load(f)
+    store[si.CLEARED_KEY] = json.dumps(cleared_on_page)
+    with open(inbox, "w", encoding="utf-8") as f:
+        json.dump(store, f)
+    cleared_requests.PATH = os.path.join(si.JOBS_DIR, "cleared_requests.json")
+    return inbox, cleared_requests
+
+
+def asked(url, **kw):
+    m = {"a": "tailor", "d": "2026-10-11", "ts": 1, "u": url, "c": "Cove", "t": "Support Lead",
+         "s": 95, "g": "one stated gap"}
+    m.update(kw)
+    return m
+
+
+def test_cleared_requests_are_recorded_beside_queue_marks():
+    url, c1, c2 = "https://example.com/a", "https://example.com/c1", "https://example.com/c2"
+    inbox, cr = cleared_fixture({c1: asked(c1), c2: asked(c2), "x": asked("not a url"), "y": asked(c1, a="pass")},
+                                {url: mark("skip", url, r="fit")})
+    rc, out = run(inbox, "--apply")
+    assert rc == 0, out
+    assert "recorded 0 sent, 1 verdicts (1 skips)" in out, out
+    assert "cleared: recorded 2 to tailor, 2 not recorded" in out, out
+    assert "cleared role not recorded: x (not a posting URL)" in out, out
+    got = cr.load()
+    assert set(got) == {c1, c2} and got[c1]["score"] == 95 and got[c1]["recorded"] == TODAY
+    assert tracker()["A"]["stage"] == "surfaced", "a cleared role never touches the tracker"
+
+
+def test_cleared_report_only_and_a_second_drain_adds_nothing():
+    c1 = "https://example.com/c1"
+    inbox, cr = cleared_fixture({c1: asked(c1)})
+    rc, out = run(inbox)
+    assert "cleared: would record 1 to tailor" in out and not os.path.exists(cr.PATH), out
+    run(inbox, "--apply")
+    rc, out = run(inbox, "--apply")
+    assert "cleared: nothing new, 1 already recorded" in out, out
+
+
+def test_a_cleared_failure_never_stops_queue_marks():
+    url, c1 = "https://example.com/a", "https://example.com/c1"
+    inbox, cr = cleared_fixture({c1: asked(c1)}, {url: mark("skip", url, r="time")})
+    with open(cr.PATH, "w", encoding="utf-8") as f:
+        f.write("{broken")
+    rc, out = run(inbox, "--apply")
+    assert rc == 0 and "recorded 0 sent, 1 verdicts" in out and "cleared: FAILED" in out, out
+    assert tracker()["A"]["his_verdict"] == "skip_time"
+    assert run(inbox, "--apply", "--strict")[0] == 1, "strict mode surfaces the cleared failure"
+    with open(cr.PATH, encoding="utf-8") as f:
+        assert f.read() == "{broken"
+
+
+def test_a_cleared_request_with_no_queue_marks_still_reports():
+    c1 = "https://example.com/c1"
+    inbox, cr = cleared_fixture({c1: asked(c1)})
+    rc, out = run(inbox, "--apply")
+    assert out.startswith("shelf_inbox: nothing to record") and "cleared: recorded 1 to tailor" in out, out
+
+
 # --- Letter edits (2026-11-12) -------------------------------------------------------------
 # letter_edits.py has its own tests for every rule. These cover the hand-off: the same drain
 # that records the marks applies a saved edit, and neither can break the other. The letter is

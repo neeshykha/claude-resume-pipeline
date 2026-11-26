@@ -1613,3 +1613,54 @@ Operations" on 2026-11-17, already came through "AI Operations Manager". Multifa
 building analytics vendors, and civic tech contractors stay unenrolled: their boards held no
 title worth adding. Cases are in `pipeline/test_title_matcher.py`; the probe kit is in
 `~/Documents/Projects/Career/career-tangents/scan-probe/`.
+
+## D63. Cleared roles got a Tailor it button
+
+On 2026-11-26 he asked why so many high-scoring roles sat in "Cleared, not tailored". The
+score weighs company, title, pay, location, and freshness, not whether he meets the posting's
+stated minimums. Of the 22 roles cleared on 2026-11-25, 15 were reach (2 or more unmet) and
+the other 7 each had a named block: Workday under 110, a location move, requirements the
+screen couldn't read, or the 78-87 band. D54 had settled that packages follow his pick, and
+the page never got a way to pick, so naming a role in a session was the only path. He chose
+to have the button built.
+
+- **The button.** Each cleared row with a posting link has Tailor it, with an undo until a
+  run records it. The click waits in the Shelf's storage under `jobdash.cleared.v1`, keyed by
+  posting URL. `shelf_inbox.py` records it at Step 0 item 4b in `jobs/cleared_requests.json`
+  through `cleared_requests.py`, and the row then shows where the request stands until its
+  package takes the row off the list. Past the run's five, a row says how many runs out it
+  is rather than "the next weekday run": the end-of-build outsider pass caught that the first
+  version promised the next run to every click, which a burst of clicks would break.
+- **The read.** `cleared_requests.py --read` at Step 1d-4, five a run, oldest click first,
+  counted apart from the weekly leads' three. The weekly leads go through LinkedIn's guest
+  endpoint because a lead is only ever a LinkedIn card. A cleared role was already read at its
+  own ATS and carded by a screen worker, so the request re-reads the posting at that URL and
+  reuses the card when the body hasn't changed. The other option was the cached card alone,
+  which costs nothing. It lost because a row stays up seven days and a cached copy can't say
+  whether the posting is still open, and the writer would draft from last week's text. The
+  live read costs one request, and no worker when the text is the same. When it fails for any
+  reason but a closed posting, the cached copy stands in and the pick carries a check line.
+- **The tier.** Full, or priority at the cap threshold, and never light: neither the
+  hard-requirement cap nor the IC-comp rule lowers it. Clicking Tailor it is asking for the
+  role by name, and CLAUDE.md gives a role he names a full package whatever it scored. The cap
+  is still recorded in `hard_req_cap_trigger`. The weekly leads keep their own rule, tier by
+  score with light as the floor.
+- **It never takes a main slot.** If the two main slots would pick the same role that run,
+  the next role in line takes the slot.
+
+He made three calls on cards the same day. **Five a run**, over the three that was built,
+which would have put back about the writer budget the 2026-11-12 cut freed: he wants a burst
+of clicks to clear faster. **A full package for the 78-87 band too**, the option built; the
+brief for the build had named 88 and up, and resume-only packages in that band, written
+without his pick, went 16 sent of 75 with no interviews. **Keep writing two ahead for a week.**
+CLAUDE.md said the run writes two packages ahead until the dashboard had this button. Since
+2026-11-13 the tracker held 15 pipeline-sourced packages outside the lanes, mostly those two a
+day, and he sent 2. A follow-ups check on 2026-12-03 (`1203-kri`) decides with a week of
+clicks in hand.
+
+One choice made without asking him, a one-line change: Tailor it only, with no Pass, so a
+pass still goes in `screened_dismissed.json` by hand.
+
+`pipeline/test_cleared_requests.py` covers the record and the read, `test_shelf_inbox.py` the
+hand-off, and `test_build_dashboard.py` the button, run in node: a click, a reload, an undo,
+and each recorded state.

@@ -362,7 +362,8 @@ since 2026-09-30 and was used once.
   and `shelf_inbox.py`. `test_mark_key_and_inbox_contract_with_shelf_inbox` pins the key and the
   skip reasons.
 - `norm_url` is the same three-line function in `build_dashboard.py`, `shelf_inbox.py`,
-  `mark_verdict.py`, and `mark_applied.py`. A mark is stored under it and matched by it.
+  `mark_verdict.py`, `mark_applied.py`, and (2026-11-26) `cleared_requests.py`. A mark is
+  stored under it and matched by it.
 - A row with a skip verdict stays `stage=surfaced` and is hidden here, evicted by
   `rotate_apply_folder.py`, and never listed as unsent by the run.
 - `brief_[date].json` is model output. `read_brief()` type-checks and caps every field and
@@ -550,3 +551,34 @@ PDF still has the earlier text until then, and the row says so. If he then marks
 the edit is refused and the files keep the earlier text, with his text in the log. Bold in a
 paragraph he edits is not carried into the new text. An edited letter's files get a new
 modified time, so listings sorted by time treat it as recent.
+
+## 2026-11-26: Tailor it on "Cleared, not tailored"
+
+The button D54 said was never built. Story and choices:
+[D63](../DECISIONS.md#d63-cleared-roles-got-a-tailor-it-button).
+
+- **On the page:** each cleared row with a posting URL has Tailor it. A click waits under
+  `jobdash.cleared.v1` as `{a, d, ts, u, c, t, s, g}` (s the score, g the gap), keyed by the
+  normalized posting URL, and the row reads "asked [date], the next weekday run writes it" with
+  an undo. Past the run's five, it says how many runs out it is instead ("in line, about 2
+  weekday runs out"), counting the recorded requests first (`cleared_queue`, oldest click
+  first) and then this page's clicks by date. A row with no http(s) link, or two rows sharing
+  one key, takes no click.
+- **Once a run records it:** the generator reads `jobs/cleared_requests.json` (never writes it)
+  and gives the row its request's state: in line, posting closed, couldn't be read, or read and
+  not tailored. No button and no undo from then on. A package puts the URL in `outcomes.csv`,
+  which takes the row off the list as before. A note above the list counts clicks on this page
+  and requests still in line.
+- **Marks are pruned like the weekly leads':** once the URL is in `cleared_answered` (recorded
+  in the last 45 days), or after `LEAD_MARK_DAYS`. Not when the row leaves the list, because a
+  click on a role's last day in the seven-day window still has to reach the run.
+- **Recorded by** `shelf_inbox.py` (`drain_cleared`, a `cleared:` clause on its line) through
+  `cleared_requests.py`, which owns the file. **Read by** `cleared_requests.py --read` at Step
+  1d-4.
+
+**Contracts to keep in step.**
+- `CKEY` on the page and `shelf_inbox.CLEARED_KEY`, the mark's field names and
+  `cleared_requests.record()`, and the file name in `build_dashboard.CLEARED_REQUESTS` and
+  `cleared_requests.PATH`. `test_cleared_key_contract_with_shelf_inbox_and_cleared_requests`
+  pins them.
+- `norm_url` is the same function in `cleared_requests.py` too.

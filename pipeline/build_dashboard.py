@@ -13,7 +13,12 @@ READ-ONLY against every tracking file. It shows state and never sets it: marking
 a role applied stays with mark_applied.py, outcomes with mark_outcome.py. It
 imports nothing from the writers and must stay that way.
 
-The page keeps four kinds of state, all in the Shelf's per-page storage:
+The page keeps five kinds of state, all in the Shelf's per-page storage:
+  cleared  Tailor it on a "Cleared, not tailored" row (added 2026-11-26, D63), keyed by
+         posting URL under `jobdash.cleared.v1`. An inbox like the leads: shelf_inbox.py
+         records them in jobs/cleared_requests.json through cleared_requests.py, and Step
+         1d-4 reads them. A recorded request stays on its row as "asked" until its package
+         puts the URL in outcomes.csv, which takes the row off the list.
   letters  an edit he saved to a cover letter (added 2026-11-12), keyed like the marks under
          `jobdash.letters.v1` as {text, base_sha, saved_at}. An inbox too: letter_edits.py
          applies it to the letter's files and writes jobs/letter_edit_results.json, which
@@ -420,6 +425,46 @@ def read_screened(today):
                            "scope": r.get("scope") or "", "why": r.get("why") or "",
                            "gap": r.get("gap") or "", "last": d.isoformat(), "first": d.isoformat()}
     return list(by_url.values()), days
+
+
+CLEARED_REQUESTS = "cleared_requests.json"
+CLEARED_ANSWERED_DAYS = 45   # a recorded request older than this can't have a mark left on the page
+CLEARED_PER_RUN = 5          # cleared_requests.CLEARED_MAX; test_build_dashboard.py fails if they differ
+
+
+def read_cleared_requests():
+    """{normalized url: entry} from jobs/cleared_requests.json (added 2026-11-26, D63).
+
+    Read here, never written: cleared_requests.py owns the file and shelf_inbox.py fills it.
+    A missing or malformed file hides nothing, and every row keeps its Tailor it button.
+    """
+    try:
+        with open(os.path.join(JOBS_DIR, CLEARED_REQUESTS), encoding="utf-8") as f:
+            reqs = json.load(f).get("requests")
+    except Exception:
+        return {}
+    return {k: v for k, v in reqs.items() if isinstance(v, dict)} if isinstance(reqs, dict) else {}
+
+
+def attach_cleared_requests(screened, today):
+    """Give each cleared row its mark key and, once a run recorded his Tailor it, the request's
+    state. Returns (recorded keys the page may still hold a mark for, the keys of requests waiting
+    for a read in the order the run takes them: oldest click first, as cleared_requests.pending())."""
+    reqs = read_cleared_requests()
+    for s in screened:
+        s["key"] = norm_url(s["url"])
+        r = reqs.get(s["key"])
+        if r:
+            s["req"] = {"marked": clip(r.get("marked"), 10), "read": clip(r.get("read"), 10),
+                        "status": clip(r.get("read_status"), 80)}
+    recent = []
+    for k, v in reqs.items():
+        d = parse_date(v.get("recorded"))
+        if d is None or (today - d).days <= CLEARED_ANSWERED_DAYS:
+            recent.append(k)
+    waiting = sorted((k for k, v in reqs.items() if v.get("action") == "tailor" and not v.get("read")),
+                     key=lambda k: (str(reqs[k].get("marked") or ""), str(reqs[k].get("recorded") or ""), k))
+    return sorted(recent), waiting
 
 
 BRIEF_DAYS = 5
@@ -1133,6 +1178,7 @@ def build_data(today, now):
     queue, quiet, counts = read_outcomes(today, watch.get("_scoring_config", {}))
     counts.update(read_backlog_counts())
     screened, counts["screened_days"] = read_screened(today)
+    cleared_answered, cleared_waiting = attach_cleared_requests(screened, today)
     try:
         progress = read_progress(today)
     except Exception as e:  # noqa: BLE001 - a bad chart input must not take the queue down with it
@@ -1146,7 +1192,10 @@ def build_data(today, now):
             "brief": read_brief(today), "later_days": 3, "leads": read_leads(today),
             "letter_limits": LETTER_LIMITS,
             # Every job id a run has recorded. The page drops a lead mark once it's in here.
-            "lead_answered": sorted(read_lead_marks()), "lead_mark_days": LEAD_MARK_DAYS}
+            "lead_answered": sorted(read_lead_marks()), "lead_mark_days": LEAD_MARK_DAYS,
+            # Every cleared role a run has recorded a Tailor it for; the page drops its mark then.
+            "cleared_answered": cleared_answered, "cleared_queue": cleared_waiting,
+            "cleared_per_run": CLEARED_PER_RUN}
     try:
         data["contacts"] = attach_contacts(data)
     except Exception as e:  # noqa: BLE001 - same rule as Progress: the queue still builds
@@ -1363,7 +1412,8 @@ footer li{margin:3px 0}
 <div class="list" id="queue"></div>
 
 <h2 id="h-screened">Cleared, not tailored</h2>
-<div class="sub">The daily run read these job descriptions in full and they cleared location, pay, and the scoring bar, but there wasn't a tailored resume for them that day. Last <span id="swin"></span> days; a role leaves once it's tailored or applied.</div>
+<div class="sub">The daily run read these job descriptions in full and they cleared location, pay, and the scoring bar, but there wasn't a tailored resume for them that day. Tailor it asks the next weekday run for a full package with a cover letter, five a run, oldest click first. Last <span id="swin"></span> days; a role leaves once it's tailored or applied.</div>
+<div class="sub" id="screened-note"></div>
 <div class="list" id="screened"></div>
 
 <h2 id="h-leads">This week's leads</h2>
@@ -1394,7 +1444,7 @@ footer li{margin:3px 0}
 <script>
 (function(){
 var D=JSON.parse(document.getElementById('data').textContent);
-var DAY=86400000, KEY='jobdash.ticks.v1', IKEY='jobdash.inbox.v1', LKEY='jobdash.leads.v1', EKEY='jobdash.letters.v1';
+var DAY=86400000, KEY='jobdash.ticks.v1', IKEY='jobdash.inbox.v1', LKEY='jobdash.leads.v1', EKEY='jobdash.letters.v1', CKEY='jobdash.cleared.v1';
 var SKIP={fit:'not a fit',time:'no time',materials:'materials',other:'other'};
 function el(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -1408,9 +1458,10 @@ function niceY(s,o){var d=day(s);return d?d.toLocaleDateString(undefined,o||{mon
 function safeUrl(u){return /^https?:\/\//i.test(u||'')?u:''}
 
 // Ticks and marks. Storage can throw (private window, blocked site data); the page still works without it.
-var ticks={}, marks={}, lmarks={}, ledits={}, storageOK=true;
+var ticks={}, marks={}, lmarks={}, ledits={}, cmarks={}, storageOK=true;
 try{ticks=JSON.parse(localStorage.getItem(KEY)||'{}')||{};marks=JSON.parse(localStorage.getItem(IKEY)||'{}')||{};
-  lmarks=JSON.parse(localStorage.getItem(LKEY)||'{}')||{};ledits=JSON.parse(localStorage.getItem(EKEY)||'{}')||{}}catch(e){storageOK=false}
+  lmarks=JSON.parse(localStorage.getItem(LKEY)||'{}')||{};ledits=JSON.parse(localStorage.getItem(EKEY)||'{}')||{};
+  cmarks=JSON.parse(localStorage.getItem(CKEY)||'{}')||{}}catch(e){storageOK=false}
 function saveTicks(){try{localStorage.setItem(KEY,JSON.stringify(ticks))}catch(e){storageOK=false;strips()}}
 // IKEY and the mark shape {a,r,e,d,ts,u,c,t} are read by pipeline/shelf_inbox.py. Change both together.
 function saveMarks(){try{localStorage.setItem(IKEY,JSON.stringify(marks))}catch(e){storageOK=false;strips()}}
@@ -1420,6 +1471,10 @@ function saveLeadMarks(){try{localStorage.setItem(LKEY,JSON.stringify(lmarks))}c
 // EKEY and the edit shape {text,base_sha,saved_at}, keyed the way a mark is, are read by
 // pipeline/letter_edits.py. Change both together.
 function saveEdits(){try{localStorage.setItem(EKEY,JSON.stringify(ledits))}catch(e){storageOK=false;strips()}}
+// CKEY and the cleared mark shape {a,d,ts,u,c,t,s,g}, keyed by posting URL the way a queue mark
+// is, are read by pipeline/shelf_inbox.py and recorded by pipeline/cleared_requests.py (D63).
+// Change all three together.
+function saveClearedMarks(){try{localStorage.setItem(CKEY,JSON.stringify(cmarks))}catch(e){storageOK=false;strips()}}
 (function prune(){var live={},changed=false;D.manual.forEach(function(m){live[m.key]=1});
   Object.keys(ticks).forEach(function(k){if(!live[k]){delete ticks[k];changed=true}});if(changed)saveTicks()})();
 
@@ -1453,6 +1508,17 @@ var L=D.leads||null, LROWS=(L&&L.rows)||[];
   Object.keys(lmarks).forEach(function(k){var m=lmarks[k]||{},n=since(m.d);
     if(done[k]||n==null||n>D.lead_mark_days){delete lmarks[k];changed=true}});
   if(changed)saveLeadMarks()})();
+
+// A cleared mark follows the lead rule: dropped once a run has recorded it (its URL is in
+// cleared_requests.json), or after LEAD_MARK_DAYS. Not on the row leaving the list: a click on a
+// role's last day in the seven-day window still has to reach the next run.
+var SROWS=D.screened||[], skeyN={};
+SROWS.forEach(function(s){skeyN[s.key]=(skeyN[s.key]||0)+1});
+(function pruneClearedMarks(){var done={},changed=false;
+  (D.cleared_answered||[]).forEach(function(k){done[k]=1});
+  Object.keys(cmarks).forEach(function(k){var m=cmarks[k]||{},n=since(m.d);
+    if(done[k]||n==null||n>D.lead_mark_days){delete cmarks[k];changed=true}});
+  if(changed)saveClearedMarks()})();
 
 D.queue.forEach(function(q){q.age=since(q.surfaced);q.left=q.age==null?null:D.expiry_days-q.age});
 // shelf_inbox.py matches a mark to its row by posting URL. A row with no link, or two rows
@@ -1671,6 +1737,8 @@ function copy(s){copyText(s,s.getAttribute('data-copy'))}
 document.addEventListener('click',function(ev){var t=ev.target;if(!t||!t.getAttribute)return;
   var la=t.getAttribute('data-lact');
   if(la){leadClick(t,la);return}
+  var ca=t.getAttribute('data-cact');
+  if(ca){clearedClick(t,ca);return}
   var lt=t.getAttribute('data-lt');
   if(lt){letterClick(t,lt);return}
   var a=t.getAttribute('data-act');
@@ -1711,15 +1779,51 @@ function queue(){
   el('queue').innerHTML=rows.length?rows.map(function(q){return rowHTML(q,false)}).join(''):'<div class="empty">Nothing in this view.</div>';
   lfit('queue')}
 
+// Tailor it on a cleared role (2026-11-26, D63). A click waits in CKEY until shelf_inbox.py
+// records it; after that the row shows the request's state from cleared_requests.json until the
+// package puts the URL in outcomes.csv and the row leaves. A row with no link, or two rows sharing
+// one, could never be recorded, so those rows take no click.
+function canAsk(s){return /^https?:\/\//.test(s.key||'')&&skeyN[s.key]===1}
+// Where each waiting request stands. The run takes cleared_per_run a run, oldest click first:
+// the ones a run already recorded (cleared_queue, in its order), then this page's clicks by date.
+// A row past the first few says how many runs out it is, never "next run" when it isn't.
+var CQ={};
+function clearedQueue(){CQ={};var q=(D.cleared_queue||[]).slice(),rec={};q.forEach(function(k){rec[k]=1});
+  Object.keys(cmarks).filter(function(k){return cmarks[k]&&cmarks[k].a==='tailor'&&!rec[k]}).sort(function(a,b){
+    var x=cmarks[a],y=cmarks[b];return String(x.d).localeCompare(String(y.d))||((x.ts||0)-(y.ts||0))||a.localeCompare(b)})
+    .forEach(function(k){q.push(k)});
+  q.forEach(function(k,i){CQ[k]=i});return q.length}
+function whenLine(k){var n=Math.floor((CQ[k]||0)/(D.cleared_per_run||5));
+  return n?'in line, about '+(n+1)+' weekday runs out':'the next weekday run writes it'}
+function clearedActs(s){var r=s.req,m=cmarks[s.key],k=esc(s.key),asked='asked '+esc(nice((r&&r.marked)||(m&&m.d)));
+  if(r){
+    if(!r.read)return '<div class="acts"><span class="tag good">'+asked+', '+whenLine(s.key)+'</span></div>';
+    if(r.status==='closed')return '<div class="acts"><span class="tag warn">'+asked+', posting closed when the run read it '+esc(nice(r.read))+'</span></div>';
+    if(r.status==='unreadable')return '<div class="acts"><span class="tag warn">'+asked+", the run couldn't read the posting "+esc(nice(r.read))+'</span></div>';
+    return '<div class="acts"><span class="tag warn">'+asked+', read '+esc(nice(r.read))+" and not tailored; that run's alerts say why</span></div>"}
+  if(m&&m.a==='tailor')return '<div class="acts"><span class="tag good">'+asked+', '+whenLine(s.key)+'</span><button class="lnk" data-cact="undo" data-k="'+k+'">undo</button></div>';
+  if(!canAsk(s))return '';
+  return '<div class="acts"><button class="act go" data-cact="tailor" data-k="'+k+'">Tailor it</button></div>'}
+function clearedClick(t,a){var k=t.getAttribute('data-k'),s=null;
+  for(var i=0;i<SROWS.length;i++)if(SROWS[i].key===k){s=SROWS[i];break}
+  if(!s||s.req)return;
+  if(a==='undo')delete cmarks[k];
+  else if(a==='tailor'&&canAsk(s))cmarks[k]={a:'tailor',d:iso(today),ts:Date.now(),u:s.url,c:s.company,t:s.title,s:s.score,g:s.gap};
+  saveClearedMarks();screened()}
 function screened(){
-  var rows=(D.screened||[]).slice().sort(function(a,b){return (b.score||0)-(a.score||0)});
+  var rows=SROWS.slice().sort(function(a,b){return (b.score||0)-(a.score||0)});
+  var total=clearedQueue(), waiting=(D.cleared_queue||[]).length, onPage=total-waiting, per=D.cleared_per_run||5, note=[];
+  if(onPage)note.push(onPage+' asked here; the next weekday run records '+(onPage===1?'it':'them')+'.');
+  if(waiting)note.push(waiting+' recorded earlier and still in line.');
+  if(total)note.push('Runs write '+per+' a run, oldest click first'+(total>per?', so the last of these is about '+Math.ceil(total/per)+' weekday runs out.':'.'));
+  el('screened-note').textContent=note.join(' ');
   el('screened').innerHTML=rows.length?rows.map(function(s){var m=[];
     if(s.loc)m.push('<span class="tag'+(s.loc==='ATL'?' good':'')+'">'+esc(s.loc==='ATL'?'Atlanta':s.loc)+'</span>');
     if(s.pay)m.push('<span class="tag">'+esc(s.pay)+'</span>');
     if(s.scope)m.push('<span class="tag">'+esc(s.scope==='ic'?'IC':s.scope)+'</span>');
     if(s.gap)m.push('<span class="tag warn" title="'+esc(s.gap)+'">gap</span>');
-    var n=since(s.first);
-    return '<div class="row"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(s.score==null?'':Math.round(s.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(s.company)+'</span><span>'+titleLink(s)+'</span></div>'+knowLine(s)+(s.why?'<div class="why">'+esc(s.why)+(s.gap?' · gap: '+esc(s.gap):'')+'</div>':'')+'<div class="meta">'+m.join('')+'</div></div><div class="right"><small>cleared '+esc(ago(n))+'<br>'+esc(nice(s.first))+'</small></div></div>'
+    var n=since(s.first), asked=!!(s.req||cmarks[s.key]);
+    return '<div class="row'+(asked?' dim':'')+'"><div class="right mono" style="min-width:42px;text-align:left"><b>'+(s.score==null?'':Math.round(s.score))+'</b></div><div class="body"><div class="top"><span class="co">'+esc(s.company)+'</span><span>'+titleLink(s)+'</span></div>'+knowLine(s)+(s.why?'<div class="why">'+esc(s.why)+(s.gap?' · gap: '+esc(s.gap):'')+'</div>':'')+'<div class="meta">'+m.join('')+'</div>'+clearedActs(s)+'</div><div class="right"><small>cleared '+esc(ago(n))+'<br>'+esc(nice(s.first))+'</small></div></div>'
   }).join(''):'<div class="empty">'+(D.counts.screened_days?'Nothing cleared beyond what was tailored.':'No JD screen results yet. The daily run writes them from its next run on.')+'</div>'}
 
 // The weekly leads (2026-10-15, D41). Two answers a row: Tailor it queues a package for the
